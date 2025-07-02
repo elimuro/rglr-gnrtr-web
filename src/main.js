@@ -32,11 +32,19 @@ class RGLRGNRTR {
 
         // Initialize parameters
         this.params = {
-            animation: false,
             animationType: 0,
             animationSpeed: 0.25,
             enableShapeCycling: false, // Toggle for sine wave shape cycling
             enableSizeAnimation: false, // Toggle for size/movement/rotation animations
+            // Movement animation parameters
+            movementAmplitude: 0.1, // Movement animation intensity
+            movementFrequency: 0.5, // Movement animation frequency
+            // Rotation animation parameters
+            rotationAmplitude: 0.5, // Rotation animation intensity
+            rotationFrequency: 0.3, // Rotation animation frequency
+            // Scale animation parameters
+            scaleAmplitude: 0.2, // Scale animation intensity
+            scaleFrequency: 0.4, // Scale animation frequency
             gridWidth: 8,
             gridHeight: 8,
             cellSize: 1,
@@ -75,20 +83,20 @@ class RGLRGNRTR {
         shapeFolder.add(this.params, 'gridWidth', 1, 30, 1).name('Display Width').onChange(() => {
             this.createGrid();
             // Reset animation time when grid changes to avoid visual jumps
-            if (this.params.animation) {
+            if (this.params.enableShapeCycling || this.params.enableSizeAnimation) {
                 this.animationTime = 0;
             }
         });
         shapeFolder.add(this.params, 'gridHeight', 1, 30, 1).name('Display Height').onChange(() => {
             this.createGrid();
-            if (this.params.animation) {
+            if (this.params.enableShapeCycling || this.params.enableSizeAnimation) {
                 this.animationTime = 0;
             }
         });
         shapeFolder.add(this.params, 'cellSize', 0.5, 2, 0.01).name('Cell Size').onChange(() => this.updateCellSize());
         shapeFolder.add(this.params, 'randomness', 0, 1, 0.01).name('Randomness').onChange(() => {
             this.createGrid();
-            if (this.params.animation) {
+            if (this.params.enableShapeCycling || this.params.enableSizeAnimation) {
                 this.animationTime = 0;
             }
         });
@@ -97,13 +105,13 @@ class RGLRGNRTR {
         const compositionFolder = this.gui.addFolder('Composition');
         compositionFolder.add(this.params, 'compositionWidth', 1, 30, 1).name('Composition Width').onChange(() => {
             this.createGrid();
-            if (this.params.animation) {
+            if (this.params.enableShapeCycling || this.params.enableSizeAnimation) {
                 this.animationTime = 0;
             }
         });
         compositionFolder.add(this.params, 'compositionHeight', 1, 30, 1).name('Composition Height').onChange(() => {
             this.createGrid();
-            if (this.params.animation) {
+            if (this.params.enableShapeCycling || this.params.enableSizeAnimation) {
                 this.animationTime = 0;
             }
         });
@@ -115,7 +123,7 @@ class RGLRGNRTR {
             shapeSelectionFolder.add(this.params.enabledShapes, shapeName).onChange(() => {
                 // Recreate composition when shape categories change
                 this.createGrid();
-                if (this.params.animation) {
+                if (this.params.enableShapeCycling || this.params.enableSizeAnimation) {
                     this.animationTime = 0;
                 }
             });
@@ -133,7 +141,7 @@ class RGLRGNRTR {
         const colorFolder = this.gui.addFolder('Colors');
         colorFolder.addColor(this.params, 'shapeColor').name('Shape Color').onChange(() => {
             // Update color immediately for animated shapes
-            if (this.params.animation) {
+            if (this.params.enableShapeCycling || this.params.enableSizeAnimation) {
                 // Color will be updated in next animation frame
             } else {
                 this.createGrid();
@@ -147,28 +155,81 @@ class RGLRGNRTR {
 
         // Animation controls
         const animationFolder = this.gui.addFolder('Animation');
-        animationFolder.add(this.params, 'animation').name('Enable Animation').onChange(() => {
-            if (!this.params.animation) {
-                // Reset shapes to original positions when animation is disabled
-                this.updateCellSize();
-            }
-        });
+        animationFolder.open();
+        
+        // Main controls
+        animationFolder.add(this.params, 'animationSpeed', 0.01, 2, 0.01).name('Global Speed');
+        
+        // Animation type selector with dynamic parameter visibility
+        const animationTypeController = animationFolder.add(this.params, 'animationType', 0, 3, 1).name('Animation Type');
+        
+        // Effect toggles
         animationFolder.add(this.params, 'enableShapeCycling').name('Shape Cycling').onChange(() => {
             this.animationTime = 0;
         });
         animationFolder.add(this.params, 'enableSizeAnimation').name('Size/Movement').onChange(() => {
             if (!this.params.enableSizeAnimation) {
-                // Reset shapes to original positions when size animation is disabled
                 this.updateCellSize();
             }
         });
-        animationFolder.add(this.params, 'animationType', 0, 3, 1).name('Animation Type').onChange(() => {
-            if (!this.params.animation) {
-                this.updateCellSize();
+        
+        // Movement parameters
+        const movementAmpController = animationFolder.add(this.params, 'movementAmplitude', 0.01, 0.5, 0.01).name('Movement Amp');
+        const movementFreqController = animationFolder.add(this.params, 'movementFrequency', 0.1, 2, 0.1).name('Movement Freq');
+        
+        // Rotation parameters
+        const rotationAmpController = animationFolder.add(this.params, 'rotationAmplitude', 0.01, 2, 0.01).name('Rotation Amp');
+        const rotationFreqController = animationFolder.add(this.params, 'rotationFrequency', 0.1, 2, 0.1).name('Rotation Freq');
+        
+        // Scale parameters
+        const scaleAmpController = animationFolder.add(this.params, 'scaleAmplitude', 0.01, 1, 0.01).name('Scale Amp');
+        const scaleFreqController = animationFolder.add(this.params, 'scaleFrequency', 0.1, 2, 0.1).name('Scale Freq');
+        
+        // Function to update parameter visibility based on animation type
+        const updateParameterVisibility = () => {
+            const animationType = this.params.animationType;
+            
+            // Movement parameters (visible for Movement and Combined)
+            const showMovement = animationType === 0 || animationType === 3;
+            if (movementAmpController.domElement) {
+                const movementAmpRow = movementAmpController.domElement.parentElement.parentElement;
+                movementAmpRow.style.display = showMovement ? 'flex' : 'none';
             }
+            if (movementFreqController.domElement) {
+                const movementFreqRow = movementFreqController.domElement.parentElement.parentElement;
+                movementFreqRow.style.display = showMovement ? 'flex' : 'none';
+            }
+            
+            // Rotation parameters (visible for Rotation and Combined)
+            const showRotation = animationType === 1 || animationType === 3;
+            if (rotationAmpController.domElement) {
+                const rotationAmpRow = rotationAmpController.domElement.parentElement.parentElement;
+                rotationAmpRow.style.display = showRotation ? 'flex' : 'none';
+            }
+            if (rotationFreqController.domElement) {
+                const rotationFreqRow = rotationFreqController.domElement.parentElement.parentElement;
+                rotationFreqRow.style.display = showRotation ? 'flex' : 'none';
+            }
+            
+            // Scale parameters (visible for Scale and Combined)
+            const showScale = animationType === 2 || animationType === 3;
+            if (scaleAmpController.domElement) {
+                const scaleAmpRow = scaleAmpController.domElement.parentElement.parentElement;
+                scaleAmpRow.style.display = showScale ? 'flex' : 'none';
+            }
+            if (scaleFreqController.domElement) {
+                const scaleFreqRow = scaleFreqController.domElement.parentElement.parentElement;
+                scaleFreqRow.style.display = showScale ? 'flex' : 'none';
+            }
+        };
+        
+        // Set up the change listener for animation type
+        animationTypeController.onChange(() => {
+            updateParameterVisibility();
         });
-        animationFolder.add(this.params, 'animationSpeed', 0.01, 2, 0.01).name('Animation Speed');
-        animationFolder.open();
+        
+        // Initialize visibility
+        updateParameterVisibility();
         
         console.log('GUI setup completed');
     }
@@ -586,7 +647,7 @@ class RGLRGNRTR {
         requestAnimationFrame(() => this.animate());
         
         // Update animation time
-        if (this.params.animation || this.params.enableShapeCycling || this.params.enableSizeAnimation) {
+        if (this.params.enableShapeCycling || this.params.enableSizeAnimation) {
             this.animationTime += this.clock.getDelta() * this.params.animationSpeed;
             
             // Apply animations to shapes
@@ -628,28 +689,29 @@ class RGLRGNRTR {
                     
                     // Size/movement animations (independent of shape cycling)
                     if (this.params.enableSizeAnimation) {
-                        // Calculate sine wave offset based on position and time
-                        const xOffset = Math.sin(this.animationTime + x * 0.5) * 0.1 * cellSize;
-                        const yOffset = Math.cos(this.animationTime + y * 0.5) * 0.1 * cellSize;
-                        
                         // Apply different animation types
                         switch (this.params.animationType) {
                             case 0: // Movement
+                                const xOffset = Math.sin(this.animationTime * this.params.movementFrequency + x * 0.5) * this.params.movementAmplitude * cellSize;
+                                const yOffset = Math.cos(this.animationTime * this.params.movementFrequency + y * 0.5) * this.params.movementAmplitude * cellSize;
                                 mesh.position.x = (x - halfGridW + 0.5) * cellSize + xOffset;
                                 mesh.position.y = (y - halfGridH + 0.5) * cellSize + yOffset;
                                 break;
                             case 1: // Rotation
-                                mesh.rotation.z = Math.sin(this.animationTime + x * 0.3 + y * 0.3) * 0.5;
+                                mesh.rotation.z = Math.sin(this.animationTime * this.params.rotationFrequency + x * 0.3 + y * 0.3) * this.params.rotationAmplitude;
                                 break;
                             case 2: // Scale
-                                const scale = 1 + Math.sin(this.animationTime + x * 0.4 + y * 0.4) * 0.2;
+                                const scale = 1 + Math.sin(this.animationTime * this.params.scaleFrequency + x * 0.5 + y * 0.5) * this.params.scaleAmplitude;
                                 mesh.scale.set(cellSize * scale, cellSize * scale, 1);
                                 break;
                             case 3: // Combined effects
-                                mesh.position.x = (x - halfGridW + 0.5) * cellSize + xOffset;
-                                mesh.position.y = (y - halfGridH + 0.5) * cellSize + yOffset;
-                                mesh.rotation.z = Math.sin(this.animationTime + x * 0.3 + y * 0.3) * 0.3;
-                                const combinedScale = 1 + Math.sin(this.animationTime + x * 0.4 + y * 0.4) * 0.1;
+                                const combinedXOffset = Math.sin(this.animationTime * this.params.movementFrequency + x * 0.5) * this.params.movementAmplitude * cellSize;
+                                const combinedYOffset = Math.cos(this.animationTime * this.params.movementFrequency + y * 0.5) * this.params.movementAmplitude * cellSize;
+                                const combinedRotation = Math.sin(this.animationTime * this.params.rotationFrequency + x * 0.3 + y * 0.3) * this.params.rotationAmplitude;
+                                const combinedScale = 1 + Math.sin(this.animationTime * this.params.scaleFrequency + x * 0.5 + y * 0.5) * this.params.scaleAmplitude;
+                                mesh.position.x = (x - halfGridW + 0.5) * cellSize + combinedXOffset;
+                                mesh.position.y = (y - halfGridH + 0.5) * cellSize + combinedYOffset;
+                                mesh.rotation.z = combinedRotation;
                                 mesh.scale.set(cellSize * combinedScale, cellSize * combinedScale, 1);
                                 break;
                         }
@@ -1064,7 +1126,7 @@ class RGLRGNRTR {
                     mesh.position.y = (y - halfGridH + 0.5) * cellSize;
                     mesh.scale.set(cellSize, cellSize, 1);
                     // Reset rotation when not animating
-                    if (!this.params.animation) {
+                    if (!this.params.enableSizeAnimation) {
                         mesh.rotation.z = 0;
                     }
                 }
