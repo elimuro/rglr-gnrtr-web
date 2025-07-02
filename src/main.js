@@ -14,16 +14,10 @@ class RGLRGNRTR {
         this.clock = new THREE.Clock();
         this.shapes = [];
         this.gridLines = [];
-        this.raycaster = new THREE.Raycaster();
-        this.mouse = new THREE.Vector2();
-        this.selectedShape = null;
         this.shapeControls = null;
-        this.outlineMaterial = new THREE.LineBasicMaterial({ 
-            color: 0x00ffff, // Teal color
-            linewidth: 4
-        });
-        this.outlineMesh = null;
         this.pulseTime = 0;
+        this.animationTime = 0;
+        this.composition = []; // Store the composition for animation
         this.init();
         this.setupGUI();
         this.createGrid();
@@ -35,21 +29,14 @@ class RGLRGNRTR {
         document.body.appendChild(this.renderer.domElement);
         this.camera.position.z = 10;
         window.addEventListener('resize', () => this.onWindowResize(), false);
-        window.addEventListener('click', (event) => this.onMouseClick(event), false);
-
-        // Add click handler for GUI container to prevent event propagation
-        const guiContainer = document.getElementById('gui-container');
-        if (guiContainer) {
-            guiContainer.addEventListener('click', (event) => {
-                event.stopPropagation();
-            });
-        }
 
         // Initialize parameters
         this.params = {
             animation: false,
             animationType: 0,
-            animationSpeed: 1,
+            animationSpeed: 0.25,
+            enableShapeCycling: false, // Toggle for sine wave shape cycling
+            enableSizeAnimation: false, // Toggle for size/movement/rotation animations
             gridWidth: 8,
             gridHeight: 8,
             cellSize: 1,
@@ -64,10 +51,7 @@ class RGLRGNRTR {
                 'Triangles': true,
                 'Rectangles': true,
                 'Ellipses': true
-            },
-            selectedShapeRotation: 0,
-            selectedShapeScale: 1,
-            selectedShapeColor: '#a31919'
+            }
         };
         
         // Apply the background color from params
@@ -77,24 +61,64 @@ class RGLRGNRTR {
     setupGUI() {
         if (this.gui) this.gui.destroy();
         this.gui = new GUI({ container: document.getElementById('gui-container') });
+        
+        // Debug: Check if GUI container exists
+        const container = document.getElementById('gui-container');
+        if (!container) {
+            console.error('GUI container not found!');
+            return;
+        }
+        console.log('GUI setup started');
 
         // Shape controls
         const shapeFolder = this.gui.addFolder('Shapes');
-        shapeFolder.add(this.params, 'gridWidth', 1, 30, 1).name('Display Width').onChange(() => this.createGrid());
-        shapeFolder.add(this.params, 'gridHeight', 1, 30, 1).name('Display Height').onChange(() => this.createGrid());
+        shapeFolder.add(this.params, 'gridWidth', 1, 30, 1).name('Display Width').onChange(() => {
+            this.createGrid();
+            // Reset animation time when grid changes to avoid visual jumps
+            if (this.params.animation) {
+                this.animationTime = 0;
+            }
+        });
+        shapeFolder.add(this.params, 'gridHeight', 1, 30, 1).name('Display Height').onChange(() => {
+            this.createGrid();
+            if (this.params.animation) {
+                this.animationTime = 0;
+            }
+        });
         shapeFolder.add(this.params, 'cellSize', 0.5, 2, 0.01).name('Cell Size').onChange(() => this.updateCellSize());
-        shapeFolder.add(this.params, 'randomness', 0, 1, 0.01).name('Randomness').onChange(() => this.createGrid());
+        shapeFolder.add(this.params, 'randomness', 0, 1, 0.01).name('Randomness').onChange(() => {
+            this.createGrid();
+            if (this.params.animation) {
+                this.animationTime = 0;
+            }
+        });
         
         // Composition controls
         const compositionFolder = this.gui.addFolder('Composition');
-        compositionFolder.add(this.params, 'compositionWidth', 1, 30, 1).name('Composition Width').onChange(() => this.createGrid());
-        compositionFolder.add(this.params, 'compositionHeight', 1, 30, 1).name('Composition Height').onChange(() => this.createGrid());
+        compositionFolder.add(this.params, 'compositionWidth', 1, 30, 1).name('Composition Width').onChange(() => {
+            this.createGrid();
+            if (this.params.animation) {
+                this.animationTime = 0;
+            }
+        });
+        compositionFolder.add(this.params, 'compositionHeight', 1, 30, 1).name('Composition Height').onChange(() => {
+            this.createGrid();
+            if (this.params.animation) {
+                this.animationTime = 0;
+            }
+        });
         compositionFolder.open();
         
         // Add shape selection controls
         const shapeSelectionFolder = shapeFolder.addFolder('Shape Selection');
         Object.keys(this.params.enabledShapes).forEach(shapeName => {
-            shapeSelectionFolder.add(this.params.enabledShapes, shapeName).onChange(() => this.createGrid());
+            shapeSelectionFolder.add(this.params.enabledShapes, shapeName).onChange(() => {
+                // Recreate composition when shape categories change
+                this.createGrid();
+                if (this.params.animation) {
+                    this.animationTime = 0;
+                }
+            });
         });
         shapeSelectionFolder.open();
         
@@ -107,41 +131,46 @@ class RGLRGNRTR {
 
         // Color controls
         const colorFolder = this.gui.addFolder('Colors');
-        colorFolder.addColor(this.params, 'shapeColor').name('Shape Color').onChange(() => this.createGrid());
+        colorFolder.addColor(this.params, 'shapeColor').name('Shape Color').onChange(() => {
+            // Update color immediately for animated shapes
+            if (this.params.animation) {
+                // Color will be updated in next animation frame
+            } else {
+                this.createGrid();
+            }
+        });
         colorFolder.addColor(this.params, 'backgroundColor').name('Background').onChange((v) => {
             this.renderer.setClearColor(new THREE.Color(v));
             this.createGrid();
         });
         colorFolder.open();
 
-        // Selected shape controls
-        const selectedShapeFolder = this.gui.addFolder('Selected Shape');
-        selectedShapeFolder.add(this.params, 'selectedShapeRotation', 0, 360, 1).name('Rotation').onChange((v) => {
-            if (this.selectedShape) {
-                this.selectedShape.rotation.z = v * Math.PI / 180;
+        // Animation controls
+        const animationFolder = this.gui.addFolder('Animation');
+        animationFolder.add(this.params, 'animation').name('Enable Animation').onChange(() => {
+            if (!this.params.animation) {
+                // Reset shapes to original positions when animation is disabled
+                this.updateCellSize();
             }
         });
-        selectedShapeFolder.add(this.params, 'selectedShapeScale', 0.25, 2, 0.25).name('Scale').onChange((v) => {
-            if (this.selectedShape) {
-                this.selectedShape.scale.set(v, v, 1);
+        animationFolder.add(this.params, 'enableShapeCycling').name('Shape Cycling').onChange(() => {
+            this.animationTime = 0;
+        });
+        animationFolder.add(this.params, 'enableSizeAnimation').name('Size/Movement').onChange(() => {
+            if (!this.params.enableSizeAnimation) {
+                // Reset shapes to original positions when size animation is disabled
+                this.updateCellSize();
             }
         });
-        selectedShapeFolder.addColor(this.params, 'selectedShapeColor').name('Color').onChange((v) => {
-            if (this.selectedShape) {
-                if (this.selectedShape.material) {
-                    this.selectedShape.material.color.set(v);
-                } else if (this.selectedShape.children) {
-                    this.selectedShape.children.forEach(child => {
-                        if (child.material && child.material.color) {
-                            if (child.material.color.getHexString() !== 'ffffff') {
-                                child.material.color.set(v);
-                            }
-                        }
-                    });
-                }
+        animationFolder.add(this.params, 'animationType', 0, 3, 1).name('Animation Type').onChange(() => {
+            if (!this.params.animation) {
+                this.updateCellSize();
             }
         });
-        selectedShapeFolder.close();
+        animationFolder.add(this.params, 'animationSpeed', 0.01, 2, 0.01).name('Animation Speed');
+        animationFolder.open();
+        
+        console.log('GUI setup completed');
     }
 
     createGrid() {
@@ -446,7 +475,7 @@ class RGLRGNRTR {
         const ofAppShapes = Object.keys(shapeGenerators);
 
         // Create the composition first
-        const composition = [];
+        this.composition = [];
         for (let x = 0; x < this.params.compositionWidth; x++) {
             for (let y = 0; y < this.params.compositionHeight; y++) {
                 let shapeName;
@@ -463,7 +492,7 @@ class RGLRGNRTR {
                         enabledShapes[Math.floor(Math.random() * enabledShapes.length)] :
                         enabledShapes[0];
                 }
-                composition.push(shapeName);
+                this.composition.push(shapeName);
             }
         }
 
@@ -475,7 +504,7 @@ class RGLRGNRTR {
                 const compX = Math.floor((x / gridWidth) * this.params.compositionWidth);
                 const compY = Math.floor((y / gridHeight) * this.params.compositionHeight);
                 const shapeIndex = compY * this.params.compositionWidth + compX;
-                const shapeName = composition[shapeIndex];
+                const shapeName = this.composition[shapeIndex] || 'Rect'; // Fallback to Rect if undefined
 
                 if (shapeGenerators[shapeName]) {
                     const shapeObj = shapeGenerators[shapeName]();
@@ -555,7 +584,407 @@ class RGLRGNRTR {
 
     animate() {
         requestAnimationFrame(() => this.animate());
+        
+        // Update animation time
+        if (this.params.animation || this.params.enableShapeCycling || this.params.enableSizeAnimation) {
+            this.animationTime += this.clock.getDelta() * this.params.animationSpeed;
+            
+            // Apply animations to shapes
+            this.animateShapes();
+        }
+        
         this.renderer.render(this.scene, this.camera);
+    }
+    
+    animateShapes() {
+        const gridWidth = this.params.gridWidth;
+        const gridHeight = this.params.gridHeight;
+        const cellSize = this.params.cellSize;
+        const halfGridW = gridWidth / 2;
+        const halfGridH = gridHeight / 2;
+        
+        // Get available shapes based on enabled categories
+        const availableShapes = this.getAvailableShapes();
+        if (availableShapes.length === 0) return;
+        
+        // Update material color for all shapes
+        const material = new THREE.MeshBasicMaterial({ 
+            color: this.params.shapeColor, 
+            side: THREE.DoubleSide 
+        });
+        
+        let shapeIndex = 0;
+        for (let x = 0; x < gridWidth; x++) {
+            for (let y = 0; y < gridHeight; y++) {
+                const mesh = this.shapes[shapeIndex];
+                if (mesh) {
+                    // Update material color
+                    mesh.material = material;
+                    
+                    // Shape cycling (independent of size/movement animations)
+                    if (this.params.enableShapeCycling) {
+                        this.cycleShapeInCell(mesh, x, y, availableShapes);
+                    }
+                    
+                    // Size/movement animations (independent of shape cycling)
+                    if (this.params.enableSizeAnimation) {
+                        // Calculate sine wave offset based on position and time
+                        const xOffset = Math.sin(this.animationTime + x * 0.5) * 0.1 * cellSize;
+                        const yOffset = Math.cos(this.animationTime + y * 0.5) * 0.1 * cellSize;
+                        
+                        // Apply different animation types
+                        switch (this.params.animationType) {
+                            case 0: // Movement
+                                mesh.position.x = (x - halfGridW + 0.5) * cellSize + xOffset;
+                                mesh.position.y = (y - halfGridH + 0.5) * cellSize + yOffset;
+                                break;
+                            case 1: // Rotation
+                                mesh.rotation.z = Math.sin(this.animationTime + x * 0.3 + y * 0.3) * 0.5;
+                                break;
+                            case 2: // Scale
+                                const scale = 1 + Math.sin(this.animationTime + x * 0.4 + y * 0.4) * 0.2;
+                                mesh.scale.set(cellSize * scale, cellSize * scale, 1);
+                                break;
+                            case 3: // Combined effects
+                                mesh.position.x = (x - halfGridW + 0.5) * cellSize + xOffset;
+                                mesh.position.y = (y - halfGridH + 0.5) * cellSize + yOffset;
+                                mesh.rotation.z = Math.sin(this.animationTime + x * 0.3 + y * 0.3) * 0.3;
+                                const combinedScale = 1 + Math.sin(this.animationTime + x * 0.4 + y * 0.4) * 0.1;
+                                mesh.scale.set(cellSize * combinedScale, cellSize * combinedScale, 1);
+                                break;
+                        }
+                    } else {
+                        // Reset to original positions when size animation is disabled
+                        mesh.position.x = (x - halfGridW + 0.5) * cellSize;
+                        mesh.position.y = (y - halfGridH + 0.5) * cellSize;
+                        mesh.rotation.z = 0;
+                        mesh.scale.set(cellSize, cellSize, 1);
+                    }
+                }
+                shapeIndex++;
+            }
+        }
+    }
+    
+    cycleShapeInCell(mesh, x, y, availableShapes) {
+        let newShapeName;
+        
+        // For shape cycling, we want to cycle through available shapes over time
+        // Use a combination of position and time to create unique cycling patterns
+        const cellSeed = x * 1000 + y * 100;
+        const timeOffset = this.animationTime * this.params.animationSpeed;
+        const shapeIndex = Math.floor(
+            Math.abs(Math.sin(timeOffset + cellSeed * 0.1)) * availableShapes.length
+        ) % availableShapes.length;
+        
+        newShapeName = availableShapes[shapeIndex];
+        
+        // Only update if the shape has changed
+        if (mesh.userData.currentShape !== newShapeName) {
+            this.updateMeshShape(mesh, newShapeName);
+            mesh.userData.currentShape = newShapeName;
+        }
+    }
+    
+    updateMeshShape(mesh, shapeName) {
+        const material = new THREE.MeshBasicMaterial({ 
+            color: this.params.shapeColor, 
+            side: THREE.DoubleSide 
+        });
+        
+        // Use the same shape generation system as createGrid
+        const shapeObj = this.generateShape(shapeName);
+        
+        if (shapeObj) {
+            let newGeometry;
+            
+            if (shapeObj instanceof THREE.Group) {
+                // For group shapes, use the first child's geometry
+                newGeometry = shapeObj.children[0].geometry;
+            } else if (shapeObj instanceof THREE.Shape) {
+                newGeometry = new THREE.ShapeGeometry(shapeObj);
+            } else {
+                // Fallback to plane geometry
+                newGeometry = new THREE.PlaneGeometry(1, 1);
+            }
+            
+            // Update the mesh geometry
+            if (mesh.geometry) {
+                mesh.geometry.dispose();
+            }
+            mesh.geometry = newGeometry;
+            mesh.material = material;
+        } else {
+            // Fallback to plane geometry if shape generation fails
+            if (mesh.geometry) {
+                mesh.geometry.dispose();
+            }
+            mesh.geometry = new THREE.PlaneGeometry(1, 1);
+            mesh.material = material;
+        }
+    }
+    
+    generateShape(shapeName) {
+        // Helper: map OpenFrameworks ptX names to cell coordinates
+        function getPt(name) {
+            const c = 1; // Use fixed size of 1 for shape generation
+            const map = {
+                pt1: [-c/2, -c/2], pt1_25: [-c/2 + 0.25*c, -c/2], pt1_50: [-c/2 + 0.5*c, -c/2], pt1_75: [-c/2 + 0.75*c, -c/2],
+                pt2: [c/2, -c/2], pt2_25: [c/2, -c/2 + 0.25*c], pt2_50: [c/2, -c/2 + 0.5*c], pt2_75: [c/2, -c/2 + 0.75*c],
+                pt3: [c/2, c/2], pt3_25: [c/2 - 0.25*c, c/2], pt3_50: [c/2 - 0.5*c, c/2], pt3_75: [c/2 - 0.75*c, c/2],
+                pt4: [-c/2, c/2], pt4_25: [-c/2, c/2 - 0.25*c], pt4_50: [-c/2, c/2 - 0.5*c], pt4_75: [-c/2, c/2 - 0.75*c],
+                center: [0, 0],
+            };
+            return new THREE.Vector2(...map[name]);
+        }
+
+        const shapeGenerators = {
+            // Triangles
+            triangle_UP: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt3_50'), getPt('pt1')]),
+            triangle_DOWN: () => new THREE.Shape([getPt('pt4'), getPt('pt3'), getPt('pt2_50'), getPt('pt4')]),
+            triangle_LEFT: () => new THREE.Shape([getPt('pt2'), getPt('pt3'), getPt('pt4_50'), getPt('pt2')]),
+            triangle_RIGHT: () => new THREE.Shape([getPt('pt1'), getPt('pt4'), getPt('pt2_50'), getPt('pt1')]),
+            triangle_TL: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt4'), getPt('pt1')]),
+            triangle_BL: () => new THREE.Shape([getPt('pt1'), getPt('pt4'), getPt('pt3'), getPt('pt1')]),
+            triangle_TR: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt3'), getPt('pt1')]),
+            triangle_BR: () => new THREE.Shape([getPt('pt2'), getPt('pt3'), getPt('pt4'), getPt('pt2')]),
+            triangle_split_UP: () => new THREE.Shape([getPt('pt1'), getPt('pt4'), getPt('pt1_50'), getPt('pt3'), getPt('pt2'), getPt('pt1')]),
+            triangle_split_DOWN: () => new THREE.Shape([getPt('pt1'), getPt('pt4'), getPt('pt3'), getPt('pt2'), getPt('pt3_50'), getPt('pt1')]),
+            triangle_split_LEFT: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt4_50'), getPt('pt3'), getPt('pt4'), getPt('pt1')]),
+            triangle_split_RIGHT: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt3'), getPt('pt4'), getPt('pt2_50'), getPt('pt1')]),
+            triangle_IN_V: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt4'), getPt('pt3'), getPt('pt1')]),
+            triangle_IN_H: () => new THREE.Shape([getPt('pt1'), getPt('pt3'), getPt('pt2'), getPt('pt4'), getPt('pt1')]),
+            triangle_neg_IN_DOWN: () => new THREE.Shape([getPt('pt4'), getPt('pt3'), getPt('pt2'), getPt('pt1_75'), getPt('center'), getPt('pt1_25'), getPt('pt1'), getPt('pt4')]),
+            triangle_neg_IN_UP: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt3'), getPt('pt3_25'), getPt('center'), getPt('pt3_75'), getPt('pt4'), getPt('pt1')]),
+            triangle_neg_IN_RIGHT: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt3'), getPt('pt4'), getPt('pt4_25'), getPt('center'), getPt('pt4_75'), getPt('pt1')]),
+            triangle_neg_IN_LEFT: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt2_25'), getPt('center'), getPt('pt2_75'), getPt('pt3'), getPt('pt4'), getPt('pt1')]),
+            triangle_neg_DOWN: () => new THREE.Shape([getPt('pt4'), getPt('pt3'), getPt('pt2'), getPt('center'), getPt('pt1'), getPt('pt4')]),
+            triangle_neg_UP: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt3'), getPt('center'), getPt('pt4'), getPt('pt1')]),
+            triangle_neg_RIGHT: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt3'), getPt('pt4'), getPt('center'), getPt('pt1')]),
+            triangle_neg_LEFT: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('center'), getPt('pt3'), getPt('pt4'), getPt('pt1')]),
+            triangle_bottom_LEFT: () => new THREE.Shape([getPt('pt4_75'), getPt('pt1_50'), getPt('pt3_50'), getPt('pt4_25'), getPt('pt4'), getPt('pt3'), getPt('pt2'), getPt('pt1'), getPt('pt4_75')]),
+            triangle_bottom_DOWN: () => new THREE.Shape([getPt('pt3_75'), getPt('pt4_50'), getPt('pt2_50'), getPt('pt3_25'), getPt('pt3'), getPt('pt2'), getPt('pt1'), getPt('pt4'), getPt('pt3_75')]),
+            triangle_bottom_RIGHT: () => new THREE.Shape([getPt('pt2_25'), getPt('pt1_50'), getPt('pt3_50'), getPt('pt2_75'), getPt('pt3'), getPt('pt4'), getPt('pt1'), getPt('pt2'), getPt('pt2_25')]),
+            triangle_bottom_UP: () => new THREE.Shape([getPt('pt1_25'), getPt('pt4_50'), getPt('pt2_50'), getPt('pt1_75'), getPt('pt2'), getPt('pt3'), getPt('pt4'), getPt('pt1'), getPt('pt1_25')]),
+            triangle_edge_BOTTOM: () => new THREE.Shape([getPt('pt4_50'), getPt('pt3_50'), getPt('pt2_50'), getPt('pt3'), getPt('pt4'), getPt('pt4_50')]),
+            triangle_edge_TOP: () => new THREE.Shape([getPt('pt4_50'), getPt('pt1_50'), getPt('pt2_50'), getPt('pt2'), getPt('pt1'), getPt('pt4_50')]),
+            triangle_edge_LEFT: () => new THREE.Shape([getPt('pt4_50'), getPt('pt1_50'), getPt('pt1'), getPt('pt4'), getPt('pt3_50'), getPt('pt4_50')]),
+            triangle_edge_RIGHT: () => new THREE.Shape([getPt('pt1_50'), getPt('pt2_50'), getPt('pt3_50'), getPt('pt3'), getPt('pt2'), getPt('pt1_50')]),
+            // Rectangles
+            Rect: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt3'), getPt('pt4'), getPt('pt1')]),
+            longRect_V: () => new THREE.Shape([getPt('pt1_25'), getPt('pt1_75'), getPt('pt3_25'), getPt('pt3_75'), getPt('pt1_25')]),
+            longRect_H: () => new THREE.Shape([getPt('pt4_75'), getPt('pt2_25'), getPt('pt2_75'), getPt('pt4_25'), getPt('pt4_75')]),
+            rect_TL: () => new THREE.Shape([getPt('pt2'), getPt('pt3'), getPt('pt4'), getPt('pt4_50'), getPt('center'), getPt('pt1_50'), getPt('pt2')]),
+            rect_TR: () => new THREE.Shape([getPt('pt1'), getPt('pt4'), getPt('pt3'), getPt('pt2_50'), getPt('center'), getPt('pt1_50'), getPt('pt1')]),
+            rect_BL: () => new THREE.Shape([getPt('pt1'), getPt('pt2'), getPt('pt3'), getPt('pt3_50'), getPt('center'), getPt('pt4_50'), getPt('pt1')]),
+            rect_BR: () => new THREE.Shape([getPt('pt2'), getPt('pt1'), getPt('pt4'), getPt('pt3_50'), getPt('center'), getPt('pt2_50'), getPt('pt2')]),
+            rect_angled_TOP: () => new THREE.Shape([getPt('pt4_50'), getPt('pt4'), getPt('pt3'), getPt('pt2'), getPt('pt4_50')]),
+            rect_angled_BOTTOM: () => new THREE.Shape([getPt('pt2_50'), getPt('pt2'), getPt('pt1'), getPt('pt4'), getPt('pt2_50')]),
+            rect_angled_LEFT: () => new THREE.Shape([getPt('pt1'), getPt('pt3_50'), getPt('pt3'), getPt('pt2'), getPt('pt1')]),
+            rect_angled_RIGHT: () => new THREE.Shape([getPt('pt1_50'), getPt('pt3'), getPt('pt4'), getPt('pt1'), getPt('pt1_50')]),
+            // Diamond
+            diamond: () => new THREE.Shape([getPt('pt1_50'), getPt('pt2'), getPt('pt3_50'), getPt('pt4'), getPt('pt1_50')]),
+            // Ellipses
+            ellipse: () => {
+                const shape = new THREE.Shape();
+                shape.absellipse(0, 0, 0.5, 0.5, 0, Math.PI * 2, false, 0);
+                return shape;
+            },
+            ellipse_neg: () => {
+                const shape = new THREE.Shape();
+                shape.moveTo(-0.5, -0.5);
+                shape.lineTo(0.5, -0.5);
+                shape.lineTo(0.5, 0.5);
+                shape.lineTo(-0.5, 0.5);
+                shape.lineTo(-0.5, -0.5);
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.5, 0, Math.PI * 2, false);
+                shape.holes.push(hole);
+                return shape;
+            },
+            ellipse_BL: () => {
+                const shape = new THREE.Shape();
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, Math.PI, 1.5 * Math.PI, false);
+                shape.lineTo(0, 0);
+                return shape;
+            },
+            ellipse_BR: () => {
+                const shape = new THREE.Shape();
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, 1.5 * Math.PI, 2 * Math.PI, false);
+                shape.lineTo(0, 0);
+                return shape;
+            },
+            ellipse_TL: () => {
+                const shape = new THREE.Shape();
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, 0.5 * Math.PI, Math.PI, false);
+                shape.lineTo(0, 0);
+                return shape;
+            },
+            ellipse_TR: () => {
+                const shape = new THREE.Shape();
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, 0, 0.5 * Math.PI, false);
+                shape.lineTo(0, 0);
+                return shape;
+            },
+            ellipse_semi_UP: () => {
+                const shape = new THREE.Shape();
+                shape.absarc(0, 0, 0.5, Math.PI, 0, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(-0.5, 0);
+                return shape;
+            },
+            ellipse_semi_DOWN: () => {
+                const shape = new THREE.Shape();
+                shape.absarc(0, 0, 0.5, 0, Math.PI, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(0.5, 0);
+                return shape;
+            },
+            ellipse_semi_LEFT: () => {
+                const shape = new THREE.Shape();
+                shape.absarc(0, 0, 0.5, Math.PI/2, 1.5*Math.PI, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(0, 0.5);
+                return shape;
+            },
+            ellipse_semi_RIGHT: () => {
+                const shape = new THREE.Shape();
+                shape.absarc(0, 0, 0.5, -Math.PI/2, Math.PI/2, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(0, -0.5);
+                return shape;
+            },
+            ellipse_neg_BL: () => {
+                const shape = new THREE.Shape();
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, Math.PI, 1.5 * Math.PI, false);
+                shape.lineTo(0, 0);
+                const hole = new THREE.Path();
+                hole.moveTo(0, 0);
+                hole.absarc(0, 0, 0.35, Math.PI, 1.5 * Math.PI, false);
+                hole.lineTo(0, 0);
+                shape.holes.push(hole);
+                return shape;
+            },
+            ellipse_neg_BR: () => {
+                const shape = new THREE.Shape();
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, 1.5 * Math.PI, 2 * Math.PI, false);
+                shape.lineTo(0, 0);
+                const hole = new THREE.Path();
+                hole.moveTo(0, 0);
+                hole.absarc(0, 0, 0.35, 1.5 * Math.PI, 2 * Math.PI, false);
+                hole.lineTo(0, 0);
+                shape.holes.push(hole);
+                return shape;
+            },
+            ellipse_neg_TL: () => {
+                const shape = new THREE.Shape();
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, 0.5 * Math.PI, Math.PI, false);
+                shape.lineTo(0, 0);
+                const hole = new THREE.Path();
+                hole.moveTo(0, 0);
+                hole.absarc(0, 0, 0.35, 0.5 * Math.PI, Math.PI, false);
+                hole.lineTo(0, 0);
+                shape.holes.push(hole);
+                return shape;
+            },
+            ellipse_neg_TR: () => {
+                const shape = new THREE.Shape();
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, 0, 0.5 * Math.PI, false);
+                shape.lineTo(0, 0);
+                const hole = new THREE.Path();
+                hole.moveTo(0, 0);
+                hole.absarc(0, 0, 0.35, 0, 0.5 * Math.PI, false);
+                hole.lineTo(0, 0);
+                shape.holes.push(hole);
+                return shape;
+            },
+            ellipse_semi_neg_UP: () => {
+                const shape = new THREE.Shape();
+                shape.absarc(0, 0, 0.5, Math.PI, 0, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(-0.5, 0);
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.35, Math.PI, 0, false);
+                hole.lineTo(0, 0);
+                hole.lineTo(-0.35, 0);
+                shape.holes.push(hole);
+                return shape;
+            },
+            ellipse_semi_neg_DOWN: () => {
+                const shape = new THREE.Shape();
+                shape.absarc(0, 0, 0.5, 0, Math.PI, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(0.5, 0);
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.35, 0, Math.PI, false);
+                hole.lineTo(0, 0);
+                hole.lineTo(0.35, 0);
+                shape.holes.push(hole);
+                return shape;
+            },
+            ellipse_semi_neg_LEFT: () => {
+                const shape = new THREE.Shape();
+                shape.absarc(0, 0, 0.5, Math.PI/2, 1.5*Math.PI, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(0, 0.5);
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.35, Math.PI/2, 1.5*Math.PI, false);
+                hole.lineTo(0, 0);
+                hole.lineTo(0, 0.35);
+                shape.holes.push(hole);
+                return shape;
+            },
+            ellipse_semi_neg_RIGHT: () => {
+                const shape = new THREE.Shape();
+                shape.absarc(0, 0, 0.5, -Math.PI/2, Math.PI/2, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(0, -0.5);
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.35, -Math.PI/2, Math.PI/2, false);
+                hole.lineTo(0, 0);
+                hole.lineTo(0, -0.35);
+                shape.holes.push(hole);
+                return shape;
+            }
+        };
+        
+        return shapeGenerators[shapeName] ? shapeGenerators[shapeName]() : null;
+    }
+    
+    getAvailableShapes() {
+        // Get all available shape names from the generateShape function
+        const allShapeNames = [
+            'triangle_UP', 'triangle_DOWN', 'triangle_LEFT', 'triangle_RIGHT', 'triangle_TL', 'triangle_BL', 'triangle_TR', 'triangle_BR',
+            'triangle_split_UP', 'triangle_split_DOWN', 'triangle_split_LEFT', 'triangle_split_RIGHT', 'triangle_IN_V', 'triangle_IN_H',
+            'triangle_neg_IN_DOWN', 'triangle_neg_IN_UP', 'triangle_neg_IN_RIGHT', 'triangle_neg_IN_LEFT', 'triangle_neg_DOWN', 'triangle_neg_UP', 'triangle_neg_RIGHT', 'triangle_neg_LEFT',
+            'triangle_bottom_LEFT', 'triangle_bottom_DOWN', 'triangle_bottom_RIGHT', 'triangle_bottom_UP',
+            'triangle_edge_BOTTOM', 'triangle_edge_TOP', 'triangle_edge_LEFT', 'triangle_edge_RIGHT',
+            'Rect', 'longRect_V', 'longRect_H', 'rect_TL', 'rect_TR', 'rect_BL', 'rect_BR', 'rect_angled_TOP', 'rect_angled_BOTTOM', 'rect_angled_LEFT', 'rect_angled_RIGHT',
+            'diamond',
+            'ellipse', 'ellipse_neg', 'ellipse_BL', 'ellipse_BR', 'ellipse_TL', 'ellipse_TR',
+            'ellipse_semi_UP', 'ellipse_semi_DOWN', 'ellipse_semi_LEFT', 'ellipse_semi_RIGHT',
+            'ellipse_neg_BL', 'ellipse_neg_BR', 'ellipse_neg_TL', 'ellipse_neg_TR',
+            'ellipse_semi_neg_UP', 'ellipse_semi_neg_DOWN', 'ellipse_semi_neg_LEFT', 'ellipse_semi_neg_RIGHT'
+        ];
+        
+        const availableShapes = [];
+        
+        allShapeNames.forEach(shapeName => {
+            const category = this.getShapeCategory(shapeName);
+            if (this.params.enabledShapes[category]) {
+                availableShapes.push(shapeName);
+            }
+        });
+        
+        return availableShapes;
     }
 
     onWindowResize() {
@@ -568,97 +997,7 @@ class RGLRGNRTR {
         this.createGrid();
     }
 
-    onMouseMove(event) {
-        // Check if mouse is over GUI
-        const guiElement = document.getElementById('gui-container');
-        const rect = guiElement.getBoundingClientRect();
-        if (event.clientX >= rect.left && event.clientX <= rect.right &&
-            event.clientY >= rect.top && event.clientY <= rect.bottom) {
-            return;
-        }
 
-        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    }
-
-    onMouseClick(event) {
-        // Check if click is on GUI
-        const guiElement = document.getElementById('gui-container');
-        const rect = guiElement.getBoundingClientRect();
-        if (event.clientX >= rect.left && event.clientX <= rect.right &&
-            event.clientY >= rect.top && event.clientY <= rect.bottom) {
-            return;
-        }
-
-        this.raycaster.setFromCamera(this.mouse, this.camera);
-        const intersects = this.raycaster.intersectObjects(this.shapes);
-        
-        if (intersects.length > 0) {
-            const clickedShape = intersects[0].object;
-            
-            // If clicking the same shape, deselect it
-            if (this.selectedShape === clickedShape) {
-                this.selectedShape = null;
-                this.params.selectedShapeRotation = 0;
-                this.params.selectedShapeScale = 1;
-                this.params.selectedShapeColor = this.params.shapeColor;
-            } else {
-                this.selectedShape = clickedShape;
-                
-                // Update GUI parameters to match selected shape
-                this.params.selectedShapeRotation = (this.selectedShape.rotation.z * 180 / Math.PI) % 360;
-                this.params.selectedShapeScale = this.selectedShape.scale.x;
-                
-                // Get the current color
-                if (this.selectedShape.material && this.selectedShape.material.color) {
-                    this.params.selectedShapeColor = '#' + this.selectedShape.material.color.getHexString();
-                } else if (this.selectedShape.children && this.selectedShape.children[0].material) {
-                    this.params.selectedShapeColor = '#' + this.selectedShape.children[0].material.color.getHexString();
-                }
-            }
-        } else {
-            // Clicked empty space, deselect
-            this.selectedShape = null;
-            this.params.selectedShapeRotation = 0;
-            this.params.selectedShapeScale = 1;
-            this.params.selectedShapeColor = this.params.shapeColor;
-        }
-    }
-
-    updateOutline() {
-        // Remove existing outline if any
-        if (this.outlineMesh) {
-            this.scene.remove(this.outlineMesh);
-            this.outlineMesh = null;
-        }
-
-        // Create new outline for selected shape
-        if (this.selectedShape) {
-            let geometry;
-            if (this.selectedShape.geometry) {
-                geometry = this.selectedShape.geometry;
-            } else if (this.selectedShape.children && this.selectedShape.children[0].geometry) {
-                geometry = this.selectedShape.children[0].geometry;
-            }
-
-            if (geometry) {
-                // Create edges geometry for the outline
-                const edges = new THREE.EdgesGeometry(geometry);
-                this.outlineMesh = new THREE.LineSegments(edges, this.outlineMaterial);
-                
-                // Match the position and rotation of the selected shape
-                this.outlineMesh.position.copy(this.selectedShape.position);
-                this.outlineMesh.rotation.copy(this.selectedShape.rotation);
-                this.outlineMesh.scale.copy(this.selectedShape.scale);
-                
-                // Reset pulse animation
-                this.pulseTime = 0;
-                
-                // Add to scene
-                this.scene.add(this.outlineMesh);
-            }
-        }
-    }
 
     // Update the helper method to determine shape category
     getShapeCategory(shapeName) {
@@ -724,6 +1063,10 @@ class RGLRGNRTR {
                     mesh.position.x = (x - halfGridW + 0.5) * cellSize;
                     mesh.position.y = (y - halfGridH + 0.5) * cellSize;
                     mesh.scale.set(cellSize, cellSize, 1);
+                    // Reset rotation when not animating
+                    if (!this.params.animation) {
+                        mesh.rotation.z = 0;
+                    }
                 }
                 i++;
             }
