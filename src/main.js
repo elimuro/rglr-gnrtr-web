@@ -32,7 +32,6 @@ class RGLRGNRTR {
 
     init() {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setClearColor(0xffffff); // White background
         document.body.appendChild(this.renderer.domElement);
         this.camera.position.z = 10;
         window.addEventListener('resize', () => this.onWindowResize(), false);
@@ -51,15 +50,15 @@ class RGLRGNRTR {
             animation: false,
             animationType: 0,
             animationSpeed: 1,
-            gridWidth: 10,
-            gridHeight: 10,
+            gridWidth: 8,
+            gridHeight: 8,
             cellSize: 1,
-            shapeColor: '#000000',
-            backgroundColor: '#ffffff',
-            showGrid: true,
-            randomness: 0.5,
-            compositionWidth: 10,
-            compositionHeight: 10,
+            shapeColor: '#ffffff',
+            backgroundColor: '#000000',
+            showGrid: false,
+            randomness: 1,
+            compositionWidth: 30,
+            compositionHeight: 30,
             enabledShapes: {
                 'Basic Shapes': true,
                 'Triangles': true,
@@ -68,8 +67,11 @@ class RGLRGNRTR {
             },
             selectedShapeRotation: 0,
             selectedShapeScale: 1,
-            selectedShapeColor: '#000000'
+            selectedShapeColor: '#a31919'
         };
+        
+        // Apply the background color from params
+        this.renderer.setClearColor(new THREE.Color(this.params.backgroundColor));
     }
 
     setupGUI() {
@@ -233,20 +235,22 @@ class RGLRGNRTR {
                 shape.absellipse(0, 0, 0.5, 0.5, 0, Math.PI * 2, false, 0);
                 return shape;
             },
-            // Negative ellipse (black square with white circle cutout)
+            // Negative ellipse (black square with circle cutout)
             ellipse_neg: () => {
-                const group = new THREE.Group();
-                const black = new THREE.Mesh(
-                    new THREE.PlaneGeometry(1, 1),
-                    material.clone()
-                );
-                const white = new THREE.Mesh(
-                    new THREE.CircleGeometry(0.5, 64),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-                );
-                group.add(black);
-                group.add(white);
-                return group;
+                const shape = new THREE.Shape();
+                // Create outer square boundary
+                shape.moveTo(-0.5, -0.5);
+                shape.lineTo(0.5, -0.5);
+                shape.lineTo(0.5, 0.5);
+                shape.lineTo(-0.5, 0.5);
+                shape.lineTo(-0.5, -0.5);
+                
+                // Create inner circle hole
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.5, 0, Math.PI * 2, false);
+                shape.holes.push(hole);
+                
+                return shape;
             },
             // Quarter ellipses (solid, each corner)
             ellipse_BL: () => {
@@ -306,119 +310,135 @@ class RGLRGNRTR {
                 shape.lineTo(0, -0.5);
                 return shape;
             },
-            // Negative quarter ellipses (black with white cutout, each corner)
+            // Negative quarter ellipses (black with circle cutout, each corner)
             ellipse_neg_BL: () => {
-                const group = new THREE.Group();
-                const black = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.absarc(0, 0, 0.5, Math.PI, 1.5 * Math.PI, false); s.lineTo(0, 0); return s; })()),
-                    material.clone()
-                );
-                const white = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.absarc(0, 0, 0.35, Math.PI, 1.5 * Math.PI, false); s.lineTo(0, 0); return s; })()),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-                );
-                group.add(black);
-                group.add(white);
-                return group;
+                const shape = new THREE.Shape();
+                // Create outer quarter circle boundary
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, Math.PI, 1.5 * Math.PI, false);
+                shape.lineTo(0, 0);
+                
+                // Create inner quarter circle hole
+                const hole = new THREE.Path();
+                hole.moveTo(0, 0);
+                hole.absarc(0, 0, 0.35, Math.PI, 1.5 * Math.PI, false);
+                hole.lineTo(0, 0);
+                shape.holes.push(hole);
+                
+                return shape;
             },
             ellipse_neg_BR: () => {
-                const group = new THREE.Group();
-                const black = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.absarc(0, 0, 0.5, 1.5 * Math.PI, 2 * Math.PI, false); s.lineTo(0, 0); return s; })()),
-                    material.clone()
-                );
-                const white = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.absarc(0, 0, 0.35, 1.5 * Math.PI, 2 * Math.PI, false); s.lineTo(0, 0); return s; })()),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-                );
-                group.add(black);
-                group.add(white);
-                return group;
+                const shape = new THREE.Shape();
+                // Create outer quarter circle boundary
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, 1.5 * Math.PI, 2 * Math.PI, false);
+                shape.lineTo(0, 0);
+                
+                // Create inner quarter circle hole
+                const hole = new THREE.Path();
+                hole.moveTo(0, 0);
+                hole.absarc(0, 0, 0.35, 1.5 * Math.PI, 2 * Math.PI, false);
+                hole.lineTo(0, 0);
+                shape.holes.push(hole);
+                
+                return shape;
             },
             ellipse_neg_TL: () => {
-                const group = new THREE.Group();
-                const black = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.absarc(0, 0, 0.5, 0.5 * Math.PI, Math.PI, false); s.lineTo(0, 0); return s; })()),
-                    material.clone()
-                );
-                const white = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.absarc(0, 0, 0.35, 0.5 * Math.PI, Math.PI, false); s.lineTo(0, 0); return s; })()),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-                );
-                group.add(black);
-                group.add(white);
-                return group;
+                const shape = new THREE.Shape();
+                // Create outer quarter circle boundary
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, 0.5 * Math.PI, Math.PI, false);
+                shape.lineTo(0, 0);
+                
+                // Create inner quarter circle hole
+                const hole = new THREE.Path();
+                hole.moveTo(0, 0);
+                hole.absarc(0, 0, 0.35, 0.5 * Math.PI, Math.PI, false);
+                hole.lineTo(0, 0);
+                shape.holes.push(hole);
+                
+                return shape;
             },
             ellipse_neg_TR: () => {
-                const group = new THREE.Group();
-                const black = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.absarc(0, 0, 0.5, 0, 0.5 * Math.PI, false); s.lineTo(0, 0); return s; })()),
-                    material.clone()
-                );
-                const white = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.absarc(0, 0, 0.35, 0, 0.5 * Math.PI, false); s.lineTo(0, 0); return s; })()),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-                );
-                group.add(black);
-                group.add(white);
-                return group;
+                const shape = new THREE.Shape();
+                // Create outer quarter circle boundary
+                shape.moveTo(0, 0);
+                shape.absarc(0, 0, 0.5, 0, 0.5 * Math.PI, false);
+                shape.lineTo(0, 0);
+                
+                // Create inner quarter circle hole
+                const hole = new THREE.Path();
+                hole.moveTo(0, 0);
+                hole.absarc(0, 0, 0.35, 0, 0.5 * Math.PI, false);
+                hole.lineTo(0, 0);
+                shape.holes.push(hole);
+                
+                return shape;
             },
-            // Negative semi-ellipses (black with white cutout, each direction)
+            // Negative semi-ellipses (black with circle cutout, each direction)
             ellipse_semi_neg_UP: () => {
-                const group = new THREE.Group();
-                const black = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.absarc(0, 0, 0.5, Math.PI, 0, false); s.lineTo(0, 0); s.lineTo(-0.5, 0); return s; })()),
-                    material.clone()
-                );
-                const white = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.absarc(0, 0, 0.35, Math.PI, 0, false); s.lineTo(0, 0); s.lineTo(-0.35, 0); return s; })()),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-                );
-                group.add(black);
-                group.add(white);
-                return group;
+                const shape = new THREE.Shape();
+                // Create outer semi-circle boundary
+                shape.absarc(0, 0, 0.5, Math.PI, 0, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(-0.5, 0);
+                
+                // Create inner semi-circle hole
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.35, Math.PI, 0, false);
+                hole.lineTo(0, 0);
+                hole.lineTo(-0.35, 0);
+                shape.holes.push(hole);
+                
+                return shape;
             },
             ellipse_semi_neg_DOWN: () => {
-                const group = new THREE.Group();
-                const black = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.absarc(0, 0, 0.5, 0, Math.PI, false); s.lineTo(0, 0); s.lineTo(0.5, 0); return s; })()),
-                    material.clone()
-                );
-                const white = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.absarc(0, 0, 0.35, 0, Math.PI, false); s.lineTo(0, 0); s.lineTo(0.35, 0); return s; })()),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-                );
-                group.add(black);
-                group.add(white);
-                return group;
+                const shape = new THREE.Shape();
+                // Create outer semi-circle boundary
+                shape.absarc(0, 0, 0.5, 0, Math.PI, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(0.5, 0);
+                
+                // Create inner semi-circle hole
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.35, 0, Math.PI, false);
+                hole.lineTo(0, 0);
+                hole.lineTo(0.35, 0);
+                shape.holes.push(hole);
+                
+                return shape;
             },
             ellipse_semi_neg_LEFT: () => {
-                const group = new THREE.Group();
-                const black = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.absarc(0, 0, 0.5, Math.PI/2, 1.5*Math.PI, false); s.lineTo(0, 0); s.lineTo(0, 0.5); return s; })()),
-                    material.clone()
-                );
-                const white = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.absarc(0, 0, 0.35, Math.PI/2, 1.5*Math.PI, false); s.lineTo(0, 0); s.lineTo(0, 0.35); return s; })()),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-                );
-                group.add(black);
-                group.add(white);
-                return group;
+                const shape = new THREE.Shape();
+                // Create outer semi-circle boundary
+                shape.absarc(0, 0, 0.5, Math.PI/2, 1.5*Math.PI, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(0, 0.5);
+                
+                // Create inner semi-circle hole
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.35, Math.PI/2, 1.5*Math.PI, false);
+                hole.lineTo(0, 0);
+                hole.lineTo(0, 0.35);
+                shape.holes.push(hole);
+                
+                return shape;
             },
             ellipse_semi_neg_RIGHT: () => {
-                const group = new THREE.Group();
-                const black = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.absarc(0, 0, 0.5, -Math.PI/2, Math.PI/2, false); s.lineTo(0, 0); s.lineTo(0, -0.5); return s; })()),
-                    material.clone()
-                );
-                const white = new THREE.Mesh(
-                    new THREE.ShapeGeometry((() => { const s = new THREE.Shape(); s.absarc(0, 0, 0.35, -Math.PI/2, Math.PI/2, false); s.lineTo(0, 0); s.lineTo(0, -0.35); return s; })()),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-                );
-                group.add(black);
-                group.add(white);
-                return group;
+                const shape = new THREE.Shape();
+                // Create outer semi-circle boundary
+                shape.absarc(0, 0, 0.5, -Math.PI/2, Math.PI/2, false);
+                shape.lineTo(0, 0);
+                shape.lineTo(0, -0.5);
+                
+                // Create inner semi-circle hole
+                const hole = new THREE.Path();
+                hole.absarc(0, 0, 0.35, -Math.PI/2, Math.PI/2, false);
+                hole.lineTo(0, 0);
+                hole.lineTo(0, -0.35);
+                shape.holes.push(hole);
+                
+                return shape;
             },
         };
 
