@@ -4,104 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MIDI Interface Help - RGLR GNRTR</title>
-    <style>
-        body {
-            font-family: 'Courier New', monospace;
-            background: #000;
-            color: #fff;
-            margin: 0;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #0f0;
-            text-align: center;
-            border-bottom: 2px solid #0f0;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #0f0;
-            margin-top: 30px;
-        }
-        .section {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-        .midi-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-        .midi-table th, .midi-table td {
-            border: 1px solid #333;
-            padding: 8px;
-            text-align: left;
-        }
-        .midi-table th {
-            background: #333;
-            color: #0f0;
-        }
-        .midi-table tr:nth-child(even) {
-            background: rgba(255, 255, 255, 0.02);
-        }
-        .note {
-            background: rgba(255, 255, 0, 0.1);
-            border-left: 4px solid #ff0;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        .warning {
-            background: rgba(255, 0, 0, 0.1);
-            border-left: 4px solid #f00;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        .back-link {
-            display: inline-block;
-            background: #0f0;
-            color: #000;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 20px 0;
-            font-weight: bold;
-        }
-        .back-link:hover {
-            background: #00ff00;
-        }
-        pre {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid #0f0;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            overflow-x: auto;
-            margin: 10px 0;
-        }
-    </style>
+    <link rel="stylesheet" href="tailwind.css">
 </head>
-<body>
-    <div class="container">
-        <h1>MIDI Interface Guide</h1>
+<body class="help-body">
+    <div class="help-container">
+        <h1 class="help-h1">MIDI Interface Guide</h1>
         
-        <div class="section">
-            <h2>Getting Started</h2>
+        <div class="help-section">
+            <h2 class="help-h2">Getting Started</h2>
             <p>This application supports Web MIDI API for real-time control of visual parameters. You can connect any MIDI device (keyboard, controller, etc.) to control the animation and visual effects.</p>
             
-            <div class="note">
+            <div class="help-note">
                 <strong>Note:</strong> Web MIDI API requires HTTPS in most browsers. Make sure you're running the application over HTTPS or localhost.
             </div>
         </div>
 
-        <div class="section">
-            <h2>Connection</h2>
+        <div class="help-section">
+            <h2 class="help-h2">Connection</h2>
             <ol>
                 <li>Connect your MIDI device to your computer</li>
                 <li>Click the "Connect MIDI" button in the MIDI interface panel</li>
@@ -110,11 +29,11 @@
             </ol>
         </div>
 
-        <div class="section">
-            <h2>Control Change (CC) Mappings</h2>
+        <div class="help-section">
+            <h2 class="help-h2">Control Change (CC) Mappings</h2>
             <p>These controls use continuous values (0-127) for smooth parameter control. Each parameter can be assigned to any MIDI channel (1-16) and CC number (0-127).</p>
             
-            <div class="note">
+            <div class="help-note">
                 <strong>Note:</strong> MIDI channels are numbered 1-16 in the interface to match standard MIDI hardware conventions, but internally the system uses channels 0-15.
             </div>
             
@@ -206,8 +125,8 @@
             </table>
         </div>
 
-        <div class="section">
-            <h2>Preset Management</h2>
+        <div class="help-section">
+            <h2 class="help-h2">Preset Management</h2>
             <p>You can save and load custom MIDI mapping presets:</p>
             <ul>
                 <li><strong>Save Preset:</strong> Exports your current MIDI mappings to a JSON file</li>
@@ -215,9 +134,9 @@
                 <li><strong>Built-in Presets:</strong> Quick access to common mapping configurations</li>
             </ul>
             
-            <div class="note">
+            <div class="help-note">
                 <strong>Preset File Format:</strong> Presets are saved as JSON files with the following structure:
-                <pre>{
+                <pre class="help-pre">{
   "name": "Preset Name",
   "description": "Description",
   "version": "1.0",
@@ -236,8 +155,8 @@
             </div>
         </div>
 
-        <div class="section">
-            <h2>Note Controls</h2>
+        <div class="help-section">
+            <h2 class="help-h2">Note Controls</h2>
             <p>These controls use MIDI notes as toggle switches:</p>
             
             <table class="midi-table">
@@ -263,21 +182,21 @@
                 </tr>
             </table>
             
-            <div class="note">
+            <div class="help-note">
                 <strong>Note:</strong> Any other MIDI note will control cell size based on velocity (how hard you press the key).
             </div>
         </div>
 
-        <div class="section">
-            <h2>Special Controls</h2>
+        <div class="help-section">
+            <h2 class="help-h2">Special Controls</h2>
             <ul>
                 <li><strong>Pitch Bend:</strong> Controls animation type (0-3: Movement, Rotation, Scale, Combined)</li>
                 <li><strong>Aftertouch/Channel Pressure:</strong> Controls shape color intensity (grayscale)</li>
             </ul>
         </div>
 
-        <div class="section">
-            <h2>Tips for Performance</h2>
+        <div class="help-section">
+            <h2 class="help-h2">Tips for Performance</h2>
             <ul>
                 <li>Use a MIDI controller with knobs/sliders for smooth CC control</li>
                 <li>Map frequently used parameters to easily accessible controls</li>
@@ -286,9 +205,9 @@
             </ul>
         </div>
 
-        <div class="section">
-            <h2>Troubleshooting</h2>
-            <div class="warning">
+        <div class="help-section">
+            <h2 class="help-h2">Troubleshooting</h2>
+            <div class="help-warning">
                 <strong>MIDI not connecting?</strong>
                 <ul>
                     <li>Make sure your MIDI device is properly connected and recognized by your OS</li>

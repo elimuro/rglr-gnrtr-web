@@ -120,6 +120,14 @@ class RGLRGNRTR {
         document.getElementById('midi-disconnect').addEventListener('click', () => {
             this.midiManager.disconnect();
         });
+
+        // Add refresh devices button if it exists
+        const refreshButton = document.getElementById('midi-refresh');
+        if (refreshButton) {
+            refreshButton.addEventListener('click', () => {
+                this.midiManager.refreshDevices();
+            });
+        }
         
         document.getElementById('midi-help').addEventListener('click', () => {
             window.open('midi-help.html', '_blank');
@@ -205,10 +213,8 @@ class RGLRGNRTR {
 
     // MIDI callback methods
     onMIDIConnected() {
-        const statusElement = document.getElementById('midi-status');
-        statusElement.textContent = 'MIDI: Connected';
-        statusElement.className = 'midi-connected';
         this.params.midiEnabled = true;
+        this.midiManager.updateDeviceStatus();
     }
 
     onMIDIDisconnected() {

@@ -2,10 +2,15 @@ export class MIDIManager {
     constructor(app) {
         this.app = app;
         this.midiAccess = null;
-        this.midiInput = null;
+        this.midiInputs = []; // Array to hold multiple input devices
         this.midiOutput = null;
         this.isConnected = false;
         this.supported = false;
+        this.deviceSelectionMode = false;
+        this.lastSelectedDevices = {
+            inputs: [], // Array to remember multiple selected inputs
+            output: null
+        };
         
         this.checkMIDISupport();
     }
@@ -26,6 +31,12 @@ export class MIDIManager {
             return;
         }
 
+        // Check if already connected or connecting
+        if (this.isConnected || this.deviceSelectionMode) {
+            console.log('Already connected or device selection in progress');
+            return;
+        }
+
         try {
             this.midiAccess = await navigator.requestMIDIAccess({
                 sysex: false,
@@ -33,14 +44,138 @@ export class MIDIManager {
             });
 
             console.log('MIDI Access granted');
-            this.setupMIDIInputs();
-            this.setupMIDIOutputs();
-            this.isConnected = true;
-            this.app.onMIDIConnected();
+            
+            // Check if we have multiple input devices and need to show selection
+            const inputs = Array.from(this.midiAccess.inputs.values());
+            
+            if (inputs.length > 1) {
+                this.showDeviceSelection(inputs, []);
+            } else {
+                // Auto-connect to the only available input device
+                this.setupMIDIInputs();
+                this.isConnected = true;
+                this.app.onMIDIConnected();
+            }
 
         } catch (error) {
             console.error('MIDI Access denied:', error);
             this.updateStatus('MIDI Access denied', false);
+        }
+    }
+
+    showDeviceSelection(inputs, outputs) {
+        // Check if device selection is already open
+        if (this.deviceSelectionMode || document.getElementById('midi-device-selection')) {
+            console.log('Device selection already open, ignoring duplicate request');
+            return;
+        }
+        
+        this.deviceSelectionMode = true;
+        this.updateStatus('Select MIDI input device', false);
+        
+        // Create device selection UI
+        const selectionContainer = document.createElement('div');
+        selectionContainer.id = 'midi-device-selection';
+        selectionContainer.className = 'midi-device-selection';
+        
+        let html = '<h4>Select MIDI Input Device</h4>';
+        
+        // Input device selection only
+        if (inputs.length > 0) {
+            html += '<div class="device-section">';
+            html += '<label>MIDI Input Device:</label>';
+            html += '<select id="midi-input-select" class="midi-device-select">';
+            html += '<option value="">Auto-select first available</option>';
+            inputs.forEach((input, index) => {
+                const isSelected = this.lastSelectedDevices.input === input.name;
+                const selectedAttr = isSelected ? ' selected' : '';
+                html += `<option value="${index}"${selectedAttr}>${input.name || `Input ${index + 1}`}</option>`;
+            });
+            html += '</select>';
+            html += '</div>';
+        }
+        
+        html += '<div class="device-buttons">';
+        html += '<button id="midi-connect-selected" class="midi-button">Connect Selected</button>';
+        html += '<button id="midi-cancel-selection" class="midi-button">Cancel</button>';
+        html += '</div>';
+        
+        selectionContainer.innerHTML = html;
+        
+        // Insert the selection UI after the first MIDI section
+        const midiContainer = document.getElementById('midi-container');
+        const firstSection = midiContainer.querySelector('.midi-section');
+        if (firstSection) {
+            firstSection.parentNode.insertBefore(selectionContainer, firstSection.nextSibling);
+        } else {
+            midiContainer.appendChild(selectionContainer);
+        }
+        
+        // Set up event listeners
+        document.getElementById('midi-connect-selected').addEventListener('click', () => {
+            this.connectSelectedDevices(inputs, outputs);
+        });
+        
+        document.getElementById('midi-cancel-selection').addEventListener('click', () => {
+            this.cancelDeviceSelection();
+        });
+    }
+
+    connectSelectedDevices(inputs, outputs) {
+        const inputSelect = document.getElementById('midi-input-select');
+        
+        console.log('Device selection - Available inputs:', inputs.map((input, i) => `${i}: ${input.name}`));
+        console.log('Selected value:', inputSelect ? inputSelect.value : 'no select element');
+        
+        // Connect to selected input
+        if (inputSelect && inputSelect.value !== '') {
+            const inputIndex = parseInt(inputSelect.value);
+            console.log(`Connecting to input index: ${inputIndex}`);
+            this.midiInput = inputs[inputIndex];
+            this.midiInput.onmidimessage = (event) => this.handleMIDIMessage(event);
+            this.lastSelectedDevices.input = this.midiInput.name;
+            console.log(`Connected to MIDI input: ${this.midiInput.name}`);
+        } else {
+            // Auto-select first input
+            console.log('Auto-selecting first input');
+            this.midiInput = inputs[0];
+            this.midiInput.onmidimessage = (event) => this.handleMIDIMessage(event);
+            this.lastSelectedDevices.input = this.midiInput.name;
+            console.log(`Connected to MIDI input: ${this.midiInput.name}`);
+        }
+        
+        // Clear any existing output connection
+        this.midiOutput = null;
+        this.lastSelectedDevices.output = null;
+        
+        this.cleanupDeviceSelection();
+        this.isConnected = true;
+        this.deviceSelectionMode = false;
+        this.app.onMIDIConnected();
+        
+        // Set up state change listener - but don't auto-reconnect to first device
+        this.midiAccess.onstatechange = (event) => {
+            console.log('MIDI state changed:', event);
+            // Only handle disconnections, not new connections
+            if (event.port.state === 'disconnected' && event.port.type === 'input') {
+                if (this.midiInput && event.port.id === this.midiInput.id) {
+                    console.log('Current MIDI input disconnected');
+                    this.disconnect();
+                }
+            }
+        };
+    }
+
+    cancelDeviceSelection() {
+        this.cleanupDeviceSelection();
+        this.deviceSelectionMode = false;
+        this.disconnect();
+    }
+
+    cleanupDeviceSelection() {
+        const selectionContainer = document.getElementById('midi-device-selection');
+        if (selectionContainer) {
+            selectionContainer.remove();
         }
     }
 
@@ -54,6 +189,8 @@ export class MIDIManager {
         }
         this.midiAccess = null;
         this.isConnected = false;
+        this.deviceSelectionMode = false;
+        this.cleanupDeviceSelection();
         this.app.onMIDIDisconnected();
         console.log('MIDI disconnected');
     }
@@ -67,29 +204,28 @@ export class MIDIManager {
             return;
         }
 
-        // Use the first available input
+        // Use the first available input (only when auto-connecting)
         this.midiInput = inputs[0];
         this.midiInput.onmidimessage = (event) => this.handleMIDIMessage(event);
         
         console.log(`Connected to MIDI input: ${this.midiInput.name}`);
         this.updateStatus(`Connected to: ${this.midiInput.name}`, true);
 
-        // Listen for new inputs
+        // Set up state change listener for disconnections only
         this.midiAccess.onstatechange = (event) => {
             console.log('MIDI state changed:', event);
-            if (event.port.state === 'connected' && event.port.type === 'input') {
-                this.setupMIDIInputs();
+            if (event.port.state === 'disconnected' && event.port.type === 'input') {
+                if (this.midiInput && event.port.id === this.midiInput.id) {
+                    console.log('Current MIDI input disconnected');
+                    this.disconnect();
+                }
             }
         };
     }
 
     setupMIDIOutputs() {
-        const outputs = Array.from(this.midiAccess.outputs.values());
-        
-        if (outputs.length > 0) {
-            this.midiOutput = outputs[0];
-            console.log(`Connected to MIDI output: ${this.midiOutput.name}`);
-        }
+        // MIDI output setup removed - only input is needed
+        this.midiOutput = null;
     }
 
     handleMIDIMessage(event) {
@@ -203,7 +339,7 @@ export class MIDIManager {
         return Array.from(this.midiAccess.inputs.values());
     }
 
-    // Get available MIDI outputs
+    // Get available MIDI outputs (kept for compatibility but not used)
     getAvailableOutputs() {
         if (!this.midiAccess) return [];
         return Array.from(this.midiAccess.outputs.values());
@@ -226,7 +362,7 @@ export class MIDIManager {
         return false;
     }
 
-    // Connect to a specific output by name
+    // Connect to a specific output by name (kept for compatibility but not used)
     connectToOutput(outputName) {
         const outputs = this.getAvailableOutputs();
         const output = outputs.find(output => output.name === outputName);
@@ -237,5 +373,52 @@ export class MIDIManager {
             return true;
         }
         return false;
+    }
+
+    // Refresh device list and show selection if multiple devices
+    async refreshDevices() {
+        if (!this.midiAccess) {
+            console.warn('No MIDI access available');
+            return;
+        }
+
+        const inputs = Array.from(this.midiAccess.inputs.values());
+        
+        console.log(`Found ${inputs.length} MIDI inputs`);
+        
+        // If already connected, disconnect first
+        if (this.isConnected) {
+            this.disconnect();
+        }
+        
+        if (inputs.length > 1) {
+            this.showDeviceSelection(inputs, []);
+        } else if (inputs.length === 1) {
+            // Only one input available
+            this.midiInput = inputs[0];
+            this.midiInput.onmidimessage = (event) => this.handleMIDIMessage(event);
+            this.isConnected = true;
+            this.app.onMIDIConnected();
+        } else if (inputs.length === 0) {
+            this.updateStatus('No MIDI inputs found', false);
+        }
+    }
+
+    // Get current device info for display
+    getCurrentDeviceInfo() {
+        const info = {
+            input: this.midiInput ? this.midiInput.name : 'None',
+            output: this.midiOutput ? this.midiOutput.name : 'None'
+        };
+        return info;
+    }
+
+    // Update the status display with current device info
+    updateDeviceStatus() {
+        if (this.isConnected) {
+            const deviceInfo = this.getCurrentDeviceInfo();
+            const statusText = `Connected to: ${deviceInfo.input}`;
+            this.updateStatus(statusText, true);
+        }
     }
 } 

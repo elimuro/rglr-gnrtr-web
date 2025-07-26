@@ -1,0 +1,509 @@
+/* Tailwind CSS directives - with base disabled to avoid conflicts */
+@tailwind components;
+@tailwind utilities;
+
+/* Color Theme Variables */
+:root {
+    /* Primary Colors */
+    --color-primary: rgb(145, 71, 255);
+    --color-primary-dark: rgb(102, 0, 170);
+    --color-primary-light: #ba6cff;
+    
+    /* Secondary Colors */
+    --color-secondary: #f00;
+    --color-secondary-dark: #a00;
+    --color-warning: #ff0;
+    
+    /* Background Colors */
+    --color-bg-primary: #000;
+    --color-bg-secondary: rgba(0, 0, 0, 0.8);
+    --color-bg-tertiary: rgba(0, 0, 0, 0.9);
+    --color-bg-overlay: rgba(255, 255, 255, 0.05);
+    --color-bg-warning: rgba(255, 255, 0, 0.1);
+    --color-bg-error: rgba(255, 0, 0, 0.1);
+    --color-bg-success: rgba(0, 255, 0, 0.1);
+    
+    /* Text Colors */
+    --color-text-primary: #fff;
+    --color-text-secondary: #ccc;
+    --color-text-muted: #999;
+    
+    /* Border Colors */
+    --color-border-primary: #333;
+    --color-border-secondary: #444;
+    --color-border-tertiary: #555;
+    --color-border-quaternary: #666;
+    
+    /* Input Colors */
+    --color-input-bg: #333;
+    --color-input-bg-dark: #222;
+    --color-input-border: #555;
+    --color-input-border-dark: #444;
+    
+    /* Status Colors */
+    --color-success: #0f0;
+    --color-error: #f00;
+    --color-warning: #ff0;
+    
+    /* Shadow Colors */
+    --color-shadow-primary: rgba(106, 0, 255, 0.5);
+    --color-shadow-success: rgb(174, 0, 255);
+}
+
+/* Main Layout */
+body {
+    margin: 0;
+    overflow: hidden;
+    background: var(--color-bg-primary);
+    font-family: 'Courier New', monospace;
+}
+
+canvas {
+    display: block;
+}
+
+#gui-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+/* MIDI Container */
+#midi-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border-primary);
+    min-width: 300px;
+    z-index: 1000;
+    position: relative; /* Allow absolute positioning of children */
+}
+
+/* MIDI Status */
+#midi-status {
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.midi-connected {
+    background: var(--color-bg-success);
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
+}
+
+.midi-disconnected {
+    background: var(--color-bg-error);
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+}
+
+/* MIDI Controls */
+.midi-control {
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.midi-control label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    text-align: left;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.midi-control .inputs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+}
+
+.midi-control input {
+    width: auto;
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-input-border);
+    color: var(--color-text-primary);
+    padding: 2px 4px;
+    border-radius: 3px;
+    box-sizing: border-box;
+}
+
+/* MIDI Input Styles */
+.midi-channel-input {
+    width: 50px !important;
+    background: var(--color-input-bg-dark) !important;
+    border-color: var(--color-input-border-dark) !important;
+    color: var(--color-primary) !important;
+}
+
+.midi-cc-input {
+    width: 60px !important;
+    background: var(--color-input-bg) !important;
+    border-color: var(--color-border-quaternary) !important;
+    color: var(--color-text-primary) !important;
+}
+
+/* MIDI Slider */
+.midi-slider {
+    width: 80px;
+    height: 6px;
+    background: var(--color-input-bg);
+    outline: none;
+    border-radius: 3px;
+    -webkit-appearance: none;
+}
+
+.midi-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 5px var(--color-shadow-primary);
+}
+
+.midi-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 5px var(--color-shadow-primary);
+}
+
+.midi-value {
+    color: var(--color-primary);
+    font-weight: bold;
+    text-align: center;
+    min-width: 30px;
+}
+
+/* MIDI Control Buttons */
+.midi-control.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-start;
+}
+
+.midi-select {
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-input-border);
+    color: var(--color-text-primary);
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    width: 120px;
+}
+
+.midi-select option {
+    background: var(--color-input-bg);
+    color: var(--color-text-primary);
+}
+
+.midi-button {
+    background: var(--color-border-secondary);
+    border: 1px solid var(--color-border-quaternary);
+    color: var(--color-text-primary);
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 2px;
+    font-size: 11px;
+}
+
+.midi-button:hover {
+    background: var(--color-border-tertiary);
+}
+
+.midi-button:active {
+    background: var(--color-input-bg);
+}
+
+.midi-button.success {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary);
+}
+
+.midi-button.error {
+    background: var(--color-secondary-dark);
+    border-color: var(--color-secondary);
+}
+
+/* MIDI Sections */
+.midi-section {
+    margin: 10px 0;
+    padding: 8px;
+    border: 1px solid var(--color-border-secondary);
+    border-radius: 4px;
+}
+
+.midi-section h4 {
+    margin: 0 0 8px 0;
+    color: var(--color-text-primary);
+    font-size: 14px;
+}
+
+/* MIDI Activity Indicator */
+.midi-activity-indicator {
+    display: flex;
+    gap: 2px;
+    margin: 10px 0;
+    height: 20px;
+    align-items: flex-end;
+}
+
+.activity-bar {
+    flex: 1;
+    background: var(--color-input-bg);
+    border-radius: 2px;
+    transition: all 0.1s ease;
+}
+
+.activity-bar.active {
+    background: var(--color-primary);
+    box-shadow: 0 0 5px var(--color-shadow-success);
+}
+
+.midi-last-message {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* MIDI Device Selection */
+.midi-device-selection {
+    background: var(--color-bg-tertiary);
+    border: 2px solid var(--color-primary);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+}
+
+.midi-device-selection h4 {
+    margin: 0 0 15px 0;
+    color: var(--color-primary);
+    font-size: 14px;
+    text-align: center;
+}
+
+.device-section {
+    margin: 10px 0;
+}
+
+.device-section label {
+    display: block;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-bottom: 5px;
+}
+
+.midi-device-select {
+    width: 100%;
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-input-border);
+    color: var(--color-text-primary);
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.midi-device-select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.device-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+.device-buttons .midi-button {
+    flex: 1;
+    max-width: 120px;
+}
+
+/* Hidden file input for preset loading */
+#preset-file-input {
+    display: none;
+}
+
+/* Help Page Styles */
+.help-body {
+    font-family: 'Courier New', monospace;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+    overflow: auto; /* Allow scrolling on help page */
+}
+
+.help-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.help-h1 {
+    color: var(--color-primary);
+    text-align: center;
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 10px;
+}
+
+.help-h2 {
+    color: var(--color-primary);
+    margin-top: 30px;
+}
+
+.help-section {
+    background: var(--color-bg-overlay);
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    border: 1px solid var(--color-border-primary);
+}
+
+.midi-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+}
+
+.midi-table th, .midi-table td {
+    border: 1px solid var(--color-border-primary);
+    padding: 8px;
+    text-align: left;
+}
+
+.midi-table th {
+    background: var(--color-input-bg);
+    color: var(--color-primary);
+}
+
+.midi-table tr:nth-child(even) {
+    background: var(--color-bg-overlay);
+}
+
+.help-note {
+    background: var(--color-bg-warning);
+    border-left: 4px solid var(--color-warning);
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.help-warning {
+    background: var(--color-bg-error);
+    border-left: 4px solid var(--color-error);
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.back-link {
+    display: inline-block;
+    background: var(--color-primary);
+    color: var(--color-bg-primary);
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    background: var(--color-primary-light);
+}
+
+.help-pre {
+    background: var(--color-bg-success);
+    border: 1px solid var(--color-primary);
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+
+/* Ensure MIDI container positioning is preserved */
+#midi-container {
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    z-index: 1000 !important;
+}
+
+/* Remove any unwanted borders */
+body {
+    border: none !important;
+    outline: none !important;
+}
+
+canvas {
+    border: none !important;
+    outline: none !important;
+}
+
+/* Tailwind component classes for common patterns */
+@layer components {
+  .btn-midi {
+    @apply bg-midi-dark border border-gray-600 text-white px-2.5 py-1.5 rounded cursor-pointer m-0.5 text-xs;
+  }
+  
+  .btn-midi:hover {
+    @apply bg-gray-600;
+  }
+  
+  .btn-midi:active {
+    @apply bg-midi-darker;
+  }
+  
+  .btn-midi-success {
+    @apply bg-green-600 border-green-500;
+  }
+  
+  .btn-midi-error {
+    @apply bg-red-600 border-red-500;
+  }
+  
+  .midi-input {
+    @apply bg-midi-dark border border-gray-500 text-white px-1 py-0.5 rounded text-xs;
+  }
+  
+  .midi-input:focus {
+    @apply border-midi-green outline-none;
+  }
+  
+  .midi-select {
+    @apply bg-midi-dark border border-gray-500 text-white px-2 py-1 rounded text-xs;
+  }
+  
+  .midi-select option {
+    @apply bg-midi-dark text-white;
+  }
+  
+  .midi-section {
+    @apply my-2.5 p-2 border border-gray-600 rounded;
+  }
+  
+  .midi-section h4 {
+    @apply m-0 mb-2 text-white text-sm;
+  }
+} 
