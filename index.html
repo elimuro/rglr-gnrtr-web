@@ -10,20 +10,29 @@
     <div id="midi-container" class="bg-white text-black">
         <div id="midi-status" class="midi-disconnected">MIDI: Disconnected</div>
         <div class="midi-section">
-            <h4>MIDI Controls</h4>
-            <button id="midi-connect" class="midi-button">Connect MIDI</button>
-            <button id="midi-disconnect" class="midi-button">Disconnect</button>
-            <button id="midi-refresh" class="midi-button">Refresh Devices</button>
-            <button id="midi-help" class="midi-button">Help</button>
+            <h4>
+                MIDI Controls
+                <button class="midi-section-toggle" data-section="midi-controls">▼</button>
+            </h4>
+            <div class="midi-section-content" data-section="midi-controls">
+                <button id="midi-connect" class="midi-button">Connect MIDI</button>
+                <button id="midi-disconnect" class="midi-button">Disconnect</button>
+                <button id="midi-refresh" class="midi-button">Refresh Devices</button>
+                <button id="midi-help" class="midi-button">Help</button>
+            </div>
         </div>
         <div class="midi-section">
-            <h4>Channel/CC Mapping</h4>
-            <div class="midi-control buttons">
-                <button id="test-cc-button" class="midi-button">Test CC Values</button>
-                <button id="reset-cc-button" class="midi-button">Reset to Default</button>
-                <button id="save-preset-button" class="midi-button">Save Preset</button>
-                <button id="load-preset-button" class="midi-button">Load Preset</button>
-            </div>
+            <h4>
+                Channel/CC Mapping
+                <button class="midi-section-toggle" data-section="channel-mapping">▼</button>
+            </h4>
+            <div class="midi-section-content" data-section="channel-mapping">
+                <div class="midi-control buttons">
+                    <button id="test-cc-button" class="midi-button">Test CC Values</button>
+                    <button id="reset-cc-button" class="midi-button">Reset to Default</button>
+                    <button id="save-preset-button" class="midi-button">Save Preset</button>
+                    <button id="load-preset-button" class="midi-button">Load Preset</button>
+                </div>
             <div class="midi-control buttons">
                 <label>Preset:</label>
                 <select id="cc-preset-select" class="midi-select">
@@ -134,38 +143,49 @@
                     <span id="midi-gridheight-cc-value" class="midi-value">11</span>
                 </div>
             </div>
-        </div>
-        <div class="midi-section">
-            <h4>Note Controls</h4>
-            <div class="midi-control">
-                <label>Shape Cycling:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-shape-note" value="60" min="0" max="127">
-                </div>
-            </div>
-            <div class="midi-control">
-                <label>Size Animation:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-size-note" value="61" min="0" max="127">
-                </div>
-            </div>
-            <div class="midi-control">
-                <label>Show Grid:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-grid-note" value="62" min="0" max="127">
-                </div>
             </div>
         </div>
         <div class="midi-section">
-            <h4>MIDI Activity</h4>
-            <div id="midi-activity" class="midi-activity-indicator">
-                <div class="activity-bar"></div>
-                <div class="activity-bar"></div>
-                <div class="activity-bar"></div>
-                <div class="activity-bar"></div>
-                <div class="activity-bar"></div>
+            <h4>
+                Note Controls
+                <button class="midi-section-toggle" data-section="note-controls">▼</button>
+            </h4>
+            <div class="midi-section-content" data-section="note-controls">
+                <div class="midi-control">
+                    <label>Shape Cycling:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-shape-note" value="60" min="0" max="127">
+                    </div>
+                </div>
+                <div class="midi-control">
+                    <label>Size Animation:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-size-note" value="61" min="0" max="127">
+                    </div>
+                </div>
+                <div class="midi-control">
+                    <label>Show Grid:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-grid-note" value="62" min="0" max="127">
+                    </div>
+                </div>
             </div>
-            <div id="midi-last-message" class="midi-last-message">No MIDI activity</div>
+        </div>
+        <div class="midi-section">
+            <h4>
+                MIDI Activity
+                <button class="midi-section-toggle" data-section="midi-activity">▼</button>
+            </h4>
+            <div class="midi-section-content" data-section="midi-activity">
+                <div id="midi-activity" class="midi-activity-indicator">
+                    <div class="activity-bar"></div>
+                    <div class="activity-bar"></div>
+                    <div class="activity-bar"></div>
+                    <div class="activity-bar"></div>
+                    <div class="activity-bar"></div>
+                </div>
+                <div id="midi-last-message" class="midi-last-message">No MIDI activity</div>
+            </div>
         </div>
     </div>
     <div id="gui-container"></div>

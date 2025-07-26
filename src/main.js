@@ -209,6 +209,97 @@ class RGLRGNRTR {
                 });
             }
         });
+        
+        // Set up collapsible sections
+        this.setupCollapsibleSections();
+    }
+    
+    setupCollapsibleSections() {
+        // Get all section toggles
+        const toggles = document.querySelectorAll('.midi-section-toggle');
+        
+        toggles.forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent header click event
+                this.toggleSection(toggle);
+            });
+        });
+        
+        // Also allow clicking on the header to toggle
+        const headers = document.querySelectorAll('.midi-section h4');
+        headers.forEach(header => {
+            header.addEventListener('click', (e) => {
+                // Don't trigger if clicking on the toggle button
+                if (e.target.classList.contains('midi-section-toggle')) {
+                    return;
+                }
+                const toggle = header.querySelector('.midi-section-toggle');
+                if (toggle) {
+                    this.toggleSection(toggle);
+                }
+            });
+        });
+        
+        // Load saved state from localStorage
+        this.loadCollapsibleState();
+    }
+    
+    toggleSection(toggle) {
+        const sectionName = toggle.getAttribute('data-section');
+        const content = document.querySelector(`.midi-section-content[data-section="${sectionName}"]`);
+        
+        if (content) {
+            const isCollapsed = content.classList.contains('collapsed');
+            
+            if (isCollapsed) {
+                // Expand
+                content.classList.remove('collapsed');
+                toggle.classList.remove('collapsed');
+                toggle.textContent = '▼';
+            } else {
+                // Collapse
+                content.classList.add('collapsed');
+                toggle.classList.add('collapsed');
+                toggle.textContent = '▶';
+            }
+            
+            // Save state to localStorage
+            this.saveCollapsibleState();
+        }
+    }
+    
+    saveCollapsibleState() {
+        const state = {};
+        const contents = document.querySelectorAll('.midi-section-content');
+        
+        contents.forEach(content => {
+            const sectionName = content.getAttribute('data-section');
+            state[sectionName] = content.classList.contains('collapsed');
+        });
+        
+        localStorage.setItem('midi-sections-collapsed', JSON.stringify(state));
+    }
+    
+    loadCollapsibleState() {
+        const savedState = localStorage.getItem('midi-sections-collapsed');
+        if (savedState) {
+            try {
+                const state = JSON.parse(savedState);
+                
+                Object.keys(state).forEach(sectionName => {
+                    const content = document.querySelector(`.midi-section-content[data-section="${sectionName}"]`);
+                    const toggle = document.querySelector(`.midi-section-toggle[data-section="${sectionName}"]`);
+                    
+                    if (content && toggle && state[sectionName]) {
+                        content.classList.add('collapsed');
+                        toggle.classList.add('collapsed');
+                        toggle.textContent = '▶';
+                    }
+                });
+            } catch (error) {
+                console.warn('Failed to load collapsible state:', error);
+            }
+        }
     }
 
     // MIDI callback methods

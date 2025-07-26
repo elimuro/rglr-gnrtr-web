@@ -48,6 +48,42 @@
     /* Shadow Colors */
     --color-shadow-primary: rgba(106, 0, 255, 0.5);
     --color-shadow-success: rgb(174, 0, 255);
+    
+    /* Spacing System */
+    --spacing-xs: 2px;
+    --spacing-sm: 4px;
+    --spacing-md: 8px;
+    --spacing-lg: 15px;
+    --spacing-xl: 20px;
+    --spacing-2xl: 30px;
+    --spacing-3xl: 40px;
+    
+    /* Border Radius System */
+    --radius-sm: 3px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    
+    /* Font Size System */
+    --text-xs: 11px;
+    --text-sm: 12px;
+    --text-md: 14px;
+    --text-lg: 16px;
+    --text-xl: 18px;
+    
+    /* Line Height System */
+    --leading-tight: 1.25;
+    --leading-normal: 1.6;
+    --leading-relaxed: 1.8;
+    
+    /* Z-Index System */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
 }
 
 /* Main Layout */
@@ -71,23 +107,23 @@ canvas {
 /* MIDI Container */
 #midi-container {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: var(--spacing-lg);
+    left: var(--spacing-lg);
     background: var(--color-bg-secondary);
     color: var(--color-text-primary);
-    padding: 15px;
-    border-radius: 8px;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
     border: 1px solid var(--color-border-primary);
     min-width: 300px;
-    z-index: 1000;
+    z-index: var(--z-dropdown);
     position: relative; /* Allow absolute positioning of children */
 }
 
 /* MIDI Status */
 #midi-status {
-    margin-bottom: 10px;
-    padding: 8px;
-    border-radius: 4px;
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
     font-weight: bold;
 }
 
@@ -105,14 +141,14 @@ canvas {
 
 /* MIDI Controls */
 .midi-control {
-    margin: 8px 0;
+    margin: var(--spacing-md) 0;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: var(--spacing-lg);
 }
 
 .midi-control label {
-    font-size: 12px;
+    font-size: var(--text-sm);
     color: var(--color-text-secondary);
     text-align: left;
     min-width: 120px;
@@ -121,7 +157,7 @@ canvas {
 
 .midi-control .inputs {
     display: flex;
-    gap: 8px;
+    gap: var(--spacing-md);
     align-items: center;
     flex: 1;
 }
@@ -131,8 +167,8 @@ canvas {
     background: var(--color-input-bg);
     border: 1px solid var(--color-input-border);
     color: var(--color-text-primary);
-    padding: 2px 4px;
-    border-radius: 3px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
     box-sizing: border-box;
 }
 
@@ -157,7 +193,7 @@ canvas {
     height: 6px;
     background: var(--color-input-bg);
     outline: none;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     -webkit-appearance: none;
 }
 
@@ -193,7 +229,7 @@ canvas {
 .midi-control.buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: var(--spacing-sm);
     justify-content: flex-start;
 }
 
@@ -201,9 +237,9 @@ canvas {
     background: var(--color-input-bg);
     border: 1px solid var(--color-input-border);
     color: var(--color-text-primary);
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 11px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
     width: 120px;
 }
 
@@ -216,11 +252,11 @@ canvas {
     background: var(--color-border-secondary);
     border: 1px solid var(--color-border-quaternary);
     color: var(--color-text-primary);
-    padding: 5px 10px;
-    border-radius: 4px;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    margin: 2px;
-    font-size: 11px;
+    margin: var(--spacing-xs);
+    font-size: var(--text-xs);
 }
 
 .midi-button:hover {
@@ -243,23 +279,69 @@ canvas {
 
 /* MIDI Sections */
 .midi-section {
-    margin: 10px 0;
-    padding: 8px;
+    margin: var(--spacing-lg) 0;
+    padding: var(--spacing-md);
     border: 1px solid var(--color-border-secondary);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
 }
 
 .midi-section h4 {
-    margin: 0 0 8px 0;
+    margin: 0 0 var(--spacing-md) 0;
     color: var(--color-text-primary);
-    font-size: 14px;
+    font-size: var(--text-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+}
+
+.midi-section h4:hover {
+    color: var(--color-primary);
+}
+
+.midi-section-toggle {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: var(--text-lg);
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.midi-section-toggle:hover {
+    color: var(--color-primary);
+}
+
+.midi-section-toggle.collapsed {
+    transform: rotate(-90deg);
+}
+
+.midi-section-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 1000px;
+    opacity: 1;
+}
+
+.midi-section-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
 }
 
 /* MIDI Activity Indicator */
 .midi-activity-indicator {
     display: flex;
-    gap: 2px;
-    margin: 10px 0;
+    gap: var(--spacing-xs);
+    margin: var(--spacing-lg) 0;
     height: 20px;
     align-items: flex-end;
 }
@@ -267,7 +349,7 @@ canvas {
 .activity-bar {
     flex: 1;
     background: var(--color-input-bg);
-    border-radius: 2px;
+    border-radius: var(--spacing-xs);
     transition: all 0.1s ease;
 }
 
@@ -277,41 +359,41 @@ canvas {
 }
 
 .midi-last-message {
-    font-size: 11px;
+    font-size: var(--text-xs);
     color: var(--color-text-secondary);
     text-align: center;
-    margin-top: 5px;
+    margin-top: var(--spacing-sm);
 }
 
 /* MIDI Device Selection */
 .midi-device-selection {
     background: var(--color-bg-tertiary);
     border: 2px solid var(--color-primary);
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 10px;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 1001;
+    z-index: var(--z-sticky);
 }
 
 .midi-device-selection h4 {
-    margin: 0 0 15px 0;
+    margin: 0 0 var(--spacing-lg) 0;
     color: var(--color-primary);
-    font-size: 14px;
+    font-size: var(--text-md);
     text-align: center;
 }
 
 .device-section {
-    margin: 10px 0;
+    margin: var(--spacing-lg) 0;
 }
 
 .device-section label {
     display: block;
-    font-size: 12px;
+    font-size: var(--text-sm);
     color: var(--color-text-secondary);
-    margin-bottom: 5px;
+    margin-bottom: var(--spacing-sm);
 }
 
 .midi-device-select {
@@ -319,9 +401,9 @@ canvas {
     background: var(--color-input-bg);
     border: 1px solid var(--color-input-border);
     color: var(--color-text-primary);
-    padding: 6px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
 }
 
 .midi-device-select:focus {
@@ -331,8 +413,8 @@ canvas {
 
 .device-buttons {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
     justify-content: center;
 }
 
@@ -352,8 +434,8 @@ canvas {
     background: var(--color-bg-primary);
     color: var(--color-text-primary);
     margin: 0;
-    padding: 20px;
-    line-height: 1.6;
+    padding: var(--spacing-xl);
+    line-height: var(--leading-normal);
     overflow: auto; /* Allow scrolling on help page */
 }
 
@@ -366,31 +448,31 @@ canvas {
     color: var(--color-primary);
     text-align: center;
     border-bottom: 2px solid var(--color-primary);
-    padding-bottom: 10px;
+    padding-bottom: var(--spacing-lg);
 }
 
 .help-h2 {
     color: var(--color-primary);
-    margin-top: 30px;
+    margin-top: var(--spacing-2xl);
 }
 
 .help-section {
     background: var(--color-bg-overlay);
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 8px;
+    padding: var(--spacing-xl);
+    margin: var(--spacing-xl) 0;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--color-border-primary);
 }
 
 .midi-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 15px 0;
+    margin: var(--spacing-lg) 0;
 }
 
 .midi-table th, .midi-table td {
     border: 1px solid var(--color-border-primary);
-    padding: 8px;
+    padding: var(--spacing-md);
     text-align: left;
 }
 
@@ -406,25 +488,25 @@ canvas {
 .help-note {
     background: var(--color-bg-warning);
     border-left: 4px solid var(--color-warning);
-    padding: 10px;
-    margin: 10px 0;
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
 }
 
 .help-warning {
     background: var(--color-bg-error);
     border-left: 4px solid var(--color-error);
-    padding: 10px;
-    margin: 10px 0;
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
 }
 
 .back-link {
     display: inline-block;
     background: var(--color-primary);
     color: var(--color-bg-primary);
-    padding: 10px 20px;
+    padding: var(--spacing-lg) var(--spacing-xl);
     text-decoration: none;
-    border-radius: 5px;
-    margin: 20px 0;
+    border-radius: var(--radius-sm);
+    margin: var(--spacing-xl) 0;
     font-weight: bold;
 }
 
@@ -435,19 +517,19 @@ canvas {
 .help-pre {
     background: var(--color-bg-success);
     border: 1px solid var(--color-primary);
-    padding: 10px;
-    border-radius: 4px;
-    font-size: 11px;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
     overflow-x: auto;
-    margin: 10px 0;
+    margin: var(--spacing-lg) 0;
 }
 
 /* Ensure MIDI container positioning is preserved */
 #midi-container {
     position: absolute !important;
-    top: 10px !important;
-    left: 10px !important;
-    z-index: 1000 !important;
+    top: var(--spacing-lg) !important;
+    left: var(--spacing-lg) !important;
+    z-index: var(--z-dropdown) !important;
 }
 
 /* Remove any unwanted borders */
