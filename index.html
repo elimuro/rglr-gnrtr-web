@@ -33,116 +33,273 @@
                     <button id="save-preset-button" class="midi-button">Save Preset</button>
                     <button id="load-preset-button" class="midi-button">Load Preset</button>
                 </div>
-            <div class="midi-control buttons">
-                <label>Preset:</label>
-                <select id="cc-preset-select" class="midi-select">
-                    <option value="">Custom</option>
-                    <option value="standard">Standard (Ch:1, CC:1-11)</option>
-                    <option value="multichannel">Multi-Channel (Ch:1-11, CC:1)</option>
-                    <option value="modwheel">Mod Wheel Style (Ch:1, CC:1,2,4,7,11,16,21-25)</option>
-                    <option value="knobs">Knob Controller (Ch:1, CC:16-26)</option>
-                    <option value="faders">Fader Controller (Ch:1, CC:28-38)</option>
-                </select>
-            </div>
-            <div class="midi-control">
-                <label>Animation Speed:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-speed-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-speed-cc" value="1" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-speed-cc-slider" min="0" max="127" value="1" class="midi-slider">
-                    <span id="midi-speed-cc-value" class="midi-value">1</span>
+                <div class="midi-control buttons">
+                    <label>Preset:</label>
+                    <select id="cc-preset-select" class="midi-select">
+                        <option value="">Custom</option>
+                        <option value="standard">Standard (Ch:1, CC:1-11)</option>
+                        <option value="multichannel">Multi-Channel (Ch:1-11, CC:1)</option>
+                        <option value="modwheel">Mod Wheel Style (Ch:1, CC:1,2,4,7,11,16,21-25)</option>
+                        <option value="knobs">Knob Controller (Ch:1, CC:16-26)</option>
+                        <option value="faders">Fader Controller (Ch:1, CC:28-38)</option>
+                    </select>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Movement Amp:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-movement-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-movement-cc" value="2" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-movement-cc-slider" min="0" max="127" value="2" class="midi-slider">
-                    <span id="midi-movement-cc-value" class="midi-value">2</span>
+                <div class="midi-control" data-control-id="cc1">
+                    <label>CC Control 1:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc1-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc1-value" value="1" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc1-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc1-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc1-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc1-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Rotation Amp:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-rotation-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-rotation-cc" value="3" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-rotation-cc-slider" min="0" max="127" value="3" class="midi-slider">
-                    <span id="midi-rotation-cc-value" class="midi-value">3</span>
+                <div class="midi-control" data-control-id="cc2">
+                    <label>CC Control 2:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc2-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc2-value" value="2" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc2-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc2-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc2-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc2-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Scale Amp:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-scale-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-scale-cc" value="4" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-scale-cc-slider" min="0" max="127" value="4" class="midi-slider">
-                    <span id="midi-scale-cc-value" class="midi-value">4</span>
+                <div class="midi-control" data-control-id="cc3">
+                    <label>CC Control 3:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc3-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc3-value" value="3" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc3-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc3-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc3-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc3-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Randomness:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-randomness-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-randomness-cc" value="5" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-randomness-cc-slider" min="0" max="127" value="5" class="midi-slider">
-                    <span id="midi-randomness-cc-value" class="midi-value">5</span>
+                <div class="midi-control" data-control-id="cc4">
+                    <label>CC Control 4:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc4-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc4-value" value="4" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc4-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc4-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc4-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc4-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Cell Size:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-cellsize-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-cellsize-cc" value="6" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-cellsize-cc-slider" min="0" max="127" value="6" class="midi-slider">
-                    <span id="midi-cellsize-cc-value" class="midi-value">6</span>
+                <div class="midi-control" data-control-id="cc5">
+                    <label>CC Control 5:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc5-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc5-value" value="5" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc5-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc5-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc5-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc5-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Movement Freq:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-movementfrequency-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-movementfrequency-cc" value="7" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-movementfrequency-cc-slider" min="0" max="127" value="7" class="midi-slider">
-                    <span id="midi-movementfrequency-cc-value" class="midi-value">7</span>
+                <div class="midi-control" data-control-id="cc6">
+                    <label>CC Control 6:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc6-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc6-value" value="6" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc6-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc6-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc6-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc6-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Rotation Freq:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-rotationfrequency-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-rotationfrequency-cc" value="8" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-rotationfrequency-cc-slider" min="0" max="127" value="8" class="midi-slider">
-                    <span id="midi-rotationfrequency-cc-value" class="midi-value">8</span>
+                <div class="midi-control" data-control-id="cc7">
+                    <label>CC Control 7:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc7-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc7-value" value="7" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc7-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc7-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc7-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc7-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Scale Freq:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-scalefrequency-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-scalefrequency-cc" value="9" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-scalefrequency-cc-slider" min="0" max="127" value="9" class="midi-slider">
-                    <span id="midi-scalefrequency-cc-value" class="midi-value">9</span>
+                <div class="midi-control" data-control-id="cc8">
+                    <label>CC Control 8:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc8-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc8-value" value="8" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc8-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc8-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc8-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc8-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Grid Width:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-gridwidth-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-gridwidth-cc" value="10" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-gridwidth-cc-slider" min="0" max="127" value="10" class="midi-slider">
-                    <span id="midi-gridwidth-cc-value" class="midi-value">10</span>
+                <div class="midi-control" data-control-id="cc9">
+                    <label>CC Control 9:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc9-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc9-value" value="9" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc9-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc9-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc9-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc9-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
-            <div class="midi-control">
-                <label>Grid Height:</label>
-                <div class="inputs">
-                    <input type="number" id="midi-gridheight-channel" value="1" min="1" max="16" class="midi-channel-input">
-                    <input type="number" id="midi-gridheight-cc" value="11" min="0" max="127" class="midi-cc-input">
-                    <input type="range" id="midi-gridheight-cc-slider" min="0" max="127" value="11" class="midi-slider">
-                    <span id="midi-gridheight-cc-value" class="midi-value">11</span>
+                <div class="midi-control" data-control-id="cc10">
+                    <label>CC Control 10:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc10-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc10-value" value="10" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc10-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc10-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc10-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc10-remove" class="midi-remove-button">×</button>
+                    </div>
                 </div>
-            </div>
+                <div class="midi-control" data-control-id="cc11">
+                    <label>CC Control 11:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-cc11-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-cc11-value" value="11" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                        <select id="midi-cc11-target" class="midi-select">
+                            <option value="animationSpeed">Animation Speed</option>
+                            <option value="movementAmplitude">Movement Amplitude</option>
+                            <option value="rotationAmplitude">Rotation Amplitude</option>
+                            <option value="scaleAmplitude">Scale Amplitude</option>
+                            <option value="randomness">Randomness</option>
+                            <option value="cellSize">Cell Size</option>
+                            <option value="movementFrequency">Movement Frequency</option>
+                            <option value="rotationFrequency">Rotation Frequency</option>
+                            <option value="scaleFrequency">Scale Frequency</option>
+                            <option value="gridWidth">Grid Width</option>
+                            <option value="gridHeight">Grid Height</option>
+                        </select>
+                        <button id="midi-cc11-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-cc11-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-cc11-remove" class="midi-remove-button">×</button>
+                    </div>
+                </div>
+                <div class="midi-control">
+                    <button id="add-cc-control" class="midi-add-button">+ Add New CC Control</button>
+                </div>
             </div>
         </div>
         <div class="midi-section">
@@ -151,23 +308,118 @@
                 <button class="midi-section-toggle" data-section="note-controls">▼</button>
             </h4>
             <div class="midi-section-content" data-section="note-controls">
-                <div class="midi-control">
-                    <label>Shape Cycling:</label>
+                <div class="midi-control" data-control-id="note1">
+                    <label>Note Control 1:</label>
                     <div class="inputs">
-                        <input type="number" id="midi-shape-note" value="60" min="0" max="127">
+                        <input type="number" id="midi-note1-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-note1-value" value="60" min="0" max="127" class="midi-cc-input" placeholder="Note">
+                        <select id="midi-note1-target" class="midi-select">
+                            <option value="shapeCycling">Shape Cycling</option>
+                            <option value="sizeAnimation">Size Animation</option>
+                            <option value="showGrid">Show Grid</option>
+                            <option value="enableShapeCycling">Enable Shape Cycling</option>
+                            <option value="enableSizeAnimation">Enable Size Animation</option>
+                            <option value="enableMovementAnimation">Enable Movement Animation</option>
+                            <option value="enableRotationAnimation">Enable Rotation Animation</option>
+                            <option value="enableScaleAnimation">Enable Scale Animation</option>
+                            <option value="resetAnimation">Reset Animation</option>
+                            <option value="togglePause">Toggle Pause</option>
+                        </select>
+                        <button id="midi-note1-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-note1-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-note1-remove" class="midi-remove-button">×</button>
+                    </div>
+                </div>
+                <div class="midi-control" data-control-id="note2">
+                    <label>Note Control 2:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-note2-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-note2-value" value="61" min="0" max="127" class="midi-cc-input" placeholder="Note">
+                        <select id="midi-note2-target" class="midi-select">
+                            <option value="shapeCycling">Shape Cycling</option>
+                            <option value="sizeAnimation">Size Animation</option>
+                            <option value="showGrid">Show Grid</option>
+                            <option value="enableShapeCycling">Enable Shape Cycling</option>
+                            <option value="enableSizeAnimation">Enable Size Animation</option>
+                            <option value="enableMovementAnimation">Enable Movement Animation</option>
+                            <option value="enableRotationAnimation">Enable Rotation Animation</option>
+                            <option value="enableScaleAnimation">Enable Scale Animation</option>
+                            <option value="resetAnimation">Reset Animation</option>
+                            <option value="togglePause">Toggle Pause</option>
+                        </select>
+                        <button id="midi-note2-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-note2-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-note2-remove" class="midi-remove-button">×</button>
+                    </div>
+                </div>
+                <div class="midi-control" data-control-id="note3">
+                    <label>Note Control 3:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-note3-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-note3-value" value="62" min="0" max="127" class="midi-cc-input" placeholder="Note">
+                        <select id="midi-note3-target" class="midi-select">
+                            <option value="shapeCycling">Shape Cycling</option>
+                            <option value="sizeAnimation">Size Animation</option>
+                            <option value="showGrid">Show Grid</option>
+                            <option value="enableShapeCycling">Enable Shape Cycling</option>
+                            <option value="enableSizeAnimation">Enable Size Animation</option>
+                            <option value="enableMovementAnimation">Enable Movement Animation</option>
+                            <option value="enableRotationAnimation">Enable Rotation Animation</option>
+                            <option value="enableScaleAnimation">Enable Scale Animation</option>
+                            <option value="resetAnimation">Reset Animation</option>
+                            <option value="togglePause">Toggle Pause</option>
+                        </select>
+                        <button id="midi-note3-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-note3-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-note3-remove" class="midi-remove-button">×</button>
+                    </div>
+                </div>
+                <div class="midi-control" data-control-id="note4">
+                    <label>Note Control 4:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-note4-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-note4-value" value="63" min="0" max="127" class="midi-cc-input" placeholder="Note">
+                        <select id="midi-note4-target" class="midi-select">
+                            <option value="shapeCycling">Shape Cycling</option>
+                            <option value="sizeAnimation">Size Animation</option>
+                            <option value="showGrid">Show Grid</option>
+                            <option value="enableShapeCycling">Enable Shape Cycling</option>
+                            <option value="enableSizeAnimation">Enable Size Animation</option>
+                            <option value="enableMovementAnimation">Enable Movement Animation</option>
+                            <option value="enableRotationAnimation">Enable Rotation Animation</option>
+                            <option value="enableScaleAnimation">Enable Scale Animation</option>
+                            <option value="resetAnimation">Reset Animation</option>
+                            <option value="togglePause">Toggle Pause</option>
+                        </select>
+                        <button id="midi-note4-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-note4-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-note4-remove" class="midi-remove-button">×</button>
+                    </div>
+                </div>
+                <div class="midi-control" data-control-id="note5">
+                    <label>Note Control 5:</label>
+                    <div class="inputs">
+                        <input type="number" id="midi-note5-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                        <input type="number" id="midi-note5-value" value="64" min="0" max="127" class="midi-cc-input" placeholder="Note">
+                        <select id="midi-note5-target" class="midi-select">
+                            <option value="shapeCycling">Shape Cycling</option>
+                            <option value="sizeAnimation">Size Animation</option>
+                            <option value="showGrid">Show Grid</option>
+                            <option value="enableShapeCycling">Enable Shape Cycling</option>
+                            <option value="enableSizeAnimation">Enable Size Animation</option>
+                            <option value="enableMovementAnimation">Enable Movement Animation</option>
+                            <option value="enableRotationAnimation">Enable Rotation Animation</option>
+                            <option value="enableScaleAnimation">Enable Scale Animation</option>
+                            <option value="resetAnimation">Reset Animation</option>
+                            <option value="togglePause">Toggle Pause</option>
+                        </select>
+                        <button id="midi-note5-learn" class="midi-learn-button">Learn</button>
+                        <span id="midi-note5-learn-status" class="midi-learn-status"></span>
+                        <button id="midi-note5-remove" class="midi-remove-button">×</button>
                     </div>
                 </div>
                 <div class="midi-control">
-                    <label>Size Animation:</label>
-                    <div class="inputs">
-                        <input type="number" id="midi-size-note" value="61" min="0" max="127">
-                    </div>
-                </div>
-                <div class="midi-control">
-                    <label>Show Grid:</label>
-                    <div class="inputs">
-                        <input type="number" id="midi-grid-note" value="62" min="0" max="127">
-                    </div>
+                    <button id="add-note-control" class="midi-add-button">+ Add New Note Control</button>
                 </div>
             </div>
         </div>

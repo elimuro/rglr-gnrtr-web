@@ -86,22 +86,24 @@ class RGLRGNRTR {
             midiEnabled: false,
             midiChannel: 0,
             midiCCMappings: {
-                animationSpeed: { channel: 0, cc: 1 }, // Internal: 0, UI: 1
-                movementAmplitude: { channel: 0, cc: 2 },
-                rotationAmplitude: { channel: 0, cc: 3 },
-                scaleAmplitude: { channel: 0, cc: 4 },
-                randomness: { channel: 0, cc: 5 },
-                cellSize: { channel: 0, cc: 6 },
-                movementFrequency: { channel: 0, cc: 7 },
-                rotationFrequency: { channel: 0, cc: 8 },
-                scaleFrequency: { channel: 0, cc: 9 },
-                gridWidth: { channel: 0, cc: 10 },
-                gridHeight: { channel: 0, cc: 11 }
+                cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
+                cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
+                cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
+                cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
+                cc5: { channel: 0, cc: 5, target: 'randomness' },
+                cc6: { channel: 0, cc: 6, target: 'cellSize' },
+                cc7: { channel: 0, cc: 7, target: 'movementFrequency' },
+                cc8: { channel: 0, cc: 8, target: 'rotationFrequency' },
+                cc9: { channel: 0, cc: 9, target: 'scaleFrequency' },
+                cc10: { channel: 0, cc: 10, target: 'gridWidth' },
+                cc11: { channel: 0, cc: 11, target: 'gridHeight' }
             },
             midiNoteMappings: {
-                shapeCycling: 60,
-                sizeAnimation: 61,
-                showGrid: 62
+                note1: { channel: 0, note: 60, target: 'shapeCycling' },
+                note2: { channel: 0, note: 61, target: 'sizeAnimation' },
+                note3: { channel: 0, note: 62, target: 'showGrid' },
+                note4: { channel: 0, note: 63, target: 'enableShapeCycling' },
+                note5: { channel: 0, note: 64, target: 'enableSizeAnimation' }
             }
         };
         
@@ -165,52 +167,133 @@ class RGLRGNRTR {
         
         // Set up CC mapping inputs and sliders (Channel/CC Mapping section)
         Object.keys(this.params.midiCCMappings).forEach(param => {
-            const elementId = this.paramToElementId[param];
-            const channelInput = document.getElementById(`midi-${elementId}-channel`);
-            const ccInput = document.getElementById(`midi-${elementId}-cc`);
-            const slider = document.getElementById(`midi-${elementId}-cc-slider`);
-            const valueSpan = document.getElementById(`midi-${elementId}-cc-value`);
+            const channelInput = document.getElementById(`midi-${param}-channel`);
+            const ccInput = document.getElementById(`midi-${param}-value`);
+            const targetSelect = document.getElementById(`midi-${param}-target`);
+            const learnButton = document.getElementById(`midi-${param}-learn`);
+            const learnStatus = document.getElementById(`midi-${param}-learn-status`);
             
-            if (channelInput && ccInput && slider && valueSpan) {
-                // Convert internal channel (0-15) to UI channel (1-16)
+            if (channelInput && ccInput && targetSelect && learnButton && learnStatus) {
                 channelInput.value = this.params.midiCCMappings[param].channel + 1;
                 ccInput.value = this.params.midiCCMappings[param].cc;
-                slider.value = this.params.midiCCMappings[param].cc;
-                valueSpan.textContent = this.params.midiCCMappings[param].cc;
+                targetSelect.value = this.params.midiCCMappings[param].target;
+                
+                channelInput.addEventListener('change', (e) => {
+                    this.params.midiCCMappings[param].channel = parseInt(e.target.value) - 1;
+                });
+                ccInput.addEventListener('change', (e) => {
+                    this.params.midiCCMappings[param].cc = parseInt(e.target.value);
+                });
+                targetSelect.addEventListener('change', (e) => {
+                    this.params.midiCCMappings[param].target = e.target.value;
+                });
+
+                // Learn button logic for CC
+                learnButton.addEventListener('click', () => {
+                    if (learnButton.classList.contains('learning')) return;
+                    learnButton.classList.add('learning');
+                    learnStatus.textContent = 'Waiting for CC...';
+                    const onCC = (controller, value, channel) => {
+                        this.params.midiCCMappings[param].channel = channel;
+                        this.params.midiCCMappings[param].cc = controller;
+                        channelInput.value = channel + 1;
+                        ccInput.value = controller;
+                        learnButton.classList.remove('learning');
+                        learnButton.classList.add('learned');
+                        learnStatus.textContent = `Learned: Ch ${channel+1}, CC ${controller}`;
+                        setTimeout(() => learnButton.classList.remove('learned'), 1500);
+                        setTimeout(() => learnStatus.textContent = 'Click Learn', 2000);
+                        this._learnCCHandler = null;
+                        this.midiManager.offCC(onCC);
+                    };
+                    this._learnCCHandler = onCC;
+                    this.midiManager.onCC(onCC);
+                });
+            }
+        });
+        
+        // Set up note mapping inputs and learn buttons
+        Object.keys(this.params.midiNoteMappings).forEach(param => {
+            const channelInput = document.getElementById(`midi-${param}-channel`);
+            const noteInput = document.getElementById(`midi-${param}-value`);
+            const targetSelect = document.getElementById(`midi-${param}-target`);
+            const learnButton = document.getElementById(`midi-${param}-learn`);
+            const learnStatus = document.getElementById(`midi-${param}-learn-status`);
+            
+            if (channelInput && noteInput && targetSelect && learnButton && learnStatus) {
+                // Convert internal channel (0-15) to UI channel (1-16)
+                channelInput.value = this.params.midiNoteMappings[param].channel + 1;
+                noteInput.value = this.params.midiNoteMappings[param].note;
+                targetSelect.value = this.params.midiNoteMappings[param].target;
                 
                 channelInput.addEventListener('change', (e) => {
                     // Convert UI channel (1-16) to internal channel (0-15)
-                    this.params.midiCCMappings[param].channel = parseInt(e.target.value) - 1;
+                    this.params.midiNoteMappings[param].channel = parseInt(e.target.value) - 1;
                 });
                 
-                ccInput.addEventListener('change', (e) => {
-                    const value = parseInt(e.target.value);
-                    this.params.midiCCMappings[param].cc = value;
-                    slider.value = value;
-                    valueSpan.textContent = value;
+                noteInput.addEventListener('change', (e) => {
+                    this.params.midiNoteMappings[param].note = parseInt(e.target.value);
                 });
                 
-                slider.addEventListener('input', (e) => {
-                    const value = parseInt(e.target.value);
-                    valueSpan.textContent = value;
-                    this.params.midiCCMappings[param].cc = value;
-                    ccInput.value = value;
+                targetSelect.addEventListener('change', (e) => {
+                    this.params.midiNoteMappings[param].target = e.target.value;
+                });
+
+                // Learn button logic for Note
+                learnButton.addEventListener('click', () => {
+                    if (learnButton.classList.contains('learning')) return;
+                    learnButton.classList.add('learning');
+                    learnStatus.textContent = 'Waiting for Note...';
+                    const onNote = (note, velocity, isNoteOn, channel) => {
+                        if (!isNoteOn) return;
+                        this.params.midiNoteMappings[param].channel = channel;
+                        this.params.midiNoteMappings[param].note = note;
+                        channelInput.value = channel + 1;
+                        noteInput.value = note;
+                        learnButton.classList.remove('learning');
+                        learnButton.classList.add('learned');
+                        learnStatus.textContent = `Learned: Ch ${channel+1}, Note ${note}`;
+                        setTimeout(() => learnButton.classList.remove('learned'), 1500);
+                        setTimeout(() => learnStatus.textContent = 'Click Learn', 2000);
+                        this._learnNoteHandler = null;
+                        this.midiManager.offNote(onNote);
+                    };
+                    this._learnNoteHandler = onNote;
+                    this.midiManager.onNote(onNote);
                 });
             }
         });
         
-        // Set up note mapping inputs
+        // Set up remove buttons for CC controls
+        Object.keys(this.params.midiCCMappings).forEach(param => {
+            const removeButton = document.getElementById(`midi-${param}-remove`);
+            if (removeButton) {
+                removeButton.addEventListener('click', () => {
+                    this.removeCCControl(param);
+                });
+            }
+        });
+        
+        // Set up remove buttons for Note controls
         Object.keys(this.params.midiNoteMappings).forEach(param => {
-            const input = document.getElementById(`midi-${param.replace(/([A-Z])/g, '_$1').toLowerCase()}-note`);
-            if (input) {
-                input.value = this.params.midiNoteMappings[param];
-                input.addEventListener('change', (e) => {
-                    this.params.midiNoteMappings[param] = parseInt(e.target.value);
+            const removeButton = document.getElementById(`midi-${param}-remove`);
+            if (removeButton) {
+                removeButton.addEventListener('click', () => {
+                    this.removeNoteControl(param);
                 });
             }
         });
         
-        // Set up collapsible sections
+        // Add new CC control button
+        document.getElementById('add-cc-control').addEventListener('click', () => {
+            this.addCCControl();
+        });
+        
+        // Add new Note control button
+        document.getElementById('add-note-control').addEventListener('click', () => {
+            this.addNoteControl();
+        });
+        
         this.setupCollapsibleSections();
     }
     
@@ -323,7 +406,8 @@ class RGLRGNRTR {
         Object.keys(this.params.midiCCMappings).forEach(param => {
             const mapping = this.params.midiCCMappings[param];
             if (mapping.channel === channel && mapping.cc === controller) {
-                switch (param) {
+                // Handle the CC based on its target
+                switch (mapping.target) {
                     case 'animationSpeed':
                         this.params.animationSpeed = 0.01 + normalizedValue * 2; // 0.01 to 2.01
                         break;
@@ -373,38 +457,64 @@ class RGLRGNRTR {
     }
 
     onMIDINote(note, velocity, isNoteOn) {
-        // Map MIDI notes to toggle parameters
-        switch (note) {
-            case this.params.midiNoteMappings.shapeCycling:
-                if (isNoteOn && velocity > 0) {
+        // Check if this note matches any of our configured note mappings
+        let matchedMapping = null;
+        
+        Object.keys(this.params.midiNoteMappings).forEach(mappingKey => {
+            const mapping = this.params.midiNoteMappings[mappingKey];
+            if (mapping.note === note) {
+                matchedMapping = mapping;
+            }
+        });
+        
+        if (matchedMapping && isNoteOn && velocity > 0) {
+            // Handle the note based on its target
+            switch (matchedMapping.target) {
+                case 'shapeCycling':
                     this.params.enableShapeCycling = !this.params.enableShapeCycling;
                     if (!this.params.enableShapeCycling) {
                         this.animationTime = 0;
                     }
-                }
-                break;
-            case this.params.midiNoteMappings.sizeAnimation:
-                if (isNoteOn && velocity > 0) {
+                    break;
+                case 'sizeAnimation':
                     this.params.enableSizeAnimation = !this.params.enableSizeAnimation;
                     if (!this.params.enableSizeAnimation) {
                         this.updateCellSize();
                     }
-                }
-                break;
-            case this.params.midiNoteMappings.showGrid:
-                if (isNoteOn && velocity > 0) {
+                    break;
+                case 'showGrid':
                     this.params.showGrid = !this.params.showGrid;
                     this.updateGridLines();
-                }
-                break;
-            default:
-                // Use note velocity to control cell size for any other note
-                if (isNoteOn && velocity > 0) {
-                    const normalizedVelocity = velocity / 127;
-                    this.params.cellSize = 0.5 + normalizedVelocity * 1.5;
-                    this.updateCellSize();
-                }
-                break;
+                    break;
+                case 'enableShapeCycling':
+                    this.params.enableShapeCycling = true;
+                    break;
+                case 'enableSizeAnimation':
+                    this.params.enableSizeAnimation = true;
+                    break;
+                case 'enableMovementAnimation':
+                    this.params.movementAmplitude = Math.max(0.1, this.params.movementAmplitude);
+                    break;
+                case 'enableRotationAnimation':
+                    this.params.rotationAmplitude = Math.max(0.1, this.params.rotationAmplitude);
+                    break;
+                case 'enableScaleAnimation':
+                    this.params.scaleAmplitude = Math.max(0.1, this.params.scaleAmplitude);
+                    break;
+                case 'resetAnimation':
+                    this.animationTime = 0;
+                    this.pulseTime = 0;
+                    break;
+                case 'togglePause':
+                    // You could add a pause parameter to params if needed
+                    console.log('Toggle pause functionality - implement as needed');
+                    break;
+            }
+        } else if (isNoteOn && velocity > 0) {
+            // Use note velocity to control cell size for any other note
+            const normalizedVelocity = velocity / 127;
+            this.params.cellSize = 0.5 + normalizedVelocity * 1.5;
+            this.updateCellSize();
         }
     }
 
@@ -1392,52 +1502,69 @@ class RGLRGNRTR {
                 shape.holes.push(hole);
                 return shape;
             },
+            // Negative semi-ellipses (black with circle cutout, each direction)
             ellipse_semi_neg_UP: () => {
                 const shape = new THREE.Shape();
+                // Create outer semi-circle boundary
                 shape.absarc(0, 0, 0.5, Math.PI, 0, false);
                 shape.lineTo(0, 0);
                 shape.lineTo(-0.5, 0);
+                
+                // Create inner semi-circle hole
                 const hole = new THREE.Path();
                 hole.absarc(0, 0, 0.35, Math.PI, 0, false);
                 hole.lineTo(0, 0);
                 hole.lineTo(-0.35, 0);
                 shape.holes.push(hole);
+                
                 return shape;
             },
             ellipse_semi_neg_DOWN: () => {
                 const shape = new THREE.Shape();
+                // Create outer semi-circle boundary
                 shape.absarc(0, 0, 0.5, 0, Math.PI, false);
                 shape.lineTo(0, 0);
                 shape.lineTo(0.5, 0);
+                
+                // Create inner semi-circle hole
                 const hole = new THREE.Path();
                 hole.absarc(0, 0, 0.35, 0, Math.PI, false);
                 hole.lineTo(0, 0);
                 hole.lineTo(0.35, 0);
                 shape.holes.push(hole);
+                
                 return shape;
             },
             ellipse_semi_neg_LEFT: () => {
                 const shape = new THREE.Shape();
+                // Create outer semi-circle boundary
                 shape.absarc(0, 0, 0.5, Math.PI/2, 1.5*Math.PI, false);
                 shape.lineTo(0, 0);
                 shape.lineTo(0, 0.5);
+                
+                // Create inner semi-circle hole
                 const hole = new THREE.Path();
                 hole.absarc(0, 0, 0.35, Math.PI/2, 1.5*Math.PI, false);
                 hole.lineTo(0, 0);
                 hole.lineTo(0, 0.35);
                 shape.holes.push(hole);
+                
                 return shape;
             },
             ellipse_semi_neg_RIGHT: () => {
                 const shape = new THREE.Shape();
+                // Create outer semi-circle boundary
                 shape.absarc(0, 0, 0.5, -Math.PI/2, Math.PI/2, false);
                 shape.lineTo(0, 0);
                 shape.lineTo(0, -0.5);
+                
+                // Create inner semi-circle hole
                 const hole = new THREE.Path();
                 hole.absarc(0, 0, 0.35, -Math.PI/2, Math.PI/2, false);
                 hole.lineTo(0, 0);
                 hole.lineTo(0, -0.35);
                 shape.holes.push(hole);
+                
                 return shape;
             }
         };
@@ -1613,69 +1740,69 @@ class RGLRGNRTR {
     applyCCPreset(presetName) {
         const presets = {
             standard: {
-                animationSpeed: { channel: 0, cc: 1 },
-                movementAmplitude: { channel: 0, cc: 2 },
-                rotationAmplitude: { channel: 0, cc: 3 },
-                scaleAmplitude: { channel: 0, cc: 4 },
-                randomness: { channel: 0, cc: 5 },
-                cellSize: { channel: 0, cc: 6 },
-                movementFrequency: { channel: 0, cc: 7 },
-                rotationFrequency: { channel: 0, cc: 8 },
-                scaleFrequency: { channel: 0, cc: 9 },
-                gridWidth: { channel: 0, cc: 10 },
-                gridHeight: { channel: 0, cc: 11 }
+                cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
+                cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
+                cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
+                cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
+                cc5: { channel: 0, cc: 5, target: 'randomness' },
+                cc6: { channel: 0, cc: 6, target: 'cellSize' },
+                cc7: { channel: 0, cc: 7, target: 'movementFrequency' },
+                cc8: { channel: 0, cc: 8, target: 'rotationFrequency' },
+                cc9: { channel: 0, cc: 9, target: 'scaleFrequency' },
+                cc10: { channel: 0, cc: 10, target: 'gridWidth' },
+                cc11: { channel: 0, cc: 11, target: 'gridHeight' }
             },
             multichannel: {
-                animationSpeed: { channel: 0, cc: 1 },
-                movementAmplitude: { channel: 1, cc: 1 },
-                rotationAmplitude: { channel: 2, cc: 1 },
-                scaleAmplitude: { channel: 3, cc: 1 },
-                randomness: { channel: 4, cc: 1 },
-                cellSize: { channel: 5, cc: 1 },
-                movementFrequency: { channel: 6, cc: 1 },
-                rotationFrequency: { channel: 7, cc: 1 },
-                scaleFrequency: { channel: 8, cc: 1 },
-                gridWidth: { channel: 9, cc: 1 },
-                gridHeight: { channel: 10, cc: 1 }
+                cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
+                cc2: { channel: 1, cc: 1, target: 'movementAmplitude' },
+                cc3: { channel: 2, cc: 1, target: 'rotationAmplitude' },
+                cc4: { channel: 3, cc: 1, target: 'scaleAmplitude' },
+                cc5: { channel: 4, cc: 1, target: 'randomness' },
+                cc6: { channel: 5, cc: 1, target: 'cellSize' },
+                cc7: { channel: 6, cc: 1, target: 'movementFrequency' },
+                cc8: { channel: 7, cc: 1, target: 'rotationFrequency' },
+                cc9: { channel: 8, cc: 1, target: 'scaleFrequency' },
+                cc10: { channel: 9, cc: 1, target: 'gridWidth' },
+                cc11: { channel: 10, cc: 1, target: 'gridHeight' }
             },
             modwheel: {
-                animationSpeed: { channel: 0, cc: 1 },
-                movementAmplitude: { channel: 0, cc: 2 },
-                rotationAmplitude: { channel: 0, cc: 4 },
-                scaleAmplitude: { channel: 0, cc: 7 },
-                randomness: { channel: 0, cc: 11 },
-                cellSize: { channel: 0, cc: 16 },
-                movementFrequency: { channel: 0, cc: 21 },
-                rotationFrequency: { channel: 0, cc: 22 },
-                scaleFrequency: { channel: 0, cc: 23 },
-                gridWidth: { channel: 0, cc: 24 },
-                gridHeight: { channel: 0, cc: 25 }
+                cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
+                cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
+                cc3: { channel: 0, cc: 4, target: 'rotationAmplitude' },
+                cc4: { channel: 0, cc: 7, target: 'scaleAmplitude' },
+                cc5: { channel: 0, cc: 11, target: 'randomness' },
+                cc6: { channel: 0, cc: 16, target: 'cellSize' },
+                cc7: { channel: 0, cc: 21, target: 'movementFrequency' },
+                cc8: { channel: 0, cc: 22, target: 'rotationFrequency' },
+                cc9: { channel: 0, cc: 23, target: 'scaleFrequency' },
+                cc10: { channel: 0, cc: 24, target: 'gridWidth' },
+                cc11: { channel: 0, cc: 25, target: 'gridHeight' }
             },
             knobs: {
-                animationSpeed: { channel: 0, cc: 16 },
-                movementAmplitude: { channel: 0, cc: 17 },
-                rotationAmplitude: { channel: 0, cc: 18 },
-                scaleAmplitude: { channel: 0, cc: 19 },
-                randomness: { channel: 0, cc: 20 },
-                cellSize: { channel: 0, cc: 21 },
-                movementFrequency: { channel: 0, cc: 22 },
-                rotationFrequency: { channel: 0, cc: 23 },
-                scaleFrequency: { channel: 0, cc: 24 },
-                gridWidth: { channel: 0, cc: 25 },
-                gridHeight: { channel: 0, cc: 26 }
+                cc1: { channel: 0, cc: 16, target: 'animationSpeed' },
+                cc2: { channel: 0, cc: 17, target: 'movementAmplitude' },
+                cc3: { channel: 0, cc: 18, target: 'rotationAmplitude' },
+                cc4: { channel: 0, cc: 19, target: 'scaleAmplitude' },
+                cc5: { channel: 0, cc: 20, target: 'randomness' },
+                cc6: { channel: 0, cc: 21, target: 'cellSize' },
+                cc7: { channel: 0, cc: 22, target: 'movementFrequency' },
+                cc8: { channel: 0, cc: 23, target: 'rotationFrequency' },
+                cc9: { channel: 0, cc: 24, target: 'scaleFrequency' },
+                cc10: { channel: 0, cc: 25, target: 'gridWidth' },
+                cc11: { channel: 0, cc: 26, target: 'gridHeight' }
             },
             faders: {
-                animationSpeed: { channel: 0, cc: 28 },
-                movementAmplitude: { channel: 0, cc: 29 },
-                rotationAmplitude: { channel: 0, cc: 30 },
-                scaleAmplitude: { channel: 0, cc: 31 },
-                randomness: { channel: 0, cc: 32 },
-                cellSize: { channel: 0, cc: 33 },
-                movementFrequency: { channel: 0, cc: 34 },
-                rotationFrequency: { channel: 0, cc: 35 },
-                scaleFrequency: { channel: 0, cc: 36 },
-                gridWidth: { channel: 0, cc: 37 },
-                gridHeight: { channel: 0, cc: 38 }
+                cc1: { channel: 0, cc: 28, target: 'animationSpeed' },
+                cc2: { channel: 0, cc: 29, target: 'movementAmplitude' },
+                cc3: { channel: 0, cc: 30, target: 'rotationAmplitude' },
+                cc4: { channel: 0, cc: 31, target: 'scaleAmplitude' },
+                cc5: { channel: 0, cc: 32, target: 'randomness' },
+                cc6: { channel: 0, cc: 33, target: 'cellSize' },
+                cc7: { channel: 0, cc: 34, target: 'movementFrequency' },
+                cc8: { channel: 0, cc: 35, target: 'rotationFrequency' },
+                cc9: { channel: 0, cc: 36, target: 'scaleFrequency' },
+                cc10: { channel: 0, cc: 37, target: 'gridWidth' },
+                cc11: { channel: 0, cc: 38, target: 'gridHeight' }
             }
         };
 
@@ -1690,133 +1817,126 @@ class RGLRGNRTR {
     }
 
     savePreset() {
-        // Create preset object
         const preset = {
-            name: "Custom MIDI Preset",
-            description: "Custom MIDI mapping preset",
-            version: "1.0",
-            created: new Date().toISOString(),
-            mappings: { ...this.params.midiCCMappings },
-            noteMappings: { ...this.params.midiNoteMappings }
+            name: 'Custom MIDI Preset',
+            description: 'Custom MIDI mapping configuration',
+            mappings: this.params.midiCCMappings,
+            noteMappings: this.params.midiNoteMappings,
+            controlStructure: {
+                ccControls: Object.keys(this.params.midiCCMappings),
+                noteControls: Object.keys(this.params.midiNoteMappings)
+            },
+            timestamp: new Date().toISOString()
         };
-
-        // Convert to JSON string
-        const jsonString = JSON.stringify(preset, null, 2);
         
-        // Create blob and download link
-        const blob = new Blob([jsonString], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(preset, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        
-        // Create download link
         const a = document.createElement('a');
         a.href = url;
-        a.download = `midi-preset-${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `midi-preset-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
         document.body.appendChild(a);
         a.click();
-        
-        // Cleanup
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
-        // Visual feedback
-        const saveButton = document.getElementById('save-preset-button');
-        saveButton.classList.add('success');
-        saveButton.textContent = 'Saved!';
-        
-        setTimeout(() => {
-            saveButton.classList.remove('success');
-            saveButton.textContent = 'Save Preset';
-        }, 2000);
-        
-        console.log('Preset saved successfully');
     }
 
     loadPreset(file) {
-        if (!file) return;
-        
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const preset = JSON.parse(e.target.result);
-                
-                // Validate preset structure
-                if (!this.validatePreset(preset)) {
-                    // Visual feedback for error
-                    const loadButton = document.getElementById('load-preset-button');
-                    loadButton.classList.add('error');
-                    loadButton.textContent = 'Error!';
-                    
-                    setTimeout(() => {
-                        loadButton.classList.remove('error');
-                        loadButton.textContent = 'Load Preset';
-                    }, 2000);
-                    
+                if (this.validatePreset(preset)) {
+                    this.applyPreset(preset);
+                    console.log('Preset loaded successfully:', preset.name);
+                } else {
+                    console.error('Invalid preset file format');
                     alert('Invalid preset file format. Please check the file and try again.');
-                    return;
                 }
-                
-                // Apply the preset
-                this.applyPreset(preset);
-                
-                // Visual feedback
-                const loadButton = document.getElementById('load-preset-button');
-                loadButton.classList.add('success');
-                loadButton.textContent = 'Loaded!';
-                
-                setTimeout(() => {
-                    loadButton.classList.remove('success');
-                    loadButton.textContent = 'Load Preset';
-                }, 2000);
-                
-                console.log(`Preset "${preset.name}" loaded successfully`);
-                
             } catch (error) {
                 console.error('Error loading preset:', error);
-                
-                // Visual feedback for error
-                const loadButton = document.getElementById('load-preset-button');
-                loadButton.classList.add('error');
-                loadButton.textContent = 'Error!';
-                
-                setTimeout(() => {
-                    loadButton.classList.remove('error');
-                    loadButton.textContent = 'Load Preset';
-                }, 2000);
-                
-                alert('Error loading preset file. Please check the file format and try again.');
+                alert('Error loading preset file. Please check the file and try again.');
             }
         };
-        
         reader.readAsText(file);
     }
 
     validatePreset(preset) {
-        // Check if preset has required structure
-        if (!preset.mappings || typeof preset.mappings !== 'object') {
-            return false;
-        }
+        // Check basic structure
+        if (!preset || typeof preset !== 'object') return false;
+        if (!preset.mappings || typeof preset.mappings !== 'object') return false;
         
-        // Check if all required mapping parameters exist
-        const requiredParams = [
-            'animationSpeed', 'movementAmplitude', 'rotationAmplitude', 
-            'scaleAmplitude', 'randomness', 'cellSize', 'movementFrequency', 
-            'rotationFrequency', 'scaleFrequency', 'gridWidth', 'gridHeight'
+        // Validate CC mappings
+        const validCCTargets = [
+            'animationSpeed', 'movementAmplitude', 'rotationAmplitude', 'scaleAmplitude',
+            'randomness', 'cellSize', 'movementFrequency', 'rotationFrequency',
+            'scaleFrequency', 'gridWidth', 'gridHeight'
         ];
         
-        for (const param of requiredParams) {
-            if (!preset.mappings[param] || 
-                typeof preset.mappings[param].channel !== 'number' || 
-                typeof preset.mappings[param].cc !== 'number') {
+        for (const ccKey in preset.mappings) {
+            const mapping = preset.mappings[ccKey];
+            if (!mapping || 
+                typeof mapping.channel !== 'number' || 
+                typeof mapping.cc !== 'number' ||
+                typeof mapping.target !== 'string' ||
+                !validCCTargets.includes(mapping.target)) {
+                return false;
+            }
+            
+            // Validate ranges
+            if (mapping.channel < 0 || mapping.channel > 15 || 
+                mapping.cc < 0 || mapping.cc > 127) {
                 return false;
             }
         }
         
-        // Validate channel and CC ranges
-        for (const param of requiredParams) {
-            const mapping = preset.mappings[param];
-            if (mapping.channel < 0 || mapping.channel > 15 || 
-                mapping.cc < 0 || mapping.cc > 127) {
-                return false;
+        // Validate note mappings if they exist
+        if (preset.noteMappings) {
+            const validNoteTargets = [
+                'shapeCycling', 'sizeAnimation', 'showGrid', 'enableShapeCycling',
+                'enableSizeAnimation', 'enableMovementAnimation', 'enableRotationAnimation',
+                'enableScaleAnimation', 'resetAnimation', 'togglePause'
+            ];
+            
+            for (const noteKey in preset.noteMappings) {
+                const noteMapping = preset.noteMappings[noteKey];
+                if (!noteMapping || 
+                    typeof noteMapping.channel !== 'number' || 
+                    typeof noteMapping.note !== 'number' || 
+                    typeof noteMapping.target !== 'string' ||
+                    !validNoteTargets.includes(noteMapping.target)) {
+                    return false;
+                }
+                
+                // Validate ranges
+                if (noteMapping.channel < 0 || noteMapping.channel > 15 || 
+                    noteMapping.note < 0 || noteMapping.note > 127) {
+                    return false;
+                }
+            }
+        }
+        
+        // Validate control structure if it exists (for newer presets)
+        if (preset.controlStructure) {
+            if (typeof preset.controlStructure !== 'object') return false;
+            
+            // Validate CC control structure
+            if (preset.controlStructure.ccControls) {
+                if (!Array.isArray(preset.controlStructure.ccControls)) return false;
+                // Check that all CC controls in the structure exist in mappings
+                for (const controlId of preset.controlStructure.ccControls) {
+                    if (!preset.mappings[controlId]) return false;
+                }
+            }
+            
+            // Validate Note control structure
+            if (preset.controlStructure.noteControls) {
+                if (!Array.isArray(preset.controlStructure.noteControls)) return false;
+                // Check that all Note controls in the structure exist in noteMappings
+                if (preset.noteMappings) {
+                    for (const controlId of preset.controlStructure.noteControls) {
+                        if (!preset.noteMappings[controlId]) return false;
+                    }
+                }
             }
         }
         
@@ -1824,48 +1944,477 @@ class RGLRGNRTR {
     }
 
     applyPreset(preset) {
-        // Apply CC mappings
-        this.params.midiCCMappings = { ...preset.mappings };
+        // Completely clear all existing mappings first
+        this.params.midiCCMappings = {};
+        this.params.midiNoteMappings = {};
         
-        // Apply note mappings if they exist
+        console.log('Cleared all existing mappings');
+        
+        // Now apply the preset mappings
+        Object.assign(this.params.midiCCMappings, preset.mappings);
         if (preset.noteMappings) {
-            this.params.midiNoteMappings = { ...preset.noteMappings };
+            Object.assign(this.params.midiNoteMappings, preset.noteMappings);
         }
         
-        // Update all UI elements
-        this.updateAllUIElements();
+        console.log('Applied preset mappings:', Object.keys(this.params.midiCCMappings), Object.keys(this.params.midiNoteMappings));
+        
+        // Recreate the exact control structure from the preset
+        this.recreateControlsFromPreset(preset);
         
         // Reset preset selector to "Custom"
         const presetSelect = document.getElementById('cc-preset-select');
         if (presetSelect) {
             presetSelect.value = '';
         }
+        
+        console.log('Preset applied. CC mappings:', Object.keys(this.params.midiCCMappings));
+        console.log('Preset applied. Note mappings:', Object.keys(this.params.midiNoteMappings));
+    }
+
+    recreateControlsFromPreset(preset = null) {
+        // If no preset provided, use current mappings
+        const ccControlIds = preset ? (preset.controlStructure?.ccControls || Object.keys(preset.mappings)) : Object.keys(this.params.midiCCMappings);
+        const noteControlIds = preset ? (preset.controlStructure?.noteControls || Object.keys(preset.noteMappings || {})) : Object.keys(this.params.midiNoteMappings);
+        
+        console.log('Recreating controls from preset:');
+        console.log('CC Control IDs:', ccControlIds);
+        console.log('Note Control IDs:', noteControlIds);
+        
+        // Debug: Check what's in the DOM
+        console.log('All midi-sections:', document.querySelectorAll('.midi-section'));
+        console.log('All data-section elements:', document.querySelectorAll('[data-section]'));
+        
+        // Get the containers with multiple selector attempts
+        let ccContainer = document.querySelector('[data-section="channel-mapping"] .midi-section-content');
+        let noteContainer = document.querySelector('[data-section="note-controls"] .midi-section-content');
+        
+        // If not found, try alternative selectors
+        if (!ccContainer) {
+            console.log('Trying alternative CC container selector...');
+            ccContainer = document.querySelector('.midi-section:has([data-section="channel-mapping"]) .midi-section-content');
+        }
+        
+        if (!noteContainer) {
+            console.log('Trying alternative Note container selector...');
+            noteContainer = document.querySelector('.midi-section:has([data-section="note-controls"]) .midi-section-content');
+        }
+        
+        // If still not found, try finding by text content
+        if (!ccContainer) {
+            console.log('Trying to find CC container by text content...');
+            const sections = document.querySelectorAll('.midi-section');
+            for (const section of sections) {
+                const h4 = section.querySelector('h4');
+                if (h4 && h4.textContent.includes('Channel/CC Mapping')) {
+                    ccContainer = section.querySelector('.midi-section-content');
+                    break;
+                }
+            }
+        }
+        
+        if (!noteContainer) {
+            console.log('Trying to find Note container by text content...');
+            const sections = document.querySelectorAll('.midi-section');
+            for (const section of sections) {
+                const h4 = section.querySelector('h4');
+                if (h4 && h4.textContent.includes('Note Controls')) {
+                    noteContainer = section.querySelector('.midi-section-content');
+                    break;
+                }
+            }
+        }
+        
+        if (!ccContainer) {
+            console.error('Could not find CC container');
+            console.log('Available sections:', Array.from(document.querySelectorAll('.midi-section')).map(s => s.querySelector('h4')?.textContent));
+            return;
+        }
+        
+        if (!noteContainer) {
+            console.error('Could not find Note container');
+            console.log('Available sections:', Array.from(document.querySelectorAll('.midi-section')).map(s => s.querySelector('h4')?.textContent));
+            return;
+        }
+        
+        console.log('Found containers:', ccContainer, noteContainer);
+        
+        // Store the preset buttons and controls that we want to keep
+        const ccPresetButtons = ccContainer.querySelector('.midi-control.buttons');
+        const ccPresetSelect = ccContainer.querySelector('.midi-control');
+        const hasPresetSelect = ccPresetSelect && ccPresetSelect.querySelector('#cc-preset-select');
+        
+        // Clear all content from containers
+        ccContainer.innerHTML = '';
+        noteContainer.innerHTML = '';
+        
+        // Restore the preset buttons and controls
+        if (ccPresetButtons) ccContainer.appendChild(ccPresetButtons);
+        if (hasPresetSelect) ccContainer.appendChild(ccPresetSelect);
+        
+        // Recreate the add button containers
+        const newAddCCContainer = document.createElement('div');
+        newAddCCContainer.className = 'midi-control';
+        newAddCCContainer.innerHTML = '<button id="add-cc-control" class="midi-add-button">+ Add New CC Control</button>';
+        ccContainer.appendChild(newAddCCContainer);
+        
+        const newAddNoteContainer = document.createElement('div');
+        newAddNoteContainer.className = 'midi-control';
+        newAddNoteContainer.innerHTML = '<button id="add-note-control" class="midi-add-button">+ Add New Note Control</button>';
+        noteContainer.appendChild(newAddNoteContainer);
+        
+        // Reattach event listeners to add buttons
+        document.getElementById('add-cc-control').addEventListener('click', () => {
+            this.addCCControl();
+        });
+        
+        document.getElementById('add-note-control').addEventListener('click', () => {
+            this.addNoteControl();
+        });
+        
+        console.log('Cleared containers and recreated add buttons');
+        
+        // Recreate CC controls based on the preset structure
+        ccControlIds.forEach((controlId, index) => {
+            const controlIndex = index + 1;
+            console.log('Creating CC control:', controlId, 'at index:', controlIndex);
+            const controlElement = this.createCCControlElement(controlId, controlIndex);
+            const addButton = document.getElementById('add-cc-control');
+            if (addButton && addButton.parentElement && addButton.parentElement.parentElement) {
+                addButton.parentElement.parentElement.insertBefore(controlElement, addButton.parentElement);
+                this.setupCCControlListeners(controlId);
+            }
+        });
+        
+        // Recreate Note controls based on the preset structure
+        noteControlIds.forEach((controlId, index) => {
+            const controlIndex = index + 1;
+            console.log('Creating Note control:', controlId, 'at index:', controlIndex);
+            const controlElement = this.createNoteControlElement(controlId, controlIndex);
+            const addButton = document.getElementById('add-note-control');
+            if (addButton && addButton.parentElement && addButton.parentElement.parentElement) {
+                addButton.parentElement.parentElement.insertBefore(controlElement, addButton.parentElement);
+                this.setupNoteControlListeners(controlId);
+            }
+        });
+        
+        // Update all UI elements
+        this.updateAllUIElements();
+        
+        console.log('After recreation - CC mappings:', Object.keys(this.params.midiCCMappings));
+        console.log('After recreation - Note mappings:', Object.keys(this.params.midiNoteMappings));
     }
 
     updateAllUIElements() {
-        // Update all input fields, sliders, and value displays
+        // Update all CC mapping inputs
         Object.keys(this.params.midiCCMappings).forEach(param => {
-            const elementId = this.paramToElementId[param];
-            const channelInput = document.getElementById(`midi-${elementId}-channel`);
-            const ccInput = document.getElementById(`midi-${elementId}-cc`);
-            const slider = document.getElementById(`midi-${elementId}-cc-slider`);
-            const valueSpan = document.getElementById(`midi-${elementId}-cc-value`);
+            const channelInput = document.getElementById(`midi-${param}-channel`);
+            const ccInput = document.getElementById(`midi-${param}-value`);
+            const targetSelect = document.getElementById(`midi-${param}-target`);
             
             if (channelInput) channelInput.value = this.params.midiCCMappings[param].channel + 1; // Convert to UI channel (1-16)
             if (ccInput) ccInput.value = this.params.midiCCMappings[param].cc;
-            if (slider) slider.value = this.params.midiCCMappings[param].cc;
-            if (valueSpan) valueSpan.textContent = this.params.midiCCMappings[param].cc;
+            if (targetSelect) targetSelect.value = this.params.midiCCMappings[param].target;
         });
         
         // Update note mapping inputs
         Object.keys(this.params.midiNoteMappings).forEach(param => {
-            const input = document.getElementById(`midi-${param.replace(/([A-Z])/g, '_$1').toLowerCase()}-note`);
-            if (input) {
-                input.value = this.params.midiNoteMappings[param];
-            }
+            const channelInput = document.getElementById(`midi-${param}-channel`);
+            const noteInput = document.getElementById(`midi-${param}-value`);
+            const targetSelect = document.getElementById(`midi-${param}-target`);
+            
+            if (channelInput) channelInput.value = this.params.midiNoteMappings[param].channel + 1; // Convert to UI channel (1-16)
+            if (noteInput) noteInput.value = this.params.midiNoteMappings[param].note;
+            if (targetSelect) targetSelect.value = this.params.midiNoteMappings[param].target;
         });
+    }
+
+    // Helper method to generate unique control IDs
+    generateControlId(type, index) {
+        return `${type}${index}`;
+    }
+
+    // Helper method to find the next available control index
+    getNextControlIndex(type) {
+        const mappings = type === 'cc' ? this.params.midiCCMappings : this.params.midiNoteMappings;
+        const existingIndices = Object.keys(mappings).map(key => {
+            const match = key.match(new RegExp(`^${type}(\\d+)$`));
+            return match ? parseInt(match[1]) : 0;
+        });
+        return existingIndices.length > 0 ? Math.max(...existingIndices) + 1 : 1;
+    }
+
+    // Add new CC control
+    addCCControl() {
+        const nextIndex = this.getNextControlIndex('cc');
+        const controlId = this.generateControlId('cc', nextIndex);
+        
+        // Add to mappings
+        this.params.midiCCMappings[controlId] = {
+            channel: 0,
+            cc: nextIndex,
+            target: 'animationSpeed'
+        };
+        
+        // Create and insert the control element
+        const controlElement = this.createCCControlElement(controlId, nextIndex);
+        const addButton = document.getElementById('add-cc-control');
+        
+        if (addButton && addButton.parentElement && addButton.parentElement.parentElement) {
+            addButton.parentElement.parentElement.insertBefore(controlElement, addButton.parentElement);
+            
+            // Set up event listeners for the new control
+            this.setupCCControlListeners(controlId);
+        }
+    }
+
+    // Add new Note control
+    addNoteControl() {
+        const nextIndex = this.getNextControlIndex('note');
+        const controlId = this.generateControlId('note', nextIndex);
+        
+        // Add to mappings
+        this.params.midiNoteMappings[controlId] = {
+            channel: 0,
+            note: 60 + nextIndex - 1,
+            target: 'shapeCycling'
+        };
+        
+        // Create and insert the control element
+        const controlElement = this.createNoteControlElement(controlId, nextIndex);
+        const addButton = document.getElementById('add-note-control');
+        
+        if (addButton && addButton.parentElement && addButton.parentElement.parentElement) {
+            addButton.parentElement.parentElement.insertBefore(controlElement, addButton.parentElement);
+            
+            // Set up event listeners for the new control
+            this.setupNoteControlListeners(controlId);
+        }
+    }
+
+    // Remove CC control
+    removeCCControl(controlId) {
+        // Remove from mappings
+        delete this.params.midiCCMappings[controlId];
+        
+        // Remove from DOM
+        const controlElement = document.querySelector(`[data-control-id="${controlId}"]`);
+        if (controlElement) {
+            controlElement.remove();
+        }
+    }
+
+    // Remove Note control
+    removeNoteControl(controlId) {
+        // Remove from mappings
+        delete this.params.midiNoteMappings[controlId];
+        
+        // Remove from DOM
+        const controlElement = document.querySelector(`[data-control-id="${controlId}"]`);
+        if (controlElement) {
+            controlElement.remove();
+        }
+    }
+
+    // Create CC control element
+    createCCControlElement(controlId, index) {
+        const div = document.createElement('div');
+        div.className = 'midi-control';
+        div.setAttribute('data-control-id', controlId);
+        
+        div.innerHTML = `
+            <label>CC Control ${index}:</label>
+            <div class="inputs">
+                <input type="number" id="midi-${controlId}-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                <input type="number" id="midi-${controlId}-value" value="${index}" min="0" max="127" class="midi-cc-input" placeholder="CC">
+                <select id="midi-${controlId}-target" class="midi-select">
+                    <option value="animationSpeed">Animation Speed</option>
+                    <option value="movementAmplitude">Movement Amplitude</option>
+                    <option value="rotationAmplitude">Rotation Amplitude</option>
+                    <option value="scaleAmplitude">Scale Amplitude</option>
+                    <option value="randomness">Randomness</option>
+                    <option value="cellSize">Cell Size</option>
+                    <option value="movementFrequency">Movement Frequency</option>
+                    <option value="rotationFrequency">Rotation Frequency</option>
+                    <option value="scaleFrequency">Scale Frequency</option>
+                    <option value="gridWidth">Grid Width</option>
+                    <option value="gridHeight">Grid Height</option>
+                </select>
+                <button id="midi-${controlId}-learn" class="midi-learn-button">Learn</button>
+                <span id="midi-${controlId}-learn-status" class="midi-learn-status"></span>
+                <button id="midi-${controlId}-remove" class="midi-remove-button">×</button>
+            </div>
+        `;
+        
+        return div;
+    }
+
+    // Create Note control element
+    createNoteControlElement(controlId, index) {
+        const div = document.createElement('div');
+        div.className = 'midi-control';
+        div.setAttribute('data-control-id', controlId);
+        
+        div.innerHTML = `
+            <label>Note Control ${index}:</label>
+            <div class="inputs">
+                <input type="number" id="midi-${controlId}-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
+                <input type="number" id="midi-${controlId}-value" value="${60 + index - 1}" min="0" max="127" class="midi-cc-input" placeholder="Note">
+                <select id="midi-${controlId}-target" class="midi-select">
+                    <option value="shapeCycling">Shape Cycling</option>
+                    <option value="sizeAnimation">Size Animation</option>
+                    <option value="showGrid">Show Grid</option>
+                    <option value="enableShapeCycling">Enable Shape Cycling</option>
+                    <option value="enableSizeAnimation">Enable Size Animation</option>
+                    <option value="enableMovementAnimation">Enable Movement Animation</option>
+                    <option value="enableRotationAnimation">Enable Rotation Animation</option>
+                    <option value="enableScaleAnimation">Enable Scale Animation</option>
+                    <option value="resetAnimation">Reset Animation</option>
+                    <option value="togglePause">Toggle Pause</option>
+                </select>
+                <button id="midi-${controlId}-learn" class="midi-learn-button">Learn</button>
+                <span id="midi-${controlId}-learn-status" class="midi-learn-status"></span>
+                <button id="midi-${controlId}-remove" class="midi-remove-button">×</button>
+            </div>
+        `;
+        
+        return div;
+    }
+
+    // Set up event listeners for a CC control
+    setupCCControlListeners(controlId) {
+        const channelInput = document.getElementById(`midi-${controlId}-channel`);
+        const ccInput = document.getElementById(`midi-${controlId}-value`);
+        const targetSelect = document.getElementById(`midi-${controlId}-target`);
+        const learnButton = document.getElementById(`midi-${controlId}-learn`);
+        const learnStatus = document.getElementById(`midi-${controlId}-learn-status`);
+        const removeButton = document.getElementById(`midi-${controlId}-remove`);
+        
+        if (channelInput && ccInput && targetSelect && learnButton && learnStatus && removeButton) {
+            // Get mapping data, use defaults if not found
+            const mapping = this.params.midiCCMappings[controlId] || {
+                channel: 0,
+                cc: parseInt(controlId.replace('cc', '')) || 1,
+                target: 'animationSpeed'
+            };
+            
+            // Set initial values
+            channelInput.value = mapping.channel + 1;
+            ccInput.value = mapping.cc;
+            targetSelect.value = mapping.target;
+            
+            // Ensure the mapping exists in our data structure
+            if (!this.params.midiCCMappings[controlId]) {
+                this.params.midiCCMappings[controlId] = mapping;
+            }
+            
+            // Event listeners
+            channelInput.addEventListener('change', (e) => {
+                this.params.midiCCMappings[controlId].channel = parseInt(e.target.value) - 1;
+            });
+            
+            ccInput.addEventListener('change', (e) => {
+                this.params.midiCCMappings[controlId].cc = parseInt(e.target.value);
+            });
+            
+            targetSelect.addEventListener('change', (e) => {
+                this.params.midiCCMappings[controlId].target = e.target.value;
+            });
+
+            // Learn button
+            learnButton.addEventListener('click', () => {
+                if (learnButton.classList.contains('learning')) return;
+                learnButton.classList.add('learning');
+                learnStatus.textContent = 'Waiting for CC...';
+                const onCC = (controller, value, channel) => {
+                    this.params.midiCCMappings[controlId].channel = channel;
+                    this.params.midiCCMappings[controlId].cc = controller;
+                    channelInput.value = channel + 1;
+                    ccInput.value = controller;
+                    learnButton.classList.remove('learning');
+                    learnButton.classList.add('learned');
+                    learnStatus.textContent = `Learned: Ch ${channel+1}, CC ${controller}`;
+                    setTimeout(() => learnButton.classList.remove('learned'), 1500);
+                    setTimeout(() => learnStatus.textContent = '', 2000);
+                    this.midiManager.offCC(onCC);
+                };
+                this.midiManager.onCC(onCC);
+            });
+
+            // Remove button
+            removeButton.addEventListener('click', () => {
+                this.removeCCControl(controlId);
+            });
+        }
+    }
+
+    // Set up event listeners for a Note control
+    setupNoteControlListeners(controlId) {
+        const channelInput = document.getElementById(`midi-${controlId}-channel`);
+        const noteInput = document.getElementById(`midi-${controlId}-value`);
+        const targetSelect = document.getElementById(`midi-${controlId}-target`);
+        const learnButton = document.getElementById(`midi-${controlId}-learn`);
+        const learnStatus = document.getElementById(`midi-${controlId}-learn-status`);
+        const removeButton = document.getElementById(`midi-${controlId}-remove`);
+        
+        if (channelInput && noteInput && targetSelect && learnButton && learnStatus && removeButton) {
+            // Get mapping data, use defaults if not found
+            const mapping = this.params.midiNoteMappings[controlId] || {
+                channel: 0,
+                note: 60 + (parseInt(controlId.replace('note', '')) || 1) - 1,
+                target: 'shapeCycling'
+            };
+            
+            // Set initial values
+            channelInput.value = mapping.channel + 1;
+            noteInput.value = mapping.note;
+            targetSelect.value = mapping.target;
+            
+            // Ensure the mapping exists in our data structure
+            if (!this.params.midiNoteMappings[controlId]) {
+                this.params.midiNoteMappings[controlId] = mapping;
+            }
+            
+            // Event listeners
+            channelInput.addEventListener('change', (e) => {
+                this.params.midiNoteMappings[controlId].channel = parseInt(e.target.value) - 1;
+            });
+            
+            noteInput.addEventListener('change', (e) => {
+                this.params.midiNoteMappings[controlId].note = parseInt(e.target.value);
+            });
+            
+            targetSelect.addEventListener('change', (e) => {
+                this.params.midiNoteMappings[controlId].target = e.target.value;
+            });
+
+            // Learn button
+            learnButton.addEventListener('click', () => {
+                if (learnButton.classList.contains('learning')) return;
+                learnButton.classList.add('learning');
+                learnStatus.textContent = 'Waiting for Note...';
+                const onNote = (note, velocity, isNoteOn, channel) => {
+                    if (!isNoteOn) return;
+                    this.params.midiNoteMappings[controlId].channel = channel;
+                    this.params.midiNoteMappings[controlId].note = note;
+                    channelInput.value = channel + 1;
+                    noteInput.value = note;
+                    learnButton.classList.remove('learning');
+                    learnButton.classList.add('learned');
+                    learnStatus.textContent = `Learned: Ch ${channel+1}, Note ${note}`;
+                    setTimeout(() => learnButton.classList.remove('learned'), 1500);
+                    setTimeout(() => learnStatus.textContent = '', 2000);
+                    this.midiManager.offNote(onNote);
+                };
+                this.midiManager.onNote(onNote);
+            });
+
+            // Remove button
+            removeButton.addEventListener('click', () => {
+                this.removeNoteControl(controlId);
+            });
+        }
     }
 }
 
 // Initialize the application
-new RGLRGNRTR(); 
+new RGLRGNRTR();

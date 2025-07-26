@@ -4,19 +4,24 @@
 
 /* Color Theme Variables */
 :root {
-    /* Primary Colors */
-    --color-primary: rgb(145, 71, 255);
-    --color-primary-dark: rgb(102, 0, 170);
-    --color-primary-light: #ba6cff;
-    
-    /* Secondary Colors */
-    --color-secondary: #f00;
-    --color-secondary-dark: #a00;
-    --color-warning: #ff0;
+    /* Color Theme */
+    --color-primary: #8b5cf6;
+    --color-primary-light: #a78bfa;
+    --color-primary-dark: #7c3aed;
+    --color-secondary: #64748b;
+    --color-accent: #f59e0b;
+    --color-success: #10b981;
+    --color-success-dark: #059669;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-danger-dark: #dc2626;
+    --color-bg-primary: #000000;
+    --color-bg-secondary: rgba(0, 0, 0, 0.8);
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #cccccc;
+    --color-border: #e2e8f0;
     
     /* Background Colors */
-    --color-bg-primary: #000;
-    --color-bg-secondary: rgba(0, 0, 0, 0.8);
     --color-bg-tertiary: rgba(0, 0, 0, 0.9);
     --color-bg-overlay: rgba(255, 255, 255, 0.05);
     --color-bg-warning: rgba(255, 255, 0, 0.1);
@@ -24,8 +29,6 @@
     --color-bg-success: rgba(0, 255, 0, 0.1);
     
     /* Text Colors */
-    --color-text-primary: #fff;
-    --color-text-secondary: #ccc;
     --color-text-muted: #999;
     
     /* Border Colors */
@@ -41,9 +44,7 @@
     --color-input-border-dark: #444;
     
     /* Status Colors */
-    --color-success: #0f0;
     --color-error: #f00;
-    --color-warning: #ff0;
     
     /* Shadow Colors */
     --color-shadow-primary: rgba(106, 0, 255, 0.5);
@@ -223,6 +224,85 @@ canvas {
     font-weight: bold;
     text-align: center;
     min-width: 30px;
+}
+
+/* Learn Feature Styles */
+.midi-learn-button {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--text-xs);
+    transition: all 0.2s ease;
+}
+
+.midi-learn-button:hover {
+    background: var(--color-primary-dark);
+}
+
+.midi-learn-button.learning {
+    background: var(--color-warning);
+    animation: pulse 1s infinite;
+}
+
+.midi-learn-button.learned {
+    background: var(--color-success);
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.midi-learn-status {
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    margin-left: var(--spacing-xs);
+}
+
+/* Remove and Add Button Styles */
+.midi-remove-button {
+    background: var(--color-danger);
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: var(--spacing-xs);
+}
+
+.midi-remove-button:hover {
+    background: var(--color-danger-dark);
+    transform: scale(1.1);
+}
+
+.midi-add-button {
+    background: var(--color-success);
+    color: white;
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-top: var(--spacing-sm);
+}
+
+.midi-add-button:hover {
+    background: var(--color-success-dark);
+    transform: translateY(-1px);
 }
 
 /* MIDI Control Buttons */
