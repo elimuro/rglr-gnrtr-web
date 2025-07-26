@@ -7,7 +7,8 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       input: {
-        main: './index.html'
+        main: './index.html',
+        help: './midi-help.html'
       }
     }
   },
