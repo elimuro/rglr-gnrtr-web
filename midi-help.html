@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI Interface Help - RGLR GNRTR</title>
+    <link rel="stylesheet" href="tailwind.css">
+</head>
+<body class="help-body">
+    <div class="help-container">
+        <h1 class="help-h1">MIDI Interface Guide</h1>
+        
+        <div class="help-section">
+            <h2 class="help-h2">Getting Started</h2>
+            <p>This application supports Web MIDI API for real-time control of visual parameters. You can connect any MIDI device (keyboard, controller, etc.) to control the animation and visual effects.</p>
+            
+            <div class="help-note">
+                <strong>Note:</strong> Web MIDI API requires HTTPS in most browsers. Make sure you're running the application over HTTPS or localhost.
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2 class="help-h2">Connection</h2>
+            <ol>
+                <li>Connect your MIDI device to your computer</li>
+                <li>Click the "Connect MIDI" button in the MIDI interface panel</li>
+                <li>Allow MIDI access when prompted by your browser</li>
+                <li>The status should change to "Connected" with a green indicator</li>
+            </ol>
+        </div>
+
+        <div class="help-section">
+            <h2 class="help-h2">Control Change (CC) Mappings</h2>
+            <p>These controls use continuous values (0-127) for smooth parameter control. Each parameter can be assigned to any MIDI channel (1-16) and CC number (0-127).</p>
+            
+            <div class="help-note">
+                <strong>Note:</strong> MIDI channels are numbered 1-16 in the interface to match standard MIDI hardware conventions, but internally the system uses channels 0-15.
+            </div>
+            
+            <table class="midi-table">
+                <tr>
+                    <th>Channel</th>
+                    <th>CC Number</th>
+                    <th>Parameter</th>
+                    <th>Range</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>Animation Speed</td>
+                    <td>0.01 - 2.01</td>
+                    <td>Global animation speed multiplier</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>Movement Amplitude</td>
+                    <td>0 - 0.5</td>
+                    <td>Intensity of movement animation</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>3</td>
+                    <td>Rotation Amplitude</td>
+                    <td>0 - 2</td>
+                    <td>Intensity of rotation animation</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>4</td>
+                    <td>Scale Amplitude</td>
+                    <td>0 - 1</td>
+                    <td>Intensity of scale animation</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>5</td>
+                    <td>Randomness</td>
+                    <td>0 - 1</td>
+                    <td>Shape selection randomness</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>6</td>
+                    <td>Cell Size</td>
+                    <td>0.5 - 2</td>
+                    <td>Size of individual grid cells</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>7</td>
+                    <td>Movement Frequency</td>
+                    <td>0.1 - 2.1</td>
+                    <td>Speed of movement animation</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>8</td>
+                    <td>Rotation Frequency</td>
+                    <td>0.1 - 2.1</td>
+                    <td>Speed of rotation animation</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>9</td>
+                    <td>Scale Frequency</td>
+                    <td>0.1 - 2.1</td>
+                    <td>Speed of scale animation</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>10</td>
+                    <td>Grid Width</td>
+                    <td>1 - 30</td>
+                    <td>Number of columns in the grid</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>11</td>
+                    <td>Grid Height</td>
+                    <td>1 - 30</td>
+                    <td>Number of rows in the grid</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h2 class="help-h2">Preset Management</h2>
+            <p>You can save and load custom MIDI mapping presets:</p>
+            <ul>
+                <li><strong>Save Preset:</strong> Exports your current MIDI mappings to a JSON file</li>
+                <li><strong>Load Preset:</strong> Imports a previously saved preset file</li>
+                <li><strong>Built-in Presets:</strong> Quick access to common mapping configurations</li>
+            </ul>
+            
+            <div class="help-note">
+                <strong>Preset File Format:</strong> Presets are saved as JSON files with the following structure:
+                <pre class="help-pre">{
+  "name": "Preset Name",
+  "description": "Description",
+  "version": "1.0",
+  "created": "2024-01-15T10:30:00Z",
+  "mappings": {
+    "animationSpeed": { "channel": 0, "cc": 1 },
+    "movementAmplitude": { "channel": 1, "cc": 2 },
+    ...
+  },
+  "noteMappings": {
+    "shapeCycling": 60,
+    "sizeAnimation": 61,
+    "showGrid": 62
+  }
+}</pre>
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2 class="help-h2">Note Controls</h2>
+            <p>These controls use MIDI notes as toggle switches:</p>
+            
+            <table class="midi-table">
+                <tr>
+                    <th>Note Number</th>
+                    <th>Parameter</th>
+                    <th>Action</th>
+                </tr>
+                <tr>
+                    <td>60 (Middle C)</td>
+                    <td>Shape Cycling</td>
+                    <td>Toggle shape cycling animation</td>
+                </tr>
+                <tr>
+                    <td>61 (C#)</td>
+                    <td>Size Animation</td>
+                    <td>Toggle size/movement/rotation animations</td>
+                </tr>
+                <tr>
+                    <td>62 (D)</td>
+                    <td>Show Grid</td>
+                    <td>Toggle grid line visibility</td>
+                </tr>
+            </table>
+            
+            <div class="help-note">
+                <strong>Note:</strong> Any other MIDI note will control cell size based on velocity (how hard you press the key).
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2 class="help-h2">Special Controls</h2>
+            <ul>
+                <li><strong>Pitch Bend:</strong> Controls animation type (0-3: Movement, Rotation, Scale, Combined)</li>
+                <li><strong>Aftertouch/Channel Pressure:</strong> Controls shape color intensity (grayscale)</li>
+            </ul>
+        </div>
+
+        <div class="help-section">
+            <h2 class="help-h2">Tips for Performance</h2>
+            <ul>
+                <li>Use a MIDI controller with knobs/sliders for smooth CC control</li>
+                <li>Map frequently used parameters to easily accessible controls</li>
+                <li>Use velocity-sensitive keys for dynamic cell size control</li>
+                <li>Experiment with different CC mappings to find your preferred setup</li>
+            </ul>
+        </div>
+
+        <div class="help-section">
+            <h2 class="help-h2">Troubleshooting</h2>
+            <div class="help-warning">
+                <strong>MIDI not connecting?</strong>
+                <ul>
+                    <li>Make sure your MIDI device is properly connected and recognized by your OS</li>
+                    <li>Try refreshing the page and reconnecting</li>
+                    <li>Check that your browser supports Web MIDI API (Chrome, Edge, Firefox)</li>
+                    <li>Ensure you're running over HTTPS or localhost</li>
+                </ul>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-link">← Back to Application</a>
+    </div>
+</body>
+</html> 

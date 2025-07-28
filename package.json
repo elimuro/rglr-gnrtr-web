@@ -1,0 +1,24 @@
+{
+  "name": "rglr-gnrtr-web",
+  "version": "1.0.0",
+  "description": "Web version of RGLR GNRTR geometric pattern generator",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "dat.gui": "^0.7.9",
+    "gsap": "^3.12.5",
+    "three": "^0.162.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "vite": "^5.1.4"
+  }
+}
