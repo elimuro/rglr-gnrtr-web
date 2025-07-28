@@ -248,6 +248,14 @@ export class MIDIManager {
         const data = event.data;
         const status = data[0] & 0xf0;
         const channel = data[0] & 0x0f;
+        console.log('MIDI message:', {
+            rawData: Array.from(data),
+            status: status.toString(16),
+            channel: channel,
+            data0: data[0],
+            data1: data[1],
+            data2: data[2]
+        });
         if (status === 0x90 || status === 0x80) { // Note On/Off
         const note = data[1];
         const velocity = data[2];

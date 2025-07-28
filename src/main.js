@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GUI } from 'dat.gui';
 import { gsap } from 'gsap';
 import { MIDIManager } from './midi-manager.js';
+import { MIDIControlManager } from './midi-controls.js';
 
 class RGLRGNRTR {
     constructor() {
@@ -20,6 +21,7 @@ class RGLRGNRTR {
         this.animationTime = 0;
         this.composition = []; // Store the composition for animation
         this.midiManager = null; // MIDI manager instance
+        this.controlManager = null; // MIDI control manager instance
         
         // Map parameter names to HTML element IDs
         this.paramToElementId = {
@@ -41,6 +43,15 @@ class RGLRGNRTR {
         this.setupGUI();
         this.createGrid();
         this.animate();
+        
+        // Initialize control manager when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initializeControlManager();
+            });
+        } else {
+            this.initializeControlManager();
+        }
     }
 
     init() {
@@ -305,6 +316,46 @@ class RGLRGNRTR {
         });
         
         this.setupCollapsibleSections();
+    }
+
+    initializeControlManager() {
+        console.log('Initializing control manager...');
+        
+        // Get the containers for CC and Note controls
+        const ccSection = document.querySelector('[data-section="channel-mapping"]');
+        const noteSection = document.querySelector('[data-section="note-controls"]');
+        
+        console.log('CC section found:', ccSection);
+        console.log('Note section found:', noteSection);
+        
+        // The .midi-section-content divs have the data-section attribute directly
+        const ccContainer = document.querySelector('.midi-section-content[data-section="channel-mapping"]');
+        const noteContainer = document.querySelector('.midi-section-content[data-section="note-controls"]');
+        
+        console.log('CC container found:', ccContainer);
+        console.log('Note container found:', noteContainer);
+        
+        if (!ccContainer || !noteContainer) {
+            console.error('Could not find MIDI control containers');
+            console.log('Available elements with data-section:');
+            document.querySelectorAll('[data-section]').forEach(el => {
+                console.log('-', el.getAttribute('data-section'), el);
+            });
+            return;
+        }
+        
+        // Store containers for later use
+        this.ccContainer = ccContainer;
+        this.noteContainer = noteContainer;
+        
+        // Initialize the control manager with both containers
+        this.controlManager = new MIDIControlManager(ccContainer, this);
+        this.controlManager.noteContainer = noteContainer;
+        
+        console.log('Control manager initialized successfully');
+        
+        // Create initial controls from existing mappings
+        this.recreateControlsFromPreset();
     }
     
     setupCollapsibleSections() {
@@ -2382,50 +2433,66 @@ class RGLRGNRTR {
 
     // Add new CC control
     addCCControl() {
-        const nextIndex = this.getNextControlIndex('cc');
-        const controlId = this.generateControlId('cc', nextIndex);
-        
-        // Add to mappings
-        this.params.midiCCMappings[controlId] = {
-            channel: 0,
-            cc: nextIndex,
-            target: 'animationSpeed'
-        };
-        
-        // Create and insert the control element
-        const controlElement = this.createCCControlElement(controlId, nextIndex);
-        const addButton = document.getElementById('add-cc-control');
-        
-        if (addButton && addButton.parentElement && addButton.parentElement.parentElement) {
-            addButton.parentElement.parentElement.insertBefore(controlElement, addButton.parentElement);
-            
-            // Set up event listeners for the new control
-            this.setupCCControlListeners(controlId);
+        console.log('Adding CC control...');
+        if (!this.controlManager) {
+            console.error('Control manager not initialized, trying to initialize...');
+            this.initializeControlManager();
+            if (!this.controlManager) {
+                console.error('Failed to initialize control manager');
+                return;
+            }
         }
+        
+        const nextIndex = this.controlManager.getNextControlIndex('cc');
+        console.log('Next CC index:', nextIndex);
+        const control = this.controlManager.addControl('cc', nextIndex);
+        
+        if (control) {
+            // Add to mappings
+            const controlId = control.controlId;
+            this.params.midiCCMappings[controlId] = {
+                channel: 0,
+                cc: nextIndex,
+                target: 'animationSpeed'
+            };
+            console.log('Added CC control:', controlId);
+        } else {
+            console.error('Failed to create CC control');
+        }
+        
+        return control;
     }
 
     // Add new Note control
     addNoteControl() {
-        const nextIndex = this.getNextControlIndex('note');
-        const controlId = this.generateControlId('note', nextIndex);
-        
-        // Add to mappings
-        this.params.midiNoteMappings[controlId] = {
-            channel: 0,
-            note: 60 + nextIndex - 1,
-            target: 'shapeCycling'
-        };
-        
-        // Create and insert the control element
-        const controlElement = this.createNoteControlElement(controlId, nextIndex);
-        const addButton = document.getElementById('add-note-control');
-        
-        if (addButton && addButton.parentElement && addButton.parentElement.parentElement) {
-            addButton.parentElement.parentElement.insertBefore(controlElement, addButton.parentElement);
-            
-            // Set up event listeners for the new control
-            this.setupNoteControlListeners(controlId);
+        console.log('Adding Note control...');
+        if (!this.controlManager) {
+            console.error('Control manager not initialized, trying to initialize...');
+            this.initializeControlManager();
+            if (!this.controlManager) {
+                console.error('Failed to initialize control manager');
+                return;
+            }
         }
+        
+        const nextIndex = this.controlManager.getNextControlIndex('note');
+        console.log('Next Note index:', nextIndex);
+        const control = this.controlManager.addControl('note', nextIndex);
+        
+        if (control) {
+            // Add to mappings
+            const controlId = control.controlId;
+            this.params.midiNoteMappings[controlId] = {
+                channel: 0,
+                note: 60 + nextIndex - 1,
+                target: 'shapeCycling'
+            };
+            console.log('Added Note control:', controlId);
+        } else {
+            console.error('Failed to create Note control');
+        }
+        
+        return control;
     }
 
     // Remove CC control
@@ -2433,10 +2500,15 @@ class RGLRGNRTR {
         // Remove from mappings
         delete this.params.midiCCMappings[controlId];
         
-        // Remove from DOM
-        const controlElement = document.querySelector(`[data-control-id="${controlId}"]`);
-        if (controlElement) {
-            controlElement.remove();
+        // Remove via control manager if it exists
+        if (this.controlManager) {
+            this.controlManager.removeControl(controlId);
+        }
+        
+        // Also remove the DOM element for original controls
+        const element = document.querySelector(`[data-control-id="${controlId}"]`);
+        if (element) {
+            element.remove();
         }
     }
 
@@ -2445,10 +2517,15 @@ class RGLRGNRTR {
         // Remove from mappings
         delete this.params.midiNoteMappings[controlId];
         
-        // Remove from DOM
-        const controlElement = document.querySelector(`[data-control-id="${controlId}"]`);
-        if (controlElement) {
-            controlElement.remove();
+        // Remove via control manager if it exists
+        if (this.controlManager) {
+            this.controlManager.removeControl(controlId);
+        }
+        
+        // Also remove the DOM element for original controls
+        const element = document.querySelector(`[data-control-id="${controlId}"]`);
+        if (element) {
+            element.remove();
         }
     }
 
@@ -2475,6 +2552,15 @@ class RGLRGNRTR {
                     <option value="scaleFrequency">Scale Frequency</option>
                     <option value="gridWidth">Grid Width</option>
                     <option value="gridHeight">Grid Height</option>
+                    <option value="compositionWidth">Composition Width</option>
+                    <option value="compositionHeight">Composition Height</option>
+                    <option value="animationType">Animation Type</option>
+                    <option value="sphereRefraction">Sphere Refraction</option>
+                    <option value="sphereTransparency">Sphere Transparency</option>
+                    <option value="sphereTransmission">Sphere Transmission</option>
+                    <option value="sphereRoughness">Sphere Roughness</option>
+                    <option value="sphereMetalness">Sphere Metalness</option>
+                    <option value="sphereScale">Sphere Scale</option>
                 </select>
                 <button id="midi-${controlId}-learn" class="midi-learn-button">Learn</button>
                 <span id="midi-${controlId}-learn-status" class="midi-learn-status"></span>
@@ -2497,16 +2583,15 @@ class RGLRGNRTR {
                 <input type="number" id="midi-${controlId}-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
                 <input type="number" id="midi-${controlId}-value" value="${60 + index - 1}" min="0" max="127" class="midi-cc-input" placeholder="Note">
                 <select id="midi-${controlId}-target" class="midi-select">
-                    <option value="shapeCycling">Shape Cycling</option>
-                    <option value="sizeAnimation">Size Animation</option>
-                    <option value="showGrid">Show Grid</option>
-                    <option value="enableShapeCycling">Enable Shape Cycling</option>
-                    <option value="enableSizeAnimation">Enable Size Animation</option>
-                    <option value="enableMovementAnimation">Enable Movement Animation</option>
-                    <option value="enableRotationAnimation">Enable Rotation Animation</option>
-                    <option value="enableScaleAnimation">Enable Scale Animation</option>
+                    <option value="shapeCycling">Toggle Shape Cycling</option>
+                    <option value="sizeAnimation">Toggle Size Animation</option>
+                    <option value="showGrid">Toggle Grid</option>
                     <option value="resetAnimation">Reset Animation</option>
-                    <option value="togglePause">Toggle Pause</option>
+                    <option value="toggleBasicShapes">Toggle Basic Shapes</option>
+                    <option value="toggleTriangles">Toggle Triangles</option>
+                    <option value="toggleRectangles">Toggle Rectangles</option>
+                    <option value="toggleEllipses">Toggle Ellipses</option>
+                    <option value="toggleRefractiveSpheres">Toggle Refractive Spheres</option>
                 </select>
                 <button id="midi-${controlId}-learn" class="midi-learn-button">Learn</button>
                 <span id="midi-${controlId}-learn-status" class="midi-learn-status"></span>
@@ -2812,6 +2897,84 @@ class RGLRGNRTR {
                 mesh.scale.set(sphereScale, sphereScale, sphereScale);
             }
         });
+    }
+    
+    // Method for updating animation parameters from MIDI controls
+    updateAnimationParameter(target, value) {
+        if (this.params.hasOwnProperty(target)) {
+            this.params[target] = value;
+            
+            // Update GUI if it exists
+            if (this.shapeControls && this.shapeControls.getController(target)) {
+                this.shapeControls.getController(target).setValue(value);
+            }
+            
+            // Handle specific parameter updates
+            switch (target) {
+                case 'gridWidth':
+                case 'gridHeight':
+                    this.createGrid();
+                    break;
+                case 'cellSize':
+                    this.updateCellSize();
+                    break;
+                case 'sphereRefraction':
+                case 'sphereTransparency':
+                case 'sphereTransmission':
+                case 'sphereRoughness':
+                case 'sphereMetalness':
+                    this.updateSphereMaterials();
+                    break;
+                case 'sphereScale':
+                    this.updateSphereScales();
+                    break;
+            }
+        }
+    }
+    
+    // Method for triggering note actions from MIDI controls
+    triggerNoteAction(target) {
+        switch (target) {
+            case 'shapeCycling':
+                this.params.enableShapeCycling = !this.params.enableShapeCycling;
+                break;
+            case 'sizeAnimation':
+                this.params.enableSizeAnimation = !this.params.enableSizeAnimation;
+                break;
+            case 'showGrid':
+                this.params.showGrid = !this.params.showGrid;
+                this.updateGridLines();
+                break;
+            case 'resetAnimation':
+                this.animationTime = 0;
+                this.pulseTime = 0;
+                break;
+            case 'toggleBasicShapes':
+                this.params.enabledShapes['Basic Shapes'] = !this.params.enabledShapes['Basic Shapes'];
+                this.createGrid();
+                break;
+            case 'toggleTriangles':
+                this.params.enabledShapes['Triangles'] = !this.params.enabledShapes['Triangles'];
+                this.createGrid();
+                break;
+            case 'toggleRectangles':
+                this.params.enabledShapes['Rectangles'] = !this.params.enabledShapes['Rectangles'];
+                this.createGrid();
+                break;
+            case 'toggleEllipses':
+                this.params.enabledShapes['Ellipses'] = !this.params.enabledShapes['Ellipses'];
+                this.createGrid();
+                break;
+            case 'toggleRefractiveSpheres':
+                this.params.enabledShapes['Refractive Spheres'] = !this.params.enabledShapes['Refractive Spheres'];
+                this.createGrid();
+                break;
+        }
+        
+        // Update GUI if it exists
+        if (this.shapeControls) {
+            this.updateAllUIElements();
+        }
     }
 }
 

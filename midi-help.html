@@ -37,6 +37,10 @@
                 <strong>Note:</strong> MIDI channels are numbered 1-16 in the interface to match standard MIDI hardware conventions, but internally the system uses channels 0-15.
             </div>
             
+            <div class="help-note">
+                <strong>Dynamic Controls:</strong> You can add new CC controls using the "+ Add New CC Control" button. Each new control will be automatically numbered and can be removed using the × button.
+            </div>
+            
             <table class="midi-table">
                 <tr>
                     <th>Channel</th>
@@ -122,6 +126,69 @@
                     <td>1 - 30</td>
                     <td>Number of rows in the grid</td>
                 </tr>
+                <tr>
+                    <td>1</td>
+                    <td>12</td>
+                    <td>Composition Width</td>
+                    <td>10 - 100</td>
+                    <td>Width of the composition area</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>13</td>
+                    <td>Composition Height</td>
+                    <td>10 - 100</td>
+                    <td>Height of the composition area</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>14</td>
+                    <td>Animation Type</td>
+                    <td>0 - 3</td>
+                    <td>Type of animation (Movement, Rotation, Scale, Combined)</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>15</td>
+                    <td>Sphere Refraction</td>
+                    <td>1 - 3</td>
+                    <td>Refraction index for sphere materials</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>16</td>
+                    <td>Sphere Transparency</td>
+                    <td>0 - 1</td>
+                    <td>Transparency level of sphere materials</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>17</td>
+                    <td>Sphere Transmission</td>
+                    <td>0 - 1</td>
+                    <td>Light transmission through sphere materials</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>18</td>
+                    <td>Sphere Roughness</td>
+                    <td>0 - 1</td>
+                    <td>Surface roughness of sphere materials</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>19</td>
+                    <td>Sphere Metalness</td>
+                    <td>0 - 1</td>
+                    <td>Metallic appearance of sphere materials</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>20</td>
+                    <td>Sphere Scale</td>
+                    <td>0.1 - 3</td>
+                    <td>Size scaling of sphere objects</td>
+                </tr>
             </table>
         </div>
 
@@ -159,6 +226,10 @@
             <h2 class="help-h2">Note Controls</h2>
             <p>These controls use MIDI notes as toggle switches:</p>
             
+            <div class="help-note">
+                <strong>Dynamic Controls:</strong> You can add new Note controls using the "+ Add New Note Control" button. Each new control will be automatically numbered and can be removed using the × button.
+            </div>
+            
             <table class="midi-table">
                 <tr>
                     <th>Note Number</th>
@@ -167,23 +238,68 @@
                 </tr>
                 <tr>
                     <td>60 (Middle C)</td>
-                    <td>Shape Cycling</td>
+                    <td>Toggle Shape Cycling</td>
                     <td>Toggle shape cycling animation</td>
                 </tr>
                 <tr>
                     <td>61 (C#)</td>
-                    <td>Size Animation</td>
+                    <td>Toggle Size Animation</td>
                     <td>Toggle size/movement/rotation animations</td>
                 </tr>
                 <tr>
                     <td>62 (D)</td>
-                    <td>Show Grid</td>
+                    <td>Toggle Grid</td>
                     <td>Toggle grid line visibility</td>
+                </tr>
+                <tr>
+                    <td>63 (D#)</td>
+                    <td>Reset Animation</td>
+                    <td>Reset all animations to default</td>
+                </tr>
+                <tr>
+                    <td>64 (E)</td>
+                    <td>Toggle Basic Shapes</td>
+                    <td>Toggle basic shape visibility</td>
+                </tr>
+                <tr>
+                    <td>65 (F)</td>
+                    <td>Toggle Triangles</td>
+                    <td>Toggle triangle shape visibility</td>
+                </tr>
+                <tr>
+                    <td>66 (F#)</td>
+                    <td>Toggle Rectangles</td>
+                    <td>Toggle rectangle shape visibility</td>
+                </tr>
+                <tr>
+                    <td>67 (G)</td>
+                    <td>Toggle Ellipses</td>
+                    <td>Toggle ellipse shape visibility</td>
+                </tr>
+                <tr>
+                    <td>68 (G#)</td>
+                    <td>Toggle Refractive Spheres</td>
+                    <td>Toggle refractive sphere visibility</td>
                 </tr>
             </table>
             
             <div class="help-note">
                 <strong>Note:</strong> Any other MIDI note will control cell size based on velocity (how hard you press the key).
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2 class="help-h2">MIDI Learn Functionality</h2>
+            <p>New controls feature a "Learn" button that automatically detects MIDI input:</p>
+            <ol>
+                <li>Click the "Learn" button on any control</li>
+                <li>Send a MIDI CC or Note message from your device</li>
+                <li>The system will automatically detect the channel and CC/Note number</li>
+                <li>The control will be configured and ready to use</li>
+            </ol>
+            
+            <div class="help-note">
+                <strong>Note:</strong> The Learn function works for both CC and Note controls. For CC controls, it learns the CC number and channel. For Note controls, it learns the note number and channel.
             </div>
         </div>
 

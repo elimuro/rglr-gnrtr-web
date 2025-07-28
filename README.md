@@ -9,6 +9,8 @@ This is a web-based version of the RGLR GNRTR geometric pattern generator, conve
 - 3D transformations
 - Color customization
 - **Web MIDI Integration** - Connect MIDI controllers and instruments
+- **Dynamic MIDI Control Management** - Add and remove MIDI controls on-the-fly
+- **MIDI Learn Functionality** - Automatic detection of MIDI channel and CC/Note numbers
 - **Per-Parameter MIDI Mapping** - Configure channel/CC pairs for each animation parameter
 - **MIDI Preset System** - Save and load custom MIDI mapping configurations
 - **Live MIDI Activity Monitoring** - Visual feedback for MIDI input
@@ -42,6 +44,8 @@ npm start
 
 ### MIDI Controls
 - **Connect MIDI**: Connect your MIDI device to the browser
+- **Dynamic Control Management**: Add new CC and Note controls with the "+ Add New" buttons
+- **MIDI Learn**: Click "Learn" on any control to automatically detect MIDI input
 - **Channel/CC Mapping**: Configure which MIDI channel and CC number controls each parameter
 - **Per-Parameter Control**: Each animation parameter can be mapped to different MIDI channels/CCs
 - **Live Testing**: Test CC values and see real-time parameter changes
@@ -59,9 +63,14 @@ npm start
 - Rotation Frequency
 - Scale Frequency
 - Grid Width/Height
+- Composition Width/Height
+- Animation Type
+- Sphere Refraction/Transparency/Transmission/Roughness/Metalness/Scale
 - Shape Cycling (Note On/Off)
 - Size Animation (Note On/Off)
 - Show Grid (Note On/Off)
+- Reset Animation (Note On/Off)
+- Toggle Basic Shapes/Triangles/Rectangles/Ellipses/Refractive Spheres (Note On/Off)
 
 ## Technologies Used
 
@@ -78,9 +87,11 @@ npm start
 ## MIDI Setup
 
 1. **Connect MIDI Device**: Click "Connect MIDI" in the MIDI control panel
-2. **Configure Mappings**: Set channel/CC pairs for each parameter
-3. **Test Controls**: Use "Test CC Values" to verify your setup
-4. **Save Presets**: Save your custom mappings for later use
+2. **Add Dynamic Controls**: Use "+ Add New CC Control" or "+ Add New Note Control" buttons
+3. **Use MIDI Learn**: Click "Learn" on any control and send MIDI input to automatically configure it
+4. **Configure Mappings**: Set channel/CC pairs for each parameter
+5. **Test Controls**: Use "Test CC Values" to verify your setup
+6. **Save Presets**: Save your custom mappings for later use
 
 ## Browser Compatibility
 
