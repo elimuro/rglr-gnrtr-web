@@ -28,7 +28,28 @@ const CONTROL_CONFIGS = {
             { value: 'sphereTransmission', label: 'Sphere Transmission' },
             { value: 'sphereRoughness', label: 'Sphere Roughness' },
             { value: 'sphereMetalness', label: 'Sphere Metalness' },
-            { value: 'sphereScale', label: 'Sphere Scale' }
+            { value: 'sphereScale', label: 'Sphere Scale' },
+            { value: 'sphereClearcoat', label: 'Sphere Clearcoat' },
+            { value: 'sphereClearcoatRoughness', label: 'Sphere Clearcoat Roughness' },
+            { value: 'sphereEnvMapIntensity', label: 'Sphere Environment Map Intensity' },
+            { value: 'bloomStrength', label: 'Bloom Strength' },
+            { value: 'bloomRadius', label: 'Bloom Radius' },
+            { value: 'bloomThreshold', label: 'Bloom Threshold' },
+            { value: 'chromaticIntensity', label: 'Chromatic Aberration' },
+            { value: 'vignetteIntensity', label: 'Vignette Intensity' },
+            { value: 'vignetteRadius', label: 'Vignette Radius' },
+            { value: 'vignetteSoftness', label: 'Vignette Softness' },
+            { value: 'grainIntensity', label: 'Film Grain' },
+            { value: 'colorHue', label: 'Color Hue' },
+            { value: 'colorSaturation', label: 'Color Saturation' },
+            { value: 'colorBrightness', label: 'Color Brightness' },
+            { value: 'colorContrast', label: 'Color Contrast' },
+            { value: 'ambientLightIntensity', label: 'Ambient Light' },
+            { value: 'directionalLightIntensity', label: 'Directional Light' },
+            { value: 'pointLight1Intensity', label: 'Point Light 1' },
+            { value: 'pointLight2Intensity', label: 'Point Light 2' },
+            { value: 'rimLightIntensity', label: 'Rim Light' },
+            { value: 'accentLightIntensity', label: 'Accent Light' }
         ]
     },
     note: {
@@ -45,7 +66,13 @@ const CONTROL_CONFIGS = {
             { value: 'toggleTriangles', label: 'Toggle Triangles' },
             { value: 'toggleRectangles', label: 'Toggle Rectangles' },
             { value: 'toggleEllipses', label: 'Toggle Ellipses' },
-            { value: 'toggleRefractiveSpheres', label: 'Toggle Refractive Spheres' }
+            { value: 'toggleRefractiveSpheres', label: 'Toggle Refractive Spheres' },
+            { value: 'bloomEnabled', label: 'Toggle Bloom' },
+            { value: 'chromaticAberrationEnabled', label: 'Toggle Chromatic Aberration' },
+            { value: 'vignetteEnabled', label: 'Toggle Vignette' },
+            { value: 'grainEnabled', label: 'Toggle Film Grain' },
+            { value: 'colorGradingEnabled', label: 'Toggle Color Grading' },
+            { value: 'postProcessingEnabled', label: 'Toggle Post Processing' }
         ]
     }
 };
@@ -325,7 +352,7 @@ export class MIDIControl {
     }
     
     getMapping() {
-        const mappings = this.type === 'cc' ? this.app.params.midiCCMappings : this.app.params.midiNoteMappings;
+        const mappings = this.type === 'cc' ? this.app.state.get('midiCCMappings') : this.app.state.get('midiNoteMappings');
         const defaultMapping = {
             channel: 0,
             value: this.config.defaultValue,
@@ -341,11 +368,27 @@ export class MIDIControl {
     }
     
     updateMapping(updates) {
-        const mappings = this.type === 'cc' ? this.app.params.midiCCMappings : this.app.params.midiNoteMappings;
+        console.log(`Updating mapping for ${this.controlId}:`, updates);
+        
+        const mappings = this.type === 'cc' ? this.app.state.get('midiCCMappings') : this.app.state.get('midiNoteMappings');
+        console.log('Current mappings before update:', mappings);
+        
         if (!mappings[this.controlId]) {
             mappings[this.controlId] = this.getMapping();
+            console.log('Created new mapping for', this.controlId, ':', mappings[this.controlId]);
         }
+        
         Object.assign(mappings[this.controlId], updates);
+        console.log('Updated mapping for', this.controlId, ':', mappings[this.controlId]);
+        
+        // Update the state
+        if (this.type === 'cc') {
+            this.app.state.set('midiCCMappings', mappings);
+            console.log('Updated CC mappings in state:', this.app.state.get('midiCCMappings'));
+        } else {
+            this.app.state.set('midiNoteMappings', mappings);
+            console.log('Updated Note mappings in state:', this.app.state.get('midiNoteMappings'));
+        }
     }
     
     serialize() {
@@ -388,18 +431,23 @@ export class MIDIControl {
         }
         
         // Remove from mappings
-        const mappings = this.type === 'cc' ? this.app.params.midiCCMappings : this.app.params.midiNoteMappings;
+        const mappings = this.type === 'cc' ? this.app.state.get('midiCCMappings') : this.app.state.get('midiNoteMappings');
         delete mappings[this.controlId];
+        
+        // Update the state
+        if (this.type === 'cc') {
+            this.app.state.set('midiCCMappings', mappings);
+        } else {
+            this.app.state.set('midiNoteMappings', mappings);
+        }
         
         // Remove from DOM
         if (this.element) {
             this.element.remove();
         }
         
-        // Notify manager
-        if (this.app.controlManager) {
-            this.app.controlManager.removeControl(this.controlId);
-        }
+        // Don't call removeControl here to avoid circular reference
+        // The manager will handle removing from its internal map
     }
 }
 
@@ -457,7 +505,27 @@ export class MIDIControlManager {
     }
     
     clearAllControls() {
-        this.controls.forEach(control => control.destroy());
+        this.controls.forEach(control => {
+            // Don't call destroy() to avoid removing mappings from state
+            // Just clean up the DOM and MIDI handlers
+            if (control.midiHandler) {
+                if (control.type === 'cc') {
+                    control.app.midiManager.offCC(control.midiHandler);
+                } else {
+                    control.app.midiManager.offNote(control.midiHandler);
+                }
+            }
+            
+            // Clear timeout
+            if (control.updateTimeout) {
+                clearTimeout(control.updateTimeout);
+            }
+            
+            // Remove from DOM
+            if (control.element) {
+                control.element.remove();
+            }
+        });
         this.controls.clear();
     }
     
