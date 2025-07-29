@@ -256,86 +256,82 @@ export class MIDIManager {
             data1: data[1],
             data2: data[2]
         });
-        if (status === 0x90 || status === 0x80) { // Note On/Off
-        const note = data[1];
-        const velocity = data[2];
-            const isNoteOn = (status === 0x90 && velocity > 0);
-            // Call learn listeners for notes
-            if (this._learnNoteListeners.size > 0) {
-                this._learnNoteListeners.forEach(cb => cb(note, velocity, isNoteOn, channel));
-            }
-        // Show MIDI activity
+
+        // Show MIDI activity for all message types
         this.showMIDIActivity();
 
-        // Process all channels since we now have per-parameter channel mapping
-        // The individual parameter handlers will filter by their assigned channels
-
         let messageType = '';
-            switch (status) {
+
+        // Handle different MIDI message types
+        switch (status) {
             case 0x80: // Note Off
-                this.app.onMIDINote(note, velocity, false, channel);
-                messageType = `Note Off: ${note}`;
+                {
+                    const note = data[1];
+                    const velocity = data[2];
+                    // Call learn listeners for notes
+                    if (this._learnNoteListeners.size > 0) {
+                        this._learnNoteListeners.forEach(cb => cb(note, velocity, false, channel));
+                    }
+                    this.app.onMIDINote(note, velocity, false, channel);
+                    messageType = `Note Off: ${note}`;
+                }
                 break;
+
             case 0x90: // Note On
-                this.app.onMIDINote(note, velocity, true, channel);
-                messageType = `Note On: ${note} (${velocity})`;
+                {
+                    const note = data[1];
+                    const velocity = data[2];
+                    const isNoteOn = (velocity > 0);
+                    // Call learn listeners for notes
+                    if (this._learnNoteListeners.size > 0) {
+                        this._learnNoteListeners.forEach(cb => cb(note, velocity, isNoteOn, channel));
+                    }
+                    this.app.onMIDINote(note, velocity, isNoteOn, channel);
+                    messageType = `Note On: ${note} (${velocity})`;
+                }
                 break;
+
             case 0xB0: // Control Change
-                this.app.onMIDICC(note, velocity, channel);
-                messageType = `CC: ${note} = ${velocity} (Ch:${channel})`;
-                break;
-            case 0xE0: // Pitch Bend
-                const pitchBendValue = ((data[2] << 7) | data[1]) / 16384; // Normalize to 0-1
-                this.app.onMIDIPitchBend(pitchBendValue);
-                messageType = `Pitch Bend: ${pitchBendValue.toFixed(2)}`;
-                break;
-            case 0xD0: // Channel Pressure (Aftertouch)
-                this.app.onMIDIAftertouch(data[1] / 127);
-                messageType = `Aftertouch: ${data[1]}`;
-                break;
-            case 0xA0: // Polyphonic Key Pressure
-                this.app.onMIDIAftertouch(data[2] / 127);
-                messageType = `Poly Pressure: ${data[2]}`;
-                break;
-        }
-
-        this.updateLastMessage(messageType);
-        } else if (status === 0xB0) { // CC
-            const controller = data[1];
-            const value = data[2];
-            // Call learn listeners for CC
-            if (this._learnCCListeners.size > 0) {
-                this._learnCCListeners.forEach(cb => cb(controller, value, channel));
-            }
-            // Show MIDI activity
-            this.showMIDIActivity();
-
-            // Process all channels since we now have per-parameter channel mapping
-            // The individual parameter handlers will filter by their assigned channels
-
-            let messageType = '';
-            switch (status) {
-                case 0xB0: // Control Change
+                {
+                    const controller = data[1];
+                    const value = data[2];
+                    // Call learn listeners for CC
+                    if (this._learnCCListeners.size > 0) {
+                        this._learnCCListeners.forEach(cb => cb(controller, value, channel));
+                    }
                     this.app.onMIDICC(controller, value, channel);
                     messageType = `CC: ${controller} = ${value} (Ch:${channel})`;
-                    break;
-                case 0xE0: // Pitch Bend
+                }
+                break;
+
+            case 0xE0: // Pitch Bend
+                {
                     const pitchBendValue = ((data[2] << 7) | data[1]) / 16384; // Normalize to 0-1
                     this.app.onMIDIPitchBend(pitchBendValue);
                     messageType = `Pitch Bend: ${pitchBendValue.toFixed(2)}`;
-                    break;
-                case 0xD0: // Channel Pressure (Aftertouch)
+                }
+                break;
+
+            case 0xD0: // Channel Pressure (Aftertouch)
+                {
                     this.app.onMIDIAftertouch(data[1] / 127);
                     messageType = `Aftertouch: ${data[1]}`;
-                    break;
-                case 0xA0: // Polyphonic Key Pressure
+                }
+                break;
+
+            case 0xA0: // Polyphonic Key Pressure
+                {
                     this.app.onMIDIAftertouch(data[2] / 127);
                     messageType = `Poly Pressure: ${data[2]}`;
-                    break;
-            }
+                }
+                break;
 
-            this.updateLastMessage(messageType);
+            default:
+                console.log('Unhandled MIDI message type:', status.toString(16));
+                return;
         }
+
+        this.updateLastMessage(messageType);
     }
 
     showMIDIActivity() {

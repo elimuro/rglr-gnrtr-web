@@ -72,6 +72,11 @@ export class ObjectPool {
                 mesh.rotation.set(0, 0, 0);
                 mesh.scale.set(1, 1, 1);
                 mesh.visible = true;
+                
+                // Dispose of old material if it exists and is different from the new one
+                if (mesh.material && mesh.material !== material && mesh.material.dispose) {
+                    mesh.material.dispose();
+                }
                 mesh.material = material;
                 return mesh;
             }
@@ -91,6 +96,10 @@ export class ObjectPool {
         if (mesh.parent) {
             mesh.parent.remove(mesh);
         }
+
+        // Clear material reference to prevent memory leaks
+        // The material should be managed separately by MaterialManager
+        mesh.material = null;
 
         // Add to pool
         if (!this.meshPool.has(shapeName)) {
