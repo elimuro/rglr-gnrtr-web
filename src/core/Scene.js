@@ -521,7 +521,7 @@ export class Scene {
             this.postProcessingManager.onWindowResize();
         }
         
-        this.createGrid();
+        // Removed this.createGrid() - grid should not be regenerated on window resize
     }
 
     updateFrustumCulling() {

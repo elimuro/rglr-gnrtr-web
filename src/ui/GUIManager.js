@@ -33,7 +33,7 @@ export class GUIManager {
         this.setupAnimationControls();
         this.setupPostProcessingControls();
         this.setupLightingControls();
-        this.setupMIDIControls();
+        // Removed this.setupMIDIControls(); - MIDI settings are already available in the left-side GUI
         
                 // Collapse all folders by default
         this.collapseAllFolders();
@@ -296,22 +296,9 @@ export class GUIManager {
         updateParameterVisibility();
     }
 
-    setupMIDIControls() {
-        const midiFolder = this.gui.addFolder('MIDI');
-        
-        this.addController(midiFolder, 'midiEnabled', false, true, false, 'MIDI Enabled', (value) => {
-            this.state.set('midiEnabled', value);
-            if (value && this.app.midiManager) {
-                this.app.midiManager.connect();
-            } else if (this.app.midiManager) {
-                this.app.midiManager.disconnect();
-            }
-        });
-        
-        this.addController(midiFolder, 'midiChannel', -1, 15, 1, 'MIDI Channel (-1 = All)');
-        
-        // midiFolder.open(); // Removed to keep collapsed by default
-    }
+    // Removed setupMIDIControls() - MIDI settings are already available in the left-side GUI
+
+
 
     setupPerformanceControls() {
         const performanceFolder = this.gui.addFolder('Performance');
@@ -559,4 +546,5 @@ export class GUIManager {
         }
         this.controllers.clear();
     }
+    
 } 

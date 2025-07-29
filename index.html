@@ -78,11 +78,25 @@
             <div id="midi-last-message" class="midi-last-message">No MIDI activity</div>
             </div>
         </div>
+        <div class="midi-section">
+            <h4>
+                Scene Management
+                <button class="midi-section-toggle" data-section="scene-management">▼</button>
+            </h4>
+            <div class="midi-section-content" data-section="scene-management">
+                <div class="midi-control buttons">
+                    <button id="save-scene-button" class="midi-button">Save Scene</button>
+                    <button id="load-scene-button" class="midi-button">Load Scene</button>
+                </div>
+            </div>
+        </div>
     </div>
     <div id="gui-container"></div>
     
     <!-- Hidden file input for loading presets -->
     <input type="file" id="preset-file-input" accept=".json" style="display: none;">
+    
+
     
     <script type="module" src="./src/main-new.js"></script>
 </body>

@@ -31,7 +31,7 @@ export class StateManager {
             randomness: 1,
             
             // Color parameters
-            shapeColor: '#00ffff',
+            shapeColor: '#ff9100',
             backgroundColor: '#000000',
             
             // Shape selection
@@ -44,24 +44,24 @@ export class StateManager {
             },
             
             // Sphere parameters
-            sphereRefraction: 1.33, // Water-like refraction index
-            sphereTransparency: 0.9,
-            sphereRoughness: 0.1, // Much smoother for water
-            sphereMetalness: 0.0,
-            sphereTransmission: 0.95, // Higher transmission for water
-            sphereScale: 1.5,
-            sphereClearcoat: 0.8, // Higher clearcoat for water shine
-            sphereClearcoatRoughness: 0.05, // Very smooth clearcoat
-            sphereEnvMapIntensity: 1.5, // Higher environment map intensity
-            sphereWaterDistortion: true, // Enable water distortion
+            sphereRefraction: 1.67,
+            sphereTransparency: 0.93,
+            sphereRoughness: 0.33,
+            sphereMetalness: 0,
+            sphereTransmission: 0.95,
+            sphereScale: 1.3,
+            sphereClearcoat: 0.66,
+            sphereClearcoatRoughness: 0.05,
+            sphereEnvMapIntensity: 0.28,
+            sphereWaterDistortion: true,
             sphereDistortionStrength: 0.1, // Water distortion strength
             
             // Post-processing parameters
             postProcessingEnabled: true,
             bloomEnabled: true,
-            bloomStrength: 0.5,
-            bloomRadius: 0.4,
-            bloomThreshold: 0.85,
+            bloomStrength: 0.25,
+            bloomRadius: 0.25,
+            bloomThreshold: 0.3,
             chromaticAberrationEnabled: false,
             chromaticIntensity: 0.5,
             vignetteEnabled: false,
@@ -71,10 +71,10 @@ export class StateManager {
             grainEnabled: false,
             grainIntensity: 0.1,
             colorGradingEnabled: false,
-            colorHue: 0.0,
-            colorSaturation: 1.0,
-            colorBrightness: 1.0,
-            colorContrast: 1.0,
+            colorHue: 0,
+            colorSaturation: 1,
+            colorBrightness: 1,
+            colorContrast: 1,
             fxaaEnabled: true,
             
             // MIDI parameters
@@ -83,7 +83,7 @@ export class StateManager {
             
             // Lighting parameters
             ambientLightIntensity: 0.4,
-            directionalLightIntensity: 1.0,
+            directionalLightIntensity: 1,
             pointLight1Intensity: 1.5,
             pointLight2Intensity: 0.8,
             rimLightIntensity: 0.6,
@@ -293,5 +293,181 @@ export class StateManager {
     // Set multiple values at once
     setMultiple(updates) {
         this.batchUpdate(updates);
+    }
+    
+    // Scene management methods
+    exportScene() {
+        // Export all visual settings (excluding MIDI mappings)
+        const sceneData = {
+            name: 'Custom Scene',
+            timestamp: new Date().toISOString(),
+            version: '1.0',
+            settings: {
+                // Animation parameters
+                animationType: this.state.animationType,
+                animationSpeed: this.state.animationSpeed,
+                enableShapeCycling: this.state.enableShapeCycling,
+                enableSizeAnimation: this.state.enableSizeAnimation,
+                movementAmplitude: this.state.movementAmplitude,
+                movementFrequency: this.state.movementFrequency,
+                rotationAmplitude: this.state.rotationAmplitude,
+                rotationFrequency: this.state.rotationFrequency,
+                scaleAmplitude: this.state.scaleAmplitude,
+                scaleFrequency: this.state.scaleFrequency,
+                
+                // Grid parameters
+                gridWidth: this.state.gridWidth,
+                gridHeight: this.state.gridHeight,
+                cellSize: this.state.cellSize,
+                compositionWidth: this.state.compositionWidth,
+                compositionHeight: this.state.compositionHeight,
+                showGrid: this.state.showGrid,
+                randomness: this.state.randomness,
+                
+                // Color parameters
+                shapeColor: this.state.shapeColor,
+                backgroundColor: this.state.backgroundColor,
+                
+                // Shape selection
+                enabledShapes: { ...this.state.enabledShapes },
+                
+                // Sphere parameters
+                sphereRefraction: this.state.sphereRefraction,
+                sphereTransparency: this.state.sphereTransparency,
+                sphereRoughness: this.state.sphereRoughness,
+                sphereMetalness: this.state.sphereMetalness,
+                sphereTransmission: this.state.sphereTransmission,
+                sphereScale: this.state.sphereScale,
+                sphereClearcoat: this.state.sphereClearcoat,
+                sphereClearcoatRoughness: this.state.sphereClearcoatRoughness,
+                sphereEnvMapIntensity: this.state.sphereEnvMapIntensity,
+                sphereWaterDistortion: this.state.sphereWaterDistortion,
+                
+                // Post-processing parameters
+                postProcessingEnabled: this.state.postProcessingEnabled,
+                bloomEnabled: this.state.bloomEnabled,
+                bloomStrength: this.state.bloomStrength,
+                bloomRadius: this.state.bloomRadius,
+                bloomThreshold: this.state.bloomThreshold,
+                chromaticAberrationEnabled: this.state.chromaticAberrationEnabled,
+                chromaticIntensity: this.state.chromaticIntensity,
+                vignetteEnabled: this.state.vignetteEnabled,
+                vignetteIntensity: this.state.vignetteIntensity,
+                vignetteRadius: this.state.vignetteRadius,
+                vignetteSoftness: this.state.vignetteSoftness,
+                grainEnabled: this.state.grainEnabled,
+                grainIntensity: this.state.grainIntensity,
+                colorGradingEnabled: this.state.colorGradingEnabled,
+                colorHue: this.state.colorHue,
+                colorSaturation: this.state.colorSaturation,
+                colorBrightness: this.state.colorBrightness,
+                colorContrast: this.state.colorContrast,
+                fxaaEnabled: this.state.fxaaEnabled,
+                
+                // Lighting parameters
+                ambientLightIntensity: this.state.ambientLightIntensity,
+                directionalLightIntensity: this.state.directionalLightIntensity,
+                pointLight1Intensity: this.state.pointLight1Intensity,
+                pointLight2Intensity: this.state.pointLight2Intensity,
+                rimLightIntensity: this.state.rimLightIntensity,
+                accentLightIntensity: this.state.accentLightIntensity,
+                
+                // Performance parameters
+                enableFrustumCulling: this.state.enableFrustumCulling
+            }
+        };
+        
+        return sceneData;
+    }
+    
+    importScene(sceneData) {
+        try {
+            if (!sceneData || !sceneData.settings) {
+                throw new Error('Invalid scene data format');
+            }
+            
+            const settings = sceneData.settings;
+            
+            // Apply all visual settings
+            this.batchUpdate({
+                // Animation parameters
+                animationType: settings.animationType ?? this.state.animationType,
+                animationSpeed: settings.animationSpeed ?? this.state.animationSpeed,
+                enableShapeCycling: settings.enableShapeCycling ?? this.state.enableShapeCycling,
+                enableSizeAnimation: settings.enableSizeAnimation ?? this.state.enableSizeAnimation,
+                movementAmplitude: settings.movementAmplitude ?? this.state.movementAmplitude,
+                movementFrequency: settings.movementFrequency ?? this.state.movementFrequency,
+                rotationAmplitude: settings.rotationAmplitude ?? this.state.rotationAmplitude,
+                rotationFrequency: settings.rotationFrequency ?? this.state.rotationFrequency,
+                scaleAmplitude: settings.scaleAmplitude ?? this.state.scaleAmplitude,
+                scaleFrequency: settings.scaleFrequency ?? this.state.scaleFrequency,
+                
+                // Grid parameters
+                gridWidth: settings.gridWidth ?? this.state.gridWidth,
+                gridHeight: settings.gridHeight ?? this.state.gridHeight,
+                cellSize: settings.cellSize ?? this.state.cellSize,
+                compositionWidth: settings.compositionWidth ?? this.state.compositionWidth,
+                compositionHeight: settings.compositionHeight ?? this.state.compositionHeight,
+                showGrid: settings.showGrid ?? this.state.showGrid,
+                randomness: settings.randomness ?? this.state.randomness,
+                
+                // Color parameters
+                shapeColor: settings.shapeColor ?? this.state.shapeColor,
+                backgroundColor: settings.backgroundColor ?? this.state.backgroundColor,
+                
+                // Shape selection
+                enabledShapes: settings.enabledShapes ?? this.state.enabledShapes,
+                
+                // Sphere parameters
+                sphereRefraction: settings.sphereRefraction ?? this.state.sphereRefraction,
+                sphereTransparency: settings.sphereTransparency ?? this.state.sphereTransparency,
+                sphereRoughness: settings.sphereRoughness ?? this.state.sphereRoughness,
+                sphereMetalness: settings.sphereMetalness ?? this.state.sphereMetalness,
+                sphereTransmission: settings.sphereTransmission ?? this.state.sphereTransmission,
+                sphereScale: settings.sphereScale ?? this.state.sphereScale,
+                sphereClearcoat: settings.sphereClearcoat ?? this.state.sphereClearcoat,
+                sphereClearcoatRoughness: settings.sphereClearcoatRoughness ?? this.state.sphereClearcoatRoughness,
+                sphereEnvMapIntensity: settings.sphereEnvMapIntensity ?? this.state.sphereEnvMapIntensity,
+                sphereWaterDistortion: settings.sphereWaterDistortion ?? this.state.sphereWaterDistortion,
+                
+                // Post-processing parameters
+                postProcessingEnabled: settings.postProcessingEnabled ?? this.state.postProcessingEnabled,
+                bloomEnabled: settings.bloomEnabled ?? this.state.bloomEnabled,
+                bloomStrength: settings.bloomStrength ?? this.state.bloomStrength,
+                bloomRadius: settings.bloomRadius ?? this.state.bloomRadius,
+                bloomThreshold: settings.bloomThreshold ?? this.state.bloomThreshold,
+                chromaticAberrationEnabled: settings.chromaticAberrationEnabled ?? this.state.chromaticAberrationEnabled,
+                chromaticIntensity: settings.chromaticIntensity ?? this.state.chromaticIntensity,
+                vignetteEnabled: settings.vignetteEnabled ?? this.state.vignetteEnabled,
+                vignetteIntensity: settings.vignetteIntensity ?? this.state.vignetteIntensity,
+                vignetteRadius: settings.vignetteRadius ?? this.state.vignetteRadius,
+                vignetteSoftness: settings.vignetteSoftness ?? this.state.vignetteSoftness,
+                grainEnabled: settings.grainEnabled ?? this.state.grainEnabled,
+                grainIntensity: settings.grainIntensity ?? this.state.grainIntensity,
+                colorGradingEnabled: settings.colorGradingEnabled ?? this.state.colorGradingEnabled,
+                colorHue: settings.colorHue ?? this.state.colorHue,
+                colorSaturation: settings.colorSaturation ?? this.state.colorSaturation,
+                colorBrightness: settings.colorBrightness ?? this.state.colorBrightness,
+                colorContrast: settings.colorContrast ?? this.state.colorContrast,
+                fxaaEnabled: settings.fxaaEnabled ?? this.state.fxaaEnabled,
+                
+                // Lighting parameters
+                ambientLightIntensity: settings.ambientLightIntensity ?? this.state.ambientLightIntensity,
+                directionalLightIntensity: settings.directionalLightIntensity ?? this.state.directionalLightIntensity,
+                pointLight1Intensity: settings.pointLight1Intensity ?? this.state.pointLight1Intensity,
+                pointLight2Intensity: settings.pointLight2Intensity ?? this.state.pointLight2Intensity,
+                rimLightIntensity: settings.rimLightIntensity ?? this.state.rimLightIntensity,
+                accentLightIntensity: settings.accentLightIntensity ?? this.state.accentLightIntensity,
+                
+                // Performance parameters
+                enableFrustumCulling: settings.enableFrustumCulling ?? this.state.enableFrustumCulling
+            });
+            
+            console.log(`Scene loaded: ${sceneData.name || 'Unnamed Scene'}`);
+            return true;
+        } catch (error) {
+            console.error('Error loading scene:', error);
+            return false;
+        }
     }
 } 

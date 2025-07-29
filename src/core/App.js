@@ -105,9 +105,39 @@ export class App {
             document.getElementById('preset-file-input').click();
         });
         
-        // File input for loading presets
+        // File input for loading presets and scenes
         document.getElementById('preset-file-input').addEventListener('change', (e) => {
-            this.loadPreset(e.target.files[0]);
+            const file = e.target.files[0];
+            if (file) {
+                // Check if it's a scene file or MIDI preset by reading the content
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        // Check if it's a scene file (has settings property)
+                        if (data.settings) {
+                            this.loadSceneFile(data);
+                        } else {
+                            // It's a MIDI preset
+                            this.loadPreset(file);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing file:', error);
+                        alert('Invalid file format. Please check if the file is a valid JSON preset or scene.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+        
+        // Scene management buttons
+        document.getElementById('save-scene-button').addEventListener('click', () => {
+            this.saveScene();
+        });
+        
+        document.getElementById('load-scene-button').addEventListener('click', () => {
+            this.loadScene();
         });
         
         // Add new control buttons
@@ -120,6 +150,8 @@ export class App {
         });
         
         this.setupCollapsibleSections();
+        
+
     }
 
     initializeControlManager() {
@@ -816,6 +848,56 @@ export class App {
         console.log('Finished recreating controls');
         console.log('Final CC mappings in state:', this.state.get('midiCCMappings'));
         console.log('Final Note mappings in state:', this.state.get('midiNoteMappings'));
+    }
+    
+    // Simple scene management methods
+    saveScene() {
+        try {
+            const sceneData = this.state.exportScene();
+            sceneData.name = 'Visual Settings';
+            sceneData.timestamp = new Date().toISOString();
+            
+            // Create and download file (like MIDI preset system)
+            const dataStr = JSON.stringify(sceneData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `rglr-visual-settings-${Date.now()}.json`;
+            link.click();
+            
+            // Clean up the URL object
+            setTimeout(() => URL.revokeObjectURL(link.href), 100);
+            
+            console.log('Scene downloaded successfully');
+            alert('Visual settings downloaded successfully!');
+        } catch (error) {
+            console.error('Error saving scene:', error);
+            alert('Error saving scene. Please try again.');
+        }
+    }
+    
+    loadScene() {
+        // Trigger file input for loading scene file
+        document.getElementById('preset-file-input').click();
+    }
+    
+    loadSceneFile(sceneData) {
+        try {
+            console.log('Loading scene file:', sceneData);
+            
+            const success = this.state.importScene(sceneData);
+            
+            if (success) {
+                console.log('Scene loaded successfully');
+                alert('Visual settings loaded successfully!');
+            } else {
+                alert('Error loading scene. Please check the file format.');
+            }
+        } catch (error) {
+            console.error('Error loading scene file:', error);
+            alert('Error loading scene file. Please check the file format.');
+        }
     }
 
     addCCControl() {
