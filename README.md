@@ -82,7 +82,7 @@ npm start
 
 ## Live Demo
 
-🌐 **[Try it live here](https://rglr-gnrtr.netlify.app)**
+🌐 **[Try it live here](https://rglr-gnrtr-web.netlify.app)**
 
 ## MIDI Setup
 
