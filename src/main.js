@@ -161,10 +161,7 @@ class RGLRGNRTR {
             this.testCCValues();
         });
         
-        // Reset CC mappings button
-        document.getElementById('reset-cc-button').addEventListener('click', () => {
-            this.resetCCMappings();
-        });
+
         
         // Preset selector
         document.getElementById('cc-preset-select').addEventListener('change', (e) => {
@@ -2001,29 +1998,7 @@ class RGLRGNRTR {
         }, 1000);
     }
 
-    resetCCMappings() {
-        // Reset CC mappings to default values (using internal channel numbers 0-15)
-        const defaultMappings = {
-            animationSpeed: { channel: 0, cc: 1 },
-            movementAmplitude: { channel: 0, cc: 2 },
-            rotationAmplitude: { channel: 0, cc: 3 },
-            scaleAmplitude: { channel: 0, cc: 4 },
-            randomness: { channel: 0, cc: 5 },
-            // cellSize: { channel: 0, cc: 6 }, // Removed default mapping
-            movementFrequency: { channel: 0, cc: 7 },
-            rotationFrequency: { channel: 0, cc: 8 },
-            scaleFrequency: { channel: 0, cc: 9 },
-            gridWidth: { channel: 0, cc: 10 },
-            gridHeight: { channel: 0, cc: 11 }
-        };
-        
-        this.params.midiCCMappings = { ...defaultMappings };
-        
-        // Update all UI elements
-        this.updateAllUIElements();
-        
-        console.log('CC mappings reset to default values');
-    }
+
 
     applyCCPreset(presetName) {
         const presets = {
