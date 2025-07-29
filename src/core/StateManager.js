@@ -1,3 +1,5 @@
+import { gsap } from 'gsap';
+
 export class StateManager {
     constructor() {
         this.state = this.getInitialState();
@@ -5,6 +7,7 @@ export class StateManager {
         this.history = [];
         this.historyIndex = -1;
         this.maxHistorySize = 50;
+        this.interpolationTimeline = null; // Track active interpolation
     }
 
     getInitialState() {
@@ -386,88 +389,228 @@ export class StateManager {
                 throw new Error('Invalid scene data format');
             }
             
-            const settings = sceneData.settings;
-            
-            // Apply all visual settings
-            this.batchUpdate({
-                // Animation parameters
-                animationType: settings.animationType ?? this.state.animationType,
-                animationSpeed: settings.animationSpeed ?? this.state.animationSpeed,
-                enableShapeCycling: settings.enableShapeCycling ?? this.state.enableShapeCycling,
-                enableSizeAnimation: settings.enableSizeAnimation ?? this.state.enableSizeAnimation,
-                movementAmplitude: settings.movementAmplitude ?? this.state.movementAmplitude,
-                movementFrequency: settings.movementFrequency ?? this.state.movementFrequency,
-                rotationAmplitude: settings.rotationAmplitude ?? this.state.rotationAmplitude,
-                rotationFrequency: settings.rotationFrequency ?? this.state.rotationFrequency,
-                scaleAmplitude: settings.scaleAmplitude ?? this.state.scaleAmplitude,
-                scaleFrequency: settings.scaleFrequency ?? this.state.scaleFrequency,
-                
-                // Grid parameters
-                gridWidth: settings.gridWidth ?? this.state.gridWidth,
-                gridHeight: settings.gridHeight ?? this.state.gridHeight,
-                cellSize: settings.cellSize ?? this.state.cellSize,
-                compositionWidth: settings.compositionWidth ?? this.state.compositionWidth,
-                compositionHeight: settings.compositionHeight ?? this.state.compositionHeight,
-                showGrid: settings.showGrid ?? this.state.showGrid,
-                randomness: settings.randomness ?? this.state.randomness,
-                
-                // Color parameters
-                shapeColor: settings.shapeColor ?? this.state.shapeColor,
-                backgroundColor: settings.backgroundColor ?? this.state.backgroundColor,
-                
-                // Shape selection
-                enabledShapes: settings.enabledShapes ?? this.state.enabledShapes,
-                
-                // Sphere parameters
-                sphereRefraction: settings.sphereRefraction ?? this.state.sphereRefraction,
-                sphereTransparency: settings.sphereTransparency ?? this.state.sphereTransparency,
-                sphereRoughness: settings.sphereRoughness ?? this.state.sphereRoughness,
-                sphereMetalness: settings.sphereMetalness ?? this.state.sphereMetalness,
-                sphereTransmission: settings.sphereTransmission ?? this.state.sphereTransmission,
-                sphereScale: settings.sphereScale ?? this.state.sphereScale,
-                sphereClearcoat: settings.sphereClearcoat ?? this.state.sphereClearcoat,
-                sphereClearcoatRoughness: settings.sphereClearcoatRoughness ?? this.state.sphereClearcoatRoughness,
-                sphereEnvMapIntensity: settings.sphereEnvMapIntensity ?? this.state.sphereEnvMapIntensity,
-                sphereWaterDistortion: settings.sphereWaterDistortion ?? this.state.sphereWaterDistortion,
-                
-                // Post-processing parameters
-                postProcessingEnabled: settings.postProcessingEnabled ?? this.state.postProcessingEnabled,
-                bloomEnabled: settings.bloomEnabled ?? this.state.bloomEnabled,
-                bloomStrength: settings.bloomStrength ?? this.state.bloomStrength,
-                bloomRadius: settings.bloomRadius ?? this.state.bloomRadius,
-                bloomThreshold: settings.bloomThreshold ?? this.state.bloomThreshold,
-                chromaticAberrationEnabled: settings.chromaticAberrationEnabled ?? this.state.chromaticAberrationEnabled,
-                chromaticIntensity: settings.chromaticIntensity ?? this.state.chromaticIntensity,
-                vignetteEnabled: settings.vignetteEnabled ?? this.state.vignetteEnabled,
-                vignetteIntensity: settings.vignetteIntensity ?? this.state.vignetteIntensity,
-                vignetteRadius: settings.vignetteRadius ?? this.state.vignetteRadius,
-                vignetteSoftness: settings.vignetteSoftness ?? this.state.vignetteSoftness,
-                grainEnabled: settings.grainEnabled ?? this.state.grainEnabled,
-                grainIntensity: settings.grainIntensity ?? this.state.grainIntensity,
-                colorGradingEnabled: settings.colorGradingEnabled ?? this.state.colorGradingEnabled,
-                colorHue: settings.colorHue ?? this.state.colorHue,
-                colorSaturation: settings.colorSaturation ?? this.state.colorSaturation,
-                colorBrightness: settings.colorBrightness ?? this.state.colorBrightness,
-                colorContrast: settings.colorContrast ?? this.state.colorContrast,
-                fxaaEnabled: settings.fxaaEnabled ?? this.state.fxaaEnabled,
-                
-                // Lighting parameters
-                ambientLightIntensity: settings.ambientLightIntensity ?? this.state.ambientLightIntensity,
-                directionalLightIntensity: settings.directionalLightIntensity ?? this.state.directionalLightIntensity,
-                pointLight1Intensity: settings.pointLight1Intensity ?? this.state.pointLight1Intensity,
-                pointLight2Intensity: settings.pointLight2Intensity ?? this.state.pointLight2Intensity,
-                rimLightIntensity: settings.rimLightIntensity ?? this.state.rimLightIntensity,
-                accentLightIntensity: settings.accentLightIntensity ?? this.state.accentLightIntensity,
-                
-                // Performance parameters
-                enableFrustumCulling: settings.enableFrustumCulling ?? this.state.enableFrustumCulling
-            });
-            
-            console.log(`Scene loaded: ${sceneData.name || 'Unnamed Scene'}`);
-            return true;
+            // Use interpolation instead of immediate update
+            return this.importSceneWithInterpolation(sceneData);
         } catch (error) {
             console.error('Error loading scene:', error);
             return false;
+        }
+    }
+
+    importSceneWithInterpolation(sceneData, duration = 2.0) {
+        try {
+            if (!sceneData || !sceneData.settings) {
+                throw new Error('Invalid scene data format');
+            }
+            
+            const settings = sceneData.settings;
+            
+            // Kill any existing interpolation
+            if (this.interpolationTimeline) {
+                this.interpolationTimeline.kill();
+            }
+            
+            // Create a new timeline for the interpolation
+            this.interpolationTimeline = gsap.timeline({
+                onComplete: () => {
+                    console.log(`Scene interpolation complete: ${sceneData.name || 'Unnamed Scene'}`);
+                    this.interpolationTimeline = null;
+                    
+                    // Trigger grid recreation after interpolation is complete
+                    // This ensures smooth transition without jarring grid changes
+                    if (this.state.gridWidth !== currentState.gridWidth || 
+                        this.state.gridHeight !== currentState.gridHeight ||
+                        this.state.compositionWidth !== currentState.compositionWidth ||
+                        this.state.compositionHeight !== currentState.compositionHeight ||
+                        JSON.stringify(this.state.enabledShapes) !== JSON.stringify(currentState.enabledShapes) ||
+                        this.state.randomness !== currentState.randomness) {
+                        
+                        // Notify all grid-related changes at once
+                        this.notifyListeners('gridWidth', this.state.gridWidth, currentState.gridWidth);
+                        this.notifyListeners('gridHeight', this.state.gridHeight, currentState.gridHeight);
+                        this.notifyListeners('compositionWidth', this.state.compositionWidth, currentState.compositionWidth);
+                        this.notifyListeners('compositionHeight', this.state.compositionHeight, currentState.compositionHeight);
+                        this.notifyListeners('enabledShapes', this.state.enabledShapes, currentState.enabledShapes);
+                        this.notifyListeners('randomness', this.state.randomness, currentState.randomness);
+                    }
+                }
+            });
+            
+            // Store current state for interpolation
+            const currentState = { ...this.state };
+            
+            // Create interpolation targets for all numeric values
+            const interpolationTargets = {};
+            
+            // Helper function to add interpolation for a parameter
+            const addInterpolation = (key, targetValue, currentValue) => {
+                if (typeof targetValue === 'number' && typeof currentValue === 'number') {
+                    // Special handling for grid dimensions - don't trigger immediate recreation
+                    if (key === 'gridWidth' || key === 'gridHeight' || 
+                        key === 'compositionWidth' || key === 'compositionHeight') {
+                        interpolationTargets[key] = targetValue;
+                        // Don't notify listeners immediately for grid dimensions
+                    } else {
+                        interpolationTargets[key] = targetValue;
+                    }
+                } else if (targetValue !== undefined) {
+                    // For non-numeric values, set immediately
+                    this.state[key] = targetValue;
+                    this.notifyListeners(key, targetValue, currentValue);
+                }
+            };
+            
+            // Animation parameters
+            addInterpolation('animationType', settings.animationType, currentState.animationType);
+            addInterpolation('animationSpeed', settings.animationSpeed, currentState.animationSpeed);
+            addInterpolation('enableShapeCycling', settings.enableShapeCycling, currentState.enableShapeCycling);
+            addInterpolation('enableSizeAnimation', settings.enableSizeAnimation, currentState.enableSizeAnimation);
+            addInterpolation('movementAmplitude', settings.movementAmplitude, currentState.movementAmplitude);
+            addInterpolation('movementFrequency', settings.movementFrequency, currentState.movementFrequency);
+            addInterpolation('rotationAmplitude', settings.rotationAmplitude, currentState.rotationAmplitude);
+            addInterpolation('rotationFrequency', settings.rotationFrequency, currentState.rotationFrequency);
+            addInterpolation('scaleAmplitude', settings.scaleAmplitude, currentState.scaleAmplitude);
+            addInterpolation('scaleFrequency', settings.scaleFrequency, currentState.scaleFrequency);
+            
+            // Grid parameters
+            addInterpolation('gridWidth', settings.gridWidth, currentState.gridWidth);
+            addInterpolation('gridHeight', settings.gridHeight, currentState.gridHeight);
+            addInterpolation('cellSize', settings.cellSize, currentState.cellSize);
+            addInterpolation('compositionWidth', settings.compositionWidth, currentState.compositionWidth);
+            addInterpolation('compositionHeight', settings.compositionHeight, currentState.compositionHeight);
+            addInterpolation('showGrid', settings.showGrid, currentState.showGrid);
+            addInterpolation('randomness', settings.randomness, currentState.randomness);
+            
+            // Color parameters (handle colors specially)
+            if (settings.shapeColor && settings.shapeColor !== currentState.shapeColor) {
+                this.interpolateColor('shapeColor', currentState.shapeColor, settings.shapeColor, duration);
+            }
+            if (settings.backgroundColor && settings.backgroundColor !== currentState.backgroundColor) {
+                this.interpolateColor('backgroundColor', currentState.backgroundColor, settings.backgroundColor, duration);
+            }
+            
+            // Shape selection and randomness (defer until interpolation complete)
+            if (settings.enabledShapes) {
+                this.state.enabledShapes = { ...settings.enabledShapes };
+                // Don't notify immediately - will be handled in onComplete
+            }
+            
+            // Sphere parameters
+            addInterpolation('sphereRefraction', settings.sphereRefraction, currentState.sphereRefraction);
+            addInterpolation('sphereTransparency', settings.sphereTransparency, currentState.sphereTransparency);
+            addInterpolation('sphereRoughness', settings.sphereRoughness, currentState.sphereRoughness);
+            addInterpolation('sphereMetalness', settings.sphereMetalness, currentState.sphereMetalness);
+            addInterpolation('sphereTransmission', settings.sphereTransmission, currentState.sphereTransmission);
+            addInterpolation('sphereScale', settings.sphereScale, currentState.sphereScale);
+            addInterpolation('sphereClearcoat', settings.sphereClearcoat, currentState.sphereClearcoat);
+            addInterpolation('sphereClearcoatRoughness', settings.sphereClearcoatRoughness, currentState.sphereClearcoatRoughness);
+            addInterpolation('sphereEnvMapIntensity', settings.sphereEnvMapIntensity, currentState.sphereEnvMapIntensity);
+            addInterpolation('sphereWaterDistortion', settings.sphereWaterDistortion, currentState.sphereWaterDistortion);
+            
+            // Post-processing parameters
+            addInterpolation('postProcessingEnabled', settings.postProcessingEnabled, currentState.postProcessingEnabled);
+            addInterpolation('bloomEnabled', settings.bloomEnabled, currentState.bloomEnabled);
+            addInterpolation('bloomStrength', settings.bloomStrength, currentState.bloomStrength);
+            addInterpolation('bloomRadius', settings.bloomRadius, currentState.bloomRadius);
+            addInterpolation('bloomThreshold', settings.bloomThreshold, currentState.bloomThreshold);
+            addInterpolation('chromaticAberrationEnabled', settings.chromaticAberrationEnabled, currentState.chromaticAberrationEnabled);
+            addInterpolation('chromaticIntensity', settings.chromaticIntensity, currentState.chromaticIntensity);
+            addInterpolation('vignetteEnabled', settings.vignetteEnabled, currentState.vignetteEnabled);
+            addInterpolation('vignetteIntensity', settings.vignetteIntensity, currentState.vignetteIntensity);
+            addInterpolation('vignetteRadius', settings.vignetteRadius, currentState.vignetteRadius);
+            addInterpolation('vignetteSoftness', settings.vignetteSoftness, currentState.vignetteSoftness);
+            addInterpolation('grainEnabled', settings.grainEnabled, currentState.grainEnabled);
+            addInterpolation('grainIntensity', settings.grainIntensity, currentState.grainIntensity);
+            addInterpolation('colorGradingEnabled', settings.colorGradingEnabled, currentState.colorGradingEnabled);
+            addInterpolation('colorHue', settings.colorHue, currentState.colorHue);
+            addInterpolation('colorSaturation', settings.colorSaturation, currentState.colorSaturation);
+            addInterpolation('colorBrightness', settings.colorBrightness, currentState.colorBrightness);
+            addInterpolation('colorContrast', settings.colorContrast, currentState.colorContrast);
+            addInterpolation('fxaaEnabled', settings.fxaaEnabled, currentState.fxaaEnabled);
+            
+            // Lighting parameters
+            addInterpolation('ambientLightIntensity', settings.ambientLightIntensity, currentState.ambientLightIntensity);
+            addInterpolation('directionalLightIntensity', settings.directionalLightIntensity, currentState.directionalLightIntensity);
+            addInterpolation('pointLight1Intensity', settings.pointLight1Intensity, currentState.pointLight1Intensity);
+            addInterpolation('pointLight2Intensity', settings.pointLight2Intensity, currentState.pointLight2Intensity);
+            addInterpolation('rimLightIntensity', settings.rimLightIntensity, currentState.rimLightIntensity);
+            addInterpolation('accentLightIntensity', settings.accentLightIntensity, currentState.accentLightIntensity);
+            
+            // Performance parameters
+            addInterpolation('enableFrustumCulling', settings.enableFrustumCulling, currentState.enableFrustumCulling);
+            
+            // Create the interpolation animation
+            this.interpolationTimeline.to(this.state, {
+                ...interpolationTargets,
+                duration: duration,
+                ease: "power2.inOut",
+                onUpdate: () => {
+                    // Notify listeners for each interpolated value
+                    Object.keys(interpolationTargets).forEach(key => {
+                        // Skip grid dimension notifications during interpolation
+                        if (key !== 'gridWidth' && key !== 'gridHeight' && 
+                            key !== 'compositionWidth' && key !== 'compositionHeight') {
+                            this.notifyListeners(key, this.state[key], currentState[key]);
+                        }
+                    });
+                }
+            });
+            
+            console.log(`Scene interpolation started: ${sceneData.name || 'Unnamed Scene'}`);
+            return true;
+        } catch (error) {
+            console.error('Error loading scene with interpolation:', error);
+            return false;
+        }
+    }
+
+    interpolateColor(key, fromColor, toColor, duration) {
+        // Convert hex colors to RGB for interpolation
+        const fromRGB = this.hexToRgb(fromColor);
+        const toRGB = this.hexToRgb(toColor);
+        
+        if (!fromRGB || !toRGB) {
+            // If color conversion fails, set immediately
+            this.state[key] = toColor;
+            this.notifyListeners(key, toColor, fromColor);
+            return;
+        }
+        
+        // Create a temporary object for interpolation
+        const colorObj = { r: fromRGB.r, g: fromRGB.g, b: fromRGB.b };
+        
+        this.interpolationTimeline.to(colorObj, {
+            r: toRGB.r,
+            g: toRGB.g,
+            b: toRGB.b,
+            duration: duration,
+            ease: "power2.inOut",
+            onUpdate: () => {
+                const interpolatedColor = this.rgbToHex(Math.round(colorObj.r), Math.round(colorObj.g), Math.round(colorObj.b));
+                this.state[key] = interpolatedColor;
+                this.notifyListeners(key, interpolatedColor, fromColor);
+            }
+        }, 0); // Start at the same time as other interpolations
+    }
+
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    // Method to stop any active interpolation
+    stopInterpolation() {
+        if (this.interpolationTimeline) {
+            this.interpolationTimeline.kill();
+            this.interpolationTimeline = null;
         }
     }
 } 

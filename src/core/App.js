@@ -149,6 +149,17 @@ export class App {
             this.addNoteControl();
         });
         
+        // Interpolation duration control
+        const interpolationDurationInput = document.getElementById('interpolation-duration');
+        const interpolationDurationValue = document.getElementById('interpolation-duration-value');
+        
+        if (interpolationDurationInput && interpolationDurationValue) {
+            interpolationDurationInput.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                interpolationDurationValue.textContent = value.toFixed(1) + 's';
+            });
+        }
+        
         this.setupCollapsibleSections();
         
 
@@ -886,13 +897,16 @@ export class App {
         try {
             console.log('Loading scene file:', sceneData);
             
-            const success = this.state.importScene(sceneData);
+            // Get interpolation duration from UI
+            const interpolationDurationInput = document.getElementById('interpolation-duration');
+            const duration = interpolationDurationInput ? parseFloat(interpolationDurationInput.value) : 2.0;
+            
+            const success = this.state.importSceneWithInterpolation(sceneData, duration);
             
             if (success) {
-                console.log('Scene loaded successfully');
-                alert('Visual settings loaded successfully!');
+                console.log('Scene interpolation started');
             } else {
-                alert('Error loading scene. Please check the file format.');
+                console.error('Error loading scene. Please check the file format.');
             }
         } catch (error) {
             console.error('Error loading scene file:', error);
