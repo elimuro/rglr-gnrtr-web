@@ -1891,7 +1891,8 @@ class RGLRGNRTR {
         this.camera.bottom = window.innerHeight / -200;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.createGrid();
+        // Note: Grid recreation is not needed on window resize - only camera/renderer updates
+        // The grid should only be recreated when grid parameters change (gridWidth, gridHeight, etc.)
     }
 
 
