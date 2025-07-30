@@ -3,7 +3,8 @@
  * This is the central orchestrator for the RGLR GNRTR application, managing all major components including
  * the scene, state management, animation loop, MIDI integration, and GUI. It handles initialization of all
  * subsystems, coordinates communication between modules, manages MIDI event routing, and provides the main
- * interface for external interactions with the application.
+ * interface for external interactions with the application. Now includes shape morphing capabilities for
+ * dynamic visual effects.
  */
 
 import { Scene } from './Scene.js';
@@ -12,6 +13,7 @@ import { StateManager } from './StateManager.js';
 import { MIDIManager } from '../midi-manager.js';
 import { MIDIControlManager } from '../midi-controls.js';
 import { GUIManager } from '../ui/GUIManager.js';
+import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
 
 export class App {
     constructor() {
@@ -27,6 +29,10 @@ export class App {
         this.controlManager = null;
         this.guiManager = null;
         
+        // Initialize morphing system
+        this.morphingSystem = new ShapeMorphingSystem();
+        console.log('Morphing system created');
+        
         this.init();
     }
 
@@ -37,6 +43,11 @@ export class App {
             // Initialize scene
             this.scene.init();
             console.log('Scene initialized');
+            
+            // Set up morphing system with shape generator
+            this.scene.shapeGenerator.setMorphingSystem(this.morphingSystem);
+            this.morphingSystem.setShapeGenerator(this.scene.shapeGenerator);
+            console.log('Morphing system integrated');
             
             // Initialize GUI
             this.guiManager = new GUIManager(this.state, this);

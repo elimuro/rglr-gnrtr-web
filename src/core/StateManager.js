@@ -40,6 +40,18 @@ export class StateManager {
             shapeCyclingIntensity: 1.0, // 0.0 to 1.0 - how many shapes to cycle through
             shapeCyclingTrigger: 0, // 0: Time-based, 1: Movement-triggered, 2: Rotation-triggered, 3: Manual
             
+            // Morphing parameters
+            morphingEnabled: false,
+            morphingSpeed: 2.0,
+            morphingEasing: 'power2.inOut',
+            autoMorphing: false,
+            crossCategoryMorphing: true,
+            morphingAggressiveness: 0.5, // 0.0 to 1.0 - how dramatic the morphing should be
+            currentMorphProgress: 0.0,
+            morphingPreset: 'geometric_evolution',
+            randomMorphing: false,
+            morphingTargetShape: null,
+            
             // Grid parameters
             gridWidth: 8,
             gridHeight: 8,
@@ -342,6 +354,18 @@ export class StateManager {
                 shapeCyclingIntensity: this.state.shapeCyclingIntensity,
                 shapeCyclingTrigger: this.state.shapeCyclingTrigger,
                 
+                // Morphing parameters
+                morphingEnabled: this.state.morphingEnabled,
+                morphingSpeed: this.state.morphingSpeed,
+                morphingEasing: this.state.morphingEasing,
+                autoMorphing: this.state.autoMorphing,
+                crossCategoryMorphing: this.state.crossCategoryMorphing,
+                morphingAggressiveness: this.state.morphingAggressiveness,
+                currentMorphProgress: this.state.currentMorphProgress,
+                morphingPreset: this.state.morphingPreset,
+                randomMorphing: this.state.randomMorphing,
+                morphingTargetShape: this.state.morphingTargetShape,
+                
                 // Grid parameters
                 gridWidth: this.state.gridWidth,
                 gridHeight: this.state.gridHeight,
@@ -522,6 +546,18 @@ export class StateManager {
             addInterpolation('shapeCyclingSync', settings.shapeCyclingSync, currentState.shapeCyclingSync);
             addInterpolation('shapeCyclingIntensity', settings.shapeCyclingIntensity, currentState.shapeCyclingIntensity);
             addInterpolation('shapeCyclingTrigger', settings.shapeCyclingTrigger, currentState.shapeCyclingTrigger);
+            
+            // Morphing parameters
+            addInterpolation('morphingEnabled', settings.morphingEnabled, currentState.morphingEnabled);
+            addInterpolation('morphingSpeed', settings.morphingSpeed, currentState.morphingSpeed);
+            addInterpolation('morphingEasing', settings.morphingEasing, currentState.morphingEasing);
+            addInterpolation('autoMorphing', settings.autoMorphing, currentState.autoMorphing);
+            addInterpolation('crossCategoryMorphing', settings.crossCategoryMorphing, currentState.crossCategoryMorphing);
+            addInterpolation('morphingAggressiveness', settings.morphingAggressiveness, currentState.morphingAggressiveness);
+            addInterpolation('currentMorphProgress', settings.currentMorphProgress, currentState.currentMorphProgress);
+            addInterpolation('morphingPreset', settings.morphingPreset, currentState.morphingPreset);
+            addInterpolation('randomMorphing', settings.randomMorphing, currentState.randomMorphing);
+            addInterpolation('morphingTargetShape', settings.morphingTargetShape, currentState.morphingTargetShape);
             
             // Grid parameters
             addInterpolation('gridWidth', settings.gridWidth, currentState.gridWidth);

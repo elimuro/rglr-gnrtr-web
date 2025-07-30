@@ -3,7 +3,8 @@
  * This module handles the generation and management of all 3D shapes in the application, including basic
  * geometric shapes, triangles, rectangles, ellipses, and advanced refractive spheres. It provides
  * efficient shape creation, geometry optimization, and supports dynamic shape switching and cycling
- * for animated effects.
+ * for animated effects. Now includes cross-category morphing capabilities for smooth transitions
+ * between different geometric forms.
  */
 
 import * as THREE from 'three';
@@ -11,6 +12,210 @@ import * as THREE from 'three';
 export class ShapeGenerator {
     constructor() {
         this.shapeGenerators = this.createShapeGenerators();
+        this.morphingSystem = null; // Will be set by external system
+    }
+
+    // Get shape generators for morphing system access
+    getShapeGenerators() {
+        return this.shapeGenerators;
+    }
+
+    // Set the morphing system reference
+    setMorphingSystem(morphingSystem) {
+        this.morphingSystem = morphingSystem;
+    }
+
+    // Start morphing between two shapes
+    startShapeMorph(mesh, fromShapeName, toShapeName, duration = 2.0, easing = 'power2.inOut') {
+        console.log('Starting shape morph:', { mesh, fromShapeName, toShapeName, duration, easing });
+        
+        if (!this.morphingSystem) {
+            console.warn('Morphing system not initialized');
+            return null;
+        }
+
+        // Create target geometry for the morph
+        const targetGeometry = this.createGeometryForShape(toShapeName);
+        console.log('Created target geometry:', targetGeometry);
+        
+        if (!targetGeometry) {
+            console.warn('Could not create target geometry for shape:', toShapeName);
+            return null;
+        }
+
+        // Start the morphing process
+        const result = this.morphingSystem.startMorph(mesh, fromShapeName, toShapeName, duration, easing);
+        console.log('Morphing system result:', result);
+        return result;
+    }
+
+    // Create geometry for a specific shape name
+    createGeometryForShape(shapeName) {
+        const generator = this.shapeGenerators[shapeName];
+        if (!generator) {
+            console.warn('No generator found for shape:', shapeName);
+            return null;
+        }
+
+        const shape = generator();
+        if (!shape) return null;
+
+        // Convert shape to geometry
+        if (shape instanceof THREE.Shape) {
+            const geometry = new THREE.ShapeGeometry(shape);
+            geometry.computeBoundingBox();
+            return geometry;
+        } else if (shape instanceof THREE.BufferGeometry) {
+            return shape;
+        } else if (shape instanceof THREE.SphereGeometry) {
+            return shape;
+        } else if (shape instanceof THREE.BoxGeometry) {
+            return shape;
+        } else if (shape instanceof THREE.PlaneGeometry) {
+            return shape;
+        }
+
+        console.warn('Unknown shape type for:', shapeName, shape);
+        return null;
+    }
+
+    // Get morphable shape pairs
+    getMorphableShapePairs() {
+        return {
+            // 2D shape morphing (more variety)
+            'triangle_to_rectangle': ['triangle_UP', 'Rect'],
+            'rectangle_to_triangle': ['Rect', 'triangle_UP'],
+            'triangle_to_ellipse': ['triangle_UP', 'ellipse'],
+            'rectangle_to_ellipse': ['Rect', 'ellipse'],
+            'ellipse_to_triangle': ['ellipse', 'triangle_UP'],
+            'ellipse_to_rectangle': ['ellipse', 'Rect'],
+            
+            // Triangle variations
+            'triangle_up_to_down': ['triangle_UP', 'triangle_DOWN'],
+            'triangle_left_to_right': ['triangle_LEFT', 'triangle_RIGHT'],
+            'triangle_to_diamond': ['triangle_UP', 'diamond'],
+            'diamond_to_triangle': ['diamond', 'triangle_UP'],
+            
+            // Rectangle variations
+            'rectangle_to_long': ['Rect', 'longRect_V'],
+            'long_to_rectangle': ['longRect_V', 'Rect'],
+            'rectangle_to_diamond': ['Rect', 'diamond'],
+            'diamond_to_rectangle': ['diamond', 'Rect'],
+            
+            // Ellipse variations
+            'ellipse_to_neg': ['ellipse', 'ellipse_neg'],
+            'neg_to_ellipse': ['ellipse_neg', 'ellipse'],
+            'ellipse_to_semi': ['ellipse', 'ellipse_semi_UP'],
+            'semi_to_ellipse': ['ellipse_semi_UP', 'ellipse'],
+            
+            // More triangle variations
+            'triangle_tl_to_tr': ['triangle_TL', 'triangle_TR'],
+            'triangle_bl_to_br': ['triangle_BL', 'triangle_BR'],
+            'triangle_split_up_to_down': ['triangle_split_UP', 'triangle_split_DOWN'],
+            'triangle_split_left_to_right': ['triangle_split_LEFT', 'triangle_split_RIGHT'],
+            
+            // More rectangle variations
+            'rect_tl_to_tr': ['rect_TL', 'rect_TR'],
+            'rect_bl_to_br': ['rect_BL', 'rect_BR'],
+            'rect_angled_top_to_bottom': ['rect_angled_TOP', 'rect_angled_BOTTOM'],
+            'rect_angled_left_to_right': ['rect_angled_LEFT', 'rect_angled_RIGHT'],
+            
+            // More ellipse variations
+            'ellipse_bl_to_br': ['ellipse_BL', 'ellipse_BR'],
+            'ellipse_tl_to_tr': ['ellipse_TL', 'ellipse_TR'],
+            'ellipse_semi_up_to_down': ['ellipse_semi_UP', 'ellipse_semi_DOWN'],
+            'ellipse_semi_left_to_right': ['ellipse_semi_LEFT', 'ellipse_semi_RIGHT']
+        };
+    }
+
+    // Get random morphable shape pair with bias toward 2D shapes
+    getRandomMorphablePair() {
+        const pairs = this.getMorphableShapePairs();
+        const pairNames = Object.keys(pairs);
+        
+        // Bias toward 2D shape morphing (80% chance)
+        const use2DShapes = Math.random() < 0.8;
+        
+        let filteredPairs = pairNames;
+        if (use2DShapes) {
+            // Filter to only 2D shape pairs (exclude sphere pairs)
+            filteredPairs = pairNames.filter(pairName => 
+                !pairName.includes('sphere') && 
+                !pairs[pairName].some(shape => shape.includes('sphere'))
+            );
+        }
+        
+        // If no 2D pairs available, fall back to all pairs
+        if (filteredPairs.length === 0) {
+            filteredPairs = pairNames;
+        }
+        
+        const randomPairName = filteredPairs[Math.floor(Math.random() * filteredPairs.length)];
+        return pairs[randomPairName];
+    }
+
+    // Check if two shapes can morph together
+    canMorphShapes(fromShapeName, toShapeName) {
+        const pairs = this.getMorphableShapePairs();
+        for (const [pairName, [shape1, shape2]] of Object.entries(pairs)) {
+            if ((fromShapeName === shape1 && toShapeName === shape2) ||
+                (fromShapeName === shape2 && toShapeName === shape1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Get all shapes that can morph from a given shape
+    getMorphableTargets(fromShapeName) {
+        const targets = [];
+        const pairs = this.getMorphableShapePairs();
+        
+        for (const [pairName, [shape1, shape2]] of Object.entries(pairs)) {
+            if (fromShapeName === shape1) {
+                targets.push(shape2);
+            } else if (fromShapeName === shape2) {
+                targets.push(shape1);
+            }
+        }
+        
+        return targets;
+    }
+
+    // Create a morphing preset sequence
+    createMorphingPreset(presetName, shapeSequence) {
+        if (!this.morphingSystem) return;
+        
+        // Add the preset to the morphing system
+        this.morphingSystem.morphingPresets[presetName] = shapeSequence;
+    }
+
+    // Start a morphing preset sequence
+    startMorphingPreset(mesh, presetName, duration = 2.0) {
+        if (!this.morphingSystem) {
+            console.warn('Morphing system not initialized');
+            return null;
+        }
+
+        return this.morphingSystem.startPresetMorph(mesh, presetName, duration);
+    }
+
+    // Get current shape name from mesh
+    getCurrentShapeName(mesh) {
+        // This is a simplified approach - in practice you might want to store
+        // the current shape name with the mesh or track it separately
+        return 'triangle_UP'; // Default fallback
+    }
+
+    // Update mesh to a new shape (non-morphing)
+    updateMeshShape(mesh, shapeName) {
+        const geometry = this.createGeometryForShape(shapeName);
+        if (geometry) {
+            mesh.geometry.dispose();
+            mesh.geometry = geometry;
+            return true;
+        }
+        return false;
     }
 
     createShapeGenerators() {
