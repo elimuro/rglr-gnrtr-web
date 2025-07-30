@@ -1,3 +1,11 @@
+/**
+ * Scene.js - 3D Scene Management
+ * This module manages the Three.js 3D scene, including camera setup, renderer configuration, lighting,
+ * shape generation, grid creation, and rendering pipeline. It handles all visual aspects of the application,
+ * including shape animations, material updates, post-processing effects, and performance optimizations like
+ * frustum culling and object pooling for efficient rendering.
+ */
+
 import * as THREE from 'three';
 import { ShapeGenerator } from '../modules/ShapeGenerator.js';
 import { MaterialManager } from '../modules/MaterialManager.js';
@@ -706,16 +714,99 @@ export class Scene {
     }
 
     cycleShapeInCell(mesh, x, y, availableShapes, animationTime, animationSpeed) {
-        let newShapeName;
+        if (availableShapes.length === 0) return;
         
-        // For shape cycling, we want to cycle through available shapes over time
+        const shapeCyclingSpeed = this.state.get('shapeCyclingSpeed');
+        const shapeCyclingPattern = this.state.get('shapeCyclingPattern');
+        const shapeCyclingDirection = this.state.get('shapeCyclingDirection');
+        const shapeCyclingSync = this.state.get('shapeCyclingSync');
+        const shapeCyclingIntensity = this.state.get('shapeCyclingIntensity');
+        const shapeCyclingTrigger = this.state.get('shapeCyclingTrigger');
+        
+        // Check if shape cycling should be triggered
+        let shouldCycle = true;
+        if (shapeCyclingTrigger === 1) { // Movement-triggered
+            const movementAmp = this.state.get('movementAmplitude');
+            shouldCycle = movementAmp > 0.1;
+        } else if (shapeCyclingTrigger === 2) { // Rotation-triggered
+            const rotationAmp = this.state.get('rotationAmplitude');
+            shouldCycle = rotationAmp > 0.1;
+        } else if (shapeCyclingTrigger === 3) { // Manual
+            shouldCycle = false; // Manual triggers would be handled elsewhere
+        }
+        
+        if (!shouldCycle) return;
+        
+        // Calculate effective animation speed
+        const effectiveSpeed = animationSpeed * shapeCyclingSpeed;
+        const timeOffset = animationTime * effectiveSpeed;
+        
+        // Calculate shape index based on pattern and sync
+        let shapeIndex = 0;
         const cellSeed = x * 1000 + y * 100;
-        const timeOffset = animationTime * animationSpeed;
-        const shapeIndex = Math.floor(
-            Math.abs(Math.sin(timeOffset + cellSeed * 0.1)) * availableShapes.length
-        ) % availableShapes.length;
+        const gridWidth = this.state.get('gridWidth');
+        const gridHeight = this.state.get('gridHeight');
         
-        newShapeName = availableShapes[shapeIndex];
+        // Apply synchronization
+        let syncOffset = 0;
+        if (shapeCyclingSync === 1) { // Synchronized
+            syncOffset = 0;
+        } else if (shapeCyclingSync === 2) { // Wave
+            const waveSpeed = 2.0;
+            syncOffset = Math.sin(timeOffset * waveSpeed + (x + y) * 0.5) * 1000;
+        } else if (shapeCyclingSync === 3) { // Cluster
+            const clusterSize = 3;
+            const clusterX = Math.floor(x / clusterSize);
+            const clusterY = Math.floor(y / clusterSize);
+            syncOffset = (clusterX + clusterY) * 500;
+        } else { // Independent (default)
+            syncOffset = cellSeed * 0.1;
+        }
+        
+        // Calculate base time with sync
+        const baseTime = timeOffset + syncOffset;
+        
+        // Apply direction
+        let directionMultiplier = 1;
+        if (shapeCyclingDirection === 1) { // Reverse
+            directionMultiplier = -1;
+        } else if (shapeCyclingDirection === 2) { // Ping-Pong
+            directionMultiplier = Math.sin(baseTime * 0.5) > 0 ? 1 : -1;
+        } else if (shapeCyclingDirection === 3) { // Random
+            directionMultiplier = Math.sin(baseTime * 0.3) > 0 ? 1 : -1;
+        }
+        
+        // Calculate shape index based on pattern
+        switch (shapeCyclingPattern) {
+            case 0: // Sequential
+                shapeIndex = Math.floor(Math.abs(Math.sin(baseTime * directionMultiplier)) * availableShapes.length) % availableShapes.length;
+                break;
+            case 1: // Random
+                const randomSeed = Math.sin(baseTime * 0.5 + cellSeed * 0.01);
+                shapeIndex = Math.floor(Math.abs(randomSeed) * availableShapes.length) % availableShapes.length;
+                break;
+            case 2: // Wave
+                const waveX = Math.sin(baseTime + x * 0.5) * 0.5 + 0.5;
+                const waveY = Math.cos(baseTime + y * 0.5) * 0.5 + 0.5;
+                const waveValue = (waveX + waveY) / 2;
+                shapeIndex = Math.floor(waveValue * availableShapes.length) % availableShapes.length;
+                break;
+            case 3: // Pulse
+                const pulseValue = Math.sin(baseTime * 2) * 0.5 + 0.5;
+                shapeIndex = Math.floor(pulseValue * availableShapes.length) % availableShapes.length;
+                break;
+            case 4: // Staggered
+                const staggerOffset = (x + y) * 0.3;
+                const staggerValue = Math.sin(baseTime + staggerOffset) * 0.5 + 0.5;
+                shapeIndex = Math.floor(staggerValue * availableShapes.length) % availableShapes.length;
+                break;
+        }
+        
+        // Apply intensity (limit the number of shapes to cycle through)
+        const maxShapes = Math.max(1, Math.floor(availableShapes.length * shapeCyclingIntensity));
+        shapeIndex = shapeIndex % maxShapes;
+        
+        const newShapeName = availableShapes[shapeIndex];
         
         // Only update if the shape has changed
         if (mesh.userData.currentShape !== newShapeName) {

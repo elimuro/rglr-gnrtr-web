@@ -1,3 +1,11 @@
+/**
+ * PostProcessingManager.js - Visual Effects and Post-Processing
+ * This module manages all post-processing effects and visual enhancements including bloom, chromatic
+ * aberration, vignette, grain, color grading, and anti-aliasing. It handles the creation and
+ * configuration of post-processing passes, manages effect parameters, and ensures optimal
+ * rendering performance while maintaining high visual quality.
+ */
+
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';

@@ -1,3 +1,11 @@
+/**
+ * StateManager.js - Application State Management
+ * This module provides centralized state management for the entire application, handling all parameters,
+ * settings, and configuration data. It includes features like undo/redo functionality, state history,
+ * interpolation between states, scene import/export, and reactive updates to ensure all components
+ * stay synchronized when state changes occur.
+ */
+
 import { gsap } from 'gsap';
 
 export class StateManager {
@@ -23,6 +31,14 @@ export class StateManager {
             rotationFrequency: 0.3,
             scaleAmplitude: 0.2,
             scaleFrequency: 0.4,
+            
+            // Shape cycling parameters
+            shapeCyclingSpeed: 1.0,
+            shapeCyclingPattern: 0, // 0: Sequential, 1: Random, 2: Wave, 3: Pulse, 4: Staggered
+            shapeCyclingDirection: 0, // 0: Forward, 1: Reverse, 2: Ping-Pong, 3: Random
+            shapeCyclingSync: 0, // 0: Independent, 1: Synchronized, 2: Wave, 3: Cluster
+            shapeCyclingIntensity: 1.0, // 0.0 to 1.0 - how many shapes to cycle through
+            shapeCyclingTrigger: 0, // 0: Time-based, 1: Movement-triggered, 2: Rotation-triggered, 3: Manual
             
             // Grid parameters
             gridWidth: 8,
@@ -318,6 +334,14 @@ export class StateManager {
                 scaleAmplitude: this.state.scaleAmplitude,
                 scaleFrequency: this.state.scaleFrequency,
                 
+                // Shape cycling parameters
+                shapeCyclingSpeed: this.state.shapeCyclingSpeed,
+                shapeCyclingPattern: this.state.shapeCyclingPattern,
+                shapeCyclingDirection: this.state.shapeCyclingDirection,
+                shapeCyclingSync: this.state.shapeCyclingSync,
+                shapeCyclingIntensity: this.state.shapeCyclingIntensity,
+                shapeCyclingTrigger: this.state.shapeCyclingTrigger,
+                
                 // Grid parameters
                 gridWidth: this.state.gridWidth,
                 gridHeight: this.state.gridHeight,
@@ -397,7 +421,7 @@ export class StateManager {
         }
     }
 
-    importSceneWithInterpolation(sceneData, duration = 2.0) {
+    importSceneWithInterpolation(sceneData, duration = 2.0, easing = "power2.inOut") {
         try {
             if (!sceneData || !sceneData.settings) {
                 throw new Error('Invalid scene data format');
@@ -410,10 +434,21 @@ export class StateManager {
                 this.interpolationTimeline.kill();
             }
             
+            // Debug: Log interpolation start
+            console.log('=== INTERPOLATION DEBUG START ===');
+            console.log('Scene data:', sceneData.name || 'Unnamed Scene');
+            console.log('Duration:', duration, 'Easing:', easing);
+            console.log('Current state keys:', Object.keys(this.state));
+            console.log('Target settings keys:', Object.keys(settings));
+            
+            // Check for large changes and suggest better settings
+            const suggestions = this.suggestInterpolationSettings(sceneData, this.state);
+            
             // Create a new timeline for the interpolation
             this.interpolationTimeline = gsap.timeline({
                 onComplete: () => {
                     console.log(`Scene interpolation complete: ${sceneData.name || 'Unnamed Scene'}`);
+                    console.log('=== INTERPOLATION DEBUG END ===');
                     this.interpolationTimeline = null;
                     
                     // Trigger grid recreation after interpolation is complete
@@ -441,6 +476,8 @@ export class StateManager {
             
             // Create interpolation targets for all numeric values
             const interpolationTargets = {};
+            const skippedParameters = [];
+            const immediateParameters = [];
             
             // Helper function to add interpolation for a parameter
             const addInterpolation = (key, targetValue, currentValue) => {
@@ -453,10 +490,16 @@ export class StateManager {
                     } else {
                         interpolationTargets[key] = targetValue;
                     }
+                    console.log(`Adding interpolation for ${key}: ${currentValue} -> ${targetValue}`);
                 } else if (targetValue !== undefined) {
                     // For non-numeric values, set immediately
                     this.state[key] = targetValue;
                     this.notifyListeners(key, targetValue, currentValue);
+                    immediateParameters.push(`${key}: ${currentValue} -> ${targetValue}`);
+                    console.log(`Setting immediate for ${key}: ${currentValue} -> ${targetValue}`);
+                } else {
+                    skippedParameters.push(`${key}: undefined target`);
+                    console.log(`Skipping ${key}: undefined target`);
                 }
             };
             
@@ -472,6 +515,14 @@ export class StateManager {
             addInterpolation('scaleAmplitude', settings.scaleAmplitude, currentState.scaleAmplitude);
             addInterpolation('scaleFrequency', settings.scaleFrequency, currentState.scaleFrequency);
             
+            // Shape cycling parameters
+            addInterpolation('shapeCyclingSpeed', settings.shapeCyclingSpeed, currentState.shapeCyclingSpeed);
+            addInterpolation('shapeCyclingPattern', settings.shapeCyclingPattern, currentState.shapeCyclingPattern);
+            addInterpolation('shapeCyclingDirection', settings.shapeCyclingDirection, currentState.shapeCyclingDirection);
+            addInterpolation('shapeCyclingSync', settings.shapeCyclingSync, currentState.shapeCyclingSync);
+            addInterpolation('shapeCyclingIntensity', settings.shapeCyclingIntensity, currentState.shapeCyclingIntensity);
+            addInterpolation('shapeCyclingTrigger', settings.shapeCyclingTrigger, currentState.shapeCyclingTrigger);
+            
             // Grid parameters
             addInterpolation('gridWidth', settings.gridWidth, currentState.gridWidth);
             addInterpolation('gridHeight', settings.gridHeight, currentState.gridHeight);
@@ -483,10 +534,10 @@ export class StateManager {
             
             // Color parameters (handle colors specially)
             if (settings.shapeColor && settings.shapeColor !== currentState.shapeColor) {
-                this.interpolateColor('shapeColor', currentState.shapeColor, settings.shapeColor, duration);
+                this.interpolateColor('shapeColor', currentState.shapeColor, settings.shapeColor, duration, easing);
             }
             if (settings.backgroundColor && settings.backgroundColor !== currentState.backgroundColor) {
-                this.interpolateColor('backgroundColor', currentState.backgroundColor, settings.backgroundColor, duration);
+                this.interpolateColor('backgroundColor', currentState.backgroundColor, settings.backgroundColor, duration, easing);
             }
             
             // Shape selection and randomness (defer until interpolation complete)
@@ -543,18 +594,61 @@ export class StateManager {
             this.interpolationTimeline.to(this.state, {
                 ...interpolationTargets,
                 duration: duration,
-                ease: "power2.inOut",
+                ease: easing,
                 onUpdate: () => {
+                    // Debug: Track interpolation progress
+                    const progress = this.interpolationTimeline.progress();
+                    const time = this.interpolationTimeline.time();
+                    
+                    // Log progress every 10% or if there's a significant change
+                    if (Math.floor(progress * 10) !== Math.floor((progress - 0.01) * 10)) {
+                        console.log(`Interpolation progress: ${(progress * 100).toFixed(1)}% (${time.toFixed(2)}s)`);
+                    }
+                    
                     // Notify listeners for each interpolated value
                     Object.keys(interpolationTargets).forEach(key => {
                         // Skip grid dimension notifications during interpolation
                         if (key !== 'gridWidth' && key !== 'gridHeight' && 
                             key !== 'compositionWidth' && key !== 'compositionHeight') {
-                            this.notifyListeners(key, this.state[key], currentState[key]);
+                            const oldValue = currentState[key];
+                            const newValue = this.state[key];
+                            
+                            // Check for significant changes that might cause skips
+                            if (typeof newValue === 'number' && typeof oldValue === 'number') {
+                                const change = Math.abs(newValue - oldValue);
+                                const changePercent = (change / Math.abs(oldValue)) * 100;
+                                
+                                // Log large changes that might cause visual skips
+                                if (changePercent > 50) {
+                                    console.warn(`Large change detected for ${key}: ${oldValue} -> ${newValue} (${changePercent.toFixed(1)}% change)`);
+                                    
+                                    // Special handling for animation speed changes
+                                    if (key === 'animationSpeed' && changePercent > 200) {
+                                        console.warn(`⚠️  EXTREME animation speed change detected! Consider using a longer duration or different easing curve.`);
+                                        console.warn(`   Current: ${oldValue} -> Target: ${newValue} (${changePercent.toFixed(1)}% change)`);
+                                        console.warn(`   Suggestion: Try 'expo.inOut' or 'back.inOut' easing for smoother transitions`);
+                                    }
+                                    
+                                    // Special handling for grid dimension changes
+                                    if ((key === 'gridWidth' || key === 'gridHeight') && changePercent > 100) {
+                                        console.warn(`⚠️  Large grid dimension change: ${oldValue} -> ${newValue}`);
+                                        console.warn(`   This may cause visual skips during grid recreation`);
+                                    }
+                                }
+                            }
+                            
+                            this.notifyListeners(key, newValue, oldValue);
                         }
                     });
                 }
             });
+            
+            // Log summary of what's being interpolated
+            console.log('=== INTERPOLATION SUMMARY ===');
+            console.log('Parameters being interpolated:', Object.keys(interpolationTargets));
+            console.log('Parameters set immediately:', immediateParameters);
+            console.log('Parameters skipped:', skippedParameters);
+            console.log('Total interpolation targets:', Object.keys(interpolationTargets).length);
             
             console.log(`Scene interpolation started: ${sceneData.name || 'Unnamed Scene'}`);
             return true;
@@ -564,7 +658,7 @@ export class StateManager {
         }
     }
 
-    interpolateColor(key, fromColor, toColor, duration) {
+    interpolateColor(key, fromColor, toColor, duration, easing = "power2.inOut") {
         // Convert hex colors to RGB for interpolation
         const fromRGB = this.hexToRgb(fromColor);
         const toRGB = this.hexToRgb(toColor);
@@ -584,7 +678,7 @@ export class StateManager {
             g: toRGB.g,
             b: toRGB.b,
             duration: duration,
-            ease: "power2.inOut",
+            ease: easing,
             onUpdate: () => {
                 const interpolatedColor = this.rgbToHex(Math.round(colorObj.r), Math.round(colorObj.g), Math.round(colorObj.b));
                 this.state[key] = interpolatedColor;
@@ -611,6 +705,99 @@ export class StateManager {
         if (this.interpolationTimeline) {
             this.interpolationTimeline.kill();
             this.interpolationTimeline = null;
+        }
+    }
+    
+    // Method to get interpolation debugging information
+    getInterpolationDebugInfo() {
+        if (!this.interpolationTimeline) {
+            return {
+                isActive: false,
+                progress: 0,
+                time: 0,
+                duration: 0,
+                easing: null
+            };
+        }
+        
+        return {
+            isActive: true,
+            progress: this.interpolationTimeline.progress(),
+            time: this.interpolationTimeline.time(),
+            duration: this.interpolationTimeline.duration(),
+            easing: this.interpolationTimeline.vars.ease,
+            totalTime: this.interpolationTimeline.totalDuration()
+        };
+    }
+    
+    // Method to log current state for debugging
+    logCurrentState() {
+        console.log('=== CURRENT STATE DEBUG ===');
+        console.log('Active interpolation:', this.getInterpolationDebugInfo());
+        console.log('State keys:', Object.keys(this.state));
+        
+        // Log some key parameters
+        const keyParams = ['animationSpeed', 'movementAmplitude', 'rotationAmplitude', 'scaleAmplitude', 
+                          'gridWidth', 'gridHeight', 'cellSize', 'shapeColor', 'backgroundColor'];
+        keyParams.forEach(key => {
+            if (this.state.hasOwnProperty(key)) {
+                console.log(`${key}:`, this.state[key]);
+            }
+        });
+    }
+    
+    // Method to suggest better interpolation settings for large changes
+    suggestInterpolationSettings(sceneData, currentState) {
+        const suggestions = [];
+        const settings = sceneData.settings;
+        
+        Object.keys(settings).forEach(key => {
+            if (typeof settings[key] === 'number' && typeof currentState[key] === 'number') {
+                const change = Math.abs(settings[key] - currentState[key]);
+                const changePercent = (change / Math.abs(currentState[key])) * 100;
+                
+                if (changePercent > 200) {
+                    suggestions.push({
+                        parameter: key,
+                        change: `${currentState[key]} -> ${settings[key]} (${changePercent.toFixed(1)}%)`,
+                        suggestion: this.getSuggestionForParameter(key, changePercent)
+                    });
+                }
+            }
+        });
+        
+        if (suggestions.length > 0) {
+            console.log('=== INTERPOLATION SUGGESTIONS ===');
+            console.log('Large changes detected. Consider these adjustments:');
+            suggestions.forEach(s => {
+                console.log(`  ${s.parameter}: ${s.change}`);
+                console.log(`    Suggestion: ${s.suggestion}`);
+            });
+        }
+        
+        return suggestions;
+    }
+    
+    getSuggestionForParameter(key, changePercent) {
+        switch (key) {
+            case 'animationSpeed':
+                return changePercent > 500 ? 
+                    'Use "expo.inOut" easing with 3-4s duration' :
+                    'Use "back.inOut" easing with 2-3s duration';
+            
+            case 'gridWidth':
+            case 'gridHeight':
+                return 'Use "power3.inOut" easing with 2.5s duration (grid recreation)';
+            
+            case 'movementAmplitude':
+            case 'rotationAmplitude':
+            case 'scaleAmplitude':
+                return changePercent > 300 ? 
+                    'Use "elastic.inOut" easing with 3s duration' :
+                    'Use "power2.inOut" easing with 2s duration';
+            
+            default:
+                return 'Use "power2.inOut" easing with 2s duration';
         }
     }
 } 

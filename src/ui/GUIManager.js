@@ -1,3 +1,11 @@
+/**
+ * GUIManager.js - User Interface and Control Management
+ * This module manages the dat.GUI interface and all user controls for the application, including
+ * parameter sliders, color pickers, folder organization, and real-time UI updates. It handles
+ * the creation and management of all GUI elements, ensures proper parameter binding to the state
+ * system, and provides an intuitive interface for controlling all application features.
+ */
+
 import { GUI } from 'dat.gui';
 
 export class GUIManager {
@@ -247,6 +255,48 @@ export class GUIManager {
         // Scale parameters
         const scaleAmpController = this.addController(animationFolder, 'scaleAmplitude', 0.01, 1, 0.01, 'Scale Amp');
         const scaleFreqController = this.addController(animationFolder, 'scaleFrequency', 0.1, 2, 0.1, 'Scale Freq');
+        
+        // Shape cycling controls
+        const shapeCyclingFolder = animationFolder.addFolder('Shape Cycling');
+        
+        this.addController(shapeCyclingFolder, 'enableShapeCycling', false, true, false, 'Enable Shape Cycling', () => {
+            this.state.set('enableShapeCycling', this.state.get('enableShapeCycling'));
+            if (!this.state.get('enableShapeCycling')) {
+                this.app.animationLoop.resetAnimationTime();
+            }
+        });
+        
+        this.addController(shapeCyclingFolder, 'shapeCyclingSpeed', 0.1, 5, 0.1, 'Cycling Speed');
+        
+        const patternNames = ['Sequential', 'Random', 'Wave', 'Pulse', 'Staggered'];
+        const patternController = shapeCyclingFolder.add({ pattern: 0 }, 'pattern', 0, 4, 1)
+            .name('Pattern')
+            .onChange((value) => {
+                this.state.set('shapeCyclingPattern', value);
+            });
+        
+        const directionNames = ['Forward', 'Reverse', 'Ping-Pong', 'Random'];
+        const directionController = shapeCyclingFolder.add({ direction: 0 }, 'direction', 0, 3, 1)
+            .name('Direction')
+            .onChange((value) => {
+                this.state.set('shapeCyclingDirection', value);
+            });
+        
+        const syncNames = ['Independent', 'Synchronized', 'Wave', 'Cluster'];
+        const syncController = shapeCyclingFolder.add({ sync: 0 }, 'sync', 0, 3, 1)
+            .name('Synchronization')
+            .onChange((value) => {
+                this.state.set('shapeCyclingSync', value);
+            });
+        
+        this.addController(shapeCyclingFolder, 'shapeCyclingIntensity', 0.1, 1, 0.1, 'Intensity');
+        
+        const triggerNames = ['Time-based', 'Movement-triggered', 'Rotation-triggered', 'Manual'];
+        const triggerController = shapeCyclingFolder.add({ trigger: 0 }, 'trigger', 0, 3, 1)
+            .name('Trigger')
+            .onChange((value) => {
+                this.state.set('shapeCyclingTrigger', value);
+            });
         
         // Function to update parameter visibility based on animation type
         const updateParameterVisibility = () => {

@@ -1,3 +1,11 @@
+/**
+ * midi-manager.js - MIDI Device Connection and Management
+ * This module handles MIDI device detection, connection, and communication for the application,
+ * providing real-time MIDI input processing and device management. It manages MIDI port connections,
+ * handles device enumeration, provides connection status feedback, and serves as the primary
+ * interface for all MIDI hardware interactions and device state management.
+ */
+
 export class MIDIManager {
     constructor(app) {
         this.app = app;

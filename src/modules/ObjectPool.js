@@ -1,3 +1,11 @@
+/**
+ * ObjectPool.js - Performance Optimization and Object Reuse
+ * This module implements object pooling for 3D meshes and materials to improve performance by
+ * reusing objects instead of creating new ones. It manages the lifecycle of 3D objects, handles
+ * efficient object allocation and deallocation, and provides memory optimization for smooth
+ * animations and dynamic shape changes.
+ */
+
 import * as THREE from 'three';
 
 export class ObjectPool {

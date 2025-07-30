@@ -1,3 +1,11 @@
+/**
+ * midi-controls.js - MIDI Control Mapping and Configuration
+ * This module manages MIDI control mapping, preset management, and dynamic control creation for
+ * the application. It handles CC (Continuous Controller) and Note message routing, provides
+ * preset configurations for different MIDI controllers, manages control element creation and
+ * removal, and ensures proper parameter binding between MIDI inputs and application features.
+ */
+
 // MIDI Control Component System
 // Replaces hardcoded HTML with dynamic component-based rendering
 

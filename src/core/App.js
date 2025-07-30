@@ -1,3 +1,11 @@
+/**
+ * App.js - Main Application Controller
+ * This is the central orchestrator for the RGLR GNRTR application, managing all major components including
+ * the scene, state management, animation loop, MIDI integration, and GUI. It handles initialization of all
+ * subsystems, coordinates communication between modules, manages MIDI event routing, and provides the main
+ * interface for external interactions with the application.
+ */
+
 import { Scene } from './Scene.js';
 import { AnimationLoop } from './AnimationLoop.js';
 import { StateManager } from './StateManager.js';
@@ -157,6 +165,21 @@ export class App {
             interpolationDurationInput.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
                 interpolationDurationValue.textContent = value.toFixed(1) + 's';
+            });
+        }
+        
+        // Interpolation easing control
+        const interpolationEasingSelect = document.getElementById('interpolation-easing');
+        if (interpolationEasingSelect) {
+            // Set default value
+            interpolationEasingSelect.value = 'power2.inOut';
+        }
+        
+        // Debug interpolation button
+        const debugInterpolationButton = document.getElementById('debug-interpolation');
+        if (debugInterpolationButton) {
+            debugInterpolationButton.addEventListener('click', () => {
+                this.debugInterpolation();
             });
         }
         
@@ -426,6 +449,10 @@ export class App {
                 this.state.set('sphereEnvMapIntensity', normalizedValue * 3);
                 this.scene.updateSphereMaterials();
                 break;
+            case 'sphereDistortionStrength':
+                this.state.set('sphereDistortionStrength', normalizedValue);
+                this.scene.updateSphereMaterials();
+                break;
             // Post-processing parameters
             case 'bloomStrength':
                 this.state.set('bloomStrength', normalizedValue * 2);
@@ -481,7 +508,7 @@ export class App {
                 this.scene.updateLighting();
                 break;
             case 'directionalLightIntensity':
-                this.state.set('directionalLightIntensity', normalizedValue * 3);
+                this.state.set('directionalLightIntensity', normalizedValue * 2);
                 this.scene.updateLighting();
                 break;
             case 'pointLight1Intensity':
@@ -493,12 +520,31 @@ export class App {
                 this.scene.updateLighting();
                 break;
             case 'rimLightIntensity':
-                this.state.set('rimLightIntensity', normalizedValue * 3);
+                this.state.set('rimLightIntensity', normalizedValue * 2);
                 this.scene.updateLighting();
                 break;
             case 'accentLightIntensity':
-                this.state.set('accentLightIntensity', normalizedValue * 3);
+                this.state.set('accentLightIntensity', normalizedValue * 2);
                 this.scene.updateLighting();
+                break;
+            // Shape cycling parameters
+            case 'shapeCyclingSpeed':
+                this.state.set('shapeCyclingSpeed', 0.1 + normalizedValue * 5);
+                break;
+            case 'shapeCyclingPattern':
+                this.state.set('shapeCyclingPattern', Math.floor(normalizedValue * 5));
+                break;
+            case 'shapeCyclingDirection':
+                this.state.set('shapeCyclingDirection', Math.floor(normalizedValue * 4));
+                break;
+            case 'shapeCyclingSync':
+                this.state.set('shapeCyclingSync', Math.floor(normalizedValue * 4));
+                break;
+            case 'shapeCyclingIntensity':
+                this.state.set('shapeCyclingIntensity', normalizedValue);
+                break;
+            case 'shapeCyclingTrigger':
+                this.state.set('shapeCyclingTrigger', Math.floor(normalizedValue * 4));
                 break;
         }
     }
@@ -626,12 +672,6 @@ export class App {
             case '8':
                 this.state.set('scaleAmplitude', Math.max(0, this.state.get('scaleAmplitude') - 0.05));
                 break;
-            case 's':
-                this.state.set('enableShapeCycling', !this.state.get('enableShapeCycling'));
-                if (!this.state.get('enableShapeCycling')) {
-                    this.animationLoop.resetAnimationTime();
-                }
-                break;
             case 'a':
                 this.state.set('enableSizeAnimation', !this.state.get('enableSizeAnimation'));
                 if (!this.state.get('enableSizeAnimation')) {
@@ -686,24 +726,27 @@ export class App {
                 cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
                 cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
                 cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
-                cc5: { channel: 0, cc: 5, target: 'randomness' },
-                cc7: { channel: 0, cc: 7, target: 'movementFrequency' },
-                cc8: { channel: 0, cc: 8, target: 'rotationFrequency' },
-                cc9: { channel: 0, cc: 9, target: 'scaleFrequency' },
-                cc10: { channel: 0, cc: 10, target: 'gridWidth' },
-                cc11: { channel: 0, cc: 11, target: 'gridHeight' }
+                cc5: { channel: 0, cc: 5, target: 'sphereScale' }
             },
             multichannel: {
                 cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
                 cc2: { channel: 1, cc: 1, target: 'movementAmplitude' },
                 cc3: { channel: 2, cc: 1, target: 'rotationAmplitude' },
                 cc4: { channel: 3, cc: 1, target: 'scaleAmplitude' },
-                cc5: { channel: 4, cc: 1, target: 'randomness' },
-                cc7: { channel: 6, cc: 1, target: 'movementFrequency' },
-                cc8: { channel: 7, cc: 1, target: 'rotationFrequency' },
-                cc9: { channel: 8, cc: 1, target: 'scaleFrequency' },
-                cc10: { channel: 9, cc: 1, target: 'gridWidth' },
-                cc11: { channel: 10, cc: 1, target: 'gridHeight' }
+                cc5: { channel: 4, cc: 1, target: 'sphereScale' }
+            },
+            shapeCycling: {
+                cc1: { channel: 0, cc: 1, target: 'shapeCyclingSpeed' },
+                cc2: { channel: 0, cc: 2, target: 'shapeCyclingPattern' },
+                cc3: { channel: 0, cc: 3, target: 'shapeCyclingDirection' },
+                cc4: { channel: 0, cc: 4, target: 'shapeCyclingSync' },
+                cc5: { channel: 0, cc: 5, target: 'shapeCyclingIntensity' },
+                cc6: { channel: 0, cc: 6, target: 'shapeCyclingTrigger' },
+                cc7: { channel: 0, cc: 7, target: 'animationSpeed' },
+                cc8: { channel: 0, cc: 8, target: 'movementAmplitude' },
+                cc9: { channel: 0, cc: 9, target: 'rotationAmplitude' },
+                cc10: { channel: 0, cc: 10, target: 'scaleAmplitude' },
+                cc11: { channel: 0, cc: 11, target: 'sphereScale' }
             }
         };
         
@@ -901,7 +944,11 @@ export class App {
             const interpolationDurationInput = document.getElementById('interpolation-duration');
             const duration = interpolationDurationInput ? parseFloat(interpolationDurationInput.value) : 2.0;
             
-            const success = this.state.importSceneWithInterpolation(sceneData, duration);
+            // Get interpolation easing from UI
+            const interpolationEasingSelect = document.getElementById('interpolation-easing');
+            const easing = interpolationEasingSelect ? interpolationEasingSelect.value : 'power2.inOut';
+            
+            const success = this.state.importSceneWithInterpolation(sceneData, duration, easing);
             
             if (success) {
                 console.log('Scene interpolation started');
@@ -956,5 +1003,56 @@ export class App {
 
     triggerNoteAction(target) {
         this.handleNoteMapping(target);
+    }
+    
+    debugInterpolation() {
+        console.log('=== INTERPOLATION DEBUG ===');
+        
+        // Log current state
+        this.state.logCurrentState();
+        
+        // Log interpolation info
+        const debugInfo = this.state.getInterpolationDebugInfo();
+        console.log('Interpolation debug info:', debugInfo);
+        
+        // Log recent state changes
+        console.log('Recent state history:', this.state.history);
+        
+        // Log current listeners
+        console.log('Active listeners:', this.state.listeners.size);
+        
+        // Check for any active animations
+        if (this.animationLoop) {
+            console.log('Animation loop active:', this.animationLoop.isAnimating());
+            console.log('Animation time:', this.animationLoop.animationTime);
+        }
+        
+        // Log scene state
+        if (this.scene) {
+            console.log('Scene performance metrics:', this.scene.getPerformanceMetrics());
+        }
+        
+        // Create a summary
+        const summary = {
+            hasActiveInterpolation: debugInfo.isActive,
+            interpolationProgress: debugInfo.progress,
+            interpolationTime: debugInfo.time,
+            totalDuration: debugInfo.duration,
+            easing: debugInfo.easing,
+            stateKeys: Object.keys(this.state.state).length,
+            historySize: this.state.history.length
+        };
+        
+        console.log('Debug summary:', summary);
+        
+        // Show alert with key info
+        const message = `Interpolation Debug:
+Active: ${debugInfo.isActive}
+Progress: ${(debugInfo.progress * 100).toFixed(1)}%
+Time: ${debugInfo.time.toFixed(2)}s / ${debugInfo.duration.toFixed(2)}s
+State Keys: ${summary.stateKeys}
+History: ${summary.historySize} entries`;
+        
+        alert(message);
     }
 } 

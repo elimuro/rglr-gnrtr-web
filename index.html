@@ -38,6 +38,7 @@
                     <option value="">Custom</option>
                     <option value="standard">Standard (Ch:1, CC:1-11)</option>
                     <option value="multichannel">Multi-Channel (Ch:1-11, CC:1)</option>
+                    <option value="shapeCycling">Shape Cycling Focus (Ch:1, CC:1-11)</option>
                     <option value="modwheel">Mod Wheel Style (Ch:1, CC:1,2,4,7,11,16,21-25)</option>
                     <option value="knobs">Knob Controller (Ch:1, CC:16-26)</option>
                     <option value="faders">Fader Controller (Ch:1, CC:28-38)</option>
@@ -92,6 +93,25 @@
                     <label for="interpolation-duration">Interpolation Duration (seconds):</label>
                     <input type="range" id="interpolation-duration" min="0.5" max="5.0" step="0.1" value="2.0" class="midi-range">
                     <span id="interpolation-duration-value">2.0s</span>
+                </div>
+                <div class="midi-control">
+                    <label for="interpolation-easing">Interpolation Easing:</label>
+                    <select id="interpolation-easing" class="midi-select">
+                        <option value="power2.inOut">Power 2 InOut</option>
+                        <option value="power1.inOut">Power 1 InOut</option>
+                        <option value="power3.inOut">Power 3 InOut</option>
+                        <option value="power4.inOut">Power 4 InOut</option>
+                        <option value="sine.inOut">Sine InOut</option>
+                        <option value="back.inOut">Back InOut</option>
+                        <option value="elastic.inOut">Elastic InOut</option>
+                        <option value="bounce.inOut">Bounce InOut</option>
+                        <option value="circ.inOut">Circular InOut</option>
+                        <option value="expo.inOut">Exponential InOut</option>
+                        <option value="none">Linear (No Easing)</option>
+                    </select>
+                </div>
+                <div class="midi-control">
+                    <button id="debug-interpolation" class="midi-button">Debug Interpolation</button>
                 </div>
             </div>
         </div>

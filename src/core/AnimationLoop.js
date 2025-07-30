@@ -1,3 +1,10 @@
+/**
+ * AnimationLoop.js - Animation System Controller
+ * This module manages the main animation loop and timing system for the application, handling frame
+ * updates, animation timing, shape animations, and coordinating between the scene rendering and state
+ * updates. It provides smooth 60fps animation with proper timing controls and performance monitoring.
+ */
+
 import * as THREE from 'three';
 
 export class AnimationLoop {

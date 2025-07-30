@@ -1,3 +1,11 @@
+/**
+ * AnimationSystem.js - Advanced Animation Logic and Effects
+ * This module provides sophisticated animation capabilities including shape cycling, movement patterns,
+ * rotation effects, scaling animations, and complex animation sequences. It handles animation timing,
+ * easing functions, and coordinates with the main animation loop to create smooth, performant
+ * visual effects and transitions.
+ */
+
 import { gsap } from 'gsap';
 
 export class AnimationSystem {

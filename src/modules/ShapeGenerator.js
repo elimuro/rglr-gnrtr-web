@@ -1,3 +1,11 @@
+/**
+ * ShapeGenerator.js - 3D Shape Creation and Management
+ * This module handles the generation and management of all 3D shapes in the application, including basic
+ * geometric shapes, triangles, rectangles, ellipses, and advanced refractive spheres. It provides
+ * efficient shape creation, geometry optimization, and supports dynamic shape switching and cycling
+ * for animated effects.
+ */
+
 import * as THREE from 'three';
 
 export class ShapeGenerator {
