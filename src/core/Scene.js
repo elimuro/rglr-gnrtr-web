@@ -568,9 +568,6 @@ export class Scene {
             const visibleCount = this.visibleShapes.size;
             const totalCount = this.shapes.length;
             const cullingRatio = totalCount > 0 ? visibleCount / totalCount : 0;
-            
-            console.log(`Frustum Culling: ${visibleCount}/${totalCount} shapes visible (${(cullingRatio * 100).toFixed(1)}%)`);
-            console.log(`Viewport bounds:`, bounds);
         }
     }
 

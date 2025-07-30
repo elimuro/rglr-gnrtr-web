@@ -334,10 +334,6 @@ class RGLRGNRTR {
         
         if (!ccContainer || !noteContainer) {
             console.error('Could not find MIDI control containers');
-            console.log('Available elements with data-section:');
-            document.querySelectorAll('[data-section]').forEach(el => {
-                console.log('-', el.getAttribute('data-section'), el);
-            });
             return;
         }
         

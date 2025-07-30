@@ -134,7 +134,6 @@ export class MIDIControl {
     
     generateControlId() {
         const controlId = `${this.type}${this.index}`;
-        console.log('Generated control ID:', controlId, 'for type:', this.type, 'index:', this.index);
         return controlId;
     }
     
@@ -150,8 +149,6 @@ export class MIDIControl {
         } else {
             this.container.appendChild(this.element);
         }
-        
-        console.log(`Rendered ${this.type} control ${this.index} in container:`, this.container);
     }
     
     interpolateTemplate(template) {
@@ -175,11 +172,8 @@ export class MIDIControl {
     }
     
     setupListeners() {
-        console.log('Setting up listeners for', this.controlId);
-        
         // Check for existing elements with the same IDs
         const existingElements = document.querySelectorAll(`[id*="${this.controlId}"]`);
-        console.log('Existing elements with similar IDs:', existingElements);
         
         const channelInput = document.getElementById(`midi-${this.controlId}-channel`);
         const valueInput = document.getElementById(`midi-${this.controlId}-value`);
@@ -188,15 +182,6 @@ export class MIDIControl {
         const learnStatus = document.getElementById(`midi-${this.controlId}-learn-status`);
         const removeButton = document.getElementById(`midi-${this.controlId}-remove`);
         
-        console.log('Found elements:', {
-            channelInput: channelInput,
-            valueInput: valueInput,
-            targetSelect: targetSelect,
-            learnButton: learnButton,
-            learnStatus: learnStatus,
-            removeButton: removeButton
-        });
-        
         if (!channelInput || !valueInput || !targetSelect || !learnButton || !learnStatus || !removeButton) {
             console.error('Failed to find control elements for', this.controlId);
             return;
@@ -204,7 +189,6 @@ export class MIDIControl {
         
         // Set initial values
         const mapping = this.getMapping();
-        console.log('Setting initial values for', this.controlId, ':', mapping);
         channelInput.value = mapping.channel + 1;
         valueInput.value = mapping.value;
         targetSelect.value = mapping.target;
@@ -224,7 +208,6 @@ export class MIDIControl {
         
         // Learn button
         learnButton.addEventListener('click', () => {
-            console.log('Learn button clicked for', this.controlId);
             this.startLearning(learnButton, learnStatus);
         });
         
@@ -310,15 +293,12 @@ export class MIDIControl {
     }
     
     startLearning(learnButton, learnStatus) {
-        console.log('Starting learning for', this.controlId);
         if (learnButton.classList.contains('learning')) return;
         
         learnButton.classList.add('learning');
         learnStatus.textContent = `Waiting for ${this.type.toUpperCase()}...`;
         
         const onMIDI = (controller, value, channel) => {
-            console.log('MIDI learned for', this.controlId, ':', this.type, 'controller:', controller, 'value:', value, 'on channel', channel, '(raw channel value)');
-            console.log('Channel type:', typeof channel, 'Channel value:', channel);
             this.updateMapping({ value: controller, channel });
             
             const channelInput = document.getElementById(`midi-${this.controlId}-channel`);
@@ -358,36 +338,23 @@ export class MIDIControl {
             value: this.config.defaultValue,
             target: this.config.targets[0].value
         };
-        console.log('getMapping for', this.controlId, ':', {
-            mappings: mappings,
-            existingMapping: mappings[this.controlId],
-            config: this.config,
-            defaultMapping: defaultMapping
-        });
         return mappings[this.controlId] || defaultMapping;
     }
     
     updateMapping(updates) {
-        console.log(`Updating mapping for ${this.controlId}:`, updates);
-        
         const mappings = this.type === 'cc' ? this.app.state.get('midiCCMappings') : this.app.state.get('midiNoteMappings');
-        console.log('Current mappings before update:', mappings);
         
         if (!mappings[this.controlId]) {
             mappings[this.controlId] = this.getMapping();
-            console.log('Created new mapping for', this.controlId, ':', mappings[this.controlId]);
         }
         
         Object.assign(mappings[this.controlId], updates);
-        console.log('Updated mapping for', this.controlId, ':', mappings[this.controlId]);
         
         // Update the state
         if (this.type === 'cc') {
             this.app.state.set('midiCCMappings', mappings);
-            console.log('Updated CC mappings in state:', this.app.state.get('midiCCMappings'));
         } else {
             this.app.state.set('midiNoteMappings', mappings);
-            console.log('Updated Note mappings in state:', this.app.state.get('midiNoteMappings'));
         }
     }
     
@@ -460,9 +427,7 @@ export class MIDIControlManager {
     }
     
     addControl(type, index) {
-        console.log(`Adding ${type} control with index ${index}`);
         const controlId = this.generateControlId(type, index);
-        console.log('Generated control ID:', controlId);
         
         // Check if control already exists
         if (this.controls.has(controlId)) {
@@ -472,18 +437,14 @@ export class MIDIControlManager {
         
         // Select the appropriate container based on type
         const container = type === 'cc' ? this.ccContainer : this.noteContainer;
-        console.log('Selected container:', container);
         
         if (!container) {
             console.error(`No container found for ${type} controls`);
-            console.log('CC container:', this.ccContainer);
-            console.log('Note container:', this.noteContainer);
             return null;
         }
         
         const control = new MIDIControl(type, index, container, this.app);
         this.controls.set(controlId, control);
-        console.log('Control created successfully:', controlId);
         
         return control;
     }
@@ -557,14 +518,7 @@ export class MIDIControlManager {
         // Combine all indices
         const allIndices = [...managedIndices, ...htmlIndices];
         
-        console.log(`Getting next index for ${type}:`, {
-            managedIndices: managedIndices,
-            htmlIndices: htmlIndices,
-            allIndices: allIndices
-        });
-        
         const nextIndex = allIndices.length > 0 ? Math.max(...allIndices) + 1 : 1;
-        console.log(`Next index for ${type}:`, nextIndex);
         return nextIndex;
     }
     
