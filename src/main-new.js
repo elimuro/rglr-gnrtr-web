@@ -9,7 +9,7 @@
 import { App } from './core/App.js';
 
 // Initialize the application when the DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
         const app = new App();
         
@@ -17,6 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.app = app;
         
     } catch (error) {
-        // Failed to initialize application
+        console.error('Failed to initialize application:', error);
     }
 }); 

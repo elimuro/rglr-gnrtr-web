@@ -10,129 +10,175 @@ import { gsap } from 'gsap';
 
 export class StateManager {
     constructor() {
-        this.state = this.getInitialState();
+        this.state = {};
         this.listeners = new Map();
         this.history = [];
         this.historyIndex = -1;
         this.maxHistorySize = 50;
         this.interpolationTimeline = null; // Track active interpolation
+        this.initialized = false;
+    }
+
+    async initialize() {
+        if (this.initialized) return;
+        
+        this.state = await this.getInitialState();
+        this.initialized = true;
+        console.log('StateManager initialized with state:', this.state);
+    }
+
+    async reloadDefaultScene() {
+        console.log('Reloading default scene from JSON file...');
+        const newState = await this.getInitialState();
+        if (newState) {
+            // Update all state properties
+            Object.keys(newState).forEach(key => {
+                if (this.state.hasOwnProperty(key)) {
+                    const oldValue = this.state[key];
+                    const newValue = newState[key];
+                    this.state[key] = newValue;
+                    this.notifyListeners(key, newValue, oldValue);
+                }
+            });
+            console.log('Default scene reloaded successfully');
+        } else {
+            console.warn('Failed to reload default scene');
+        }
     }
 
     getInitialState() {
-        // Use the JSON data as the default scene
-        const defaultSceneData = {
-            "name": "Visual Settings",
-            "timestamp": "2025-07-31T05:00:57.631Z",
-            "version": "1.0",
-            "settings": {
-                "animationType": 0,
-                "animationSpeed": 1.89,
-                "enableShapeCycling": false,
-                "enableSizeAnimation": true,
-                "movementAmplitude": 0.08,
-                "movementFrequency": 0.7000000000000001,
-                "rotationAmplitude": 0.5,
-                "rotationFrequency": 0.3,
-                "scaleAmplitude": 0.2,
-                "scaleFrequency": 0.4,
-                "shapeCyclingSpeed": 0.4,
-                "shapeCyclingPattern": 0,
-                "shapeCyclingDirection": 0,
-                "shapeCyclingSync": 0,
-                "shapeCyclingIntensity": 1,
-                "shapeCyclingTrigger": 0,
-                "morphingEnabled": false,
-                "morphingSpeed": 0.5,
-                "morphingEasing": "power2.inOut",
-                "autoMorphing": true,
-                "crossCategoryMorphing": true,
-                "morphingAggressiveness": 1,
-                "currentMorphProgress": 0.72,
-                "morphingPreset": "geometric_evolution",
-                "randomMorphing": true,
-                "morphingTargetShape": null,
-                "gridWidth": 19,
-                "gridHeight": 21,
-                "cellSize": 1,
-                "compositionWidth": 30,
-                "compositionHeight": 30,
-                "showGrid": false,
-                "randomness": 1,
-                "shapeColor": "#5cff00",
-                "backgroundColor": "#000000",
-                "enabledShapes": {
-                    "Basic Shapes": true,
-                    "Triangles": true,
-                    "Rectangles": true,
-                    "Ellipses": true,
-                    "Refractive Spheres": true
-                },
-                "sphereRefraction": 1.67,
-                "sphereTransparency": 1,
-                "sphereRoughness": 0.04,
-                "sphereMetalness": 1,
-                "sphereTransmission": 1,
-                "sphereScale": 3,
-                "sphereClearcoat": 0.09,
-                "sphereClearcoatRoughness": 0.05,
-                "sphereEnvMapIntensity": 0.28,
-                "sphereWaterDistortion": true,
-                "postProcessingEnabled": true,
-                "bloomEnabled": true,
-                "bloomStrength": 0.41,
-                "bloomRadius": 1.18,
-                "bloomThreshold": 0,
-                "chromaticAberrationEnabled": false,
-                "chromaticIntensity": 0.5,
-                "vignetteEnabled": true,
-                "vignetteIntensity": 1,
-                "vignetteRadius": 0.53,
-                "vignetteSoftness": 0.36,
-                "grainEnabled": true,
-                "grainIntensity": 0.1,
-                "colorGradingEnabled": false,
-                "colorHue": 0,
-                "colorSaturation": 1,
-                "colorBrightness": 1,
-                "colorContrast": 1,
-                "fxaaEnabled": true,
-                "ambientLightIntensity": 0.97,
-                "directionalLightIntensity": 0.04,
-                "pointLight1Intensity": 2.94,
-                "pointLight2Intensity": 3,
-                "rimLightIntensity": 3,
-                "accentLightIntensity": 2.97,
-                "enableFrustumCulling": true
-            }
-        };
+        // Try to load the default scene from the JSON file
+        return this.loadDefaultScene() || this.getFallbackState();
+    }
 
-        // Start with the default scene settings
-        const initialState = { ...defaultSceneData.settings };
-        
-        // Add MIDI parameters that aren't in the scene data
-        initialState.midiEnabled = false;
-        initialState.midiChannel = 0;
-        initialState.midiCCMappings = {
-            cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
-            cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
-            cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
-            cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
-            cc5: { channel: 0, cc: 5, target: 'sphereScale' }
-        };
-        initialState.midiNoteMappings = {
-            note1: { channel: 0, note: 60, target: 'shapeCycling' },
-            note2: { channel: 0, note: 61, target: 'sizeAnimation' },
-            note3: { channel: 0, note: 62, target: 'showGrid' },
-            note4: { channel: 0, note: 63, target: 'enableShapeCycling' },
-            note5: { channel: 0, note: 64, target: 'enableSizeAnimation' }
-        };
-        
-        // Add sphereDistortionStrength if not present
-        if (!initialState.hasOwnProperty('sphereDistortionStrength')) {
-            initialState.sphereDistortionStrength = 0.1;
+    async loadDefaultScene() {
+        try {
+            console.log('Attempting to load default-scene.json...');
+            const response = await fetch('./default-scene.json');
+            if (!response.ok) {
+                console.warn('Could not load default-scene.json, using fallback state');
+                console.warn('Response status:', response.status, response.statusText);
+                return null;
+            }
+            const data = await response.json();
+            console.log('Successfully loaded default scene from JSON file:', data);
+            
+            // Start with the default scene settings
+            const initialState = { ...data.settings };
+            
+            // Add MIDI parameters that aren't in the scene data
+            initialState.midiEnabled = false;
+            initialState.midiChannel = 0;
+            initialState.midiCCMappings = {
+                cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
+                cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
+                cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
+                cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
+                cc5: { channel: 0, cc: 5, target: 'sphereScale' }
+            };
+            initialState.midiNoteMappings = {
+                note1: { channel: 0, note: 60, target: 'shapeCycling' },
+                note2: { channel: 0, note: 61, target: 'sizeAnimation' },
+                note3: { channel: 0, note: 62, target: 'showGrid' },
+                note4: { channel: 0, note: 63, target: 'enableShapeCycling' },
+                note5: { channel: 0, note: 64, target: 'enableSizeAnimation' }
+            };
+            
+            // Add sphereDistortionStrength if not present
+            if (!initialState.hasOwnProperty('sphereDistortionStrength')) {
+                initialState.sphereDistortionStrength = 0.1;
+            }
+            
+            console.log('Initial state prepared from JSON:', initialState);
+            return initialState;
+        } catch (error) {
+            console.warn('Error loading default-scene.json:', error);
+            return null;
         }
-        
-        return initialState;
+    }
+
+    getFallbackState() {
+        // Fallback state if JSON file can't be loaded
+        return {
+            "animationType": 0,
+            "animationSpeed": 1.89,
+            "enableShapeCycling": false,
+            "enableSizeAnimation": true,
+            "movementAmplitude": 0.08,
+            "movementFrequency": 0.7000000000000001,
+            "rotationAmplitude": 0.5,
+            "rotationFrequency": 0.3,
+            "scaleAmplitude": 0.2,
+            "scaleFrequency": 0.4,
+            "shapeCyclingSpeed": 0.4,
+            "shapeCyclingPattern": 0,
+            "shapeCyclingDirection": 0,
+            "shapeCyclingSync": 0,
+            "shapeCyclingIntensity": 1,
+            "shapeCyclingTrigger": 0,
+            "morphingEnabled": false,
+            "morphingSpeed": 0.5,
+            "morphingEasing": "power2.inOut",
+            "autoMorphing": true,
+            "crossCategoryMorphing": true,
+            "morphingAggressiveness": 1,
+            "currentMorphProgress": 0.72,
+            "morphingPreset": "geometric_evolution",
+            "randomMorphing": true,
+            "morphingTargetShape": null,
+            "gridWidth": 19,
+            "gridHeight": 6,
+            "cellSize": 0.76,
+            "compositionWidth": 30,
+            "compositionHeight": 30,
+            "showGrid": false,
+            "randomness": 1,
+            "shapeColor": "#5cff00",
+            "backgroundColor": "#000000",
+            "enabledShapes": {
+                "Basic Shapes": true,
+                "Triangles": true,
+                "Rectangles": true,
+                "Ellipses": true,
+                "Refractive Spheres": true
+            },
+            "sphereRefraction": 1.67,
+            "sphereTransparency": 1,
+            "sphereRoughness": 0.04,
+            "sphereMetalness": 1,
+            "sphereTransmission": 1,
+            "sphereScale": 3,
+            "sphereClearcoat": 0.09,
+            "sphereClearcoatRoughness": 0.05,
+            "sphereEnvMapIntensity": 0.28,
+            "sphereWaterDistortion": true,
+            "postProcessingEnabled": false,
+            "bloomEnabled": true,
+            "bloomStrength": 0.41,
+            "bloomRadius": 1.18,
+            "bloomThreshold": 0,
+            "chromaticAberrationEnabled": false,
+            "chromaticIntensity": 0.5,
+            "vignetteEnabled": true,
+            "vignetteIntensity": 1,
+            "vignetteRadius": 0.53,
+            "vignetteSoftness": 0.36,
+            "grainEnabled": true,
+            "grainIntensity": 0.1,
+            "colorGradingEnabled": false,
+            "colorHue": 0,
+            "colorSaturation": 1,
+            "colorBrightness": 1,
+            "colorContrast": 1,
+            "fxaaEnabled": true,
+            "ambientLightIntensity": 0.97,
+            "directionalLightIntensity": 0.04,
+            "pointLight1Intensity": 2.94,
+            "pointLight2Intensity": 3,
+            "rimLightIntensity": 3,
+            "accentLightIntensity": 2.97,
+            "enableFrustumCulling": true
+        };
     }
 
     get(key) {

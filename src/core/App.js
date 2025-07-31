@@ -30,8 +30,11 @@ export class App {
         this.init();
     }
 
-    init() {
+    async init() {
         try {
+            // Initialize state manager first
+            await this.state.initialize();
+            
             // Initialize scene
             this.scene.init();
             
@@ -65,7 +68,7 @@ export class App {
             window.addEventListener('keydown', (event) => this.handleKeyDown(event));
             
         } catch (error) {
-            // Error during App initialization
+            console.error('Error during App initialization:', error);
         }
     }
 
@@ -301,9 +304,16 @@ export class App {
             this.drawerContainer.classList.remove('translate-y-full');
             this.drawerContainer.classList.add('open');
         } else {
-            // On desktop, use the original positioning
+            // On desktop, let CSS handle the positioning
             this.drawerContainer.classList.remove('-translate-y-full');
             this.drawerContainer.classList.add('open');
+            
+            // Add specific class for connection drawer positioning
+            if (drawerName === 'connection') {
+                this.drawerContainer.classList.add('connection-drawer');
+            } else {
+                this.drawerContainer.classList.remove('connection-drawer');
+            }
         }
         
         // Remove hidden class when opening drawer
@@ -330,6 +340,9 @@ export class App {
             this.hideDrawerContainer();
             this.currentDrawer = null;
             
+            // Remove connection-drawer class
+            this.drawerContainer.classList.remove('connection-drawer');
+            
             // Reset all button states
             this.updateDrawerButtonStates(null);
             
@@ -350,7 +363,7 @@ export class App {
             this.drawerContainer.classList.add('translate-y-full');
             this.drawerContainer.classList.remove('open');
         } else {
-            // On desktop, use the original positioning
+            // On desktop, let CSS handle the positioning
             this.drawerContainer.classList.add('-translate-y-full');
             this.drawerContainer.classList.remove('open');
         }
@@ -826,6 +839,10 @@ export class App {
             case 'r':
                 this.state.set('randomness', Math.random());
                 this.scene.createGrid();
+                break;
+            case 'R':
+                // Reload default scene from JSON file
+                this.state.reloadDefaultScene();
                 break;
             case 'c':
                 this.state.set('animationType', (this.state.get('animationType') + 1) % 4);

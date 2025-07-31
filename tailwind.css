@@ -191,6 +191,34 @@ canvas {
     opacity: 0;
 }
 
+/* Desktop drawer sizing - make it smaller and centered */
+@media (min-width: 769px) {
+    #midi-drawer-container {
+        left: 50%;
+        right: auto;
+        width: 50%;
+        transform: translateX(-50%) translateY(-100%);
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    #midi-drawer-container.open {
+        transform: translateX(-50%) translateY(0);
+    }
+    
+    /* Connection drawer positioned on the left */
+    #midi-drawer-container.connection-drawer {
+        left: 16px;
+        right: auto;
+        width: 400px;
+        transform: translateY(-100%);
+    }
+    
+    #midi-drawer-container.connection-drawer.open {
+        transform: translateY(0);
+    }
+}
+
 /* Mobile responsive adjustments for drawer container */
 @media (max-width: 768px) {
     #midi-drawer-container {

@@ -14,6 +14,7 @@ This is a web-based version of the RGLR GNRTR geometric pattern generator, conve
 - **Per-Parameter MIDI Mapping** - Configure channel/CC pairs for each animation parameter
 - **MIDI Preset System** - Save and load custom MIDI mapping configurations
 - **Live MIDI Activity Monitoring** - Visual feedback for MIDI input
+- **Advanced Post-Processing Effects** - Bloom, Chromatic Aberration, Vignette, Film Grain, Color Grading
 - Responsive design
 - Modern web-based GUI
 
@@ -30,6 +31,23 @@ npm start
 ```
 
 3. Open your browser and navigate to `http://localhost:5173`
+
+## Configuration
+
+### Default Scene Settings
+
+The application loads its default settings from `default-scene.json` in the root directory. You can modify this file to change the initial state of the application. The file contains all visual and animation parameters.
+
+**To see changes immediately:**
+- Press `R` (capital R) in the application to reload the default scene from the JSON file
+- Or restart the development server
+
+**Key settings you can modify:**
+- Animation parameters (speed, amplitude, frequency)
+- Grid settings (width, height, cell size)
+- Shape properties (colors, materials)
+- Post-processing effects (bloom, vignette, etc.)
+- MIDI mappings
 
 ## Controls
 
@@ -50,52 +68,37 @@ npm start
 - **Per-Parameter Control**: Each animation parameter can be mapped to different MIDI channels/CCs
 - **Live Testing**: Test CC values and see real-time parameter changes
 - **Preset System**: Save and load custom MIDI mapping configurations
-- **MIDI Activity Monitor**: Visual feedback showing incoming MIDI messages
 
-### MIDI Mappable Parameters
-- Animation Speed
-- Movement Amplitude
-- Rotation Amplitude
-- Scale Amplitude
-- Randomness
-- Cell Size
-- Movement Frequency
-- Rotation Frequency
-- Scale Frequency
-- Grid Width/Height
-- Composition Width/Height
-- Animation Type
-- Sphere Refraction/Transparency/Transmission/Roughness/Metalness/Scale
-- Shape Cycling (Note On/Off)
-- Size Animation (Note On/Off)
-- Show Grid (Note On/Off)
-- Reset Animation (Note On/Off)
-- Toggle Basic Shapes/Triangles/Rectangles/Ellipses/Refractive Spheres (Note On/Off)
+### Keyboard Shortcuts
+- **1-8**: Adjust animation parameters
+- **A**: Toggle size animation
+- **G**: Toggle grid visibility
+- **R**: Randomize shapes
+- **R** (capital): Reload default scene from JSON file
+- **C**: Cycle through animation types
 
-## Technologies Used
+## Development
 
-- Three.js for 3D rendering
-- dat.GUI for the control interface
-- GSAP for smooth animations
-- Web MIDI API for MIDI device integration
-- Vite for fast development and building
+### File Structure
+- `src/core/`: Core application logic
+- `src/modules/`: Feature modules (animation, materials, etc.)
+- `src/ui/`: User interface components
+- `default-scene.json`: Default application settings
+- `midi-help.html`: MIDI control documentation
 
-## Live Demo
+### Making Changes
+1. Modify `default-scene.json` to change default settings
+2. Press `R` (capital) in the app to reload settings
+3. Or restart the dev server for permanent changes
 
-🌐 **[Try it live here](https://rglr-gnrtr-web.netlify.app)**
+## Troubleshooting
 
-## MIDI Setup
+### MIDI Issues
+- Ensure your browser supports Web MIDI API
+- Run over HTTPS or localhost
+- Check device connections and permissions
 
-1. **Connect MIDI Device**: Click "Connect MIDI" in the MIDI control panel
-2. **Add Dynamic Controls**: Use "+ Add New CC Control" or "+ Add New Note Control" buttons
-3. **Use MIDI Learn**: Click "Learn" on any control and send MIDI input to automatically configure it
-4. **Configure Mappings**: Set channel/CC pairs for each parameter
-5. **Test Controls**: Use "Test CC Values" to verify your setup
-6. **Save Presets**: Save your custom mappings for later use
-
-## Browser Compatibility
-
-- **Chrome/Edge**: Full MIDI support
-- **Firefox**: Full MIDI support  
-- **Safari**: Limited MIDI support
-- **Mobile**: No MIDI support (Web MIDI API not available)
+### Performance Issues
+- Disable post-processing effects if experiencing lag
+- Reduce grid size or animation complexity
+- Close other browser tabs to free up resources

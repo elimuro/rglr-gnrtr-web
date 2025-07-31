@@ -189,6 +189,90 @@
                     <td>0.1 - 3</td>
                     <td>Size scaling of sphere objects</td>
                 </tr>
+                <tr>
+                    <td>1</td>
+                    <td>21</td>
+                    <td>Bloom Strength</td>
+                    <td>0 - 2</td>
+                    <td>Intensity of bloom glow effect</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>22</td>
+                    <td>Bloom Radius</td>
+                    <td>0 - 2</td>
+                    <td>Size of bloom glow effect</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>23</td>
+                    <td>Bloom Threshold</td>
+                    <td>0 - 1</td>
+                    <td>Brightness threshold for bloom effect</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>24</td>
+                    <td>Chromatic Aberration</td>
+                    <td>0 - 1</td>
+                    <td>Color separation effect intensity</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>25</td>
+                    <td>Vignette Intensity</td>
+                    <td>0 - 1</td>
+                    <td>Darkening effect around edges</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>26</td>
+                    <td>Vignette Radius</td>
+                    <td>0.1 - 1</td>
+                    <td>Size of vignette effect</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>27</td>
+                    <td>Vignette Softness</td>
+                    <td>0 - 1</td>
+                    <td>Softness of vignette edges</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>28</td>
+                    <td>Film Grain</td>
+                    <td>0 - 0.5</td>
+                    <td>Film grain noise effect intensity</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>29</td>
+                    <td>Color Hue</td>
+                    <td>-0.5 - 0.5</td>
+                    <td>Hue shift for color grading</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>30</td>
+                    <td>Color Saturation</td>
+                    <td>0 - 3</td>
+                    <td>Saturation level for color grading</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>31</td>
+                    <td>Color Brightness</td>
+                    <td>0 - 2</td>
+                    <td>Brightness level for color grading</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>32</td>
+                    <td>Color Contrast</td>
+                    <td>0 - 2</td>
+                    <td>Contrast level for color grading</td>
+                </tr>
             </table>
         </div>
 
@@ -281,11 +365,83 @@
                     <td>Toggle Refractive Spheres</td>
                     <td>Toggle refractive sphere visibility</td>
                 </tr>
+                <tr>
+                    <td>69 (A)</td>
+                    <td>Toggle Bloom</td>
+                    <td>Toggle bloom glow effect</td>
+                </tr>
+                <tr>
+                    <td>70 (A#)</td>
+                    <td>Toggle Chromatic Aberration</td>
+                    <td>Toggle color separation effect</td>
+                </tr>
+                <tr>
+                    <td>71 (B)</td>
+                    <td>Toggle Vignette</td>
+                    <td>Toggle edge darkening effect</td>
+                </tr>
+                <tr>
+                    <td>72 (C)</td>
+                    <td>Toggle Film Grain</td>
+                    <td>Toggle film grain noise effect</td>
+                </tr>
+                <tr>
+                    <td>73 (C#)</td>
+                    <td>Toggle Color Grading</td>
+                    <td>Toggle color grading effects</td>
+                </tr>
+                <tr>
+                    <td>74 (D)</td>
+                    <td>Toggle Post Processing</td>
+                    <td>Toggle all post-processing effects</td>
+                </tr>
             </table>
             
             <div class="help-note">
                 <strong>Note:</strong> Any other MIDI note will control cell size based on velocity (how hard you press the key).
             </div>
+        </div>
+
+        <div class="help-section">
+            <h2 class="help-h2">Post-Processing Effects</h2>
+            <p>The application includes advanced post-processing effects that can be controlled via MIDI:</p>
+            
+            <h3 class="help-h3">Bloom Effect</h3>
+            <ul>
+                <li><strong>Bloom Strength:</strong> Controls the intensity of the glow effect around bright areas</li>
+                <li><strong>Bloom Radius:</strong> Controls the size and spread of the bloom effect</li>
+                <li><strong>Bloom Threshold:</strong> Sets the brightness level at which bloom begins</li>
+            </ul>
+            
+            <h3 class="help-h3">Chromatic Aberration</h3>
+            <ul>
+                <li><strong>Chromatic Intensity:</strong> Controls the amount of color separation effect</li>
+            </ul>
+            
+            <h3 class="help-h3">Vignette Effect</h3>
+            <ul>
+                <li><strong>Vignette Intensity:</strong> Controls the darkness of the edge effect</li>
+                <li><strong>Vignette Radius:</strong> Controls the size of the vignette area</li>
+                <li><strong>Vignette Softness:</strong> Controls the softness of the vignette edges</li>
+            </ul>
+            
+            <h3 class="help-h3">Film Grain</h3>
+            <ul>
+                <li><strong>Grain Intensity:</strong> Controls the amount of film grain noise</li>
+            </ul>
+            
+            <h3 class="help-h3">Color Grading</h3>
+            <ul>
+                <li><strong>Color Hue:</strong> Shifts the overall hue of the scene</li>
+                <li><strong>Color Saturation:</strong> Controls the intensity of colors</li>
+                <li><strong>Color Brightness:</strong> Adjusts the overall brightness</li>
+                <li><strong>Color Contrast:</strong> Controls the contrast between light and dark areas</li>
+            </ul>
+            
+            <h3 class="help-h3">FXAA Anti-Aliasing</h3>
+            <ul>
+                <li><strong>FXAA Enabled:</strong> Toggles fast approximate anti-aliasing for smoother edges</li>
+            </ul>
         </div>
 
         <div class="help-section">
@@ -318,6 +474,8 @@
                 <li>Map frequently used parameters to easily accessible controls</li>
                 <li>Use velocity-sensitive keys for dynamic cell size control</li>
                 <li>Experiment with different CC mappings to find your preferred setup</li>
+                <li>Post-processing effects can be CPU intensive - disable unused effects for better performance</li>
+                <li>Use FXAA for smoother visuals without significant performance impact</li>
             </ul>
         </div>
 
@@ -330,6 +488,16 @@
                     <li>Try refreshing the page and reconnecting</li>
                     <li>Check that your browser supports Web MIDI API (Chrome, Edge, Firefox)</li>
                     <li>Ensure you're running over HTTPS or localhost</li>
+                </ul>
+            </div>
+            
+            <div class="help-warning">
+                <strong>Performance issues?</strong>
+                <ul>
+                    <li>Disable post-processing effects if experiencing lag</li>
+                    <li>Reduce the number of active shapes or grid size</li>
+                    <li>Lower animation frequencies for smoother performance</li>
+                    <li>Close other browser tabs to free up resources</li>
                 </ul>
             </div>
         </div>
