@@ -41,239 +41,87 @@
                 <strong>Dynamic Controls:</strong> You can add new CC controls using the "+ Add New CC Control" button. Each new control will be automatically numbered and can be removed using the × button.
             </div>
             
-            <table class="midi-table">
-                <tr>
-                    <th>Channel</th>
-                    <th>CC Number</th>
-                    <th>Parameter</th>
-                    <th>Range</th>
-                    <th>Description</th>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>Animation Speed</td>
-                    <td>0.01 - 2.01</td>
-                    <td>Global animation speed multiplier</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>2</td>
-                    <td>Movement Amplitude</td>
-                    <td>0 - 0.5</td>
-                    <td>Intensity of movement animation</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>3</td>
-                    <td>Rotation Amplitude</td>
-                    <td>0 - 2</td>
-                    <td>Intensity of rotation animation</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>4</td>
-                    <td>Scale Amplitude</td>
-                    <td>0 - 1</td>
-                    <td>Intensity of scale animation</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>5</td>
-                    <td>Randomness</td>
-                    <td>0 - 1</td>
-                    <td>Shape selection randomness</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>6</td>
-                    <td>Cell Size</td>
-                    <td>0.5 - 2</td>
-                    <td>Size of individual grid cells</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>7</td>
-                    <td>Movement Frequency</td>
-                    <td>0.1 - 2.1</td>
-                    <td>Speed of movement animation</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>8</td>
-                    <td>Rotation Frequency</td>
-                    <td>0.1 - 2.1</td>
-                    <td>Speed of rotation animation</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>9</td>
-                    <td>Scale Frequency</td>
-                    <td>0.1 - 2.1</td>
-                    <td>Speed of scale animation</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>10</td>
-                    <td>Grid Width</td>
-                    <td>1 - 30</td>
-                    <td>Number of columns in the grid</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>11</td>
-                    <td>Grid Height</td>
-                    <td>1 - 30</td>
-                    <td>Number of rows in the grid</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>12</td>
-                    <td>Composition Width</td>
-                    <td>10 - 100</td>
-                    <td>Width of the composition area</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>13</td>
-                    <td>Composition Height</td>
-                    <td>10 - 100</td>
-                    <td>Height of the composition area</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>14</td>
-                    <td>Animation Type</td>
-                    <td>0 - 3</td>
-                    <td>Type of animation (Movement, Rotation, Scale, Combined)</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>15</td>
-                    <td>Sphere Refraction</td>
-                    <td>1 - 3</td>
-                    <td>Refraction index for sphere materials</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>16</td>
-                    <td>Sphere Transparency</td>
-                    <td>0 - 1</td>
-                    <td>Transparency level of sphere materials</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>17</td>
-                    <td>Sphere Transmission</td>
-                    <td>0 - 1</td>
-                    <td>Light transmission through sphere materials</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>18</td>
-                    <td>Sphere Roughness</td>
-                    <td>0 - 1</td>
-                    <td>Surface roughness of sphere materials</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>19</td>
-                    <td>Sphere Metalness</td>
-                    <td>0 - 1</td>
-                    <td>Metallic appearance of sphere materials</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>20</td>
-                    <td>Sphere Scale</td>
-                    <td>0.1 - 3</td>
-                    <td>Size scaling of sphere objects</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>21</td>
-                    <td>Bloom Strength</td>
-                    <td>0 - 2</td>
-                    <td>Intensity of bloom glow effect</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>22</td>
-                    <td>Bloom Radius</td>
-                    <td>0 - 2</td>
-                    <td>Size of bloom glow effect</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>23</td>
-                    <td>Bloom Threshold</td>
-                    <td>0 - 1</td>
-                    <td>Brightness threshold for bloom effect</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>24</td>
-                    <td>Chromatic Aberration</td>
-                    <td>0 - 1</td>
-                    <td>Color separation effect intensity</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>25</td>
-                    <td>Vignette Intensity</td>
-                    <td>0 - 1</td>
-                    <td>Darkening effect around edges</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>26</td>
-                    <td>Vignette Radius</td>
-                    <td>0.1 - 1</td>
-                    <td>Size of vignette effect</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>27</td>
-                    <td>Vignette Softness</td>
-                    <td>0 - 1</td>
-                    <td>Softness of vignette edges</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>28</td>
-                    <td>Film Grain</td>
-                    <td>0 - 0.5</td>
-                    <td>Film grain noise effect intensity</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>29</td>
-                    <td>Color Hue</td>
-                    <td>-0.5 - 0.5</td>
-                    <td>Hue shift for color grading</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>30</td>
-                    <td>Color Saturation</td>
-                    <td>0 - 3</td>
-                    <td>Saturation level for color grading</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>31</td>
-                    <td>Color Brightness</td>
-                    <td>0 - 2</td>
-                    <td>Brightness level for color grading</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>32</td>
-                    <td>Color Contrast</td>
-                    <td>0 - 2</td>
-                    <td>Contrast level for color grading</td>
-                </tr>
-            </table>
+            <div class="help-note">
+                <strong>No Default Mappings:</strong> This application does not include any pre-configured MIDI mappings. All mappings must be created manually by the user through the MIDI interface.
+            </div>
+            
+            <div class="help-note">
+                <strong>Available Parameters:</strong> The following parameters can be mapped to MIDI controls:
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-h3">Animation Parameters</h3>
+                <ul>
+                    <li><strong>Animation Speed:</strong> Global animation speed multiplier (0.01 - 2.01)</li>
+                    <li><strong>Movement Amplitude:</strong> Intensity of movement animation (0 - 0.5)</li>
+                    <li><strong>Rotation Amplitude:</strong> Intensity of rotation animation (0 - 2)</li>
+                    <li><strong>Scale Amplitude:</strong> Intensity of scale animation (0 - 1)</li>
+                    <li><strong>Randomness:</strong> Shape selection randomness (0 - 1)</li>
+                    <li><strong>Cell Size:</strong> Size of individual grid cells (0.5 - 2)</li>
+                    <li><strong>Movement Frequency:</strong> Speed of movement animation (0.1 - 2.1)</li>
+                    <li><strong>Rotation Frequency:</strong> Speed of rotation animation (0.1 - 2.1)</li>
+                    <li><strong>Scale Frequency:</strong> Speed of scale animation (0.1 - 2.1)</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-h3">Grid & Composition Parameters</h3>
+                <ul>
+                    <li><strong>Grid Width:</strong> Number of columns in the grid (1 - 30)</li>
+                    <li><strong>Grid Height:</strong> Number of rows in the grid (1 - 30)</li>
+                    <li><strong>Composition Width:</strong> Width of the composition area (10 - 100)</li>
+                    <li><strong>Composition Height:</strong> Height of the composition area (10 - 100)</li>
+                    <li><strong>Animation Type:</strong> Type of animation (0-3: Movement, Rotation, Scale, Combined)</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-h3">Sphere Material Parameters</h3>
+                <ul>
+                    <li><strong>Sphere Refraction:</strong> Refraction index for sphere materials (1 - 3)</li>
+                    <li><strong>Sphere Transparency:</strong> Transparency level of sphere materials (0 - 1)</li>
+                    <li><strong>Sphere Transmission:</strong> Light transmission through sphere materials (0 - 1)</li>
+                    <li><strong>Sphere Roughness:</strong> Surface roughness of sphere materials (0 - 1)</li>
+                    <li><strong>Sphere Metalness:</strong> Metallic appearance of sphere materials (0 - 1)</li>
+                    <li><strong>Sphere Scale:</strong> Size scaling of sphere objects (0.1 - 3)</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-h3">Post-Processing Parameters</h3>
+                <ul>
+                    <li><strong>Bloom Strength:</strong> Intensity of bloom glow effect (0 - 2)</li>
+                    <li><strong>Bloom Radius:</strong> Size of bloom glow effect (0 - 2)</li>
+                    <li><strong>Bloom Threshold:</strong> Brightness threshold for bloom effect (0 - 1)</li>
+                    <li><strong>Chromatic Aberration:</strong> Color separation effect intensity (0 - 1)</li>
+                    <li><strong>Vignette Intensity:</strong> Darkening effect around edges (0 - 1)</li>
+                    <li><strong>Vignette Radius:</strong> Size of vignette effect (0.1 - 1)</li>
+                    <li><strong>Vignette Softness:</strong> Softness of vignette edges (0 - 1)</li>
+                    <li><strong>Film Grain:</strong> Film grain noise effect intensity (0 - 0.5)</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-h3">Color Grading Parameters</h3>
+                <ul>
+                    <li><strong>Color Hue:</strong> Hue shift for color grading (-0.5 - 0.5)</li>
+                    <li><strong>Color Saturation:</strong> Saturation level for color grading (0 - 3)</li>
+                    <li><strong>Color Brightness:</strong> Brightness level for color grading (0 - 2)</li>
+                    <li><strong>Color Contrast:</strong> Contrast level for color grading (0 - 2)</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-h3">Lighting Parameters</h3>
+                <ul>
+                    <li><strong>Ambient Light:</strong> Ambient light intensity (0 - 2)</li>
+                    <li><strong>Directional Light:</strong> Directional light intensity (0 - 2)</li>
+                    <li><strong>Point Light 1:</strong> First point light intensity (0 - 2)</li>
+                    <li><strong>Point Light 2:</strong> Second point light intensity (0 - 2)</li>
+                    <li><strong>Rim Light:</strong> Rim light intensity (0 - 2)</li>
+                    <li><strong>Accent Light:</strong> Accent light intensity (0 - 2)</li>
+                </ul>
+            </div>
         </div>
 
         <div class="help-section">
@@ -314,88 +162,46 @@
                 <strong>Dynamic Controls:</strong> You can add new Note controls using the "+ Add New Note Control" button. Each new control will be automatically numbered and can be removed using the × button.
             </div>
             
-            <table class="midi-table">
-                <tr>
-                    <th>Note Number</th>
-                    <th>Parameter</th>
-                    <th>Action</th>
-                </tr>
-                <tr>
-                    <td>60 (Middle C)</td>
-                    <td>Toggle Shape Cycling</td>
-                    <td>Toggle shape cycling animation</td>
-                </tr>
-                <tr>
-                    <td>61 (C#)</td>
-                    <td>Toggle Size Animation</td>
-                    <td>Toggle size/movement/rotation animations</td>
-                </tr>
-                <tr>
-                    <td>62 (D)</td>
-                    <td>Toggle Grid</td>
-                    <td>Toggle grid line visibility</td>
-                </tr>
-                <tr>
-                    <td>63 (D#)</td>
-                    <td>Reset Animation</td>
-                    <td>Reset all animations to default</td>
-                </tr>
-                <tr>
-                    <td>64 (E)</td>
-                    <td>Toggle Basic Shapes</td>
-                    <td>Toggle basic shape visibility</td>
-                </tr>
-                <tr>
-                    <td>65 (F)</td>
-                    <td>Toggle Triangles</td>
-                    <td>Toggle triangle shape visibility</td>
-                </tr>
-                <tr>
-                    <td>66 (F#)</td>
-                    <td>Toggle Rectangles</td>
-                    <td>Toggle rectangle shape visibility</td>
-                </tr>
-                <tr>
-                    <td>67 (G)</td>
-                    <td>Toggle Ellipses</td>
-                    <td>Toggle ellipse shape visibility</td>
-                </tr>
-                <tr>
-                    <td>68 (G#)</td>
-                    <td>Toggle Refractive Spheres</td>
-                    <td>Toggle refractive sphere visibility</td>
-                </tr>
-                <tr>
-                    <td>69 (A)</td>
-                    <td>Toggle Bloom</td>
-                    <td>Toggle bloom glow effect</td>
-                </tr>
-                <tr>
-                    <td>70 (A#)</td>
-                    <td>Toggle Chromatic Aberration</td>
-                    <td>Toggle color separation effect</td>
-                </tr>
-                <tr>
-                    <td>71 (B)</td>
-                    <td>Toggle Vignette</td>
-                    <td>Toggle edge darkening effect</td>
-                </tr>
-                <tr>
-                    <td>72 (C)</td>
-                    <td>Toggle Film Grain</td>
-                    <td>Toggle film grain noise effect</td>
-                </tr>
-                <tr>
-                    <td>73 (C#)</td>
-                    <td>Toggle Color Grading</td>
-                    <td>Toggle color grading effects</td>
-                </tr>
-                <tr>
-                    <td>74 (D)</td>
-                    <td>Toggle Post Processing</td>
-                    <td>Toggle all post-processing effects</td>
-                </tr>
-            </table>
+            <div class="help-note">
+                <strong>No Default Note Mappings:</strong> This application does not include any pre-configured MIDI note mappings. All note mappings must be created manually by the user through the MIDI interface.
+            </div>
+            
+            <div class="help-note">
+                <strong>Available Note Actions:</strong> The following toggle actions can be mapped to MIDI notes:
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-h3">Animation Toggles</h3>
+                <ul>
+                    <li><strong>Toggle Shape Cycling:</strong> Toggle shape cycling animation on/off</li>
+                    <li><strong>Toggle Size Animation:</strong> Toggle size/movement/rotation animations on/off</li>
+                    <li><strong>Reset Animation:</strong> Reset all animations to default values</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-h3">Display Toggles</h3>
+                <ul>
+                    <li><strong>Toggle Grid:</strong> Toggle grid line visibility on/off</li>
+                    <li><strong>Toggle Basic Shapes:</strong> Toggle basic shape visibility on/off</li>
+                    <li><strong>Toggle Triangles:</strong> Toggle triangle shape visibility on/off</li>
+                    <li><strong>Toggle Rectangles:</strong> Toggle rectangle shape visibility on/off</li>
+                    <li><strong>Toggle Ellipses:</strong> Toggle ellipse shape visibility on/off</li>
+                    <li><strong>Toggle Refractive Spheres:</strong> Toggle refractive sphere visibility on/off</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-h3">Post-Processing Toggles</h3>
+                <ul>
+                    <li><strong>Toggle Bloom:</strong> Toggle bloom glow effect on/off</li>
+                    <li><strong>Toggle Chromatic Aberration:</strong> Toggle color separation effect on/off</li>
+                    <li><strong>Toggle Vignette:</strong> Toggle edge darkening effect on/off</li>
+                    <li><strong>Toggle Film Grain:</strong> Toggle film grain noise effect on/off</li>
+                    <li><strong>Toggle Color Grading:</strong> Toggle color grading effects on/off</li>
+                    <li><strong>Toggle Post Processing:</strong> Toggle all post-processing effects on/off</li>
+                </ul>
+            </div>
             
             <div class="help-note">
                 <strong>Note:</strong> Any other MIDI note will control cell size based on velocity (how hard you press the key).

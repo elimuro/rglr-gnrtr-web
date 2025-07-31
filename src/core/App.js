@@ -883,40 +883,14 @@ export class App {
     }
 
     applyCCPreset(presetName) {
-        const presets = {
-            standard: {
-                cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
-                cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
-                cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
-                cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
-                cc5: { channel: 0, cc: 5, target: 'sphereScale' }
-            },
-            multichannel: {
-                cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
-                cc2: { channel: 1, cc: 1, target: 'movementAmplitude' },
-                cc3: { channel: 2, cc: 1, target: 'rotationAmplitude' },
-                cc4: { channel: 3, cc: 1, target: 'scaleAmplitude' },
-                cc5: { channel: 4, cc: 1, target: 'sphereScale' }
-            },
-            shapeCycling: {
-                cc1: { channel: 0, cc: 1, target: 'shapeCyclingSpeed' },
-                cc2: { channel: 0, cc: 2, target: 'shapeCyclingPattern' },
-                cc3: { channel: 0, cc: 3, target: 'shapeCyclingDirection' },
-                cc4: { channel: 0, cc: 4, target: 'shapeCyclingSync' },
-                cc5: { channel: 0, cc: 5, target: 'shapeCyclingIntensity' },
-                cc6: { channel: 0, cc: 6, target: 'shapeCyclingTrigger' },
-                cc7: { channel: 0, cc: 7, target: 'animationSpeed' },
-                cc8: { channel: 0, cc: 8, target: 'movementAmplitude' },
-                cc9: { channel: 0, cc: 9, target: 'rotationAmplitude' },
-                cc10: { channel: 0, cc: 10, target: 'scaleAmplitude' },
-                cc11: { channel: 0, cc: 11, target: 'sphereScale' }
-            }
-        };
+        // Preset functionality removed - all mappings must be created manually by user
+        // This method is kept for future use but no longer applies hardcoded presets
+        console.log('Preset functionality disabled - all MIDI mappings must be created manually');
         
-        if (presets[presetName]) {
-            this.state.set('midiCCMappings', presets[presetName]);
-            this.recreateControlsFromPreset();
-        }
+        // Clear any existing mappings to ensure clean slate
+        this.state.set('midiCCMappings', {});
+        this.state.set('midiNoteMappings', {});
+        this.recreateControlsFromPreset();
     }
 
     savePreset() {

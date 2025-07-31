@@ -81,20 +81,8 @@ export class StateManager {
                 // Add MIDI parameters that aren't in the scene data
                 initialState.midiEnabled = false;
                 initialState.midiChannel = 0;
-                initialState.midiCCMappings = {
-                    cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
-                    cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
-                    cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
-                    cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
-                    cc5: { channel: 0, cc: 5, target: 'sphereScale' }
-                };
-                initialState.midiNoteMappings = {
-                    note1: { channel: 0, note: 60, target: 'shapeCycling' },
-                    note2: { channel: 0, note: 61, target: 'sizeAnimation' },
-                    note3: { channel: 0, note: 62, target: 'showGrid' },
-                    note4: { channel: 0, note: 63, target: 'enableShapeCycling' },
-                    note5: { channel: 0, note: 64, target: 'enableSizeAnimation' }
-                };
+                initialState.midiCCMappings = {};
+                initialState.midiNoteMappings = {};
                 
                 // Add sphereDistortionStrength if not present
                 if (!initialState.hasOwnProperty('sphereDistortionStrength')) {
@@ -193,7 +181,11 @@ export class StateManager {
             "pointLight2Intensity": 3,
             "rimLightIntensity": 3,
             "accentLightIntensity": 2.97,
-            "enableFrustumCulling": true
+            "enableFrustumCulling": true,
+            "midiEnabled": false,
+            "midiChannel": 0,
+            "midiCCMappings": {},
+            "midiNoteMappings": {}
         };
     }
 
