@@ -124,32 +124,17 @@ export class MIDIManager {
         
         selectionContainer.innerHTML = html;
         
-        // Insert the selection UI into the connection card
-        const connectionPanels = document.querySelectorAll('#midi-container .m-2.p-3.bg-black.bg-opacity-20.rounded-lg.border.border-gray-700.backdrop-blur-md');
-        let connectionCard = null;
+        // Insert the selection UI into the connection drawer
+        const connectionDrawer = document.getElementById('drawer-connection-content');
         
-        // Find the connection panel (the one that contains connection-related content)
-        for (const panel of connectionPanels) {
-            if (panel.textContent.includes('Connection')) {
-                connectionCard = panel;
-                break;
-            }
-        }
-        
-        console.log('Found connection panels:', connectionPanels.length);
-        console.log('Selected connection card:', connectionCard);
-        
-        if (connectionCard) {
+        if (connectionDrawer) {
             // Add device selection below existing connection controls
-            connectionCard.appendChild(selectionContainer);
+            connectionDrawer.appendChild(selectionContainer);
         } else {
-            // Fallback: insert at the top of the container
-            const midiContainer = document.getElementById('midi-container');
-            const firstCard = midiContainer.querySelector('.m-2.p-3.bg-black.bg-opacity-20.rounded-lg.border.border-gray-700.backdrop-blur-md');
-            if (firstCard) {
-                firstCard.parentNode.insertBefore(selectionContainer, firstCard.nextSibling);
-            } else {
-                midiContainer.appendChild(selectionContainer);
+            // Fallback: insert into the drawer container
+            const drawerContainer = document.getElementById('midi-drawer-container');
+            if (drawerContainer) {
+                drawerContainer.appendChild(selectionContainer);
             }
         }
         

@@ -84,6 +84,9 @@ export class App {
     }
 
     setupMIDI() {
+        // Set up drawer functionality
+        this.setupDrawers();
+        
         // Set up MIDI UI event listeners
         document.getElementById('midi-connect').addEventListener('click', () => {
             this.midiManager.connect();
@@ -99,10 +102,13 @@ export class App {
                 this.midiManager.refreshDevices();
             });
         }
-        
-        document.getElementById('midi-help').addEventListener('click', () => {
-            window.open('midi-help.html', '_blank');
-        });
+
+        const helpButton = document.getElementById('midi-help');
+        if (helpButton) {
+            helpButton.addEventListener('click', () => {
+                window.open('midi-help.html', '_blank');
+            });
+        }
         
         // Test CC values button
         document.getElementById('test-cc-button').addEventListener('click', () => {
@@ -195,10 +201,154 @@ export class App {
                 this.debugInterpolation();
             });
         }
+    }
+
+    setupDrawers() {
+        console.log('Setting up drawers...');
+        
+        // Drawer state management
+        this.currentDrawer = null;
+        this.drawerContainer = document.getElementById('midi-drawer-container');
+        
+        if (!this.drawerContainer) {
+            console.error('Drawer container not found');
+            return;
+        } else {
+            console.log('Drawer container found:', this.drawerContainer);
+        }
+        
+        // Set up drawer button event listeners
+        const drawerButtons = [
+            'drawer-connection',
+            'drawer-activity', 
+            'drawer-cc-mapping',
+            'drawer-note-controls',
+            'drawer-scene-management'
+        ];
+        
+        drawerButtons.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                console.log(`Setting up drawer button: ${buttonId}`);
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(`Drawer button clicked: ${buttonId}`);
+                    this.toggleDrawer(buttonId.replace('drawer-', ''));
+                });
+            } else {
+                console.warn(`Drawer button not found: ${buttonId}`);
+            }
+        });
+        
+        // Close drawer when clicking outside
+        document.addEventListener('click', (e) => {
+            if (this.currentDrawer && !this.drawerContainer.contains(e.target)) {
+                const clickedButton = e.target.closest('[id^="drawer-"]');
+                if (!clickedButton) {
+                    this.closeDrawer();
+                }
+            }
+        });
+        
+        // Close drawer on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.currentDrawer) {
+                this.closeDrawer();
+            }
+        });
+        
+        console.log('Drawers setup complete');
+        
+        // Test drawer functionality
+        setTimeout(() => {
+            console.log('Testing drawer functionality...');
+            this.toggleDrawer('connection');
+        }, 1000);
+    }
+
+    toggleDrawer(drawerName) {
+        const contentId = `drawer-${drawerName}-content`;
+        const content = document.getElementById(contentId);
+        
+        if (!content) {
+            console.error(`Drawer content not found: ${contentId}`);
+            return;
+        }
+        
+        // If clicking the same drawer, close it
+        if (this.currentDrawer === drawerName) {
+            this.closeDrawer();
+            return;
+        }
+        
+        // Close any open drawer first
+        this.closeDrawer();
+        
+        // Show the new drawer
+        this.currentDrawer = drawerName;
+        content.classList.add('active');
+        this.drawerContainer.classList.remove('-translate-y-full');
+        this.drawerContainer.classList.add('open');
+        
+        // Update button states
+        this.updateDrawerButtonStates(drawerName);
+        
+        console.log(`Opened drawer: ${drawerName}`);
+    }
+
+    closeDrawer() {
+        if (this.currentDrawer) {
+            const contentId = `drawer-${this.currentDrawer}-content`;
+            const content = document.getElementById(contentId);
+            
+            if (content) {
+                content.classList.remove('active');
+            }
+            
+            this.drawerContainer.classList.add('-translate-y-full');
+            this.drawerContainer.classList.remove('open');
+            this.currentDrawer = null;
+            
+            // Reset all button states
+            this.updateDrawerButtonStates(null);
+            
+            console.log('Closed drawer');
+        }
+    }
+
+    updateDrawerButtonStates(activeDrawer) {
+        const drawerButtons = [
+            'drawer-connection',
+            'drawer-activity', 
+            'drawer-cc-mapping',
+            'drawer-note-controls',
+            'drawer-scene-management'
+        ];
+        
+        drawerButtons.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                const drawerName = buttonId.replace('drawer-', '');
+                const isActive = drawerName === activeDrawer;
+                
+                // Remove all state classes
+                button.classList.remove(
+                    'bg-midi-green', 'bg-opacity-20', 'text-midi-green', 'border-midi-green',
+                    'bg-black', 'bg-opacity-30', 'text-white', 'border-gray-600'
+                );
+                
+                // Add appropriate classes
+                if (isActive) {
+                    button.classList.add('bg-midi-green', 'bg-opacity-20', 'text-midi-green', 'border-midi-green');
+                } else {
+                    button.classList.add('bg-black', 'bg-opacity-30', 'text-white', 'border-gray-600');
+                }
+            }
+        });
+    }
         
         // Removed setupCollapsibleSections() - new design uses cards instead
-
-    }
 
     initializeControlManager() {
         console.log('Initializing control manager...');
