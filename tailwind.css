@@ -182,7 +182,6 @@ canvas {
 
 /* MIDI Status */
 #midi-status {
-    margin-bottom: var(--spacing-lg);
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     font-weight: bold;
