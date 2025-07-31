@@ -19,124 +19,120 @@ export class StateManager {
     }
 
     getInitialState() {
-        return {
-            // Animation parameters
-            animationType: 0,
-            animationSpeed: 0.25,
-            enableShapeCycling: false,
-            enableSizeAnimation: false,
-            movementAmplitude: 0.1,
-            movementFrequency: 0.5,
-            rotationAmplitude: 0.5,
-            rotationFrequency: 0.3,
-            scaleAmplitude: 0.2,
-            scaleFrequency: 0.4,
-            
-            // Shape cycling parameters
-            shapeCyclingSpeed: 1.0,
-            shapeCyclingPattern: 0, // 0: Sequential, 1: Random, 2: Wave, 3: Pulse, 4: Staggered
-            shapeCyclingDirection: 0, // 0: Forward, 1: Reverse, 2: Ping-Pong, 3: Random
-            shapeCyclingSync: 0, // 0: Independent, 1: Synchronized, 2: Wave, 3: Cluster
-            shapeCyclingIntensity: 1.0, // 0.0 to 1.0 - how many shapes to cycle through
-            shapeCyclingTrigger: 0, // 0: Time-based, 1: Movement-triggered, 2: Rotation-triggered, 3: Manual
-            
-            // Morphing parameters
-            morphingEnabled: false,
-            morphingSpeed: 2.0,
-            morphingEasing: 'power2.inOut',
-            autoMorphing: false,
-            crossCategoryMorphing: true,
-            morphingAggressiveness: 0.5, // 0.0 to 1.0 - how dramatic the morphing should be
-            currentMorphProgress: 0.0,
-            morphingPreset: 'geometric_evolution',
-            randomMorphing: false,
-            morphingTargetShape: null,
-            
-            // Grid parameters
-            gridWidth: 8,
-            gridHeight: 8,
-            cellSize: 1,
-            compositionWidth: 30,
-            compositionHeight: 30,
-            showGrid: false,
-            randomness: 1,
-            
-            // Color parameters
-            shapeColor: '#ff9100',
-            backgroundColor: '#000000',
-            
-            // Shape selection
-            enabledShapes: {
-                'Basic Shapes': true,
-                'Triangles': true,
-                'Rectangles': true,
-                'Ellipses': true,
-                'Refractive Spheres': true
-            },
-            
-            // Sphere parameters
-            sphereRefraction: 1.67,
-            sphereTransparency: 0.93,
-            sphereRoughness: 0.33,
-            sphereMetalness: 0,
-            sphereTransmission: 0.95,
-            sphereScale: 1.3,
-            sphereClearcoat: 0.66,
-            sphereClearcoatRoughness: 0.05,
-            sphereEnvMapIntensity: 0.28,
-            sphereWaterDistortion: true,
-            sphereDistortionStrength: 0.1, // Water distortion strength
-            
-            // Post-processing parameters
-            postProcessingEnabled: true,
-            bloomEnabled: true,
-            bloomStrength: 0.25,
-            bloomRadius: 0.25,
-            bloomThreshold: 0.3,
-            chromaticAberrationEnabled: false,
-            chromaticIntensity: 0.5,
-            vignetteEnabled: false,
-            vignetteIntensity: 0.5,
-            vignetteRadius: 0.8,
-            vignetteSoftness: 0.3,
-            grainEnabled: false,
-            grainIntensity: 0.1,
-            colorGradingEnabled: false,
-            colorHue: 0,
-            colorSaturation: 1,
-            colorBrightness: 1,
-            colorContrast: 1,
-            fxaaEnabled: true,
-            
-            // MIDI parameters
-            midiEnabled: false,
-            midiChannel: 0,
-            
-            // Lighting parameters
-            ambientLightIntensity: 0.4,
-            directionalLightIntensity: 1,
-            pointLight1Intensity: 1.5,
-            pointLight2Intensity: 0.8,
-            rimLightIntensity: 0.6,
-            accentLightIntensity: 0.4,
-            
-            // Performance parameters
-            enableFrustumCulling: true,
-            midiCCMappings: {
-                cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
-                cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
-                cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
-                cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
-                cc5: { channel: 0, cc: 5, target: 'sphereScale' }
-            },
-            midiNoteMappings: {
-                note1: { channel: 0, note: 60, target: 'shapeCycling' },
-                note2: { channel: 0, note: 61, target: 'sizeAnimation' },
-                note3: { channel: 0, note: 62, target: 'showGrid' },
-                note4: { channel: 0, note: 63, target: 'enableShapeCycling' },
-                note5: { channel: 0, note: 64, target: 'enableSizeAnimation' }
+        // Use the JSON data as the default scene
+        const defaultSceneData = {
+            "name": "Visual Settings",
+            "timestamp": "2025-07-31T05:00:57.631Z",
+            "version": "1.0",
+            "settings": {
+                "animationType": 0,
+                "animationSpeed": 1.89,
+                "enableShapeCycling": false,
+                "enableSizeAnimation": true,
+                "movementAmplitude": 0.08,
+                "movementFrequency": 0.7000000000000001,
+                "rotationAmplitude": 0.5,
+                "rotationFrequency": 0.3,
+                "scaleAmplitude": 0.2,
+                "scaleFrequency": 0.4,
+                "shapeCyclingSpeed": 0.4,
+                "shapeCyclingPattern": 0,
+                "shapeCyclingDirection": 0,
+                "shapeCyclingSync": 0,
+                "shapeCyclingIntensity": 1,
+                "shapeCyclingTrigger": 0,
+                "morphingEnabled": false,
+                "morphingSpeed": 0.5,
+                "morphingEasing": "power2.inOut",
+                "autoMorphing": true,
+                "crossCategoryMorphing": true,
+                "morphingAggressiveness": 1,
+                "currentMorphProgress": 0.72,
+                "morphingPreset": "geometric_evolution",
+                "randomMorphing": true,
+                "morphingTargetShape": null,
+                "gridWidth": 19,
+                "gridHeight": 21,
+                "cellSize": 1,
+                "compositionWidth": 30,
+                "compositionHeight": 30,
+                "showGrid": false,
+                "randomness": 1,
+                "shapeColor": "#5cff00",
+                "backgroundColor": "#000000",
+                "enabledShapes": {
+                    "Basic Shapes": true,
+                    "Triangles": true,
+                    "Rectangles": true,
+                    "Ellipses": true,
+                    "Refractive Spheres": true
+                },
+                "sphereRefraction": 1.67,
+                "sphereTransparency": 1,
+                "sphereRoughness": 0.04,
+                "sphereMetalness": 1,
+                "sphereTransmission": 1,
+                "sphereScale": 3,
+                "sphereClearcoat": 0.09,
+                "sphereClearcoatRoughness": 0.05,
+                "sphereEnvMapIntensity": 0.28,
+                "sphereWaterDistortion": true,
+                "postProcessingEnabled": true,
+                "bloomEnabled": true,
+                "bloomStrength": 0.41,
+                "bloomRadius": 1.18,
+                "bloomThreshold": 0,
+                "chromaticAberrationEnabled": false,
+                "chromaticIntensity": 0.5,
+                "vignetteEnabled": true,
+                "vignetteIntensity": 1,
+                "vignetteRadius": 0.53,
+                "vignetteSoftness": 0.36,
+                "grainEnabled": true,
+                "grainIntensity": 0.1,
+                "colorGradingEnabled": false,
+                "colorHue": 0,
+                "colorSaturation": 1,
+                "colorBrightness": 1,
+                "colorContrast": 1,
+                "fxaaEnabled": true,
+                "ambientLightIntensity": 0.97,
+                "directionalLightIntensity": 0.04,
+                "pointLight1Intensity": 2.94,
+                "pointLight2Intensity": 3,
+                "rimLightIntensity": 3,
+                "accentLightIntensity": 2.97,
+                "enableFrustumCulling": true
             }
         };
+
+        // Start with the default scene settings
+        const initialState = { ...defaultSceneData.settings };
+        
+        // Add MIDI parameters that aren't in the scene data
+        initialState.midiEnabled = false;
+        initialState.midiChannel = 0;
+        initialState.midiCCMappings = {
+            cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
+            cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
+            cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
+            cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
+            cc5: { channel: 0, cc: 5, target: 'sphereScale' }
+        };
+        initialState.midiNoteMappings = {
+            note1: { channel: 0, note: 60, target: 'shapeCycling' },
+            note2: { channel: 0, note: 61, target: 'sizeAnimation' },
+            note3: { channel: 0, note: 62, target: 'showGrid' },
+            note4: { channel: 0, note: 63, target: 'enableShapeCycling' },
+            note5: { channel: 0, note: 64, target: 'enableSizeAnimation' }
+        };
+        
+        // Add sphereDistortionStrength if not present
+        if (!initialState.hasOwnProperty('sphereDistortionStrength')) {
+            initialState.sphereDistortionStrength = 0.1;
+        }
+        
+        return initialState;
     }
 
     get(key) {

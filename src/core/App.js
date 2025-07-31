@@ -217,6 +217,9 @@ export class App {
             console.log('Drawer container found:', this.drawerContainer);
         }
         
+        // Ensure drawer is hidden initially
+        this.hideDrawerContainer();
+        
         // Set up drawer button event listeners
         const drawerButtons = [
             'drawer-connection',
@@ -257,12 +260,24 @@ export class App {
             }
         });
         
+        // Handle window resize for drawer positioning
+        window.addEventListener('resize', () => {
+            if (this.currentDrawer) {
+                // Re-apply the current drawer positioning based on new screen size
+                this.toggleDrawer(this.currentDrawer);
+            }
+        });
+        
         console.log('Drawers setup complete');
         
         // Test drawer functionality
         setTimeout(() => {
             console.log('Testing drawer functionality...');
             this.toggleDrawer('connection');
+            // Close the test drawer after a short delay
+            setTimeout(() => {
+                this.closeDrawer();
+            }, 2000);
         }, 1000);
     }
 
@@ -287,8 +302,29 @@ export class App {
         // Show the new drawer
         this.currentDrawer = drawerName;
         content.classList.add('active');
-        this.drawerContainer.classList.remove('-translate-y-full');
-        this.drawerContainer.classList.add('open');
+        
+        // Handle mobile vs desktop positioning
+        if (window.innerWidth <= 768) {
+            // On mobile, position the drawer to slide up from the bottom
+            this.drawerContainer.style.position = 'fixed';
+            this.drawerContainer.style.bottom = '0';
+            this.drawerContainer.style.left = '0';
+            this.drawerContainer.style.right = '0';
+            this.drawerContainer.style.top = 'auto';
+            this.drawerContainer.style.zIndex = '45';
+            this.drawerContainer.classList.remove('translate-y-full');
+            this.drawerContainer.classList.add('open');
+        } else {
+            // On desktop, use the original positioning
+            this.drawerContainer.classList.remove('-translate-y-full');
+            this.drawerContainer.classList.add('open');
+        }
+        
+        // Remove hidden class when opening drawer
+        this.drawerContainer.classList.remove('drawer-hidden');
+        
+        // Add staggered animation delays to drawer content elements
+        this.addStaggeredAnimations(content);
         
         // Update button states
         this.updateDrawerButtonStates(drawerName);
@@ -305,8 +341,7 @@ export class App {
                 content.classList.remove('active');
             }
             
-            this.drawerContainer.classList.add('-translate-y-full');
-            this.drawerContainer.classList.remove('open');
+            this.hideDrawerContainer();
             this.currentDrawer = null;
             
             // Reset all button states
@@ -314,6 +349,38 @@ export class App {
             
             console.log('Closed drawer');
         }
+    }
+
+    hideDrawerContainer() {
+        // Handle mobile vs desktop positioning
+        if (window.innerWidth <= 768) {
+            // On mobile, reset the positioning and hide
+            this.drawerContainer.style.position = '';
+            this.drawerContainer.style.top = '';
+            this.drawerContainer.style.bottom = '';
+            this.drawerContainer.style.left = '';
+            this.drawerContainer.style.right = '';
+            this.drawerContainer.style.zIndex = '';
+            this.drawerContainer.classList.add('translate-y-full');
+            this.drawerContainer.classList.remove('open');
+        } else {
+            // On desktop, use the original positioning
+            this.drawerContainer.classList.add('-translate-y-full');
+            this.drawerContainer.classList.remove('open');
+        }
+        
+        // Add a hidden class to completely remove it from layout when not active
+        this.drawerContainer.classList.add('drawer-hidden');
+    }
+
+    addStaggeredAnimations(content) {
+        // Get all animatable elements in the drawer content
+        const animatableElements = content.querySelectorAll('button, input, select, .midi-control, label, h3');
+        
+        animatableElements.forEach((element, index) => {
+            // Set CSS custom property for animation delay
+            element.style.setProperty('--animation-order', index);
+        });
     }
 
     updateDrawerButtonStates(activeDrawer) {

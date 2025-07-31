@@ -148,6 +148,30 @@ canvas {
     border-bottom: 1px solid var(--color-border-primary);
 }
 
+/* Mobile responsive adjustments for top bar */
+@media (max-width: 768px) {
+    #midi-top-bar {
+        height: auto;
+        min-height: 48px;
+    }
+    
+    #midi-top-bar .flex {
+        padding: 8px 16px;
+    }
+    
+    /* Ensure buttons are properly sized on mobile */
+    #midi-top-bar button {
+        min-width: auto;
+        flex-shrink: 0;
+    }
+    
+    /* Stack the drawer container properly on mobile */
+    #midi-drawer-container {
+        top: auto;
+        min-height: 48px;
+    }
+}
+
 /* MIDI Drawer Container */
 #midi-drawer-container {
     position: fixed;
@@ -161,23 +185,77 @@ canvas {
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--color-border-primary);
     transform: translateY(-100%);
-    transition: transform 0.3s ease;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     max-height: 80vh;
     overflow-y: auto;
+    opacity: 0;
+}
+
+/* Mobile responsive adjustments for drawer container */
+@media (max-width: 768px) {
+    #midi-drawer-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 45;
+        transform: translateY(100%);
+        max-height: 80vh;
+        border-top: 1px solid var(--color-border-primary);
+        border-bottom: none;
+        opacity: 0;
+    }
+    
+    /* When drawer is open on mobile, it should slide up from bottom */
+    #midi-drawer-container.open {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 #midi-drawer-container.open {
     transform: translateY(0);
+    opacity: 1;
+}
+
+/* Completely hide drawer when not active */
+#midi-drawer-container.drawer-hidden {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Staggered animation for drawer content elements */
+.drawer-content.active button,
+.drawer-content.active input,
+.drawer-content.active select,
+.drawer-content.active .midi-control {
+    animation: slideInUp 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: calc(var(--animation-order, 0) * 0.02s);
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+@keyframes slideInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Drawer Content */
 .drawer-content {
     padding: 1rem;
     display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .drawer-content.active {
     display: block;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* MIDI Status */

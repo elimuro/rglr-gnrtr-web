@@ -60,6 +60,9 @@ export class Scene {
             // Initialize post-processing
             this.postProcessingManager = new PostProcessingManager(this.scene, this.camera, this.renderer);
             
+            // Apply initial post-processing settings
+            this.updatePostProcessing();
+            
             console.log('Scene initialized with', this.shapes.length, 'shapes');
         } catch (error) {
             console.error('Error during Scene initialization:', error);
