@@ -95,6 +95,93 @@ body {
     font-family: 'Courier New', monospace;
 }
 
+/* Select Element Styling */
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+select:focus {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b5cf6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* Select Options Styling */
+select option {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    border: none;
+}
+
+select option:hover {
+    background-color: rgba(139, 92, 246, 0.2);
+}
+
+select option:checked {
+    background-color: rgba(139, 92, 246, 0.3);
+    color: #8b5cf6;
+}
+
+/* Firefox specific styling */
+@-moz-document url-prefix() {
+    select {
+        background-image: none;
+        padding-right: 0.5rem;
+    }
+    
+    select option {
+        background-color: #1f2937;
+        color: #ffffff;
+    }
+    
+    select option:hover {
+        background-color: rgba(139, 92, 246, 0.2);
+    }
+    
+    select option:checked {
+        background-color: rgba(139, 92, 246, 0.3);
+        color: #8b5cf6;
+    }
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+select::-webkit-select-placeholder {
+    color: #6b7280;
+}
+
+select:focus::-webkit-select-placeholder {
+    color: #8b5cf6;
+}
+
+/* Custom select styling for better consistency */
+.midi-select {
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid #4b5563;
+    color: #ffffff;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.midi-select:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-color: #8b5cf6;
+}
+
+.midi-select:focus {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-color: #8b5cf6;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
 canvas {
     display: block;
 }
@@ -732,10 +819,7 @@ canvas {
     overflow: auto; /* Allow scrolling on help page */
 }
 
-.help-container {
-    max-width: 1600px;
-    margin: 0 auto;
-}
+
 
 .help-h1 {
     color: var(--color-primary);

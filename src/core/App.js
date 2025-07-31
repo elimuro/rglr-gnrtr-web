@@ -112,7 +112,7 @@ export class App {
         });
         
         // Preset selector
-        document.getElementById('cc-preset-select').addEventListener('change', (e) => {
+        document.getElementById('midi-preset-select').addEventListener('change', (e) => {
             this.applyCCPreset(e.target.value);
         });
         
@@ -919,7 +919,7 @@ export class App {
     }
 
     updatePresetDropdown(availablePresets) {
-        const select = document.getElementById('cc-preset-select');
+        const select = document.getElementById('midi-preset-select');
         if (!select) return;
         
         // Keep the "Custom" option

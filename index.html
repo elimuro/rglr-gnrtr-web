@@ -41,6 +41,18 @@
             <!-- Right side - Drawer buttons -->
             <div class="flex items-center justify-center md:justify-end gap-1 md:gap-2">
                 
+                <!-- MIDI Preset Selector -->
+                <div class="flex items-center gap-1">
+                    <label class="text-xs text-gray-300 hidden sm:inline">Preset:</label>
+                    <select id="midi-preset-select" class="px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
+                        <option value="">Custom</option>
+                        <option value="sample-multi-channel">Sample Multi-Channel</option>
+                        <option value="novation-launch-control">Novation Launch Control XL</option>
+                        <option value="akai-mpk-mini">Akai MPK Mini</option>
+                        <option value="arturia-beatstep-pro">Arturia BeatStep Pro</option>
+                    </select>
+                </div>
+                
                 <button id="drawer-cc-mapping" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
@@ -133,16 +145,7 @@
                     <button id="load-preset-button" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load</button>
                 </div>
             </div>
-            <div class="mb-3">
-                <label class="block text-xs font-medium text-gray-300 mb-1">Quick Preset:</label>
-                <select id="cc-preset-select" class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none">
-                    <option value="">Custom</option>
-                    <option value="sample-multi-channel">Sample Multi-Channel</option>
-                    <option value="novation-launch-control">Novation Launch Control XL</option>
-                    <option value="akai-mpk-mini">Akai MPK Mini</option>
-                    <option value="arturia-beatstep-pro">Arturia BeatStep Pro</option>
-                </select>
-            </div>
+
             
             <div id="cc-controls-container" class="mb-3">
                 <!-- CC Controls will be dynamically generated here -->
