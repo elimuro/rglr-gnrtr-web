@@ -220,7 +220,6 @@ export class App {
         // Set up drawer button event listeners
         const drawerButtons = [
             'drawer-connection',
-            'drawer-activity', 
             'drawer-cc-mapping',
             'drawer-note-controls',
             'drawer-scene-management'
@@ -320,7 +319,6 @@ export class App {
     updateDrawerButtonStates(activeDrawer) {
         const drawerButtons = [
             'drawer-connection',
-            'drawer-activity', 
             'drawer-cc-mapping',
             'drawer-note-controls',
             'drawer-scene-management'

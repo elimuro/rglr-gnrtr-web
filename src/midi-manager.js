@@ -342,7 +342,7 @@ export class MIDIManager {
     }
 
     showMIDIActivity() {
-        const activityIndicator = document.getElementById('midi-activity');
+        const activityIndicator = document.getElementById('midi-activity-top');
         if (activityIndicator) {
             // Find all activity bars (divs with bg-gray-600 class)
             const bars = activityIndicator.querySelectorAll('div.bg-gray-600.rounded');
@@ -369,7 +369,7 @@ export class MIDIManager {
     }
 
     updateLastMessage(message) {
-        const lastMessageElement = document.getElementById('midi-last-message');
+        const lastMessageElement = document.getElementById('midi-last-message-top');
         if (lastMessageElement) {
             lastMessageElement.textContent = message;
         }

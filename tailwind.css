@@ -101,8 +101,36 @@ canvas {
 
 #gui-container {
     position: absolute;
-    top: 60px; /* Account for top bar height */
+    top: 52px; /* Account for top bar height (48px) + small margin */
     right: 10px;
+    z-index: 30; /* Ensure it's below the top bar but above other elements */
+}
+
+/* dat.GUI specific styling to ensure proper positioning */
+#gui-container .dg {
+    position: relative !important;
+    top: 0 !important;
+    right: 0 !important;
+    margin-top: 0 !important;
+}
+
+#gui-container .dg.main {
+    position: relative !important;
+    top: 0 !important;
+    right: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* Target the specific dat.GUI class that's causing the issue */
+.dg.ac {
+    top: 52px !important;
+    margin-top: 0 !important;
+}
+
+/* Also target any dat.GUI elements that might be positioned absolutely */
+.dg {
+    top: 52px !important;
+    margin-top: 0 !important;
 }
 
 /* MIDI Top Bar */
