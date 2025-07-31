@@ -92,12 +92,11 @@ const CONTROL_TEMPLATES = {
             <label class="text-xs font-medium text-gray-300 min-w-16 flex-shrink-0">{label} {index}:</label>
             <div class="flex gap-1 items-center flex-1">
                 <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-midi-green rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch">
-                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-midi-green focus:outline-none" placeholder="{inputPlaceholder}">
+                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}">
                 <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none">
                     {targetOptions}
                 </select>
                 <button id="midi-{controlId}-learn" class="px-2 py-0.5 bg-yellow-500 bg-opacity-20 text-yellow-400 border border-yellow-500 border-opacity-30 rounded text-xs font-medium transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50">Learn</button>
-                <span id="midi-{controlId}-learn-status" class="text-xs text-gray-400 min-w-12"></span>
                 <button id="midi-{controlId}-remove" class="px-1 py-0.5 bg-red-500 bg-opacity-20 text-red-400 border border-red-500 border-opacity-30 rounded text-xs font-bold transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50">×</button>
             </div>
         </div>
@@ -107,12 +106,11 @@ const CONTROL_TEMPLATES = {
             <label class="text-xs font-medium text-gray-300 min-w-16 flex-shrink-0">{label} {index}:</label>
             <div class="flex gap-1 items-center flex-1">
                 <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-midi-green rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch">
-                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-midi-green focus:outline-none" placeholder="{inputPlaceholder}">
+                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}">
                 <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none">
                     {targetOptions}
                 </select>
                 <button id="midi-{controlId}-learn" class="px-2 py-0.5 bg-yellow-500 bg-opacity-20 text-yellow-400 border border-yellow-500 border-opacity-30 rounded text-xs font-medium transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50">Learn</button>
-                <span id="midi-{controlId}-learn-status" class="text-xs text-gray-400 min-w-12"></span>
                 <button id="midi-{controlId}-remove" class="px-1 py-0.5 bg-red-500 bg-opacity-20 text-red-400 border border-red-500 border-opacity-30 rounded text-xs font-bold transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50">×</button>
             </div>
         </div>
@@ -129,6 +127,7 @@ export class MIDIControl {
         this.element = null;
         this.midiHandler = null;
         this.updateTimeout = null;
+        this.tempMIDIHandler = null;
         
         this.config = CONTROL_CONFIGS[type];
         if (!this.config) {
@@ -187,10 +186,9 @@ export class MIDIControl {
         const valueInput = document.getElementById(`midi-${this.controlId}-value`);
         const targetSelect = document.getElementById(`midi-${this.controlId}-target`);
         const learnButton = document.getElementById(`midi-${this.controlId}-learn`);
-        const learnStatus = document.getElementById(`midi-${this.controlId}-learn-status`);
         const removeButton = document.getElementById(`midi-${this.controlId}-remove`);
         
-        if (!channelInput || !valueInput || !targetSelect || !learnButton || !learnStatus || !removeButton) {
+        if (!channelInput || !valueInput || !targetSelect || !learnButton || !removeButton) {
             console.error('Failed to find control elements for', this.controlId);
             return;
         }
@@ -216,7 +214,7 @@ export class MIDIControl {
         
         // Learn button
         learnButton.addEventListener('click', () => {
-            this.startLearning(learnButton, learnStatus);
+            this.startLearning(learnButton);
         });
         
         // Remove button
@@ -300,13 +298,17 @@ export class MIDIControl {
         this.app.triggerNoteAction(target);
     }
     
-    startLearning(learnButton, learnStatus) {
-        if (learnButton.classList.contains('animate-pulse')) return;
+    startLearning(learnButton) {
+        // If already learning, stop learning
+        if (learnButton.classList.contains('animate-pulse')) {
+            this.stopLearning(learnButton);
+            return;
+        }
         
         // Add learning state classes
         learnButton.classList.remove('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
         learnButton.classList.add('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
-        learnStatus.textContent = `Waiting for ${this.type.toUpperCase()}...`;
+        learnButton.textContent = 'Learning';
         
         const onMIDI = (controller, value, channel) => {
             this.updateMapping({ value: controller, channel });
@@ -322,13 +324,13 @@ export class MIDIControl {
             // Remove learning state and add learned state
             learnButton.classList.remove('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
             learnButton.classList.add('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
-            learnStatus.textContent = `Learned: Ch ${channel + 1}, ${this.type.toUpperCase()} ${value}`;
+            learnButton.textContent = 'Learned';
             
             setTimeout(() => {
                 learnButton.classList.remove('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
                 learnButton.classList.add('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
+                learnButton.textContent = 'Learn';
             }, 1500);
-            setTimeout(() => learnStatus.textContent = '', 2000);
             
             // Remove the temporary listener
             if (this.type === 'cc') {
@@ -338,10 +340,30 @@ export class MIDIControl {
             }
         };
         
+        // Store the temporary handler for potential cancellation
+        this.tempMIDIHandler = onMIDI;
+        
         if (this.type === 'cc') {
             this.app.midiManager.onCC(onMIDI);
         } else {
             this.app.midiManager.onNote(onMIDI);
+        }
+    }
+    
+    stopLearning(learnButton) {
+        // Remove learning state and return to default
+        learnButton.classList.remove('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
+        learnButton.classList.add('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
+        learnButton.textContent = 'Learn';
+        
+        // Remove any temporary MIDI listeners
+        if (this.tempMIDIHandler) {
+            if (this.type === 'cc') {
+                this.app.midiManager.offCC(this.tempMIDIHandler);
+            } else {
+                this.app.midiManager.offNote(this.tempMIDIHandler);
+            }
+            this.tempMIDIHandler = null;
         }
     }
     

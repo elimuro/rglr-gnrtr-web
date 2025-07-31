@@ -34,6 +34,7 @@ export class MIDIManager {
     }
 
     async connect() {
+        console.log('MIDI connect() called');
         if (!this.supported) {
             console.error('MIDI not supported');
             return;
@@ -41,25 +42,38 @@ export class MIDIManager {
 
         // Check if already connected or connecting
         if (this.isConnected || this.deviceSelectionMode) {
+            console.log('Already connected or in device selection mode');
             return;
         }
 
         try {
+            console.log('Requesting MIDI access...');
             this.midiAccess = await navigator.requestMIDIAccess({
                 sysex: false,
                 software: true
             });
+            console.log('MIDI access granted');
             
             // Check if we have multiple input devices and need to show selection
             const inputs = Array.from(this.midiAccess.inputs.values());
+            console.log('Available MIDI inputs:', inputs.length);
+            inputs.forEach((input, index) => {
+                console.log(`Input ${index}: ${input.name} (${input.manufacturer})`);
+            });
             
-            if (inputs.length > 1) {
+            if (inputs.length === 0) {
+                console.warn('No MIDI inputs found');
+                this.updateStatus('No MIDI inputs found', false);
+                return;
+            } else if (inputs.length > 1) {
+                console.log('Multiple inputs found, showing device selection');
                 this.showDeviceSelection(inputs, []);
             } else {
+                console.log('Single input found, auto-connecting');
                 // Auto-connect to the only available input device
-            this.setupMIDIInputs();
-            this.isConnected = true;
-            this.app.onMIDIConnected();
+                this.setupMIDIInputs();
+                this.isConnected = true;
+                this.app.onMIDIConnected();
             }
 
         } catch (error) {
@@ -111,15 +125,27 @@ export class MIDIManager {
         selectionContainer.innerHTML = html;
         
         // Insert the selection UI into the connection card
-        const connectionCard = document.querySelector('.m-4.p-4.bg-black.bg-opacity-20.rounded-xl');
+        const connectionPanels = document.querySelectorAll('#midi-container .m-2.p-3.bg-black.bg-opacity-20.rounded-lg.border.border-gray-700.backdrop-blur-md');
+        let connectionCard = null;
+        
+        // Find the connection panel (the one that contains connection-related content)
+        for (const panel of connectionPanels) {
+            if (panel.textContent.includes('Connection')) {
+                connectionCard = panel;
+                break;
+            }
+        }
+        
+        console.log('Found connection panels:', connectionPanels.length);
+        console.log('Selected connection card:', connectionCard);
+        
         if (connectionCard) {
-            // Clear existing content and add device selection
-            connectionCard.innerHTML = '';
+            // Add device selection below existing connection controls
             connectionCard.appendChild(selectionContainer);
         } else {
             // Fallback: insert at the top of the container
             const midiContainer = document.getElementById('midi-container');
-            const firstCard = midiContainer.querySelector('.m-4.p-4.bg-black.bg-opacity-20.rounded-xl');
+            const firstCard = midiContainer.querySelector('.m-2.p-3.bg-black.bg-opacity-20.rounded-lg.border.border-gray-700.backdrop-blur-md');
             if (firstCard) {
                 firstCard.parentNode.insertBefore(selectionContainer, firstCard.nextSibling);
             } else {
@@ -184,73 +210,6 @@ export class MIDIManager {
         if (selectionContainer) {
             selectionContainer.remove();
         }
-        
-        // Restore the original connection card content
-        const connectionCard = document.querySelector('.m-4.p-4.bg-black.bg-opacity-20.rounded-xl');
-        if (connectionCard) {
-            // Restore original connection controls
-            connectionCard.innerHTML = `
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="flex items-center gap-1 text-white font-semibold text-sm">
-                        <svg class="w-3 h-3 text-midi-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14"/>
-                            <path d="M12 5v14"/>
-                        </svg>
-                        Connection
-                    </h3>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="midi-connect" class="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
-                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14"/>
-                            <path d="M12 5v14"/>
-                        </svg>
-                        Connect MIDI
-                    </button>
-                    <button id="midi-disconnect" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18 6L6 18"/>
-                            <path d="M6 6l12 12"/>
-                        </svg>
-                        Disconnect
-                    </button>
-                    <button id="midi-refresh" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                            <path d="M21 3v5h-5"/>
-                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                            <path d="M3 21v-5h5"/>
-                        </svg>
-                        Refresh
-                    </button>
-                    <button id="midi-help" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                            <path d="M12 17h.01"/>
-                        </svg>
-                        Help
-                    </button>
-                </div>
-            `;
-            
-            // Re-attach event listeners
-            document.getElementById('midi-connect').addEventListener('click', () => {
-                this.app.midiManager.connect();
-            });
-            
-            document.getElementById('midi-disconnect').addEventListener('click', () => {
-                this.app.midiManager.disconnect();
-            });
-            
-            document.getElementById('midi-refresh').addEventListener('click', () => {
-                this.app.midiManager.refreshDevices();
-            });
-            
-            document.getElementById('midi-help').addEventListener('click', () => {
-                window.open('midi-help.html', '_blank');
-            });
-        }
     }
 
     disconnect() {
@@ -269,6 +228,7 @@ export class MIDIManager {
     }
 
     setupMIDIInputs() {
+        console.log('Setting up MIDI inputs...');
         const inputs = Array.from(this.midiAccess.inputs.values());
         
         if (inputs.length === 0) {
@@ -279,6 +239,7 @@ export class MIDIManager {
 
         // Use the first available input (only when auto-connecting)
         this.midiInput = inputs[0];
+        console.log(`Connecting to MIDI input: ${this.midiInput.name}`);
         this.midiInput.onmidimessage = (event) => this.handleMIDIMessage(event);
         
         this.updateStatus(`Connected to: ${this.midiInput.name}`, true);
@@ -314,6 +275,7 @@ export class MIDIManager {
 
     // --- MODIFIED handleMIDIMessage TO SUPPORT LEARN MODE ---
     handleMIDIMessage(event) {
+        console.log('MIDI message received:', event.data);
         const data = event.data;
         const status = data[0] & 0xf0;
         const channel = data[0] & 0x0f;
@@ -397,24 +359,27 @@ export class MIDIManager {
     showMIDIActivity() {
         const activityIndicator = document.getElementById('midi-activity');
         if (activityIndicator) {
-            const bars = activityIndicator.querySelectorAll('.w-1.h-5.bg-gray-600.rounded');
-            const randomBar = bars[Math.floor(Math.random() * bars.length)];
-            
-            // Reset all bars
-            bars.forEach(bar => {
-                bar.classList.remove('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
-                bar.classList.add('bg-gray-600');
-            });
-            
-            // Activate random bar
-            randomBar.classList.remove('bg-gray-600');
-            randomBar.classList.add('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
-            
-            // Remove active class after animation
-            setTimeout(() => {
-                randomBar.classList.remove('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
-                randomBar.classList.add('bg-gray-600');
-            }, 200);
+            // Find all activity bars (divs with bg-gray-600 class)
+            const bars = activityIndicator.querySelectorAll('div.bg-gray-600.rounded');
+            if (bars.length > 0) {
+                const randomBar = bars[Math.floor(Math.random() * bars.length)];
+                
+                // Reset all bars
+                bars.forEach(bar => {
+                    bar.classList.remove('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
+                    bar.classList.add('bg-gray-600');
+                });
+                
+                // Activate random bar
+                randomBar.classList.remove('bg-gray-600');
+                randomBar.classList.add('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
+                
+                // Remove active class after animation
+                setTimeout(() => {
+                    randomBar.classList.remove('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
+                    randomBar.classList.add('bg-gray-600');
+                }, 200);
+            }
         }
     }
 
@@ -428,7 +393,8 @@ export class MIDIManager {
     updateStatus(message, connected) {
         const statusElement = document.getElementById('midi-status');
         if (statusElement) {
-            const statusDot = statusElement.querySelector('.w-2.h-2.rounded-full');
+            // Find the status dot (first div with rounded-full class)
+            const statusDot = statusElement.querySelector('div.rounded-full');
             const statusText = statusElement.querySelector('.text-xs.font-medium.text-white');
             
             if (statusDot) {
