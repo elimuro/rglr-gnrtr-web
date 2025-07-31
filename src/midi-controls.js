@@ -88,32 +88,32 @@ const CONTROL_CONFIGS = {
 // HTML Templates
 const CONTROL_TEMPLATES = {
     cc: `
-        <div class="midi-control" data-control-id="{controlId}">
-            <label>{label} {index}:</label>
-            <div class="inputs">
-                <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
-                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="midi-cc-input" placeholder="{inputPlaceholder}">
-                <select id="midi-{controlId}-target" class="midi-select">
+        <div class="flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
+            <label class="text-xs font-medium text-gray-300 min-w-16 flex-shrink-0">{label} {index}:</label>
+            <div class="flex gap-1 items-center flex-1">
+                <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-midi-green rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch">
+                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-midi-green focus:outline-none" placeholder="{inputPlaceholder}">
+                <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none">
                     {targetOptions}
                 </select>
-                <button id="midi-{controlId}-learn" class="midi-learn-button">Learn</button>
-                <span id="midi-{controlId}-learn-status" class="midi-learn-status"></span>
-                <button id="midi-{controlId}-remove" class="midi-remove-button">×</button>
+                <button id="midi-{controlId}-learn" class="px-2 py-0.5 bg-yellow-500 bg-opacity-20 text-yellow-400 border border-yellow-500 border-opacity-30 rounded text-xs font-medium transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50">Learn</button>
+                <span id="midi-{controlId}-learn-status" class="text-xs text-gray-400 min-w-12"></span>
+                <button id="midi-{controlId}-remove" class="px-1 py-0.5 bg-red-500 bg-opacity-20 text-red-400 border border-red-500 border-opacity-30 rounded text-xs font-bold transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50">×</button>
             </div>
         </div>
     `,
     note: `
-        <div class="midi-control" data-control-id="{controlId}">
-            <label>{label} {index}:</label>
-            <div class="inputs">
-                <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="midi-channel-input" placeholder="Ch">
-                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="midi-cc-input" placeholder="{inputPlaceholder}">
-                <select id="midi-{controlId}-target" class="midi-select">
+        <div class="flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
+            <label class="text-xs font-medium text-gray-300 min-w-16 flex-shrink-0">{label} {index}:</label>
+            <div class="flex gap-1 items-center flex-1">
+                <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-midi-green rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch">
+                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-midi-green focus:outline-none" placeholder="{inputPlaceholder}">
+                <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none">
                     {targetOptions}
                 </select>
-                <button id="midi-{controlId}-learn" class="midi-learn-button">Learn</button>
-                <span id="midi-{controlId}-learn-status" class="midi-learn-status"></span>
-                <button id="midi-{controlId}-remove" class="midi-remove-button">×</button>
+                <button id="midi-{controlId}-learn" class="px-2 py-0.5 bg-yellow-500 bg-opacity-20 text-yellow-400 border border-yellow-500 border-opacity-30 rounded text-xs font-medium transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50">Learn</button>
+                <span id="midi-{controlId}-learn-status" class="text-xs text-gray-400 min-w-12"></span>
+                <button id="midi-{controlId}-remove" class="px-1 py-0.5 bg-red-500 bg-opacity-20 text-red-400 border border-red-500 border-opacity-30 rounded text-xs font-bold transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50">×</button>
             </div>
         </div>
     `
@@ -151,7 +151,7 @@ export class MIDIControl {
         this.element = this.createElement(html);
         
         // Insert at the end of the container, before the "Add" button
-        const addButton = this.container.querySelector('.midi-add-button');
+        const addButton = this.container.querySelector('#add-cc-control, #add-note-control');
         if (addButton) {
             this.container.insertBefore(this.element, addButton.parentElement);
         } else {
@@ -301,9 +301,11 @@ export class MIDIControl {
     }
     
     startLearning(learnButton, learnStatus) {
-        if (learnButton.classList.contains('learning')) return;
+        if (learnButton.classList.contains('animate-pulse')) return;
         
-        learnButton.classList.add('learning');
+        // Add learning state classes
+        learnButton.classList.remove('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
+        learnButton.classList.add('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
         learnStatus.textContent = `Waiting for ${this.type.toUpperCase()}...`;
         
         const onMIDI = (controller, value, channel) => {
@@ -317,11 +319,15 @@ export class MIDIControl {
                 valueInput.value = controller;
             }
             
-            learnButton.classList.remove('learning');
-            learnButton.classList.add('learned');
+            // Remove learning state and add learned state
+            learnButton.classList.remove('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
+            learnButton.classList.add('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
             learnStatus.textContent = `Learned: Ch ${channel + 1}, ${this.type.toUpperCase()} ${value}`;
             
-            setTimeout(() => learnButton.classList.remove('learned'), 1500);
+            setTimeout(() => {
+                learnButton.classList.remove('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
+                learnButton.classList.add('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
+            }, 1500);
             setTimeout(() => learnStatus.textContent = '', 2000);
             
             // Remove the temporary listener

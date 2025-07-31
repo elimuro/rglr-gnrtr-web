@@ -138,28 +138,19 @@ export class App {
                         if (data.settings) {
                             this.loadSceneFile(data);
                         } else {
-                            // It's a MIDI preset
+                            // Assume it's a MIDI preset
                             this.loadPreset(file);
                         }
                     } catch (error) {
                         console.error('Error parsing file:', error);
-                        alert('Invalid file format. Please check if the file is a valid JSON preset or scene.');
+                        alert('Invalid file format');
                     }
                 };
                 reader.readAsText(file);
             }
         });
         
-        // Scene management buttons
-        document.getElementById('save-scene-button').addEventListener('click', () => {
-            this.saveScene();
-        });
-        
-        document.getElementById('load-scene-button').addEventListener('click', () => {
-            this.loadScene();
-        });
-        
-        // Add new control buttons
+        // Add control buttons
         document.getElementById('add-cc-control').addEventListener('click', () => {
             this.addCCControl();
         });
@@ -168,22 +159,33 @@ export class App {
             this.addNoteControl();
         });
         
-        // Interpolation duration control
+        // Scene management buttons
+        document.getElementById('save-scene-button').addEventListener('click', () => {
+            this.saveScene();
+        });
+        
+        document.getElementById('load-scene-button').addEventListener('click', () => {
+            document.getElementById('preset-file-input').click();
+        });
+        
+        // Interpolation duration slider
         const interpolationDurationInput = document.getElementById('interpolation-duration');
         const interpolationDurationValue = document.getElementById('interpolation-duration-value');
         
         if (interpolationDurationInput && interpolationDurationValue) {
             interpolationDurationInput.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
-                interpolationDurationValue.textContent = value.toFixed(1) + 's';
+                interpolationDurationValue.textContent = `${value.toFixed(1)}s`;
+                this.state.set('interpolationDuration', value);
             });
         }
         
-        // Interpolation easing control
+        // Interpolation easing selector
         const interpolationEasingSelect = document.getElementById('interpolation-easing');
         if (interpolationEasingSelect) {
-            // Set default value
-            interpolationEasingSelect.value = 'power2.inOut';
+            interpolationEasingSelect.addEventListener('change', (e) => {
+                this.state.set('interpolationEasing', e.target.value);
+            });
         }
         
         // Debug interpolation button
@@ -194,16 +196,15 @@ export class App {
             });
         }
         
-        this.setupCollapsibleSections();
-        
+        // Removed setupCollapsibleSections() - new design uses cards instead
 
     }
 
     initializeControlManager() {
         console.log('Initializing control manager...');
         
-        const ccContainer = document.querySelector('.midi-section-content[data-section="channel-mapping"]');
-        const noteContainer = document.querySelector('.midi-section-content[data-section="note-controls"]');
+        const ccContainer = document.getElementById('cc-controls-container');
+        const noteContainer = document.getElementById('note-controls-container');
         
         if (!ccContainer || !noteContainer) {
             console.error('Could not find MIDI control containers');
@@ -218,86 +219,17 @@ export class App {
         console.log('MIDI Note mappings:', this.state.get('midiNoteMappings'));
         this.recreateControlsFromPreset();
     }
-
-    setupCollapsibleSections() {
-        const toggles = document.querySelectorAll('.midi-section-toggle');
-        
-        toggles.forEach(toggle => {
-            toggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleSection(toggle);
-            });
-        });
-        
-        const headers = document.querySelectorAll('.midi-section h4');
-        headers.forEach(header => {
-            header.addEventListener('click', (e) => {
-                if (e.target.classList.contains('midi-section-toggle')) {
-                    return;
-                }
-                const toggle = header.querySelector('.midi-section-toggle');
-                if (toggle) {
-                    this.toggleSection(toggle);
-                }
-            });
-        });
-        
-        this.loadCollapsibleState();
-    }
     
     toggleSection(toggle) {
-        const sectionName = toggle.getAttribute('data-section');
-        const content = document.querySelector(`.midi-section-content[data-section="${sectionName}"]`);
-        
-        if (content) {
-            const isCollapsed = content.classList.contains('collapsed');
-            
-            if (isCollapsed) {
-                content.classList.remove('collapsed');
-                toggle.classList.remove('collapsed');
-                toggle.textContent = '▼';
-            } else {
-                content.classList.add('collapsed');
-                toggle.classList.add('collapsed');
-                toggle.textContent = '▶';
-            }
-            
-            this.saveCollapsibleState();
-        }
+        // Removed - new design uses cards instead of collapsible sections
     }
     
     saveCollapsibleState() {
-        const state = {};
-        const contents = document.querySelectorAll('.midi-section-content');
-        
-        contents.forEach(content => {
-            const sectionName = content.getAttribute('data-section');
-            state[sectionName] = content.classList.contains('collapsed');
-        });
-        
-        localStorage.setItem('midi-sections-collapsed', JSON.stringify(state));
+        // Removed - new design uses cards instead of collapsible sections
     }
     
     loadCollapsibleState() {
-        const savedState = localStorage.getItem('midi-sections-collapsed');
-        if (savedState) {
-            try {
-                const state = JSON.parse(savedState);
-                
-                Object.keys(state).forEach(sectionName => {
-                    const content = document.querySelector(`.midi-section-content[data-section="${sectionName}"]`);
-                    const toggle = document.querySelector(`.midi-section-toggle[data-section="${sectionName}"]`);
-                    
-                    if (content && toggle && state[sectionName]) {
-                        content.classList.add('collapsed');
-                        toggle.classList.add('collapsed');
-                        toggle.textContent = '▶';
-                    }
-                });
-            } catch (error) {
-                console.warn('Failed to load collapsible state:', error);
-            }
-        }
+        // Removed - new design uses cards instead of collapsible sections
     }
 
     // MIDI callback methods
@@ -307,9 +239,6 @@ export class App {
     }
 
     onMIDIDisconnected() {
-        const statusElement = document.getElementById('midi-status');
-        statusElement.textContent = 'MIDI: Disconnected';
-        statusElement.className = 'midi-disconnected';
         this.state.set('midiEnabled', false);
     }
 

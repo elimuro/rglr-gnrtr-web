@@ -77,18 +77,22 @@ export class MIDIManager {
         this.deviceSelectionMode = true;
         this.updateStatus('Select MIDI input device', false);
         
-        // Create device selection UI
+        // Create device selection UI with Tailwind styling
         const selectionContainer = document.createElement('div');
         selectionContainer.id = 'midi-device-selection';
-        selectionContainer.className = 'midi-device-selection';
+        selectionContainer.className = 'p-3';
         
-        let html = '<h4>Select MIDI Input Device</h4>';
+        let html = '<div class="mb-3">';
+        html += '<h4 class="text-sm font-semibold text-white mb-2 flex items-center gap-1">';
+        html += '<div class="w-2 h-2 bg-midi-green rounded-full"></div>';
+        html += 'Select MIDI Input Device</h4>';
+        html += '</div>';
         
         // Input device selection only
         if (inputs.length > 0) {
-            html += '<div class="device-section">';
-            html += '<label>MIDI Input Device:</label>';
-            html += '<select id="midi-input-select" class="midi-device-select">';
+            html += '<div class="mb-3">';
+            html += '<label class="block text-xs font-medium text-gray-300 mb-1">MIDI Input Device:</label>';
+            html += '<select id="midi-input-select" class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none">';
             html += '<option value="">Auto-select first available</option>';
             inputs.forEach((input, index) => {
                 const isSelected = this.lastSelectedDevices.input === input.name;
@@ -99,20 +103,28 @@ export class MIDIManager {
             html += '</div>';
         }
         
-        html += '<div class="device-buttons">';
-        html += '<button id="midi-connect-selected" class="midi-button">Connect Selected</button>';
-        html += '<button id="midi-cancel-selection" class="midi-button">Cancel</button>';
+        html += '<div class="grid grid-cols-2 gap-2">';
+        html += '<button id="midi-connect-selected" class="px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">Connect Selected</button>';
+        html += '<button id="midi-cancel-selection" class="px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Cancel</button>';
         html += '</div>';
         
         selectionContainer.innerHTML = html;
         
-        // Insert the selection UI after the first MIDI section
-        const midiContainer = document.getElementById('midi-container');
-        const firstSection = midiContainer.querySelector('.midi-section');
-        if (firstSection) {
-            firstSection.parentNode.insertBefore(selectionContainer, firstSection.nextSibling);
+        // Insert the selection UI into the connection card
+        const connectionCard = document.querySelector('.m-4.p-4.bg-black.bg-opacity-20.rounded-xl');
+        if (connectionCard) {
+            // Clear existing content and add device selection
+            connectionCard.innerHTML = '';
+            connectionCard.appendChild(selectionContainer);
         } else {
-            midiContainer.appendChild(selectionContainer);
+            // Fallback: insert at the top of the container
+            const midiContainer = document.getElementById('midi-container');
+            const firstCard = midiContainer.querySelector('.m-4.p-4.bg-black.bg-opacity-20.rounded-xl');
+            if (firstCard) {
+                firstCard.parentNode.insertBefore(selectionContainer, firstCard.nextSibling);
+            } else {
+                midiContainer.appendChild(selectionContainer);
+            }
         }
         
         // Set up event listeners
@@ -171,6 +183,73 @@ export class MIDIManager {
         const selectionContainer = document.getElementById('midi-device-selection');
         if (selectionContainer) {
             selectionContainer.remove();
+        }
+        
+        // Restore the original connection card content
+        const connectionCard = document.querySelector('.m-4.p-4.bg-black.bg-opacity-20.rounded-xl');
+        if (connectionCard) {
+            // Restore original connection controls
+            connectionCard.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="flex items-center gap-1 text-white font-semibold text-sm">
+                        <svg class="w-3 h-3 text-midi-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14"/>
+                            <path d="M12 5v14"/>
+                        </svg>
+                        Connection
+                    </h3>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="midi-connect" class="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14"/>
+                            <path d="M12 5v14"/>
+                        </svg>
+                        Connect MIDI
+                    </button>
+                    <button id="midi-disconnect" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18"/>
+                            <path d="M6 6l12 12"/>
+                        </svg>
+                        Disconnect
+                    </button>
+                    <button id="midi-refresh" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/>
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                            <path d="M3 21v-5h5"/>
+                        </svg>
+                        Refresh
+                    </button>
+                    <button id="midi-help" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <path d="M12 17h.01"/>
+                        </svg>
+                        Help
+                    </button>
+                </div>
+            `;
+            
+            // Re-attach event listeners
+            document.getElementById('midi-connect').addEventListener('click', () => {
+                this.app.midiManager.connect();
+            });
+            
+            document.getElementById('midi-disconnect').addEventListener('click', () => {
+                this.app.midiManager.disconnect();
+            });
+            
+            document.getElementById('midi-refresh').addEventListener('click', () => {
+                this.app.midiManager.refreshDevices();
+            });
+            
+            document.getElementById('midi-help').addEventListener('click', () => {
+                window.open('midi-help.html', '_blank');
+            });
         }
     }
 
@@ -318,18 +397,23 @@ export class MIDIManager {
     showMIDIActivity() {
         const activityIndicator = document.getElementById('midi-activity');
         if (activityIndicator) {
-            const bars = activityIndicator.querySelectorAll('.activity-bar');
+            const bars = activityIndicator.querySelectorAll('.w-1.h-5.bg-gray-600.rounded');
             const randomBar = bars[Math.floor(Math.random() * bars.length)];
             
             // Reset all bars
-            bars.forEach(bar => bar.classList.remove('active'));
+            bars.forEach(bar => {
+                bar.classList.remove('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
+                bar.classList.add('bg-gray-600');
+            });
             
             // Activate random bar
-            randomBar.classList.add('active');
+            randomBar.classList.remove('bg-gray-600');
+            randomBar.classList.add('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
             
             // Remove active class after animation
             setTimeout(() => {
-                randomBar.classList.remove('active');
+                randomBar.classList.remove('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
+                randomBar.classList.add('bg-gray-600');
             }, 200);
         }
     }
@@ -344,8 +428,23 @@ export class MIDIManager {
     updateStatus(message, connected) {
         const statusElement = document.getElementById('midi-status');
         if (statusElement) {
-            statusElement.textContent = `MIDI: ${message}`;
-            statusElement.className = connected ? 'midi-connected' : 'midi-disconnected';
+            const statusDot = statusElement.querySelector('.w-2.h-2.rounded-full');
+            const statusText = statusElement.querySelector('.text-xs.font-medium.text-white');
+            
+            if (statusDot) {
+                // Remove existing color classes
+                statusDot.classList.remove('bg-red-500', 'bg-green-500', 'transition-all', 'duration-300');
+                // Add appropriate color based on connection status
+                if (connected) {
+                    statusDot.classList.add('bg-green-500', 'transition-all', 'duration-300');
+                } else {
+                    statusDot.classList.add('bg-red-500', 'transition-all', 'duration-300');
+                }
+            }
+            
+            if (statusText) {
+                statusText.textContent = message;
+            }
         }
     }
 
