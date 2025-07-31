@@ -28,48 +28,35 @@ export class MIDIManager {
         if (navigator.requestMIDIAccess) {
             this.supported = true;
         } else {
-            console.warn('Web MIDI API is not supported in this browser');
             this.updateStatus('Web MIDI API not supported', false);
         }
     }
 
     async connect() {
-        console.log('MIDI connect() called');
         if (!this.supported) {
-            console.error('MIDI not supported');
             return;
         }
 
         // Check if already connected or connecting
         if (this.isConnected || this.deviceSelectionMode) {
-            console.log('Already connected or in device selection mode');
             return;
         }
 
         try {
-            console.log('Requesting MIDI access...');
             this.midiAccess = await navigator.requestMIDIAccess({
                 sysex: false,
                 software: true
             });
-            console.log('MIDI access granted');
             
             // Check if we have multiple input devices and need to show selection
             const inputs = Array.from(this.midiAccess.inputs.values());
-            console.log('Available MIDI inputs:', inputs.length);
-            inputs.forEach((input, index) => {
-                console.log(`Input ${index}: ${input.name} (${input.manufacturer})`);
-            });
             
             if (inputs.length === 0) {
-                console.warn('No MIDI inputs found');
                 this.updateStatus('No MIDI inputs found', false);
                 return;
             } else if (inputs.length > 1) {
-                console.log('Multiple inputs found, showing device selection');
                 this.showDeviceSelection(inputs, []);
             } else {
-                console.log('Single input found, auto-connecting');
                 // Auto-connect to the only available input device
                 this.setupMIDIInputs();
                 this.isConnected = true;
@@ -77,7 +64,6 @@ export class MIDIManager {
             }
 
         } catch (error) {
-            console.error('MIDI Access denied:', error);
             this.updateStatus('MIDI Access denied', false);
         }
     }
@@ -224,7 +210,6 @@ export class MIDIManager {
 
         // Use the first available input (only when auto-connecting)
         this.midiInput = inputs[0];
-        console.log(`Connecting to MIDI input: ${this.midiInput.name}`);
         this.midiInput.onmidimessage = (event) => this.handleMIDIMessage(event);
         
         this.updateStatus(`Connected to: ${this.midiInput.name}`, true);
@@ -260,7 +245,6 @@ export class MIDIManager {
 
     // --- MODIFIED handleMIDIMessage TO SUPPORT LEARN MODE ---
     handleMIDIMessage(event) {
-        console.log('MIDI message received:', event.data);
         const data = event.data;
         const status = data[0] & 0xf0;
         const channel = data[0] & 0x0f;
@@ -468,7 +452,6 @@ export class MIDIManager {
     // Refresh device list and show selection if multiple devices
     async refreshDevices() {
         if (!this.midiAccess) {
-            console.warn('No MIDI access available');
             return;
         }
 

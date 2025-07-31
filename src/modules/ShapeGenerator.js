@@ -27,33 +27,25 @@ export class ShapeGenerator {
 
     // Start morphing between two shapes
     startShapeMorph(mesh, fromShapeName, toShapeName, duration = 2.0, easing = 'power2.inOut') {
-        console.log('Starting shape morph:', { mesh, fromShapeName, toShapeName, duration, easing });
-        
         if (!this.morphingSystem) {
-            console.warn('Morphing system not initialized');
             return null;
         }
 
         // Create target geometry for the morph
         const targetGeometry = this.createGeometryForShape(toShapeName);
-        console.log('Created target geometry:', targetGeometry);
         
         if (!targetGeometry) {
-            console.warn('Could not create target geometry for shape:', toShapeName);
             return null;
         }
 
         // Start the morphing process
-        const result = this.morphingSystem.startMorph(mesh, fromShapeName, toShapeName, duration, easing);
-        console.log('Morphing system result:', result);
-        return result;
+        return this.morphingSystem.startMorph(mesh, fromShapeName, toShapeName, duration, easing);
     }
 
     // Create geometry for a specific shape name
     createGeometryForShape(shapeName) {
         const generator = this.shapeGenerators[shapeName];
         if (!generator) {
-            console.warn('No generator found for shape:', shapeName);
             return null;
         }
 
@@ -75,7 +67,6 @@ export class ShapeGenerator {
             return shape;
         }
 
-        console.warn('Unknown shape type for:', shapeName, shape);
         return null;
     }
 
@@ -193,7 +184,6 @@ export class ShapeGenerator {
     // Start a morphing preset sequence
     startMorphingPreset(mesh, presetName, duration = 2.0) {
         if (!this.morphingSystem) {
-            console.warn('Morphing system not initialized');
             return null;
         }
 

@@ -17,46 +17,34 @@ import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
 
 export class App {
     constructor() {
-        console.log('Creating App...');
         this.state = new StateManager();
-        console.log('State manager created');
         this.scene = new Scene(this.state);
-        console.log('Scene created');
         this.animationLoop = new AnimationLoop(this.scene, this.state);
-        console.log('Animation loop created');
         this.midiManager = new MIDIManager(this);
-        console.log('MIDI manager created');
         this.controlManager = null;
         this.guiManager = null;
         
         // Initialize morphing system
         this.morphingSystem = new ShapeMorphingSystem();
-        console.log('Morphing system created');
         
         this.init();
     }
 
     init() {
         try {
-            console.log('Initializing App...');
-            
             // Initialize scene
             this.scene.init();
-            console.log('Scene initialized');
             
             // Set up morphing system with shape generator
             this.scene.shapeGenerator.setMorphingSystem(this.morphingSystem);
             this.morphingSystem.setShapeGenerator(this.scene.shapeGenerator);
-            console.log('Morphing system integrated');
             
             // Initialize GUI
             this.guiManager = new GUIManager(this.state, this);
             this.guiManager.init();
-            console.log('GUI initialized');
             
             // Initialize MIDI
             this.setupMIDI();
-            console.log('MIDI setup complete');
             
             // Initialize control manager when DOM is ready
             if (document.readyState === 'loading') {
@@ -69,7 +57,6 @@ export class App {
             
             // Start animation loop
             this.animationLoop.start();
-            console.log('Animation loop started');
             
             // Set up window resize handler
             window.addEventListener('resize', () => this.onWindowResize());
@@ -77,9 +64,8 @@ export class App {
             // Set up keyboard shortcuts for testing
             window.addEventListener('keydown', (event) => this.handleKeyDown(event));
             
-            console.log('App initialization complete');
         } catch (error) {
-            console.error('Error during App initialization:', error);
+            // Error during App initialization
         }
     }
 

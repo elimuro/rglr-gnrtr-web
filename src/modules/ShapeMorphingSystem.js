@@ -36,7 +36,6 @@ export class ShapeMorphingSystem {
     // Start morphing between two shapes
     startMorph(mesh, fromShapeName, toShapeName, duration = 2.0, easing = 'power2.inOut') {
         if (!mesh || !fromShapeName || !toShapeName) {
-            console.warn('Invalid morph parameters:', { mesh, fromShapeName, toShapeName });
             return;
         }
 
@@ -109,7 +108,6 @@ export class ShapeMorphingSystem {
     interpolateGeometry(fromGeometry, toGeometry, progress, fromShapeName, toShapeName) {
         // Handle null geometries
         if (!fromGeometry || !toGeometry) {
-            console.warn('Null geometry detected:', { fromGeometry, toGeometry });
             return null;
         }
         
@@ -118,7 +116,6 @@ export class ShapeMorphingSystem {
             return this.interpolateShapeGeometry(fromGeometry, toGeometry, progress, fromShapeName, toShapeName);
         }
         
-        console.warn('Unsupported geometry types for morphing:', { fromType: fromGeometry.type, toType: toGeometry.type });
         return null;
     }
 
@@ -129,7 +126,6 @@ export class ShapeMorphingSystem {
         const toPoints = this.getShapePoints(toShapeName);
         
         if (!fromPoints || !toPoints) {
-            console.warn('Could not get shape points for:', { fromShapeName, toShapeName });
             return null;
         }
         
@@ -138,7 +134,6 @@ export class ShapeMorphingSystem {
         
         // Validate interpolated points
         if (!this.validatePoints(interpolatedPoints)) {
-            console.warn('Invalid interpolated points, using fallback');
             return this.createFallbackGeometry(fromGeometry, toGeometry, progress);
         }
         
@@ -152,13 +147,11 @@ export class ShapeMorphingSystem {
             
             // Validate the created geometry
             if (!this.validateGeometry(newGeometry)) {
-                console.warn('Invalid geometry created, using fallback');
                 return this.createFallbackGeometry(fromGeometry, toGeometry, progress);
             }
             
             return newGeometry;
         } catch (error) {
-            console.warn('Error creating interpolated geometry:', error);
             return this.createFallbackGeometry(fromGeometry, toGeometry, progress);
         }
     }
@@ -385,7 +378,6 @@ export class ShapeMorphingSystem {
     // Create target geometry for morphing
     createTargetGeometry(shapeName) {
         if (!this.shapeGenerator) {
-            console.warn('ShapeGenerator not set in morphing system');
             return null;
         }
 
@@ -417,7 +409,6 @@ export class ShapeMorphingSystem {
     startPresetMorph(mesh, presetName, duration = 2.0) {
         const preset = this.morphingPresets[presetName];
         if (!preset || preset.length < 2) {
-            console.warn('Invalid morphing preset:', presetName);
             return;
         }
 

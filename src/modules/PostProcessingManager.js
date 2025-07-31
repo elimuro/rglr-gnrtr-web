@@ -190,20 +190,15 @@ export class PostProcessingManager {
     }
 
     init() {
-        console.log('Initializing PostProcessingManager...');
-        
         // Create effect composer
         this.composer = new EffectComposer(this.renderer);
-        console.log('EffectComposer created');
         
         // Add render pass
         const renderPass = new RenderPass(this.scene, this.camera);
         this.composer.addPass(renderPass);
-        console.log('RenderPass added');
         
         // Initialize effects
         this.setupEffects();
-        console.log('Effects setup completed');
         
         // Set default enabled effects
         this.enabledEffects.add('bloom');
@@ -211,12 +206,9 @@ export class PostProcessingManager {
         
         // Update effect chain
         this.updateEffectChain();
-        console.log('PostProcessingManager initialized successfully');
     }
 
     setupEffects() {
-        console.log('Setting up post-processing effects...');
-        
         // Bloom effect
         const bloomPass = new UnrealBloomPass(
             new THREE.Vector2(window.innerWidth, window.innerHeight),
@@ -225,34 +217,28 @@ export class PostProcessingManager {
             0.85  // threshold
         );
         this.effects.set('bloom', bloomPass);
-        console.log('Bloom effect created');
         
         // FXAA anti-aliasing
         const fxaaPass = new ShaderPass(FXAAShader);
         fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * this.renderer.getPixelRatio());
         fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * this.renderer.getPixelRatio());
         this.effects.set('fxaa', fxaaPass);
-        console.log('FXAA effect created');
         
         // Chromatic aberration
         const chromaticPass = new ShaderPass(ChromaticAberrationShader);
         this.effects.set('chromaticAberration', chromaticPass);
-        console.log('Chromatic aberration effect created');
         
         // Vignette
         const vignettePass = new ShaderPass(VignetteShader);
         this.effects.set('vignette', vignettePass);
-        console.log('Vignette effect created');
         
         // Film grain
         const grainPass = new ShaderPass(GrainShader);
         this.effects.set('grain', grainPass);
-        console.log('Film grain effect created');
         
         // Color grading
         const colorGradingPass = new ShaderPass(ColorGradingShader);
         this.effects.set('colorGrading', colorGradingPass);
-        console.log('Color grading effect created');
         
         // Set default effect order
         this.effectOrder = [
@@ -263,8 +249,6 @@ export class PostProcessingManager {
             'colorGrading',
             'fxaa'
         ];
-        
-        console.log('All effects setup completed');
     }
 
     updateEffectChain() {

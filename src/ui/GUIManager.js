@@ -24,13 +24,11 @@ export class GUIManager {
             
             this.gui = new GUI({ container: document.getElementById('gui-container') });
             
-            // Debug: Check if GUI container exists
+            // Check if GUI container exists
             const container = document.getElementById('gui-container');
             if (!container) {
-                console.error('GUI container not found!');
                 return;
             }
-            console.log('GUI setup started');
 
             this.setupPerformanceControls();
             this.setupShapeControls();
@@ -46,10 +44,8 @@ export class GUIManager {
             
             // Collapse all folders by default
             this.collapseAllFolders();
-            
-            console.log('GUI setup completed');
         } catch (error) {
-            console.error('Error during GUI initialization:', error);
+            // Error during GUI initialization
         }
     }
     
@@ -426,10 +422,7 @@ export class GUIManager {
         
         // Test morphing button
         const testMorphButton = { testMorph: () => {
-            console.log('Test morph button clicked');
             if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                console.log('Found shapes:', this.app.scene.shapes.length);
-                
                 // Filter out sphere shapes - only select 2D shapes for morphing
                 const morphableShapes = this.app.scene.shapes.filter(shape => {
                     // Check if the shape has a geometry that's not a sphere
@@ -437,28 +430,21 @@ export class GUIManager {
                 });
                 
                 if (morphableShapes.length === 0) {
-                    console.warn('No morphable 2D shapes found in scene');
                     return;
                 }
                 
                 const randomShape = morphableShapes[Math.floor(Math.random() * morphableShapes.length)];
-                console.log('Selected random 2D shape:', randomShape);
                 
                 const morphablePairs = this.app.scene.shapeGenerator.getMorphableShapePairs();
-                console.log('Morphable pairs:', morphablePairs);
                 const pairNames = Object.keys(morphablePairs);
                 const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                console.log('Selected morph pair:', randomPair);
                 
-                const result = this.app.scene.shapeGenerator.startShapeMorph(
+                this.app.scene.shapeGenerator.startShapeMorph(
                     randomShape, 
                     randomPair[0], 
                     randomPair[1], 
                     this.state.get('morphingSpeed')
                 );
-                console.log('Morph result:', result);
-            } else {
-                console.warn('No shapes found or app/scene not available');
             }
         }};
         
@@ -466,21 +452,15 @@ export class GUIManager {
         
         // Morph all shapes button
         const morphAllButton = { morphAllShapes: () => {
-            console.log('Morph all shapes button clicked');
             if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                console.log('Found shapes:', this.app.scene.shapes.length);
-                
                 // Filter out sphere shapes - only select 2D shapes for morphing
                 const morphableShapes = this.app.scene.shapes.filter(shape => {
                     return shape.geometry && shape.geometry.type === 'ShapeGeometry';
                 });
                 
                 if (morphableShapes.length === 0) {
-                    console.warn('No morphable 2D shapes found in scene');
                     return;
                 }
-                
-                console.log('Morphing all', morphableShapes.length, 'shapes');
                 
                 // Get morphable pairs
                 const morphablePairs = this.app.scene.shapeGenerator.getMorphableShapePairs();
@@ -493,19 +473,14 @@ export class GUIManager {
                     
                     // Add slight delay to each shape for staggered effect
                     setTimeout(() => {
-                        const result = this.app.scene.shapeGenerator.startShapeMorph(
+                        this.app.scene.shapeGenerator.startShapeMorph(
                             shape, 
                             randomPair[0], 
                             randomPair[1], 
                             this.state.get('morphingSpeed')
                         );
-                        console.log(`Morphed shape ${index}:`, result);
                     }, index * 100); // 100ms delay between each shape
                 });
-                
-                console.log('Started morphing all shapes');
-            } else {
-                console.warn('No shapes found or app/scene not available');
             }
         }};
         
@@ -513,17 +488,13 @@ export class GUIManager {
         
         // Morph all to same shape button
         const morphAllToSameButton = { morphAllToSame: () => {
-            console.log('Morph all to same shape button clicked');
             if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                console.log('Found shapes:', this.app.scene.shapes.length);
-                
                 // Filter out sphere shapes - only select 2D shapes for morphing
                 const morphableShapes = this.app.scene.shapes.filter(shape => {
                     return shape.geometry && shape.geometry.type === 'ShapeGeometry';
                 });
                 
                 if (morphableShapes.length === 0) {
-                    console.warn('No morphable 2D shapes found in scene');
                     return;
                 }
                 
@@ -533,25 +504,19 @@ export class GUIManager {
                 
                 // Select a random target shape
                 const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
-                console.log('Morphing all shapes to:', targetShape);
                 
                 // Morph each shape to the same target
                 morphableShapes.forEach((shape, index) => {
                     // Add slight delay to each shape for staggered effect
                     setTimeout(() => {
-                        const result = this.app.scene.shapeGenerator.startShapeMorph(
+                        this.app.scene.shapeGenerator.startShapeMorph(
                             shape, 
                             'triangle_UP', // Use a default starting shape
                             targetShape, 
                             this.state.get('morphingSpeed')
                         );
-                        console.log(`Morphed shape ${index} to ${targetShape}:`, result);
                     }, index * 50); // 50ms delay between each shape
                 });
-                
-                console.log('Started morphing all shapes to', targetShape);
-            } else {
-                console.warn('No shapes found or app/scene not available');
             }
         }};
         
@@ -559,21 +524,15 @@ export class GUIManager {
         
         // Morph all shapes simultaneously button
         const morphAllSimultaneouslyButton = { morphAllSimultaneously: () => {
-            console.log('Morph all shapes simultaneously button clicked');
             if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                console.log('Found shapes:', this.app.scene.shapes.length);
-                
                 // Filter out sphere shapes - only select 2D shapes for morphing
                 const morphableShapes = this.app.scene.shapes.filter(shape => {
                     return shape.geometry && shape.geometry.type === 'ShapeGeometry';
                 });
                 
                 if (morphableShapes.length === 0) {
-                    console.warn('No morphable 2D shapes found in scene');
                     return;
                 }
-                
-                console.log('Morphing all', morphableShapes.length, 'shapes simultaneously');
                 
                 // Get morphable pairs
                 const morphablePairs = this.app.scene.shapeGenerator.getMorphableShapePairs();
@@ -585,18 +544,13 @@ export class GUIManager {
                     const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
                     
                     // Start morphing immediately - no delay
-                    const result = this.app.scene.shapeGenerator.startShapeMorph(
+                    this.app.scene.shapeGenerator.startShapeMorph(
                         shape, 
                         randomPair[0], 
                         randomPair[1], 
                         this.state.get('morphingSpeed')
                     );
-                    console.log(`Started morphing shape ${index}:`, result);
                 });
-                
-                console.log('Started simultaneous morphing of all shapes');
-            } else {
-                console.warn('No shapes found or app/scene not available');
             }
         }};
         
@@ -604,17 +558,13 @@ export class GUIManager {
         
         // Morph all to same shape simultaneously button
         const morphAllToSameSimultaneouslyButton = { morphAllToSameSimultaneously: () => {
-            console.log('Morph all to same shape simultaneously button clicked');
             if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                console.log('Found shapes:', this.app.scene.shapes.length);
-                
                 // Filter out sphere shapes - only select 2D shapes for morphing
                 const morphableShapes = this.app.scene.shapes.filter(shape => {
                     return shape.geometry && shape.geometry.type === 'ShapeGeometry';
                 });
                 
                 if (morphableShapes.length === 0) {
-                    console.warn('No morphable 2D shapes found in scene');
                     return;
                 }
                 
@@ -624,23 +574,17 @@ export class GUIManager {
                 
                 // Select a random target shape
                 const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
-                console.log('Morphing all shapes to', targetShape, 'simultaneously');
                 
                 // Morph all shapes to the same target at the exact same time
                 morphableShapes.forEach((shape, index) => {
                     // Start morphing immediately - no delay
-                    const result = this.app.scene.shapeGenerator.startShapeMorph(
+                    this.app.scene.shapeGenerator.startShapeMorph(
                         shape, 
                         'triangle_UP', // Use a default starting shape
                         targetShape, 
                         this.state.get('morphingSpeed')
                     );
-                    console.log(`Started morphing shape ${index} to ${targetShape}:`, result);
                 });
-                
-                console.log('Started simultaneous morphing of all shapes to', targetShape);
-            } else {
-                console.warn('No shapes found or app/scene not available');
             }
         }};
         
@@ -851,7 +795,7 @@ export class GUIManager {
             
                     // lightingFolder.open(); // Removed to keep collapsed by default
     } catch (error) {
-            console.error('Error setting up lighting controls:', error);
+            // Error setting up lighting controls
         }
     }
 
