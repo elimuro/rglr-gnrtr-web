@@ -58,9 +58,11 @@ export class App {
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
                     this.initializeControlManager();
+                    this.loadAvailablePresets();
                 });
             } else {
                 this.initializeControlManager();
+                this.loadAvailablePresets();
             }
             
             // Start animation loop
@@ -882,15 +884,116 @@ export class App {
         }, 1000);
     }
 
-    applyCCPreset(presetName) {
-        // Preset functionality removed - all mappings must be created manually by user
-        // This method is kept for future use but no longer applies hardcoded presets
-        console.log('Preset functionality disabled - all MIDI mappings must be created manually');
+    async loadAvailablePresets() {
+        // Wait a bit for DOM to be ready
+        await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Clear any existing mappings to ensure clean slate
-        this.state.set('midiCCMappings', {});
-        this.state.set('midiNoteMappings', {});
-        this.recreateControlsFromPreset();
+        try {
+            // Try to load a list of available presets
+            const response = await fetch('/presets/');
+            if (response.ok) {
+                const text = await response.text();
+                // Parse the directory listing to find .json files
+                const presetFiles = text.match(/href="([^"]+\.json)"/g);
+                if (presetFiles) {
+                    const presets = presetFiles.map(file => {
+                        const match = file.match(/href="([^"]+\.json)"/);
+                        return match ? match[1].replace('.json', '') : null;
+                    }).filter(Boolean);
+                    
+                    console.log('Available presets:', presets);
+                    this.updatePresetDropdown(presets);
+                }
+            }
+        } catch (error) {
+            console.log('Could not load preset list, using default presets');
+            // Fallback to known presets
+            const defaultPresets = [
+                'sample-multi-channel',
+                'novation-launch-control',
+                'akai-mpk-mini',
+                'arturia-beatstep-pro'
+            ];
+            this.updatePresetDropdown(defaultPresets);
+        }
+    }
+
+    updatePresetDropdown(availablePresets) {
+        const select = document.getElementById('cc-preset-select');
+        if (!select) return;
+        
+        // Keep the "Custom" option
+        const customOption = select.querySelector('option[value=""]');
+        select.innerHTML = '';
+        if (customOption) {
+            select.appendChild(customOption);
+        }
+        
+        // Add available presets
+        availablePresets.forEach(preset => {
+            const option = document.createElement('option');
+            option.value = preset;
+            option.textContent = this.getPresetDisplayName(preset);
+            select.appendChild(option);
+        });
+    }
+
+    getPresetDisplayName(presetName) {
+        const displayNames = {
+            'sample-multi-channel': 'Sample Multi-Channel',
+            'novation-launch-control': 'Novation Launch Control XL',
+            'akai-mpk-mini': 'Akai MPK Mini',
+            'arturia-beatstep-pro': 'Arturia BeatStep Pro'
+        };
+        return displayNames[presetName] || presetName;
+    }
+
+    updateControlUI(control, mapping) {
+        // Update the control's UI elements directly
+        const channelInput = document.getElementById(`midi-${control.controlId}-channel`);
+        const valueInput = document.getElementById(`midi-${control.controlId}-value`);
+        const targetSelect = document.getElementById(`midi-${control.controlId}-target`);
+        
+        if (channelInput) channelInput.value = mapping.channel + 1;
+        if (valueInput) valueInput.value = mapping.value;
+        if (targetSelect) targetSelect.value = mapping.target;
+        
+        // Also update the control's internal mapping
+        control.updateMapping(mapping);
+    }
+
+    async applyCCPreset(presetName) {
+        if (!presetName) {
+            // Clear mappings for "Custom" option
+            this.state.set('midiCCMappings', {});
+            this.state.set('midiNoteMappings', {});
+            this.recreateControlsFromPreset();
+            return;
+        }
+
+        try {
+            console.log('Loading preset:', presetName);
+            
+            // Load the preset file from the presets folder
+            const response = await fetch(`/presets/${presetName}.json`);
+            if (!response.ok) {
+                throw new Error(`Failed to load preset: ${response.statusText}`);
+            }
+            
+            const preset = await response.json();
+            console.log('Loaded preset:', preset);
+            
+            if (this.validatePreset(preset)) {
+                this.applyPreset(preset);
+                console.log('Preset applied successfully');
+            } else {
+                console.error('Invalid preset format:', preset);
+                alert('Invalid preset file format. Please check the file structure.');
+            }
+        } catch (error) {
+            console.error('Failed to load preset:', error);
+            alert(`Failed to load preset "${presetName}". Please check if the preset file exists.`);
+        }
     }
 
     savePreset() {
@@ -933,13 +1036,24 @@ export class App {
                 const preset = JSON.parse(e.target.result);
                 console.log('Loading preset:', preset);
                 
-                if (this.validatePreset(preset)) {
+                // Handle both old and new preset formats for backward compatibility
+                if (preset.mappings && preset.noteMappings) {
+                    // Old format - convert to new format
+                    const newPreset = {
+                        midiCCMappings: preset.mappings,
+                        midiNoteMappings: preset.noteMappings
+                    };
+                    this.applyPreset(newPreset);
+                } else if (this.validatePreset(preset)) {
+                    // New format (current state format)
                     this.applyPreset(preset);
-                    console.log('Preset loaded successfully');
                 } else {
                     console.error('Invalid preset format:', preset);
                     alert('Invalid preset file format. Please check the file structure.');
+                    return;
                 }
+                
+                console.log('Preset loaded successfully');
             } catch (error) {
                 console.error('Failed to load preset:', error);
                 alert('Failed to load preset file. Please check if the file is a valid JSON preset.');
@@ -977,7 +1091,8 @@ export class App {
         console.log('CC mappings:', this.state.get('midiCCMappings'));
         console.log('Note mappings:', this.state.get('midiNoteMappings'));
         
-        this.recreateControlsFromPreset();
+        // Pass the preset data directly to recreateControlsFromPreset
+        this.recreateControlsFromPreset(preset);
     }
 
     recreateControlsFromPreset(preset = null) {
@@ -999,13 +1114,20 @@ export class App {
                 // Extract the index from the control ID (e.g., "cc1" -> 1)
                 const indexMatch = controlId.match(/cc(\d+)/);
                 const controlIndex = indexMatch ? parseInt(indexMatch[1]) : index + 1;
-                console.log('Extracted control index:', controlIndex, 'from controlId:', controlId);
+                console.log('Creating control with index:', controlIndex);
                 
                 const control = this.controlManager.addControl('cc', controlIndex);
                 if (control) {
-                    console.log('Control created successfully, updating mapping...');
-                    control.updateMapping(mapping);
-                    console.log('Mapping updated for control:', control.controlId);
+                    console.log('Control created successfully, updating UI...');
+                    
+                    // Update the control's UI elements directly
+                    this.updateControlUI(control, {
+                        channel: mapping.channel,
+                        value: mapping.value,
+                        target: mapping.target
+                    });
+                    
+                    console.log('UI updated for control:', control.controlId);
                 } else {
                     console.error('Failed to create control for:', controlId);
                 }
@@ -1023,15 +1145,22 @@ export class App {
                 // Extract the index from the control ID (e.g., "note1" -> 1)
                 const indexMatch = controlId.match(/note(\d+)/);
                 const controlIndex = indexMatch ? parseInt(indexMatch[1]) : index + 1;
-                console.log('Extracted control index:', controlIndex, 'from controlId:', controlId);
+                console.log('Creating note control with index:', controlIndex);
                 
                 const control = this.controlManager.addControl('note', controlIndex);
                 if (control) {
-                    console.log('Control created successfully, updating mapping...');
-                    control.updateMapping(mapping);
-                    console.log('Mapping updated for control:', control.controlId);
+                    console.log('Note control created successfully, updating UI...');
+                    
+                    // Update the control's UI elements directly
+                    this.updateControlUI(control, {
+                        channel: mapping.channel,
+                        value: mapping.note,
+                        target: mapping.target
+                    });
+                    
+                    console.log('Note UI updated for control:', control.controlId);
                 } else {
-                    console.error('Failed to create control for:', controlId);
+                    console.error('Failed to create note control for:', controlId);
                 }
             });
         }

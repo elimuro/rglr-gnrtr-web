@@ -5,310 +5,631 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MIDI Interface Help - RGLR GNRTR</title>
     <link rel="stylesheet" href="tailwind.css">
+    <style>
+        .help-body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .help-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 30px;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .main-content {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item {
+            display: block;
+            padding: 8px 12px;
+            margin: 4px 0;
+            color: #e0e0e0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .nav-item:hover {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        
+        .nav-item.active {
+            background: rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+            font-weight: 600;
+        }
+        
+        .nav-section {
+            margin-bottom: 20px;
+        }
+        
+        .nav-section-title {
+            color: #4ade80;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(74, 222, 128, 0.3);
+        }
+        
+        .help-h1 {
+            color: #4ade80;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .help-h2 {
+            color: #4ade80;
+            font-size: 1.8em;
+            margin: 30px 0 15px 0;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(74, 222, 128, 0.3);
+            padding-bottom: 8px;
+        }
+        
+        .help-h3 {
+            color: #4ade80;
+            font-size: 1.3em;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+        }
+        
+        .help-section {
+            margin-bottom: 25px;
+        }
+        
+        .help-note {
+            background: rgba(74, 222, 128, 0.1);
+            border-left: 4px solid #4ade80;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .help-warning {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .help-pre {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .back-link {
+            display: inline-block;
+            color: #4ade80;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 30px;
+            padding: 10px 20px;
+            border: 2px solid #4ade80;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+        
+        .preset-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .preset-title {
+            color: #4ade80;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            border-left: 4px solid #4ade80;
+            padding-left: 12px;
+        }
+        
+        @media (max-width: 1024px) {
+            .help-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
 </head>
 <body class="help-body">
     <div class="help-container">
-        <h1 class="help-h1">MIDI Interface Guide</h1>
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <h3 class="nav-section-title">Table of Contents</h3>
+            
+            <div class="nav-section">
+                <h4 class="nav-section-title">Getting Started</h4>
+                <a href="#getting-started" class="nav-item">Getting Started</a>
+                <a href="#connection" class="nav-item">Connection</a>
+            </div>
+            
+            <div class="nav-section">
+                <h4 class="nav-section-title">MIDI Controls</h4>
+                <a href="#cc-mappings" class="nav-item">CC Mappings</a>
+                <a href="#note-controls" class="nav-item">Note Controls</a>
+                <a href="#midi-learn" class="nav-item">MIDI Learn</a>
+                <a href="#special-controls" class="nav-item">Special Controls</a>
+            </div>
+            
+            <div class="nav-section">
+                <h4 class="nav-section-title">Parameters</h4>
+                <a href="#parameter-reference" class="nav-item">Parameter Reference</a>
+                <a href="#animation-params" class="nav-item">Animation Parameters</a>
+                <a href="#grid-params" class="nav-item">Grid Parameters</a>
+                <a href="#material-params" class="nav-item">Material Parameters</a>
+                <a href="#post-processing-params" class="nav-item">Post-Processing</a>
+                <a href="#color-params" class="nav-item">Color Parameters</a>
+                <a href="#lighting-params" class="nav-item">Lighting Parameters</a>
+            </div>
+            
+            <div class="nav-section">
+                <h4 class="nav-section-title">Presets</h4>
+                <a href="#preset-management" class="nav-item">Preset Management</a>
+                <a href="#built-in-presets" class="nav-item">Built-in Presets</a>
+                <a href="#custom-presets" class="nav-item">Creating Custom Presets</a>
+            </div>
+            
+            <div class="nav-section">
+                <h4 class="nav-section-title">Effects</h4>
+                <a href="#post-processing-effects" class="nav-item">Post-Processing Effects</a>
+            </div>
+            
+            <div class="nav-section">
+                <h4 class="nav-section-title">Help</h4>
+                <a href="#performance-tips" class="nav-item">Performance Tips</a>
+                <a href="#troubleshooting" class="nav-item">Troubleshooting</a>
+            </div>
+        </div>
         
-        <div class="help-section">
-            <h2 class="help-h2">Getting Started</h2>
-            <p>This application supports Web MIDI API for real-time control of visual parameters. You can connect any MIDI device (keyboard, controller, etc.) to control the animation and visual effects.</p>
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 class="help-h1">MIDI Interface Guide</h1>
             
-            <div class="help-note">
-                <strong>Note:</strong> Web MIDI API requires HTTPS in most browsers. Make sure you're running the application over HTTPS or localhost.
+            <!-- Getting Started Section -->
+            <div id="getting-started" class="help-section">
+                <h2 class="help-h2">Getting Started</h2>
+                <p>This application supports Web MIDI API for real-time control of visual parameters. You can connect any MIDI device (keyboard, controller, etc.) to control the animation and visual effects.</p>
+                
+                <div class="help-note">
+                    <strong>Note:</strong> Web MIDI API requires HTTPS in most browsers. Make sure you're running the application over HTTPS or localhost.
+                </div>
             </div>
-        </div>
 
-        <div class="help-section">
-            <h2 class="help-h2">Connection</h2>
-            <ol>
-                <li>Connect your MIDI device to your computer</li>
-                <li>Click the "Connect MIDI" button in the MIDI interface panel</li>
-                <li>Allow MIDI access when prompted by your browser</li>
-                <li>The status should change to "Connected" with a green indicator</li>
-            </ol>
-        </div>
+            <div id="connection" class="help-section">
+                <h2 class="help-h2">Connection</h2>
+                <ol>
+                    <li>Connect your MIDI device to your computer</li>
+                    <li>Click the "Connect MIDI" button in the MIDI interface panel</li>
+                    <li>Allow MIDI access when prompted by your browser</li>
+                    <li>The status should change to "Connected" with a green indicator</li>
+                </ol>
+            </div>
 
-        <div class="help-section">
-            <h2 class="help-h2">Control Change (CC) Mappings</h2>
-            <p>These controls use continuous values (0-127) for smooth parameter control. Each parameter can be assigned to any MIDI channel (1-16) and CC number (0-127).</p>
-            
-            <div class="help-note">
-                <strong>Note:</strong> MIDI channels are numbered 1-16 in the interface to match standard MIDI hardware conventions, but internally the system uses channels 0-15.
+            <!-- CC Mappings Section -->
+            <div id="cc-mappings" class="help-section">
+                <h2 class="help-h2">Control Change (CC) Mappings</h2>
+                <p>These controls use continuous values (0-127) for smooth parameter control. Each parameter can be assigned to any MIDI channel (1-16) and CC number (0-127).</p>
+                
+                <div class="help-note">
+                    <strong>Note:</strong> MIDI channels are numbered 1-16 in the interface to match standard MIDI hardware conventions, but internally the system uses channels 0-15.
+                </div>
+                
+                <div class="help-note">
+                    <strong>Dynamic Controls:</strong> You can add new CC controls using the "+ Add New CC Control" button. Each new control will be automatically numbered and can be removed using the × button.
+                </div>
+                
+                <div class="help-note">
+                    <strong>No Default Mappings:</strong> This application does not include any pre-configured MIDI mappings. All mappings must be created manually by the user through the MIDI interface.
+                </div>
             </div>
-            
-            <div class="help-note">
-                <strong>Dynamic Controls:</strong> You can add new CC controls using the "+ Add New CC Control" button. Each new control will be automatically numbered and can be removed using the × button.
-            </div>
-            
-            <div class="help-note">
-                <strong>No Default Mappings:</strong> This application does not include any pre-configured MIDI mappings. All mappings must be created manually by the user through the MIDI interface.
-            </div>
-            
-            <div class="help-note">
-                <strong>Available Parameters:</strong> The following parameters can be mapped to MIDI controls:
-            </div>
-            
-            <div class="help-section">
-                <h3 class="help-h3">Animation Parameters</h3>
-                <ul>
-                    <li><strong>Animation Speed:</strong> Global animation speed multiplier (0.01 - 2.01)</li>
-                    <li><strong>Movement Amplitude:</strong> Intensity of movement animation (0 - 0.5)</li>
-                    <li><strong>Rotation Amplitude:</strong> Intensity of rotation animation (0 - 2)</li>
-                    <li><strong>Scale Amplitude:</strong> Intensity of scale animation (0 - 1)</li>
-                    <li><strong>Randomness:</strong> Shape selection randomness (0 - 1)</li>
-                    <li><strong>Cell Size:</strong> Size of individual grid cells (0.5 - 2)</li>
-                    <li><strong>Movement Frequency:</strong> Speed of movement animation (0.1 - 2.1)</li>
-                    <li><strong>Rotation Frequency:</strong> Speed of rotation animation (0.1 - 2.1)</li>
-                    <li><strong>Scale Frequency:</strong> Speed of scale animation (0.1 - 2.1)</li>
-                </ul>
-            </div>
-            
-            <div class="help-section">
-                <h3 class="help-h3">Grid & Composition Parameters</h3>
-                <ul>
-                    <li><strong>Grid Width:</strong> Number of columns in the grid (1 - 30)</li>
-                    <li><strong>Grid Height:</strong> Number of rows in the grid (1 - 30)</li>
-                    <li><strong>Composition Width:</strong> Width of the composition area (10 - 100)</li>
-                    <li><strong>Composition Height:</strong> Height of the composition area (10 - 100)</li>
-                    <li><strong>Animation Type:</strong> Type of animation (0-3: Movement, Rotation, Scale, Combined)</li>
-                </ul>
-            </div>
-            
-            <div class="help-section">
-                <h3 class="help-h3">Sphere Material Parameters</h3>
-                <ul>
-                    <li><strong>Sphere Refraction:</strong> Refraction index for sphere materials (1 - 3)</li>
-                    <li><strong>Sphere Transparency:</strong> Transparency level of sphere materials (0 - 1)</li>
-                    <li><strong>Sphere Transmission:</strong> Light transmission through sphere materials (0 - 1)</li>
-                    <li><strong>Sphere Roughness:</strong> Surface roughness of sphere materials (0 - 1)</li>
-                    <li><strong>Sphere Metalness:</strong> Metallic appearance of sphere materials (0 - 1)</li>
-                    <li><strong>Sphere Scale:</strong> Size scaling of sphere objects (0.1 - 3)</li>
-                </ul>
-            </div>
-            
-            <div class="help-section">
-                <h3 class="help-h3">Post-Processing Parameters</h3>
-                <ul>
-                    <li><strong>Bloom Strength:</strong> Intensity of bloom glow effect (0 - 2)</li>
-                    <li><strong>Bloom Radius:</strong> Size of bloom glow effect (0 - 2)</li>
-                    <li><strong>Bloom Threshold:</strong> Brightness threshold for bloom effect (0 - 1)</li>
-                    <li><strong>Chromatic Aberration:</strong> Color separation effect intensity (0 - 1)</li>
-                    <li><strong>Vignette Intensity:</strong> Darkening effect around edges (0 - 1)</li>
-                    <li><strong>Vignette Radius:</strong> Size of vignette effect (0.1 - 1)</li>
-                    <li><strong>Vignette Softness:</strong> Softness of vignette edges (0 - 1)</li>
-                    <li><strong>Film Grain:</strong> Film grain noise effect intensity (0 - 0.5)</li>
-                </ul>
-            </div>
-            
-            <div class="help-section">
-                <h3 class="help-h3">Color Grading Parameters</h3>
-                <ul>
-                    <li><strong>Color Hue:</strong> Hue shift for color grading (-0.5 - 0.5)</li>
-                    <li><strong>Color Saturation:</strong> Saturation level for color grading (0 - 3)</li>
-                    <li><strong>Color Brightness:</strong> Brightness level for color grading (0 - 2)</li>
-                    <li><strong>Color Contrast:</strong> Contrast level for color grading (0 - 2)</li>
-                </ul>
-            </div>
-            
-            <div class="help-section">
-                <h3 class="help-h3">Lighting Parameters</h3>
-                <ul>
-                    <li><strong>Ambient Light:</strong> Ambient light intensity (0 - 2)</li>
-                    <li><strong>Directional Light:</strong> Directional light intensity (0 - 2)</li>
-                    <li><strong>Point Light 1:</strong> First point light intensity (0 - 2)</li>
-                    <li><strong>Point Light 2:</strong> Second point light intensity (0 - 2)</li>
-                    <li><strong>Rim Light:</strong> Rim light intensity (0 - 2)</li>
-                    <li><strong>Accent Light:</strong> Accent light intensity (0 - 2)</li>
-                </ul>
-            </div>
-        </div>
 
-        <div class="help-section">
-            <h2 class="help-h2">Preset Management</h2>
-            <p>You can save and load custom MIDI mapping presets:</p>
-            <ul>
-                <li><strong>Save Preset:</strong> Exports your current MIDI mappings to a JSON file</li>
-                <li><strong>Load Preset:</strong> Imports a previously saved preset file</li>
-                <li><strong>Built-in Presets:</strong> Quick access to common mapping configurations</li>
-            </ul>
-            
-            <div class="help-note">
-                <strong>Preset File Format:</strong> Presets are saved as JSON files with the following structure:
-                <pre class="help-pre">{
+            <!-- Note Controls Section -->
+            <div id="note-controls" class="help-section">
+                <h2 class="help-h2">Note Controls</h2>
+                <p>These controls use MIDI notes as toggle switches:</p>
+                
+                <div class="help-note">
+                    <strong>Dynamic Controls:</strong> You can add new Note controls using the "+ Add New Note Control" button. Each new control will be automatically numbered and can be removed using the × button.
+                </div>
+                
+                <div class="help-note">
+                    <strong>No Default Note Mappings:</strong> This application does not include any pre-configured MIDI note mappings. All note mappings must be created manually by the user through the MIDI interface.
+                </div>
+                
+                <div class="help-section">
+                    <h3 class="help-h3">Animation Toggles</h3>
+                    <ul>
+                        <li><strong>Toggle Shape Cycling:</strong> Toggle shape cycling animation on/off</li>
+                        <li><strong>Toggle Size Animation:</strong> Toggle size/movement/rotation animations on/off</li>
+                        <li><strong>Reset Animation:</strong> Reset all animations to default values</li>
+                    </ul>
+                </div>
+                
+                <div class="help-section">
+                    <h3 class="help-h3">Display Toggles</h3>
+                    <ul>
+                        <li><strong>Toggle Grid:</strong> Toggle grid line visibility on/off</li>
+                        <li><strong>Toggle Basic Shapes:</strong> Toggle basic shape visibility on/off</li>
+                        <li><strong>Toggle Triangles:</strong> Toggle triangle shape visibility on/off</li>
+                        <li><strong>Toggle Rectangles:</strong> Toggle rectangle shape visibility on/off</li>
+                        <li><strong>Toggle Ellipses:</strong> Toggle ellipse shape visibility on/off</li>
+                        <li><strong>Toggle Refractive Spheres:</strong> Toggle refractive sphere visibility on/off</li>
+                    </ul>
+                </div>
+                
+                <div class="help-section">
+                    <h3 class="help-h3">Post-Processing Toggles</h3>
+                    <ul>
+                        <li><strong>Toggle Bloom:</strong> Toggle bloom glow effect on/off</li>
+                        <li><strong>Toggle Chromatic Aberration:</strong> Toggle color separation effect on/off</li>
+                        <li><strong>Toggle Vignette:</strong> Toggle edge darkening effect on/off</li>
+                        <li><strong>Toggle Film Grain:</strong> Toggle film grain noise effect on/off</li>
+                        <li><strong>Toggle Color Grading:</strong> Toggle color grading effects on/off</li>
+                        <li><strong>Toggle Post Processing:</strong> Toggle all post-processing effects on/off</li>
+                    </ul>
+                </div>
+                
+                <div class="help-note">
+                    <strong>Note:</strong> Any other MIDI note will control cell size based on velocity (how hard you press the key).
+                </div>
+            </div>
+
+            <!-- MIDI Learn Section -->
+            <div id="midi-learn" class="help-section">
+                <h2 class="help-h2">MIDI Learn Functionality</h2>
+                <p>New controls feature a "Learn" button that automatically detects MIDI input:</p>
+                <ol>
+                    <li>Click the "Learn" button on any control</li>
+                    <li>Send a MIDI CC or Note message from your device</li>
+                    <li>The system will automatically detect the channel and CC/Note number</li>
+                    <li>The control will be configured and ready to use</li>
+                </ol>
+                
+                <div class="help-note">
+                    <strong>Note:</strong> The Learn function works for both CC and Note controls. For CC controls, it learns the CC number and channel. For Note controls, it learns the note number and channel.
+                </div>
+            </div>
+
+            <!-- Special Controls Section -->
+            <div id="special-controls" class="help-section">
+                <h2 class="help-h2">Special Controls</h2>
+                <ul>
+                    <li><strong>Pitch Bend:</strong> Controls animation type (0-3: Movement, Rotation, Scale, Combined)</li>
+                    <li><strong>Aftertouch/Channel Pressure:</strong> Controls shape color intensity (grayscale)</li>
+                </ul>
+            </div>
+
+            <!-- Parameter Reference Section -->
+            <div id="parameter-reference" class="help-section">
+                <h2 class="help-h2">Parameter Reference</h2>
+                <p>This section provides a comprehensive reference for all available parameters that can be mapped to MIDI controls:</p>
+                
+                <div id="animation-params" class="help-section">
+                    <h3 class="help-h3">Animation Parameters</h3>
+                    <ul>
+                        <li><strong>animationSpeed:</strong> Controls the overall animation speed</li>
+                        <li><strong>movementAmplitude:</strong> Controls the amplitude of movement</li>
+                        <li><strong>rotationAmplitude:</strong> Controls the amplitude of rotation</li>
+                        <li><strong>scaleAmplitude:</strong> Controls the amplitude of scaling</li>
+                        <li><strong>randomness:</strong> Controls the randomness of animations</li>
+                        <li><strong>cellSize:</strong> Controls the size of individual cells</li>
+                        <li><strong>movementFrequency:</strong> Controls the frequency of movement</li>
+                        <li><strong>rotationFrequency:</strong> Controls the frequency of rotation</li>
+                        <li><strong>scaleFrequency:</strong> Controls the frequency of scaling</li>
+                    </ul>
+                </div>
+                
+                <div id="grid-params" class="help-section">
+                    <h3 class="help-h3">Grid Parameters</h3>
+                    <ul>
+                        <li><strong>gridWidth:</strong> Controls the width of the grid</li>
+                        <li><strong>gridHeight:</strong> Controls the height of the grid</li>
+                        <li><strong>compositionWidth:</strong> Controls the composition width</li>
+                        <li><strong>compositionHeight:</strong> Controls the composition height</li>
+                    </ul>
+                </div>
+                
+                <div id="material-params" class="help-section">
+                    <h3 class="help-h3">Material Parameters</h3>
+                    <ul>
+                        <li><strong>sphereRefraction:</strong> Controls sphere refraction</li>
+                        <li><strong>sphereTransparency:</strong> Controls sphere transparency</li>
+                        <li><strong>sphereTransmission:</strong> Controls sphere transmission</li>
+                        <li><strong>sphereRoughness:</strong> Controls sphere roughness</li>
+                        <li><strong>sphereMetalness:</strong> Controls sphere metalness</li>
+                        <li><strong>sphereScale:</strong> Controls sphere scale</li>
+                        <li><strong>sphereClearcoat:</strong> Controls sphere clearcoat</li>
+                        <li><strong>sphereClearcoatRoughness:</strong> Controls sphere clearcoat roughness</li>
+                        <li><strong>sphereEnvMapIntensity:</strong> Controls sphere environment map intensity</li>
+                    </ul>
+                </div>
+                
+                <div id="post-processing-params" class="help-section">
+                    <h3 class="help-h3">Post-Processing Parameters</h3>
+                    <ul>
+                        <li><strong>bloomStrength:</strong> Controls bloom strength</li>
+                        <li><strong>bloomRadius:</strong> Controls bloom radius</li>
+                        <li><strong>bloomThreshold:</strong> Controls bloom threshold</li>
+                        <li><strong>chromaticIntensity:</strong> Controls chromatic aberration intensity</li>
+                        <li><strong>vignetteIntensity:</strong> Controls vignette intensity</li>
+                        <li><strong>vignetteRadius:</strong> Controls vignette radius</li>
+                        <li><strong>vignetteSoftness:</strong> Controls vignette softness</li>
+                        <li><strong>grainIntensity:</strong> Controls film grain intensity</li>
+                    </ul>
+                </div>
+                
+                <div id="color-params" class="help-section">
+                    <h3 class="help-h3">Color Parameters</h3>
+                    <ul>
+                        <li><strong>colorHue:</strong> Controls color hue</li>
+                        <li><strong>colorSaturation:</strong> Controls color saturation</li>
+                        <li><strong>colorBrightness:</strong> Controls color brightness</li>
+                        <li><strong>colorContrast:</strong> Controls color contrast</li>
+                    </ul>
+                </div>
+                
+                <div id="lighting-params" class="help-section">
+                    <h3 class="help-h3">Lighting Parameters</h3>
+                    <ul>
+                        <li><strong>ambientLightIntensity:</strong> Controls ambient light intensity</li>
+                        <li><strong>directionalLightIntensity:</strong> Controls directional light intensity</li>
+                        <li><strong>pointLight1Intensity:</strong> Controls point light 1 intensity</li>
+                        <li><strong>pointLight2Intensity:</strong> Controls point light 2 intensity</li>
+                        <li><strong>rimLightIntensity:</strong> Controls rim light intensity</li>
+                        <li><strong>accentLightIntensity:</strong> Controls accent light intensity</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Preset Management Section -->
+            <div id="preset-management" class="help-section">
+                <h2 class="help-h2">Preset Management</h2>
+                <p>You can save and load custom MIDI mapping presets:</p>
+                <ul>
+                    <li><strong>Save Preset:</strong> Exports your current MIDI mappings to a JSON file</li>
+                    <li><strong>Load Preset:</strong> Imports a previously saved preset file</li>
+                    <li><strong>Built-in Presets:</strong> Quick access to common mapping configurations</li>
+                </ul>
+                
+                <div class="help-note">
+                    <strong>Preset File Format:</strong> Presets are saved as JSON files with the following structure:
+                    <pre class="help-pre">{
   "name": "Preset Name",
   "description": "Description",
   "version": "1.0",
   "created": "2024-01-15T10:30:00Z",
-  "mappings": {
-    "animationSpeed": { "channel": 0, "cc": 1 },
-    "movementAmplitude": { "channel": 1, "cc": 2 },
-    ...
+  "midiCCMappings": {
+    "cc1": { "channel": 0, "value": 1, "target": "animationSpeed" },
+    "cc2": { "channel": 1, "value": 1, "target": "movementAmplitude" }
   },
-  "noteMappings": {
-    "shapeCycling": 60,
-    "sizeAnimation": 61,
-    "showGrid": 62
+  "midiNoteMappings": {
+    "note1": { "channel": 0, "note": 60, "target": "shapeCycling" },
+    "note2": { "channel": 0, "note": 61, "target": "sizeAnimation" }
   }
 }</pre>
+                </div>
             </div>
-        </div>
 
-        <div class="help-section">
-            <h2 class="help-h2">Note Controls</h2>
-            <p>These controls use MIDI notes as toggle switches:</p>
-            
-            <div class="help-note">
-                <strong>Dynamic Controls:</strong> You can add new Note controls using the "+ Add New Note Control" button. Each new control will be automatically numbered and can be removed using the × button.
+            <!-- Built-in Presets Section -->
+            <div id="built-in-presets" class="help-section">
+                <h2 class="help-h2">Available Built-in Presets</h2>
+                <p>The application includes several pre-configured presets optimized for different MIDI controllers:</p>
+                
+                <div class="preset-card">
+                    <h4 class="preset-title">Sample Multi-Channel Preset</h4>
+                    <p>A sample preset that uses different MIDI channels for each parameter. Useful for testing and understanding the mapping structure.</p>
+                </div>
+                
+                <div class="preset-card">
+                    <h4 class="preset-title">Novation Launch Control XL</h4>
+                    <p>Optimized for Novation Launch Control XL with 8 rotary encoders and 16 buttons. Maps the most commonly used parameters to the available controls.</p>
+                    <ul>
+                        <li>Uses CC numbers 13-48 for rotary encoders</li>
+                        <li>Uses note numbers 36-50 for buttons</li>
+                        <li>All controls on channel 0</li>
+                    </ul>
+                </div>
+                
+                <div class="preset-card">
+                    <h4 class="preset-title">Akai MPK Mini</h4>
+                    <p>Optimized for Akai MPK Mini with 8 pads and 4 rotary encoders. Focuses on the most essential parameters for live performance.</p>
+                    <ul>
+                        <li>Uses CC numbers 1-36 for rotary encoders</li>
+                        <li>Uses note numbers 36-50 for pads</li>
+                        <li>All controls on channel 0</li>
+                    </ul>
+                </div>
+                
+                <div class="preset-card">
+                    <h4 class="preset-title">Arturia BeatStep Pro</h4>
+                    <p>Optimized for Arturia BeatStep Pro with 16 rotary encoders and 16 pads. Comprehensive mapping for full control over all parameters.</p>
+                    <ul>
+                        <li>Uses CC numbers 1-41 for rotary encoders</li>
+                        <li>Uses note numbers 36-50 for pads</li>
+                        <li>All controls on channel 0</li>
+                    </ul>
+                </div>
             </div>
-            
-            <div class="help-note">
-                <strong>No Default Note Mappings:</strong> This application does not include any pre-configured MIDI note mappings. All note mappings must be created manually by the user through the MIDI interface.
+
+            <!-- Creating Custom Presets Section -->
+            <div id="custom-presets" class="help-section">
+                <h2 class="help-h2">Creating Custom Presets</h2>
+                <ol>
+                    <li>Set up your MIDI mappings in the application</li>
+                    <li>Use the "Save Preset" function to download your current mappings</li>
+                    <li>Copy the downloaded file to the presets folder</li>
+                    <li>Rename it to something descriptive (e.g., `my-controller-name.json`)</li>
+                </ol>
             </div>
-            
-            <div class="help-note">
-                <strong>Available Note Actions:</strong> The following toggle actions can be mapped to MIDI notes:
-            </div>
-            
-            <div class="help-section">
-                <h3 class="help-h3">Animation Toggles</h3>
+
+            <!-- Post-Processing Effects Section -->
+            <div id="post-processing-effects" class="help-section">
+                <h2 class="help-h2">Post-Processing Effects</h2>
+                <p>The application includes advanced post-processing effects that can be controlled via MIDI:</p>
+                
+                <h3 class="help-h3">Bloom Effect</h3>
                 <ul>
-                    <li><strong>Toggle Shape Cycling:</strong> Toggle shape cycling animation on/off</li>
-                    <li><strong>Toggle Size Animation:</strong> Toggle size/movement/rotation animations on/off</li>
-                    <li><strong>Reset Animation:</strong> Reset all animations to default values</li>
+                    <li><strong>Bloom Strength:</strong> Controls the intensity of the glow effect around bright areas</li>
+                    <li><strong>Bloom Radius:</strong> Controls the size and spread of the bloom effect</li>
+                    <li><strong>Bloom Threshold:</strong> Sets the brightness level at which bloom begins</li>
+                </ul>
+                
+                <h3 class="help-h3">Chromatic Aberration</h3>
+                <ul>
+                    <li><strong>Chromatic Intensity:</strong> Controls the amount of color separation effect</li>
+                </ul>
+                
+                <h3 class="help-h3">Vignette Effect</h3>
+                <ul>
+                    <li><strong>Vignette Intensity:</strong> Controls the darkness of the edge effect</li>
+                    <li><strong>Vignette Radius:</strong> Controls the size of the vignette area</li>
+                    <li><strong>Vignette Softness:</strong> Controls the softness of the vignette edges</li>
+                </ul>
+                
+                <h3 class="help-h3">Film Grain</h3>
+                <ul>
+                    <li><strong>Grain Intensity:</strong> Controls the amount of film grain noise</li>
+                </ul>
+                
+                <h3 class="help-h3">Color Grading</h3>
+                <ul>
+                    <li><strong>Color Hue:</strong> Shifts the overall hue of the scene</li>
+                    <li><strong>Color Saturation:</strong> Controls the intensity of colors</li>
+                    <li><strong>Color Brightness:</strong> Adjusts the overall brightness</li>
+                    <li><strong>Color Contrast:</strong> Controls the contrast between light and dark areas</li>
+                </ul>
+                
+                <h3 class="help-h3">FXAA Anti-Aliasing</h3>
+                <ul>
+                    <li><strong>FXAA Enabled:</strong> Toggles fast approximate anti-aliasing for smoother edges</li>
                 </ul>
             </div>
-            
-            <div class="help-section">
-                <h3 class="help-h3">Display Toggles</h3>
+
+            <!-- Performance Tips Section -->
+            <div id="performance-tips" class="help-section">
+                <h2 class="help-h2">Tips for Performance</h2>
                 <ul>
-                    <li><strong>Toggle Grid:</strong> Toggle grid line visibility on/off</li>
-                    <li><strong>Toggle Basic Shapes:</strong> Toggle basic shape visibility on/off</li>
-                    <li><strong>Toggle Triangles:</strong> Toggle triangle shape visibility on/off</li>
-                    <li><strong>Toggle Rectangles:</strong> Toggle rectangle shape visibility on/off</li>
-                    <li><strong>Toggle Ellipses:</strong> Toggle ellipse shape visibility on/off</li>
-                    <li><strong>Toggle Refractive Spheres:</strong> Toggle refractive sphere visibility on/off</li>
+                    <li>Use a MIDI controller with knobs/sliders for smooth CC control</li>
+                    <li>Map frequently used parameters to easily accessible controls</li>
+                    <li>Use velocity-sensitive keys for dynamic cell size control</li>
+                    <li>Experiment with different CC mappings to find your preferred setup</li>
+                    <li>Post-processing effects can be CPU intensive - disable unused effects for better performance</li>
+                    <li>Use FXAA for smoother visuals without significant performance impact</li>
                 </ul>
             </div>
-            
-            <div class="help-section">
-                <h3 class="help-h3">Post-Processing Toggles</h3>
-                <ul>
-                    <li><strong>Toggle Bloom:</strong> Toggle bloom glow effect on/off</li>
-                    <li><strong>Toggle Chromatic Aberration:</strong> Toggle color separation effect on/off</li>
-                    <li><strong>Toggle Vignette:</strong> Toggle edge darkening effect on/off</li>
-                    <li><strong>Toggle Film Grain:</strong> Toggle film grain noise effect on/off</li>
-                    <li><strong>Toggle Color Grading:</strong> Toggle color grading effects on/off</li>
-                    <li><strong>Toggle Post Processing:</strong> Toggle all post-processing effects on/off</li>
-                </ul>
+
+            <!-- Troubleshooting Section -->
+            <div id="troubleshooting" class="help-section">
+                <h2 class="help-h2">Troubleshooting</h2>
+                <div class="help-warning">
+                    <strong>MIDI not connecting?</strong>
+                    <ul>
+                        <li>Make sure your MIDI device is properly connected and recognized by your OS</li>
+                        <li>Try refreshing the page and reconnecting</li>
+                        <li>Check that your browser supports Web MIDI API (Chrome, Edge, Firefox)</li>
+                        <li>Ensure you're running over HTTPS or localhost</li>
+                    </ul>
+                </div>
+                
+                <div class="help-warning">
+                    <strong>Performance issues?</strong>
+                    <ul>
+                        <li>Disable post-processing effects if experiencing lag</li>
+                        <li>Reduce the number of active shapes or grid size</li>
+                        <li>Lower animation frequencies for smoother performance</li>
+                        <li>Close other browser tabs to free up resources</li>
+                    </ul>
+                </div>
             </div>
-            
-            <div class="help-note">
-                <strong>Note:</strong> Any other MIDI note will control cell size based on velocity (how hard you press the key).
-            </div>
-        </div>
 
-        <div class="help-section">
-            <h2 class="help-h2">Post-Processing Effects</h2>
-            <p>The application includes advanced post-processing effects that can be controlled via MIDI:</p>
-            
-            <h3 class="help-h3">Bloom Effect</h3>
-            <ul>
-                <li><strong>Bloom Strength:</strong> Controls the intensity of the glow effect around bright areas</li>
-                <li><strong>Bloom Radius:</strong> Controls the size and spread of the bloom effect</li>
-                <li><strong>Bloom Threshold:</strong> Sets the brightness level at which bloom begins</li>
-            </ul>
-            
-            <h3 class="help-h3">Chromatic Aberration</h3>
-            <ul>
-                <li><strong>Chromatic Intensity:</strong> Controls the amount of color separation effect</li>
-            </ul>
-            
-            <h3 class="help-h3">Vignette Effect</h3>
-            <ul>
-                <li><strong>Vignette Intensity:</strong> Controls the darkness of the edge effect</li>
-                <li><strong>Vignette Radius:</strong> Controls the size of the vignette area</li>
-                <li><strong>Vignette Softness:</strong> Controls the softness of the vignette edges</li>
-            </ul>
-            
-            <h3 class="help-h3">Film Grain</h3>
-            <ul>
-                <li><strong>Grain Intensity:</strong> Controls the amount of film grain noise</li>
-            </ul>
-            
-            <h3 class="help-h3">Color Grading</h3>
-            <ul>
-                <li><strong>Color Hue:</strong> Shifts the overall hue of the scene</li>
-                <li><strong>Color Saturation:</strong> Controls the intensity of colors</li>
-                <li><strong>Color Brightness:</strong> Adjusts the overall brightness</li>
-                <li><strong>Color Contrast:</strong> Controls the contrast between light and dark areas</li>
-            </ul>
-            
-            <h3 class="help-h3">FXAA Anti-Aliasing</h3>
-            <ul>
-                <li><strong>FXAA Enabled:</strong> Toggles fast approximate anti-aliasing for smoother edges</li>
-            </ul>
-        </div>
 
-        <div class="help-section">
-            <h2 class="help-h2">MIDI Learn Functionality</h2>
-            <p>New controls feature a "Learn" button that automatically detects MIDI input:</p>
-            <ol>
-                <li>Click the "Learn" button on any control</li>
-                <li>Send a MIDI CC or Note message from your device</li>
-                <li>The system will automatically detect the channel and CC/Note number</li>
-                <li>The control will be configured and ready to use</li>
-            </ol>
-            
-            <div class="help-note">
-                <strong>Note:</strong> The Learn function works for both CC and Note controls. For CC controls, it learns the CC number and channel. For Note controls, it learns the note number and channel.
-            </div>
         </div>
-
-        <div class="help-section">
-            <h2 class="help-h2">Special Controls</h2>
-            <ul>
-                <li><strong>Pitch Bend:</strong> Controls animation type (0-3: Movement, Rotation, Scale, Combined)</li>
-                <li><strong>Aftertouch/Channel Pressure:</strong> Controls shape color intensity (grayscale)</li>
-            </ul>
-        </div>
-
-        <div class="help-section">
-            <h2 class="help-h2">Tips for Performance</h2>
-            <ul>
-                <li>Use a MIDI controller with knobs/sliders for smooth CC control</li>
-                <li>Map frequently used parameters to easily accessible controls</li>
-                <li>Use velocity-sensitive keys for dynamic cell size control</li>
-                <li>Experiment with different CC mappings to find your preferred setup</li>
-                <li>Post-processing effects can be CPU intensive - disable unused effects for better performance</li>
-                <li>Use FXAA for smoother visuals without significant performance impact</li>
-            </ul>
-        </div>
-
-        <div class="help-section">
-            <h2 class="help-h2">Troubleshooting</h2>
-            <div class="help-warning">
-                <strong>MIDI not connecting?</strong>
-                <ul>
-                    <li>Make sure your MIDI device is properly connected and recognized by your OS</li>
-                    <li>Try refreshing the page and reconnecting</li>
-                    <li>Check that your browser supports Web MIDI API (Chrome, Edge, Firefox)</li>
-                    <li>Ensure you're running over HTTPS or localhost</li>
-                </ul>
-            </div>
-            
-            <div class="help-warning">
-                <strong>Performance issues?</strong>
-                <ul>
-                    <li>Disable post-processing effects if experiencing lag</li>
-                    <li>Reduce the number of active shapes or grid size</li>
-                    <li>Lower animation frequencies for smoother performance</li>
-                    <li>Close other browser tabs to free up resources</li>
-                </ul>
-            </div>
-        </div>
-
-        <a href="index.html" class="back-link">← Back to Application</a>
     </div>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight active section in navigation
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.help-section');
+            const navLinks = document.querySelectorAll('.nav-item');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html> 

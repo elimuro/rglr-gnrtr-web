@@ -1,0 +1,24 @@
+{
+  "name": "Sample Multi-Channel Preset",
+  "description": "A sample preset that uses different MIDI channels for each parameter",
+  "version": "1.0",
+  "created": "2024-01-15T10:30:00Z",
+  "midiCCMappings": {
+    "cc1": { "channel": 0, "value": 1, "target": "animationSpeed" },
+    "cc2": { "channel": 1, "value": 1, "target": "movementAmplitude" },
+    "cc3": { "channel": 2, "value": 1, "target": "rotationAmplitude" },
+    "cc4": { "channel": 3, "value": 1, "target": "scaleAmplitude" },
+    "cc5": { "channel": 4, "value": 1, "target": "randomness" },
+    "cc6": { "channel": 5, "value": 1, "target": "cellSize" },
+    "cc7": { "channel": 6, "value": 1, "target": "movementFrequency" },
+    "cc8": { "channel": 7, "value": 1, "target": "rotationFrequency" },
+    "cc9": { "channel": 8, "value": 1, "target": "scaleFrequency" },
+    "cc10": { "channel": 9, "value": 1, "target": "gridWidth" },
+    "cc11": { "channel": 10, "value": 1, "target": "gridHeight" }
+  },
+  "midiNoteMappings": {
+    "note1": { "channel": 0, "note": 60, "target": "shapeCycling" },
+    "note2": { "channel": 0, "note": 61, "target": "sizeAnimation" },
+    "note3": { "channel": 0, "note": 62, "target": "showGrid" }
+  }
+} 
