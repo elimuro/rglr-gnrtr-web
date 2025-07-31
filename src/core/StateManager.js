@@ -22,7 +22,13 @@ export class StateManager {
     async initialize() {
         if (this.initialized) return;
         
-        this.state = await this.getInitialState();
+        try {
+            this.state = await this.getInitialState();
+        } catch (error) {
+            console.warn('Failed to load initial state, using fallback:', error);
+            this.state = this.getFallbackState();
+        }
+        
         this.initialized = true;
         console.log('StateManager initialized with state:', this.state);
     }
@@ -46,55 +52,65 @@ export class StateManager {
         }
     }
 
-    getInitialState() {
+    async getInitialState() {
         // Try to load the default scene from the JSON file
-        return this.loadDefaultScene() || this.getFallbackState();
+        const loadedState = await this.loadDefaultScene();
+        return loadedState || this.getFallbackState();
     }
 
     async loadDefaultScene() {
-        try {
-            console.log('Attempting to load default-scene.json...');
-            const response = await fetch('./default-scene.json');
-            if (!response.ok) {
-                console.warn('Could not load default-scene.json, using fallback state');
-                console.warn('Response status:', response.status, response.statusText);
-                return null;
+        const paths = ['/default-scene.json', './default-scene.json', '/public/default-scene.json'];
+        
+        for (const path of paths) {
+            try {
+                console.log(`Attempting to load default-scene.json from: ${path}`);
+                const response = await fetch(path);
+                console.log('Response status:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    console.warn(`Could not load from ${path}, trying next path...`);
+                    continue;
+                }
+                
+                const data = await response.json();
+                console.log('Successfully loaded default scene from JSON file:', data);
+                
+                // Start with the default scene settings
+                const initialState = { ...data.settings };
+                
+                // Add MIDI parameters that aren't in the scene data
+                initialState.midiEnabled = false;
+                initialState.midiChannel = 0;
+                initialState.midiCCMappings = {
+                    cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
+                    cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
+                    cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
+                    cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
+                    cc5: { channel: 0, cc: 5, target: 'sphereScale' }
+                };
+                initialState.midiNoteMappings = {
+                    note1: { channel: 0, note: 60, target: 'shapeCycling' },
+                    note2: { channel: 0, note: 61, target: 'sizeAnimation' },
+                    note3: { channel: 0, note: 62, target: 'showGrid' },
+                    note4: { channel: 0, note: 63, target: 'enableShapeCycling' },
+                    note5: { channel: 0, note: 64, target: 'enableSizeAnimation' }
+                };
+                
+                // Add sphereDistortionStrength if not present
+                if (!initialState.hasOwnProperty('sphereDistortionStrength')) {
+                    initialState.sphereDistortionStrength = 0.1;
+                }
+                
+                console.log('Initial state prepared from JSON:', initialState);
+                return initialState;
+            } catch (error) {
+                console.warn(`Error loading from ${path}:`, error.message);
+                continue;
             }
-            const data = await response.json();
-            console.log('Successfully loaded default scene from JSON file:', data);
-            
-            // Start with the default scene settings
-            const initialState = { ...data.settings };
-            
-            // Add MIDI parameters that aren't in the scene data
-            initialState.midiEnabled = false;
-            initialState.midiChannel = 0;
-            initialState.midiCCMappings = {
-                cc1: { channel: 0, cc: 1, target: 'animationSpeed' },
-                cc2: { channel: 0, cc: 2, target: 'movementAmplitude' },
-                cc3: { channel: 0, cc: 3, target: 'rotationAmplitude' },
-                cc4: { channel: 0, cc: 4, target: 'scaleAmplitude' },
-                cc5: { channel: 0, cc: 5, target: 'sphereScale' }
-            };
-            initialState.midiNoteMappings = {
-                note1: { channel: 0, note: 60, target: 'shapeCycling' },
-                note2: { channel: 0, note: 61, target: 'sizeAnimation' },
-                note3: { channel: 0, note: 62, target: 'showGrid' },
-                note4: { channel: 0, note: 63, target: 'enableShapeCycling' },
-                note5: { channel: 0, note: 64, target: 'enableSizeAnimation' }
-            };
-            
-            // Add sphereDistortionStrength if not present
-            if (!initialState.hasOwnProperty('sphereDistortionStrength')) {
-                initialState.sphereDistortionStrength = 0.1;
-            }
-            
-            console.log('Initial state prepared from JSON:', initialState);
-            return initialState;
-        } catch (error) {
-            console.warn('Error loading default-scene.json:', error);
-            return null;
         }
+        
+        console.warn('Failed to load from all paths, using fallback state');
+        return null;
     }
 
     getFallbackState() {
@@ -182,7 +198,15 @@ export class StateManager {
     }
 
     get(key) {
+        if (!this.initialized || !this.state) {
+            console.warn(`StateManager not initialized, returning undefined for key: ${key}`);
+            return undefined;
+        }
         return this.state[key];
+    }
+
+    isInitialized() {
+        return this.initialized && this.state !== null;
     }
 
     set(key, value) {

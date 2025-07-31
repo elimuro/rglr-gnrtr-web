@@ -35,6 +35,11 @@ export class App {
             // Initialize state manager first
             await this.state.initialize();
             
+            // Verify state is properly initialized
+            if (!this.state.isInitialized()) {
+                throw new Error('StateManager failed to initialize properly');
+            }
+            
             // Initialize scene
             this.scene.init();
             
