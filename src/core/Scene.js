@@ -186,6 +186,16 @@ export class Scene {
         this.state.subscribe('colorSaturation', () => this.updatePostProcessing());
         this.state.subscribe('colorBrightness', () => this.updatePostProcessing());
         this.state.subscribe('colorContrast', () => this.updatePostProcessing());
+        
+        // Center scaling state subscriptions
+        this.state.subscribe('centerScalingEnabled', () => this.updateCenterScaling());
+        this.state.subscribe('centerScalingIntensity', () => this.updateCenterScaling());
+        this.state.subscribe('centerScalingCurve', () => this.updateCenterScaling());
+        this.state.subscribe('centerScalingRadius', () => this.updateCenterScaling());
+        this.state.subscribe('centerScalingDirection', () => this.updateCenterScaling());
+        this.state.subscribe('centerScalingAnimation', () => this.updateCenterScaling());
+        this.state.subscribe('centerScalingAnimationSpeed', () => this.updateCenterScaling());
+        this.state.subscribe('centerScalingAnimationType', () => this.updateCenterScaling());
     }
 
     updateBackgroundColor() {
@@ -285,13 +295,17 @@ export class Scene {
                 mesh.position.x = (x - halfGridW + 0.5) * cellSize;
                 mesh.position.y = (y - halfGridH + 0.5) * cellSize;
                 
-                // Scale the shape
+                // Calculate center scaling factor
+                const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize);
+                
+                // Scale the shape with center scaling applied
                 if (shapeName.startsWith('sphere_')) {
                     // Apply sphere scale factor for spheres
-                    const sphereScale = cellSize * this.state.get('sphereScale');
+                    const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
                     mesh.scale.set(sphereScale, sphereScale, sphereScale);
                 } else {
-                    mesh.scale.set(cellSize, cellSize, 1);
+                    const baseScale = cellSize * centerScalingFactor;
+                    mesh.scale.set(baseScale, baseScale, 1);
                 }
 
                 this.scene.add(mesh);
@@ -367,11 +381,15 @@ export class Scene {
                     mesh.position.x = (x - halfGridW + 0.5) * cellSize;
                     mesh.position.y = (y - halfGridH + 0.5) * cellSize;
                     
+                    // Calculate center scaling factor
+                    const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize);
+                    
                     if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
-                        const sphereScale = cellSize * this.state.get('sphereScale');
+                        const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
                         mesh.scale.set(sphereScale, sphereScale, sphereScale);
                     } else {
-                        mesh.scale.set(cellSize, cellSize, 1);
+                        const baseScale = cellSize * centerScalingFactor;
+                        mesh.scale.set(baseScale, baseScale, 1);
                     }
                 }
                 i++;
@@ -404,13 +422,46 @@ export class Scene {
     updateSphereScales() {
         const cellSize = this.state.get('cellSize');
         const sphereScale = this.state.get('sphereScale');
+        const gridWidth = this.state.get('gridWidth');
+        const gridHeight = this.state.get('gridHeight');
         
-        this.shapes.forEach(mesh => {
-            if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
-                const scale = cellSize * sphereScale;
-                mesh.scale.set(scale, scale, scale);
+        let shapeIndex = 0;
+        for (let x = 0; x < gridWidth; x++) {
+            for (let y = 0; y < gridHeight; y++) {
+                const mesh = this.shapes[shapeIndex];
+                if (mesh && mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
+                    const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize);
+                    const finalScale = sphereScale * cellSize * centerScalingFactor;
+                    mesh.scale.set(finalScale, finalScale, finalScale);
+                }
+                shapeIndex++;
             }
-        });
+        }
+    }
+
+    updateCenterScaling() {
+        const cellSize = this.state.get('cellSize');
+        const gridWidth = this.state.get('gridWidth');
+        const gridHeight = this.state.get('gridHeight');
+        
+        let shapeIndex = 0;
+        for (let x = 0; x < gridWidth; x++) {
+            for (let y = 0; y < gridHeight; y++) {
+                const mesh = this.shapes[shapeIndex];
+                if (mesh) {
+                    const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize);
+                    
+                    if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
+                        const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
+                        mesh.scale.set(sphereScale, sphereScale, sphereScale);
+                    } else {
+                        const baseScale = cellSize * centerScalingFactor;
+                        mesh.scale.set(baseScale, baseScale, 1);
+                    }
+                }
+                shapeIndex++;
+            }
+        }
     }
 
     updatePostProcessing() {
@@ -638,6 +689,105 @@ export class Scene {
         };
     }
 
+    calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize) {
+        if (!this.state.get('centerScalingEnabled')) {
+            return 1.0; // No scaling if disabled
+        }
+
+        const intensity = this.state.get('centerScalingIntensity');
+        const curve = this.state.get('centerScalingCurve');
+        const radius = this.state.get('centerScalingRadius');
+        const direction = this.state.get('centerScalingDirection');
+        const animation = this.state.get('centerScalingAnimation');
+        const animationSpeed = this.state.get('centerScalingAnimationSpeed');
+        const animationType = this.state.get('centerScalingAnimationType');
+
+        // Calculate distance from center (0,0)
+        const centerX = (gridWidth - 1) / 2;
+        const centerY = (gridHeight - 1) / 2;
+        const distanceFromCenter = Math.sqrt(
+            Math.pow((x - centerX) * cellSize, 2) + 
+            Math.pow((y - centerY) * cellSize, 2)
+        );
+
+        // Normalize distance to 0-1 range based on radius
+        const maxDistance = Math.sqrt(
+            Math.pow(centerX * cellSize, 2) + 
+            Math.pow(centerY * cellSize, 2)
+        ) * radius;
+        
+        const normalizedDistance = Math.min(distanceFromCenter / maxDistance, 1.0);
+
+        // Apply curve function
+        let curveFactor;
+        switch (Math.floor(curve)) {
+            case 0: // Linear
+                curveFactor = normalizedDistance;
+                break;
+            case 1: // Exponential
+                curveFactor = Math.pow(normalizedDistance, 2);
+                break;
+            case 2: // Logarithmic
+                curveFactor = Math.log(normalizedDistance + 1) / Math.log(2);
+                break;
+            case 3: // Sine wave
+                curveFactor = Math.sin(normalizedDistance * Math.PI);
+                break;
+            default:
+                curveFactor = normalizedDistance;
+        }
+
+        // Apply animation if enabled
+        let animationOffset = 0;
+        if (animation) {
+            const time = Date.now() * 0.001 * animationSpeed;
+            
+            // Different animation types for more dramatic effects
+            switch (Math.floor(animationType)) {
+                case 0: // Complex Wave
+                    const wave1 = Math.sin(time + x * 0.3 + y * 0.2) * 0.4;
+                    const wave2 = Math.cos(time * 0.7 + x * 0.4 + y * 0.1) * 0.3;
+                    const pulse = Math.sin(time * 2 + (x + y) * 0.1) * 0.3;
+                    animationOffset = wave1 + wave2 + pulse;
+                    break;
+                    
+                case 1: // Radial Pulse
+                    const radialDistance = Math.sqrt(x * x + y * y);
+                    const radialWave = Math.sin(time * 3 + radialDistance * 0.5) * 0.5;
+                    animationOffset = radialWave;
+                    break;
+                    
+                case 2: // Spiral Effect
+                    const angle = Math.atan2(y - centerY, x - centerX);
+                    const spiralWave = Math.sin(time * 2 + angle * 3 + distanceFromCenter * 0.2) * 0.4;
+                    animationOffset = spiralWave;
+                    break;
+                    
+                case 3: // Chaos Pattern
+                    const chaos1 = Math.sin(time * 1.5 + x * 0.8 + y * 0.6) * 0.3;
+                    const chaos2 = Math.cos(time * 0.8 + x * 0.4 + y * 0.9) * 0.3;
+                    const chaos3 = Math.sin(time * 2.2 + (x + y) * 0.7) * 0.2;
+                    animationOffset = chaos1 + chaos2 + chaos3;
+                    break;
+                    
+                default:
+                    // Simple wave as fallback
+                    animationOffset = Math.sin(time + x * 0.5 + y * 0.3) * 0.3;
+            }
+        }
+
+        // Calculate scaling factor with more dramatic range
+        let scalingFactor = 1.0 + (curveFactor * intensity + animationOffset);
+        
+        // Apply direction (0 = convex, 1 = concave)
+        if (direction > 0.5) {
+            scalingFactor = 2.0 - scalingFactor; // Invert for concave effect
+        }
+
+        // Allow for more dramatic scaling range (0.3 to 2.5 instead of 0.1 to 2.0)
+        return Math.max(0.3, Math.min(2.5, scalingFactor));
+    }
+
     // Animation helpers
     animateShapes(animationTime, animationSpeed) {
         const gridWidth = this.state.get('gridWidth');
@@ -690,12 +840,20 @@ export class Scene {
                         mesh.position.x = (x - halfGridW + 0.5) * cellSize;
                         mesh.position.y = (y - halfGridH + 0.5) * cellSize;
                         mesh.rotation.z = 0;
+                    }
+                    
+                    // Always apply center scaling animation when enabled (independent of other animations)
+                    if (this.state.get('centerScalingEnabled')) {
+                        const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize);
+                        
                         if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
-                            const sphereScale = cellSize * this.state.get('sphereScale');
+                            const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
                             mesh.scale.set(sphereScale, sphereScale, sphereScale);
                         } else {
-                            mesh.scale.set(cellSize, cellSize, 1);
+                            const baseScale = cellSize * centerScalingFactor;
+                            mesh.scale.set(baseScale, baseScale, 1);
                         }
+                        isAnimated = true;
                     }
                     
                     // Count animated shapes (both shape cycling and size/movement)
@@ -860,8 +1018,13 @@ export class Scene {
 
     animateShapeTransformations(mesh, x, y, animationTime) {
         const cellSize = this.state.get('cellSize');
-        const halfGridW = this.state.get('gridWidth') / 2;
-        const halfGridH = this.state.get('gridHeight') / 2;
+        const gridWidth = this.state.get('gridWidth');
+        const gridHeight = this.state.get('gridHeight');
+        const halfGridW = gridWidth / 2;
+        const halfGridH = gridHeight / 2;
+        
+        // Calculate center scaling factor
+        const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize);
         
         // Apply different animation types
         switch (this.state.get('animationType')) {
@@ -870,17 +1033,40 @@ export class Scene {
                 const yOffset = Math.cos(animationTime * this.state.get('movementFrequency') + y * 0.5) * this.state.get('movementAmplitude') * cellSize;
                 mesh.position.x = (x - halfGridW + 0.5) * cellSize + xOffset;
                 mesh.position.y = (y - halfGridH + 0.5) * cellSize + yOffset;
+                
+                // Apply center scaling for movement animations
+                if (this.state.get('centerScalingEnabled')) {
+                    if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
+                        const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
+                        mesh.scale.set(sphereScale, sphereScale, sphereScale);
+                    } else {
+                        const baseScale = cellSize * centerScalingFactor;
+                        mesh.scale.set(baseScale, baseScale, 1);
+                    }
+                }
                 break;
             case 1: // Rotation
                 mesh.rotation.z = Math.sin(animationTime * this.state.get('rotationFrequency') + x * 0.3 + y * 0.3) * this.state.get('rotationAmplitude');
+                
+                // Apply center scaling for rotation animations
+                if (this.state.get('centerScalingEnabled')) {
+                    if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
+                        const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
+                        mesh.scale.set(sphereScale, sphereScale, sphereScale);
+                    } else {
+                        const baseScale = cellSize * centerScalingFactor;
+                        mesh.scale.set(baseScale, baseScale, 1);
+                    }
+                }
                 break;
             case 2: // Scale
                 const scale = 1 + Math.sin(animationTime * this.state.get('scaleFrequency') + x * 0.5 + y * 0.5) * this.state.get('scaleAmplitude');
                 if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
-                    const sphereScale = cellSize * this.state.get('sphereScale') * scale;
+                    const sphereScale = cellSize * this.state.get('sphereScale') * scale * centerScalingFactor;
                     mesh.scale.set(sphereScale, sphereScale, sphereScale);
                 } else {
-                    mesh.scale.set(cellSize * scale, cellSize * scale, 1);
+                    const baseScale = cellSize * scale * centerScalingFactor;
+                    mesh.scale.set(baseScale, baseScale, 1);
                 }
                 break;
             case 3: // Combined effects
@@ -892,10 +1078,11 @@ export class Scene {
                 mesh.position.y = (y - halfGridH + 0.5) * cellSize + combinedYOffset;
                 mesh.rotation.z = combinedRotation;
                 if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
-                    const sphereScale = cellSize * this.state.get('sphereScale') * combinedScale;
+                    const sphereScale = cellSize * this.state.get('sphereScale') * combinedScale * centerScalingFactor;
                     mesh.scale.set(sphereScale, sphereScale, sphereScale);
                 } else {
-                    mesh.scale.set(cellSize * combinedScale, cellSize * combinedScale, 1);
+                    const baseScale = cellSize * combinedScale * centerScalingFactor;
+                    mesh.scale.set(baseScale, baseScale, 1);
                 }
                 break;
         }

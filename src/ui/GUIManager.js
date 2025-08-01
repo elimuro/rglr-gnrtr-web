@@ -253,6 +253,58 @@ export class GUIManager {
         const scaleAmpController = this.addController(animationFolder, 'scaleAmplitude', 0.01, 1, 0.01, 'Scale Amp');
         const scaleFreqController = this.addController(animationFolder, 'scaleFrequency', 0.1, 2, 0.1, 'Scale Freq');
         
+        // Center Scaling controls
+        const centerScalingFolder = animationFolder.addFolder('Center Scaling');
+        
+        this.addController(centerScalingFolder, 'centerScalingEnabled', false, true, false, 'Enable Center Scaling', () => {
+            this.state.set('centerScalingEnabled', this.state.get('centerScalingEnabled'));
+            this.app.scene.updateCenterScaling();
+        });
+        
+        this.addController(centerScalingFolder, 'centerScalingIntensity', 0, 2, 0.01, 'Scaling Intensity', () => {
+            this.state.set('centerScalingIntensity', this.state.get('centerScalingIntensity'));
+            this.app.scene.updateCenterScaling();
+        });
+        
+        const curveNames = ['Linear', 'Exponential', 'Logarithmic', 'Sine Wave'];
+        centerScalingFolder.add({ curve: 0 }, 'curve', 0, 3, 1)
+            .name('Scaling Curve')
+            .onChange((value) => {
+                this.state.set('centerScalingCurve', value);
+                this.app.scene.updateCenterScaling();
+            });
+        
+        this.addController(centerScalingFolder, 'centerScalingRadius', 0.1, 5, 0.1, 'Scaling Radius', () => {
+            this.state.set('centerScalingRadius', this.state.get('centerScalingRadius'));
+            this.app.scene.updateCenterScaling();
+        });
+        
+        const scalingDirectionNames = ['Convex (Center Larger)', 'Concave (Center Smaller)'];
+        centerScalingFolder.add({ direction: 0 }, 'direction', 0, 1, 1)
+            .name('Scaling Direction')
+            .onChange((value) => {
+                this.state.set('centerScalingDirection', value);
+                this.app.scene.updateCenterScaling();
+            });
+        
+        this.addController(centerScalingFolder, 'centerScalingAnimation', false, true, false, 'Animated Scaling', () => {
+            this.state.set('centerScalingAnimation', this.state.get('centerScalingAnimation'));
+            this.app.scene.updateCenterScaling();
+        });
+        
+        this.addController(centerScalingFolder, 'centerScalingAnimationSpeed', 0.1, 3, 0.1, 'Animation Speed', () => {
+            this.state.set('centerScalingAnimationSpeed', this.state.get('centerScalingAnimationSpeed'));
+            this.app.scene.updateCenterScaling();
+        });
+        
+        const animationTypeNames = ['Complex Wave', 'Radial Pulse', 'Spiral Effect', 'Chaos Pattern'];
+        centerScalingFolder.add({ animationType: 0 }, 'animationType', 0, 3, 1)
+            .name('Animation Type')
+            .onChange((value) => {
+                this.state.set('centerScalingAnimationType', value);
+                this.app.scene.updateCenterScaling();
+            });
+        
         // Shape cycling controls
         const shapeCyclingFolder = animationFolder.addFolder('Shape Cycling');
         

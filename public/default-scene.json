@@ -55,6 +55,7 @@
     "sphereClearcoatRoughness": 0.05,
     "sphereEnvMapIntensity": 0.28,
     "sphereWaterDistortion": true,
+    "sphereDistortionStrength": 0.1,
     "postProcessingEnabled": false,
     "bloomEnabled": true,
     "bloomStrength": 0.41,
@@ -80,6 +81,14 @@
     "pointLight2Intensity": 3,
     "rimLightIntensity": 3,
     "accentLightIntensity": 2.97,
-    "enableFrustumCulling": true
+    "enableFrustumCulling": true,
+    "centerScalingEnabled": false,
+    "centerScalingIntensity": 0.5,
+    "centerScalingCurve": 0,
+    "centerScalingRadius": 1.0,
+    "centerScalingDirection": 0,
+    "centerScalingAnimation": false,
+    "centerScalingAnimationSpeed": 1.0,
+    "centerScalingAnimationType": 0
   }
 }

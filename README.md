@@ -1,104 +1,88 @@
-# RGLR GNRTR Web Version
+# Regular Generator Web
 
-This is a web-based version of the RGLR GNRTR geometric pattern generator, converted from the original OpenFrameworks C++ application.
+A real-time visual generator with MIDI control capabilities, built with Three.js and modern web technologies.
 
 ## Features
 
-- Interactive geometric pattern generation
-- Real-time animation controls
-- 3D transformations
-- Color customization
-- **Web MIDI Integration** - Connect MIDI controllers and instruments
-- **Dynamic MIDI Control Management** - Add and remove MIDI controls on-the-fly
-- **MIDI Learn Functionality** - Automatic detection of MIDI channel and CC/Note numbers
-- **Per-Parameter MIDI Mapping** - Configure channel/CC pairs for each animation parameter
-- **MIDI Preset System** - Save and load custom MIDI mapping configurations
-- **Live MIDI Activity Monitoring** - Visual feedback for MIDI input
-- **Advanced Post-Processing Effects** - Bloom, Chromatic Aberration, Vignette, Film Grain, Color Grading
-- Responsive design
-- Modern web-based GUI
+- **Real-time Visual Generation**: Create dynamic, animated visual compositions
+- **MIDI Control**: Full MIDI mapping support for real-time parameter control
+- **Scene Management**: Save, load, and interpolate between visual scenes
+- **Scene Presets**: Quick access to predefined visual scenes
+- **Post-processing Effects**: Bloom, chromatic aberration, vignette, and more
+- **Shape Morphing**: Dynamic shape transitions and animations
+- **Responsive Design**: Works on desktop and mobile devices
+
+## Scene Presets
+
+The application includes several predefined scene presets that you can quickly apply:
+
+### Available Scene Presets
+
+1. **Ambient Dream** - A soft, dreamy ambient scene with gentle morphing and warm lighting
+2. **Cyberpunk Night** - A high-energy cyberpunk scene with neon colors and dynamic animations  
+3. **Minimalist Zen** - A clean, minimalist scene with subtle animations and zen-like tranquility
+4. **Sunset Mirage** - A warm, glowing scene inspired by sunsets and desert mirages
+
+### Using Scene Presets
+
+1. Click the "Scene Management" button in the top toolbar
+2. Select a preset from the "Scene Preset" dropdown
+3. The scene will automatically apply with smooth interpolation
+4. You can adjust the interpolation duration and easing in the scene management panel
+
+### Creating Custom Scenes
+
+1. Adjust the visual parameters to your liking
+2. Click "Save Scene" to download your custom scene as a JSON file
+3. Use "Load Scene" to load previously saved scenes
+
+## MIDI Control
+
+The application supports comprehensive MIDI control mapping:
+
+### MIDI Presets
+
+Several MIDI controller presets are included:
+- Sample Multi-Channel
+- Novation Launch Control XL
+- Akai MPK Mini
+- Arturia BeatStep Pro
+- Elektron Analog Rytm MK2
+
+### MIDI Mapping
+
+1. Connect your MIDI device
+2. Select a preset from the "Preset" dropdown in the top toolbar
+3. Use the CC Mapping and Note Controls panels to customize mappings
+4. Save and load custom MIDI configurations
 
 ## Getting Started
 
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Start the development server:
-```bash
-npm start
-```
-
-3. Open your browser and navigate to `http://localhost:5173`
-
-## Configuration
-
-### Default Scene Settings
-
-The application loads its default settings from `default-scene.json` in the root directory. You can modify this file to change the initial state of the application. The file contains all visual and animation parameters.
-
-**To see changes immediately:**
-- Press `R` (capital R) in the application to reload the default scene from the JSON file
-- Or restart the development server
-
-**Key settings you can modify:**
-- Animation parameters (speed, amplitude, frequency)
-- Grid settings (width, height, cell size)
-- Shape properties (colors, materials)
-- Post-processing effects (bloom, vignette, etc.)
-- MIDI mappings
-
-## Controls
-
-### GUI Controls
-- **Animation**: Toggle animation on/off
-- **Animation Type**: Choose between different animation patterns
-- **Shape Type**: Select between Grid, Ellipses, Triangles, and Rectangles
-- **Grid Size**: Adjust the number of shapes in the grid
-- **Spacing**: Control the distance between shapes
-- **3D**: Toggle 3D mode
-- **Colors**: Customize shape and background colors
-
-### MIDI Controls
-- **Connect MIDI**: Connect your MIDI device to the browser
-- **Dynamic Control Management**: Add new CC and Note controls with the "+ Add New" buttons
-- **MIDI Learn**: Click "Learn" on any control to automatically detect MIDI input
-- **Channel/CC Mapping**: Configure which MIDI channel and CC number controls each parameter
-- **Per-Parameter Control**: Each animation parameter can be mapped to different MIDI channels/CCs
-- **Live Testing**: Test CC values and see real-time parameter changes
-- **Preset System**: Save and load custom MIDI mapping configurations
-
-### Keyboard Shortcuts
-- **1-8**: Adjust animation parameters
-- **A**: Toggle size animation
-- **G**: Toggle grid visibility
-- **R**: Randomize shapes
-- **R** (capital): Reload default scene from JSON file
-- **C**: Cycle through animation types
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start the development server: `npm run dev`
+4. Open your browser to the local development URL
+5. Connect a MIDI device (optional)
+6. Start creating visual compositions!
 
 ## Development
 
-### File Structure
-- `src/core/`: Core application logic
-- `src/modules/`: Feature modules (animation, materials, etc.)
-- `src/ui/`: User interface components
-- `default-scene.json`: Default application settings
-- `midi-help.html`: MIDI control documentation
+- **Framework**: Vite + Three.js
+- **Styling**: Tailwind CSS
+- **MIDI**: Web MIDI API
+- **Animation**: GSAP for smooth transitions
 
-### Making Changes
-1. Modify `default-scene.json` to change default settings
-2. Press `R` (capital) in the app to reload settings
-3. Or restart the dev server for permanent changes
+## File Structure
 
-## Troubleshooting
+```
+src/
+├── core/           # Core application logic
+├── modules/        # Feature modules
+├── ui/            # User interface components
+└── main-new.js    # Application entry point
 
-### MIDI Issues
-- Ensure your browser supports Web MIDI API
-- Run over HTTPS or localhost
-- Check device connections and permissions
-
-### Performance Issues
-- Disable post-processing effects if experiencing lag
-- Reduce grid size or animation complexity
-- Close other browser tabs to free up resources
+public/
+├── presets/       # MIDI controller presets
+├── scenes/        # Scene presets
+└── default-scene.json
+```

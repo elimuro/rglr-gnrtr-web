@@ -63,10 +63,12 @@ export class App {
                 document.addEventListener('DOMContentLoaded', () => {
                     this.initializeControlManager();
                     this.loadAvailablePresets();
+                    this.loadAvailableScenePresets();
                 });
             } else {
                 this.initializeControlManager();
                 this.loadAvailablePresets();
+                this.loadAvailableScenePresets();
             }
             
             // Start animation loop
@@ -118,6 +120,11 @@ export class App {
         // Preset selector
         document.getElementById('midi-preset-select').addEventListener('change', (e) => {
             this.applyCCPreset(e.target.value);
+        });
+        
+        // Scene preset selector
+        document.getElementById('scene-preset-select').addEventListener('change', (e) => {
+            this.applyScenePreset(e.target.value);
         });
         
         // Save preset button
@@ -173,6 +180,8 @@ export class App {
         document.getElementById('load-scene-button').addEventListener('click', () => {
             document.getElementById('preset-file-input').click();
         });
+        
+
         
         // Interpolation duration slider
         const interpolationDurationInput = document.getElementById('interpolation-duration');
@@ -945,6 +954,219 @@ export class App {
         this.updatePresetDropdown(availablePresets);
     }
 
+    async loadAvailableScenePresets() {
+        // Wait a bit for DOM to be ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        try {
+            // Try to load a list of available scene presets
+            const response = await fetch('/scenes/');
+            if (response.ok) {
+                const text = await response.text();
+                // Parse the directory listing to find .json files
+                const sceneFiles = text.match(/href="([^"]+\.json)"/g);
+                if (sceneFiles) {
+                    const scenes = sceneFiles.map(file => {
+                        const match = file.match(/href="([^"]+\.json)"/);
+                        return match ? match[1].replace('.json', '') : null;
+                    }).filter(Boolean);
+                    
+                    console.log('Available scene presets from directory listing:', scenes);
+                    await this.validateAndUpdateScenePresets(scenes);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('Could not load scene preset list, trying dynamic discovery');
+        }
+        
+        // Dynamic discovery: Try to find all .json files in the scenes directory
+        await this.discoverScenePresets();
+    }
+
+    async discoverScenePresets() {
+        console.log('Starting universal scene preset discovery...');
+        
+        // First, try to load the index file which contains all available scenes
+        try {
+            const indexResponse = await fetch('/scenes/index.json');
+            if (indexResponse.ok) {
+                const indexData = await indexResponse.json();
+                if (indexData.scenes && Array.isArray(indexData.scenes)) {
+                    console.log('Found scene index with', indexData.scenes.length, 'scenes:', indexData.scenes);
+                    await this.validateAndUpdateScenePresets(indexData.scenes);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('Scene index not available, trying directory listing...');
+        }
+        
+        // Try to get a proper directory listing
+        try {
+            const response = await fetch('/scenes/');
+            if (response.ok) {
+                const text = await response.text();
+                console.log('Directory listing response:', text.substring(0, 500) + '...');
+                
+                // Try multiple patterns to extract filenames from directory listing
+                const patterns = [
+                    /href="([^"]+\.json)"/g,           // Standard href pattern
+                    /<a[^>]*>([^<]+\.json)<\/a>/g,    // Link text pattern
+                    /([a-zA-Z0-9_-]+\.json)/g,         // Any .json filename
+                    /"([^"]+\.json)"/g,                // Quoted filename pattern
+                ];
+                
+                let foundFiles = [];
+                
+                for (const pattern of patterns) {
+                    const matches = text.match(pattern);
+                    if (matches) {
+                        foundFiles = matches.map(match => {
+                            // Extract just the filename without .json extension
+                            const filename = match.replace(/href="|"|<a[^>]*>|<\/a>/g, '').replace('.json', '');
+                            return filename;
+                        }).filter(name => name.length > 0);
+                        
+                        if (foundFiles.length > 0) {
+                            console.log(`Found ${foundFiles.length} scene files using pattern:`, foundFiles);
+                            await this.validateAndUpdateScenePresets(foundFiles);
+                            return;
+                        }
+                    }
+                }
+                
+                console.log('No files found with standard patterns, trying alternative parsing...');
+                
+                // Alternative: try to parse the HTML structure
+                const lines = text.split('\n');
+                const jsonFiles = [];
+                
+                for (const line of lines) {
+                    if (line.includes('.json')) {
+                        // Extract filename from various HTML patterns
+                        const filenameMatch = line.match(/([a-zA-Z0-9_-]+)\.json/);
+                        if (filenameMatch) {
+                            jsonFiles.push(filenameMatch[1]);
+                        }
+                    }
+                }
+                
+                if (jsonFiles.length > 0) {
+                    console.log('Found scene files from HTML parsing:', jsonFiles);
+                    await this.validateAndUpdateScenePresets(jsonFiles);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('Directory listing failed:', error);
+        }
+        
+        // Fallback: try a systematic approach to find any .json files
+        console.log('Directory listing unavailable, trying systematic discovery...');
+        await this.systematicSceneDiscovery();
+    }
+
+    async systematicSceneDiscovery() {
+        console.log('Starting systematic scene discovery...');
+        
+        // This is a more intelligent approach that tries to discover files
+        // by attempting common patterns and learning from successful finds
+        
+        const foundPresets = [];
+        const triedNames = new Set();
+        
+        // First, try the known existing files
+        const knownFiles = ['ambient-dream', 'cyberpunk-night', 'minimalist-zen', 'mirage', 'meat'];
+        for (const name of knownFiles) {
+            triedNames.add(name);
+            try {
+                const response = await fetch(`/scenes/${name}.json`);
+                if (response.ok) {
+                    const sceneData = await response.json();
+                    if (this.validateScenePreset(sceneData)) {
+                        foundPresets.push(name);
+                        console.log(`Found known scene preset: ${name}`);
+                    }
+                }
+            } catch (error) {
+                // Silently continue
+            }
+        }
+        
+        // Try single letters (a-z)
+        for (let i = 0; i < 26; i++) {
+            const letter = String.fromCharCode(97 + i);
+            triedNames.add(letter);
+            try {
+                const response = await fetch(`/scenes/${letter}.json`);
+                if (response.ok) {
+                    const sceneData = await response.json();
+                    if (this.validateScenePreset(sceneData)) {
+                        foundPresets.push(letter);
+                        console.log(`Found scene preset: ${letter}`);
+                    }
+                }
+            } catch (error) {
+                // Silently continue
+            }
+        }
+        
+        // Try common short names
+        const shortNames = [
+            'test', 'demo', 'new', 'old', 'temp', 'backup', 'copy', 'final', 'draft',
+            'work', 'play', 'fun', 'run', 'walk', 'jump', 'fly', 'swim', 'dance',
+            'red', 'blue', 'green', 'fire', 'water', 'earth', 'air', 'light', 'dark',
+            'sun', 'moon', 'star', 'tree', 'rock', 'bird', 'fish', 'cat', 'dog',
+            'car', 'bus', 'train', 'plane', 'boat', 'bike', 'road', 'path', 'door',
+            'book', 'page', 'word', 'line', 'dot', 'spot', 'mark', 'sign', 'note'
+        ];
+        
+        for (const name of shortNames) {
+            if (!triedNames.has(name)) {
+                triedNames.add(name);
+                try {
+                    const response = await fetch(`/scenes/${name}.json`);
+                    if (response.ok) {
+                        const sceneData = await response.json();
+                        if (this.validateScenePreset(sceneData)) {
+                            foundPresets.push(name);
+                            console.log(`Found scene preset: ${name}`);
+                        }
+                    }
+                } catch (error) {
+                    // Silently continue
+                }
+            }
+        }
+        
+        console.log('Systematic discovery complete. Found presets:', foundPresets);
+        this.updateScenePresetDropdown(foundPresets);
+    }
+
+    async validateAndUpdateScenePresets(sceneNames) {
+        const validScenePresets = [];
+        
+        for (const sceneName of sceneNames) {
+            try {
+                const response = await fetch(`/scenes/${sceneName}.json`);
+                if (response.ok) {
+                    const sceneData = await response.json();
+                    if (this.validateScenePreset(sceneData)) {
+                        validScenePresets.push(sceneName);
+                        console.log(`Validated scene preset: ${sceneName}`);
+                    } else {
+                        console.log(`Invalid scene preset: ${sceneName}`);
+                    }
+                }
+            } catch (error) {
+                console.log(`Error validating scene preset ${sceneName}:`, error);
+            }
+        }
+        
+        this.updateScenePresetDropdown(validScenePresets);
+    }
+
     updatePresetDropdown(availablePresets) {
         const select = document.getElementById('midi-preset-select');
         if (!select) return;
@@ -963,6 +1185,34 @@ export class App {
             option.textContent = this.getPresetDisplayName(preset);
             select.appendChild(option);
         });
+    }
+
+    async updateScenePresetDropdown(availableScenePresets) {
+        const select = document.getElementById('scene-preset-select');
+        if (!select) return;
+        
+        // Keep the "Custom" option
+        const customOption = select.querySelector('option[value=""]');
+        select.innerHTML = '';
+        if (customOption) {
+            select.appendChild(customOption);
+        }
+        
+        // Add available scene presets with async display name resolution
+        for (const scenePreset of availableScenePresets) {
+            const option = document.createElement('option');
+            option.value = scenePreset;
+            
+            try {
+                const displayName = await this.getScenePresetDisplayNameFromFile(scenePreset);
+                option.textContent = displayName;
+            } catch (error) {
+                // Fallback to formatted name
+                option.textContent = this.formatScenePresetName(scenePreset);
+            }
+            
+            select.appendChild(option);
+        }
     }
 
     getPresetDisplayName(presetName) {
@@ -1253,6 +1503,142 @@ export class App {
             console.error('Error loading scene file:', error);
             alert('Error loading scene file. Please check the file format.');
         }
+    }
+
+    async applyScenePreset(presetName) {
+        if (!presetName) {
+            console.log('No scene preset selected');
+            return;
+        }
+
+        try {
+            console.log(`Loading scene preset: ${presetName}`);
+            
+            // Try to load the scene preset
+            const response = await fetch(`/scenes/${presetName}.json`);
+            if (!response.ok) {
+                throw new Error(`Failed to load scene preset: ${response.statusText}`);
+            }
+            
+            const sceneData = await response.json();
+            console.log('Loaded scene preset:', sceneData);
+            
+            // Validate the scene data
+            if (!this.validateScenePreset(sceneData)) {
+                throw new Error('Invalid scene preset format');
+            }
+            
+            // Get interpolation duration from UI
+            const interpolationDurationInput = document.getElementById('interpolation-duration');
+            const duration = interpolationDurationInput ? parseFloat(interpolationDurationInput.value) : 2.0;
+            
+            // Get interpolation easing from UI
+            const interpolationEasingSelect = document.getElementById('interpolation-easing');
+            const easing = interpolationEasingSelect ? interpolationEasingSelect.value : 'power2.inOut';
+            
+            // Apply the scene preset with interpolation
+            const success = this.state.importSceneWithInterpolation(sceneData, duration, easing);
+            
+            if (success) {
+                console.log(`Scene preset "${presetName}" applied successfully`);
+                await this.showScenePresetFeedback(presetName);
+            } else {
+                throw new Error('Failed to apply scene preset');
+            }
+            
+        } catch (error) {
+            console.error('Error applying scene preset:', error);
+            alert(`Error loading scene preset: ${error.message}`);
+        }
+    }
+
+    validateScenePreset(sceneData) {
+        // Check if the scene data has the required structure
+        if (!sceneData || typeof sceneData !== 'object') {
+            return false;
+        }
+        
+        if (!sceneData.settings || typeof sceneData.settings !== 'object') {
+            return false;
+        }
+        
+        // Check for some essential settings
+        const requiredSettings = ['animationSpeed', 'movementAmplitude', 'gridWidth', 'gridHeight'];
+        for (const setting of requiredSettings) {
+            if (typeof sceneData.settings[setting] === 'undefined') {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    async showScenePresetFeedback(presetName) {
+        // Get the display name
+        const displayName = await this.getScenePresetDisplayName(presetName);
+        
+        // Create a temporary notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50 transform transition-all duration-300';
+        notification.textContent = `Scene preset "${displayName}" applied`;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 2 seconds
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 2000);
+    }
+
+    getScenePresetDisplayName(presetName) {
+        // Try to get the display name from the scene file itself
+        return this.getScenePresetDisplayNameFromFile(presetName).catch(() => {
+            // Fallback to formatting the filename
+            return this.formatScenePresetName(presetName);
+        });
+    }
+
+    async getScenePresetDisplayNameFromFile(presetName) {
+        try {
+            const response = await fetch(`/scenes/${presetName}.json`);
+            if (response.ok) {
+                const sceneData = await response.json();
+                if (sceneData.name) {
+                    return sceneData.name;
+                }
+            }
+        } catch (error) {
+            // Fall back to formatting the filename
+        }
+        
+        return this.formatScenePresetName(presetName);
+    }
+
+    formatScenePresetName(presetName) {
+        // Convert filename to display name
+        // e.g., "ambient-dream" -> "Ambient Dream"
+        // e.g., "scene1" -> "Scene 1"
+        // e.g., "a" -> "A"
+        
+        if (presetName.startsWith('scene')) {
+            const number = presetName.replace('scene', '');
+            return `Scene ${number}`;
+        }
+        
+        if (presetName.length === 1 && /[a-z]/.test(presetName)) {
+            return presetName.toUpperCase();
+        }
+        
+        // Convert kebab-case to Title Case
+        return presetName
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
     }
 
     addCCControl() {

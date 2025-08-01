@@ -182,6 +182,14 @@ export class StateManager {
             "rimLightIntensity": 3,
             "accentLightIntensity": 2.97,
             "enableFrustumCulling": true,
+            "centerScalingEnabled": false,
+            "centerScalingIntensity": 0.5,
+            "centerScalingCurve": 0,
+            "centerScalingRadius": 1.0,
+            "centerScalingDirection": 0,
+            "centerScalingAnimation": false,
+            "centerScalingAnimationSpeed": 1.0,
+            "centerScalingAnimationType": 0,
             "midiEnabled": false,
             "midiChannel": 0,
             "midiCCMappings": {},
@@ -451,6 +459,7 @@ export class StateManager {
                 sphereClearcoatRoughness: this.state.sphereClearcoatRoughness,
                 sphereEnvMapIntensity: this.state.sphereEnvMapIntensity,
                 sphereWaterDistortion: this.state.sphereWaterDistortion,
+                sphereDistortionStrength: this.state.sphereDistortionStrength,
                 
                 // Post-processing parameters
                 postProcessingEnabled: this.state.postProcessingEnabled,
@@ -482,7 +491,17 @@ export class StateManager {
                 accentLightIntensity: this.state.accentLightIntensity,
                 
                 // Performance parameters
-                enableFrustumCulling: this.state.enableFrustumCulling
+                enableFrustumCulling: this.state.enableFrustumCulling,
+                
+                // Center scaling animation parameters
+                centerScalingEnabled: this.state.centerScalingEnabled,
+                centerScalingIntensity: this.state.centerScalingIntensity,
+                centerScalingCurve: this.state.centerScalingCurve,
+                centerScalingRadius: this.state.centerScalingRadius,
+                centerScalingDirection: this.state.centerScalingDirection,
+                centerScalingAnimation: this.state.centerScalingAnimation,
+                centerScalingAnimationSpeed: this.state.centerScalingAnimationSpeed,
+                centerScalingAnimationType: this.state.centerScalingAnimationType
             }
         };
         
@@ -683,6 +702,19 @@ export class StateManager {
             
             // Performance parameters
             addInterpolation('enableFrustumCulling', settings.enableFrustumCulling, currentState.enableFrustumCulling);
+            
+            // Center scaling animation parameters
+            addInterpolation('centerScalingEnabled', settings.centerScalingEnabled, currentState.centerScalingEnabled);
+            addInterpolation('centerScalingIntensity', settings.centerScalingIntensity, currentState.centerScalingIntensity);
+            addInterpolation('centerScalingCurve', settings.centerScalingCurve, currentState.centerScalingCurve);
+            addInterpolation('centerScalingRadius', settings.centerScalingRadius, currentState.centerScalingRadius);
+            addInterpolation('centerScalingDirection', settings.centerScalingDirection, currentState.centerScalingDirection);
+            addInterpolation('centerScalingAnimation', settings.centerScalingAnimation, currentState.centerScalingAnimation);
+            addInterpolation('centerScalingAnimationSpeed', settings.centerScalingAnimationSpeed, currentState.centerScalingAnimationSpeed);
+            addInterpolation('centerScalingAnimationType', settings.centerScalingAnimationType, currentState.centerScalingAnimationType);
+            
+            // Sphere distortion parameter
+            addInterpolation('sphereDistortionStrength', settings.sphereDistortionStrength, currentState.sphereDistortionStrength);
             
             // Create the interpolation animation
             this.interpolationTimeline.to(this.state, {

@@ -57,7 +57,15 @@ const CONTROL_CONFIGS = {
             { value: 'pointLight1Intensity', label: 'Point Light 1' },
             { value: 'pointLight2Intensity', label: 'Point Light 2' },
             { value: 'rimLightIntensity', label: 'Rim Light' },
-            { value: 'accentLightIntensity', label: 'Accent Light' }
+            { value: 'accentLightIntensity', label: 'Accent Light' },
+            { value: 'centerScalingEnabled', label: 'Center Scaling' },
+            { value: 'centerScalingIntensity', label: 'Center Scaling Intensity' },
+            { value: 'centerScalingCurve', label: 'Center Scaling Curve' },
+            { value: 'centerScalingRadius', label: 'Center Scaling Radius' },
+            { value: 'centerScalingDirection', label: 'Center Scaling Direction' },
+            { value: 'centerScalingAnimation', label: 'Center Scaling Animation' },
+            { value: 'centerScalingAnimationSpeed', label: 'Center Scaling Animation Speed' },
+            { value: 'centerScalingAnimationType', label: 'Center Scaling Animation Type' }
         ]
     },
     note: {
@@ -286,7 +294,15 @@ export class MIDIControl {
             sphereTransmission: { min: 0, max: 1 },
             sphereRoughness: { min: 0, max: 1 },
             sphereMetalness: { min: 0, max: 1 },
-            sphereScale: { min: 0.1, max: 3 }
+            sphereScale: { min: 0.1, max: 3 },
+            centerScalingEnabled: { min: 0, max: 1 },
+            centerScalingIntensity: { min: 0, max: 2 },
+            centerScalingCurve: { min: 0, max: 3 },
+            centerScalingRadius: { min: 0.1, max: 5 },
+            centerScalingDirection: { min: 0, max: 1 },
+            centerScalingAnimation: { min: 0, max: 1 },
+            centerScalingAnimationSpeed: { min: 0.1, max: 3 },
+            centerScalingAnimationType: { min: 0, max: 3 }
         };
         return configs[target];
     }

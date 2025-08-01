@@ -115,6 +115,7 @@
                     <h4 class="nav-section-title">Parameters</h4>
                     <a href="#parameter-reference" class="nav-item">Parameter Reference</a>
                     <a href="#animation-params" class="nav-item">Animation Parameters</a>
+                    <a href="#center-scaling-params" class="nav-item">3D Center Scaling</a>
                     <a href="#grid-params" class="nav-item">Grid Parameters</a>
                     <a href="#material-params" class="nav-item">Material Parameters</a>
                     <a href="#post-processing-params" class="nav-item">Post-Processing</a>
@@ -295,6 +296,36 @@
                             <li><strong>rotationFrequency:</strong> Controls the frequency of rotation</li>
                             <li><strong>scaleFrequency:</strong> Controls the frequency of scaling</li>
                         </ul>
+                    </div>
+
+                    <div id="center-scaling-params" class="help-section">
+                        <h3 class="help-h3">3D Center Scaling Parameters</h3>
+                        <p>These parameters control the 3D depth effect by scaling shapes based on their distance from the center of the grid:</p>
+                        <ul>
+                            <li><strong>centerScalingEnabled:</strong> Toggles the 3D center scaling effect on/off</li>
+                            <li><strong>centerScalingIntensity:</strong> Controls the strength of the scaling effect (0-2)</li>
+                            <li><strong>centerScalingCurve:</strong> Selects the scaling curve function:
+                                <ul>
+                                    <li><strong>0 - Linear:</strong> Uniform scaling from center to edge</li>
+                                    <li><strong>1 - Exponential:</strong> Sharp scaling near center, gradual at edges</li>
+                                    <li><strong>2 - Logarithmic:</strong> Gradual scaling near center, sharp at edges</li>
+                                    <li><strong>3 - Sine Wave:</strong> Smooth wave-like scaling pattern</li>
+                                </ul>
+                            </li>
+                            <li><strong>centerScalingRadius:</strong> Controls the maximum distance where scaling applies (0.1-5)</li>
+                            <li><strong>centerScalingDirection:</strong> Controls the scaling direction:
+                                <ul>
+                                    <li><strong>0 - Convex:</strong> Shapes larger at center, smaller at edges (dome effect)</li>
+                                    <li><strong>1 - Concave:</strong> Shapes smaller at center, larger at edges (bowl effect)</li>
+                                </ul>
+                            </li>
+                            <li><strong>centerScalingAnimation:</strong> Enables animated scaling effects</li>
+                            <li><strong>centerScalingAnimationSpeed:</strong> Controls the speed of animated scaling (0.1-3)</li>
+                        </ul>
+                        
+                        <div class="help-note">
+                            <strong>Visual Effects:</strong> The center scaling system creates depth perception by making shapes appear closer or further away based on their position relative to the grid center. This creates a 3D effect on an otherwise 2D grid.
+                        </div>
                     </div>
 
                     <div id="grid-params" class="help-section">
