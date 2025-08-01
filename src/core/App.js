@@ -14,6 +14,7 @@ import { MIDIManager } from '../midi-manager.js';
 import { MIDIControlManager } from '../midi-controls.js';
 import { GUIManager } from '../ui/GUIManager.js';
 import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
+import { VideoRecorder } from '../modules/VideoRecorder.js';
 
 export class App {
     constructor() {
@@ -26,6 +27,9 @@ export class App {
         
         // Initialize morphing system
         this.morphingSystem = new ShapeMorphingSystem();
+        
+        // Initialize video recorder
+        this.videoRecorder = new VideoRecorder(this);
         
         this.init();
     }
