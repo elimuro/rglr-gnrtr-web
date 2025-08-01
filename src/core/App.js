@@ -903,19 +903,42 @@ export class App {
                     
                     console.log('Available presets:', presets);
                     this.updatePresetDropdown(presets);
+                    return;
                 }
             }
         } catch (error) {
-            console.log('Could not load preset list, using default presets');
-            // Fallback to known presets
-            const defaultPresets = [
-                'sample-multi-channel',
-                'novation-launch-control',
-                'akai-mpk-mini',
-                'arturia-beatstep-pro'
-            ];
-            this.updatePresetDropdown(defaultPresets);
+            console.log('Could not load preset list, trying individual preset discovery');
         }
+        
+        // Fallback: Try to discover presets by attempting to load them
+        const knownPresets = [
+            'sample-multi-channel',
+            'novation-launch-control',
+            'akai-mpk-mini',
+            'arturia-beatstep-pro',
+            'elektron-analog-rytm-mk2'
+        ];
+        
+        const availablePresets = [];
+        
+        // Try to load each preset to see if it exists
+        for (const preset of knownPresets) {
+            try {
+                const response = await fetch(`/presets/${preset}.json`);
+                if (response.ok) {
+                    const presetData = await response.json();
+                    if (this.validatePreset(presetData)) {
+                        availablePresets.push(preset);
+                        console.log(`Found preset: ${preset}`);
+                    }
+                }
+            } catch (error) {
+                console.log(`Preset ${preset} not found or invalid`);
+            }
+        }
+        
+        console.log('Available presets discovered:', availablePresets);
+        this.updatePresetDropdown(availablePresets);
     }
 
     updatePresetDropdown(availablePresets) {
@@ -943,7 +966,8 @@ export class App {
             'sample-multi-channel': 'Sample Multi-Channel',
             'novation-launch-control': 'Novation Launch Control XL',
             'akai-mpk-mini': 'Akai MPK Mini',
-            'arturia-beatstep-pro': 'Arturia BeatStep Pro'
+            'arturia-beatstep-pro': 'Arturia BeatStep Pro',
+            'elektron-analog-rytm-mk2': 'Elektron Analog Rytm MK2'
         };
         return displayNames[presetName] || presetName;
     }
