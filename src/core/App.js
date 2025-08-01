@@ -958,29 +958,7 @@ export class App {
         // Wait a bit for DOM to be ready
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        try {
-            // Try to load a list of available scene presets
-            const response = await fetch('/scenes/');
-            if (response.ok) {
-                const text = await response.text();
-                // Parse the directory listing to find .json files
-                const sceneFiles = text.match(/href="([^"]+\.json)"/g);
-                if (sceneFiles) {
-                    const scenes = sceneFiles.map(file => {
-                        const match = file.match(/href="([^"]+\.json)"/);
-                        return match ? match[1].replace('.json', '') : null;
-                    }).filter(Boolean);
-                    
-                    console.log('Available scene presets from directory listing:', scenes);
-                    await this.validateAndUpdateScenePresets(scenes);
-                    return;
-                }
-            }
-        } catch (error) {
-            console.log('Could not load scene preset list, trying dynamic discovery');
-        }
-        
-        // Dynamic discovery: Try to find all .json files in the scenes directory
+        // Use the proper discovery method that prioritizes index.json
         await this.discoverScenePresets();
     }
 
@@ -989,17 +967,22 @@ export class App {
         
         // First, try to load the index file which contains all available scenes
         try {
+            console.log('🔍 Trying to load index.json...');
             const indexResponse = await fetch('/scenes/index.json');
             if (indexResponse.ok) {
                 const indexData = await indexResponse.json();
                 if (indexData.scenes && Array.isArray(indexData.scenes)) {
-                    console.log('Found scene index with', indexData.scenes.length, 'scenes:', indexData.scenes);
+                    console.log('✅ Found scene index with', indexData.scenes.length, 'scenes:', indexData.scenes);
                     await this.validateAndUpdateScenePresets(indexData.scenes);
                     return;
+                } else {
+                    console.log('❌ Invalid index.json format:', indexData);
                 }
+            } else {
+                console.log('❌ Failed to load index.json:', indexResponse.status, indexResponse.statusText);
             }
         } catch (error) {
-            console.log('Scene index not available, trying directory listing...');
+            console.log('❌ Scene index not available, trying directory listing...', error);
         }
         
         // Try to get a proper directory listing
@@ -1145,25 +1128,30 @@ export class App {
     }
 
     async validateAndUpdateScenePresets(sceneNames) {
+        console.log('Validating scene presets:', sceneNames);
         const validScenePresets = [];
         
         for (const sceneName of sceneNames) {
             try {
+                console.log(`Checking scene preset: ${sceneName}`);
                 const response = await fetch(`/scenes/${sceneName}.json`);
                 if (response.ok) {
                     const sceneData = await response.json();
                     if (this.validateScenePreset(sceneData)) {
                         validScenePresets.push(sceneName);
-                        console.log(`Validated scene preset: ${sceneName}`);
+                        console.log(`✅ Validated scene preset: ${sceneName}`);
                     } else {
-                        console.log(`Invalid scene preset: ${sceneName}`);
+                        console.log(`❌ Invalid scene preset: ${sceneName}`);
                     }
+                } else {
+                    console.log(`❌ Failed to load scene preset: ${sceneName} (${response.status})`);
                 }
             } catch (error) {
-                console.log(`Error validating scene preset ${sceneName}:`, error);
+                console.log(`❌ Error validating scene preset ${sceneName}:`, error);
             }
         }
         
+        console.log('Final valid scene presets:', validScenePresets);
         this.updateScenePresetDropdown(validScenePresets);
     }
 
