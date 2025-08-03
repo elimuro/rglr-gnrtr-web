@@ -1,0 +1,420 @@
+/**
+ * AudioManager.js - Audio Interface Connection and Analysis
+ * This module provides audio interface detection, connection management, and real-time frequency analysis
+ * for audio-reactive visual effects. It supports multi-channel audio interfaces and provides frequency
+ * band filtering for different visual parameters.
+ */
+
+export class AudioManager {
+    constructor(state) {
+        this.state = state;
+        this.audioContext = null;
+        this.analyser = null;
+        this.microphone = null;
+        this.mediaStream = null;
+        this.isInitialized = false;
+        this.isListening = false;
+        
+        // Audio interface data
+        this.availableInterfaces = [];
+        this.selectedInterface = null;
+        this.selectedChannels = [];
+        
+        // Audio analysis data
+        this.audioData = {
+            overall: 0,
+            bass: 0,
+            lowMid: 0,
+            mid: 0,
+            highMid: 0,
+            treble: 0,
+            rms: 0,
+            peak: 0,
+            frequency: 0
+        };
+        
+        // Frequency band definitions (in Hz)
+        this.frequencyBands = {
+            bass: { min: 20, max: 250 },
+            lowMid: { min: 250, max: 500 },
+            mid: { min: 500, max: 2000 },
+            highMid: { min: 2000, max: 4000 },
+            treble: { min: 4000, max: 20000 }
+        };
+        
+        // Analysis settings
+        this.fftSize = 2048;
+        this.smoothing = 0.8;
+        this.sensitivity = 1.0;
+        
+        this.setupStateSubscriptions();
+    }
+
+    setupStateSubscriptions() {
+        // Subscribe to audio reactivity settings
+        this.state.subscribe('audioEnabled', (enabled) => {
+            if (enabled) {
+                this.startAudioCapture();
+            } else {
+                this.stopAudioCapture();
+            }
+        });
+        
+        this.state.subscribe('audioSensitivity', (sensitivity) => {
+            this.sensitivity = sensitivity;
+        });
+        
+        this.state.subscribe('audioSmoothing', (smoothing) => {
+            this.smoothing = smoothing;
+        });
+    }
+
+    async initialize() {
+        if (this.isInitialized) return;
+        
+        try {
+            // Create audio context
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create analyser node
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = this.fftSize;
+            this.analyser.smoothingTimeConstant = this.smoothing;
+            
+            // Create frequency data arrays
+            this.frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
+            this.timeData = new Uint8Array(this.analyser.frequencyBinCount);
+            
+            this.isInitialized = true;
+            console.log('AudioManager initialized successfully');
+            
+            // Update state with audio capabilities
+            this.state.set('audioAvailable', true);
+            
+            // Discover available audio interfaces
+            await this.discoverAudioInterfaces();
+            
+        } catch (error) {
+            console.error('Failed to initialize AudioManager:', error);
+            this.state.set('audioAvailable', false);
+        }
+    }
+
+    async discoverAudioInterfaces() {
+        try {
+            // Get available audio devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const audioInputs = devices.filter(device => device.kind === 'audioinput');
+            
+            this.availableInterfaces = audioInputs.map((device, index) => ({
+                id: device.deviceId,
+                label: device.label || `Audio Interface ${index + 1}`,
+                index: index,
+                groupId: device.groupId
+            }));
+            
+            // Update state with available interfaces
+            this.state.set('availableAudioInterfaces', this.availableInterfaces);
+            this.state.set('audioInterfaceCount', this.availableInterfaces.length);
+            
+            console.log('Discovered audio interfaces:', this.availableInterfaces);
+            
+            // Select first interface by default
+            if (this.availableInterfaces.length > 0) {
+                this.selectInterface(this.availableInterfaces[0]);
+            }
+            
+        } catch (error) {
+            console.error('Failed to discover audio interfaces:', error);
+            this.availableInterfaces = [];
+            this.state.set('availableAudioInterfaces', []);
+            this.state.set('audioInterfaceCount', 0);
+        }
+    }
+
+    selectInterface(audioInterface) {
+        this.selectedInterface = audioInterface;
+        this.state.set('selectedAudioInterface', audioInterface);
+        console.log('Selected audio interface:', audioInterface);
+        
+        // Reset channel selection when interface changes
+        this.selectedChannels = [];
+        this.state.set('selectedAudioChannels', []);
+    }
+
+    async getInterfaceChannels(interfaceId) {
+        try {
+            // Try to get stream with specific device
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    deviceId: { exact: interfaceId },
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false,
+                    channelCount: { ideal: 2 }
+                }
+            });
+            
+            const audioTracks = stream.getAudioTracks();
+            const channels = [];
+            
+            for (let i = 0; i < audioTracks.length; i++) {
+                const settings = audioTracks[i].getSettings();
+                channels.push({
+                    id: i,
+                    label: `Channel ${i + 1}`,
+                    sampleRate: settings.sampleRate,
+                    channelCount: settings.channelCount
+                });
+            }
+            
+            // Stop the test stream
+            stream.getTracks().forEach(track => track.stop());
+            
+            return channels;
+            
+        } catch (error) {
+            console.error('Failed to get interface channels:', error);
+            return [];
+        }
+    }
+
+    selectChannels(channels) {
+        this.selectedChannels = channels;
+        this.state.set('selectedAudioChannels', channels);
+        console.log('Selected audio channels:', channels);
+    }
+
+    async startAudioCapture() {
+        if (!this.isInitialized) {
+            await this.initialize();
+        }
+        
+        if (this.isListening) return;
+        
+        if (!this.selectedInterface) {
+            console.error('No audio interface selected');
+            return;
+        }
+        
+        try {
+            // Request microphone access with selected interface
+            this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    deviceId: { exact: this.selectedInterface.id },
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false,
+                    channelCount: { ideal: this.selectedChannels.length || 2 },
+                    sampleRate: { ideal: 44100 }
+                }
+            });
+            
+            // Create microphone source
+            this.microphone = this.audioContext.createMediaStreamSource(this.mediaStream);
+            
+            // Connect to analyser
+            this.microphone.connect(this.analyser);
+            
+            this.isListening = true;
+            this.state.set('audioListening', true);
+            
+            // Start analysis loop
+            this.analyzeAudio();
+            
+            console.log('Audio capture started with interface:', this.selectedInterface.label);
+            
+        } catch (error) {
+            console.error('Failed to start audio capture:', error);
+            this.state.set('audioListening', false);
+        }
+    }
+
+    stopAudioCapture() {
+        if (!this.isListening) return;
+        
+        this.isListening = false;
+        this.state.set('audioListening', false);
+        
+        if (this.mediaStream) {
+            this.mediaStream.getTracks().forEach(track => track.stop());
+            this.mediaStream = null;
+        }
+        
+        if (this.microphone) {
+            this.microphone.disconnect();
+            this.microphone = null;
+        }
+        
+        console.log('Audio capture stopped');
+    }
+
+    analyzeAudio() {
+        if (!this.isListening || !this.analyser) return;
+        
+        // Get frequency data
+        this.analyser.getByteFrequencyData(this.frequencyData);
+        this.analyser.getByteTimeDomainData(this.timeData);
+        
+        // Calculate RMS (Root Mean Square) for overall volume
+        let rms = 0;
+        for (let i = 0; i < this.timeData.length; i++) {
+            const sample = (this.timeData[i] - 128) / 128;
+            rms += sample * sample;
+        }
+        rms = Math.sqrt(rms / this.timeData.length);
+        
+        // Calculate peak
+        let peak = 0;
+        for (let i = 0; i < this.timeData.length; i++) {
+            const sample = Math.abs((this.timeData[i] - 128) / 128);
+            if (sample > peak) peak = sample;
+        }
+        
+        // Analyze frequency bands
+        const bands = this.analyzeFrequencyBands();
+        
+        // Update audio data with smoothing
+        this.audioData = {
+            overall: this.lerp(this.audioData.overall, rms * this.sensitivity, 0.1),
+            bass: this.lerp(this.audioData.bass, bands.bass * this.sensitivity, 0.1),
+            lowMid: this.lerp(this.audioData.lowMid, bands.lowMid * this.sensitivity, 0.1),
+            mid: this.lerp(this.audioData.mid, bands.mid * this.sensitivity, 0.1),
+            highMid: this.lerp(this.audioData.highMid, bands.highMid * this.sensitivity, 0.1),
+            treble: this.lerp(this.audioData.treble, bands.treble * this.sensitivity, 0.1),
+            rms: this.lerp(this.audioData.rms, rms * this.sensitivity, 0.1),
+            peak: this.lerp(this.audioData.peak, peak * this.sensitivity, 0.1),
+            frequency: this.calculateDominantFrequency()
+        };
+        
+        // Update state with audio data
+        this.updateAudioState();
+        
+        // Continue analysis loop
+        requestAnimationFrame(() => this.analyzeAudio());
+    }
+
+    analyzeFrequencyBands() {
+        const bands = {
+            bass: 0,
+            lowMid: 0,
+            mid: 0,
+            highMid: 0,
+            treble: 0
+        };
+        
+        const nyquist = this.audioContext.sampleRate / 2;
+        
+        for (const [bandName, range] of Object.entries(this.frequencyBands)) {
+            const startBin = Math.floor(range.min * this.fftSize / this.audioContext.sampleRate);
+            const endBin = Math.floor(range.max * this.fftSize / this.audioContext.sampleRate);
+            
+            let sum = 0;
+            let count = 0;
+            
+            for (let i = startBin; i <= endBin && i < this.frequencyData.length; i++) {
+                sum += this.frequencyData[i];
+                count++;
+            }
+            
+            bands[bandName] = count > 0 ? sum / count / 255 : 0;
+        }
+        
+        return bands;
+    }
+
+    calculateDominantFrequency() {
+        let maxValue = 0;
+        let dominantBin = 0;
+        
+        for (let i = 0; i < this.frequencyData.length; i++) {
+            if (this.frequencyData[i] > maxValue) {
+                maxValue = this.frequencyData[i];
+                dominantBin = i;
+            }
+        }
+        
+        return (dominantBin * this.audioContext.sampleRate) / this.fftSize;
+    }
+
+    updateAudioState() {
+        // Update state with current audio data, ensuring all values are numbers
+        this.state.set('audioOverall', this.audioData.overall || 0);
+        this.state.set('audioBass', this.audioData.bass || 0);
+        this.state.set('audioLowMid', this.audioData.lowMid || 0);
+        this.state.set('audioMid', this.audioData.mid || 0);
+        this.state.set('audioHighMid', this.audioData.highMid || 0);
+        this.state.set('audioTreble', this.audioData.treble || 0);
+        this.state.set('audioRMS', this.audioData.rms || 0);
+        this.state.set('audioPeak', this.audioData.peak || 0);
+        this.state.set('audioFrequency', this.audioData.frequency || 0);
+    }
+
+    // Get audio data for external use
+    getAudioData() {
+        return { ...this.audioData };
+    }
+
+    // Get specific frequency band
+    getBand(bandName) {
+        return this.audioData[bandName] || 0;
+    }
+
+    // Get overall volume
+    getVolume() {
+        return this.audioData.overall;
+    }
+
+    // Linear interpolation helper
+    lerp(start, end, factor) {
+        return start + (end - start) * factor;
+    }
+
+    // Set frequency band ranges
+    setFrequencyBands(bands) {
+        this.frequencyBands = { ...this.frequencyBands, ...bands };
+    }
+
+    // Set analysis parameters
+    setAnalysisParams(fftSize, smoothing, sensitivity) {
+        this.fftSize = fftSize;
+        this.smoothing = smoothing;
+        this.sensitivity = sensitivity;
+        
+        if (this.analyser) {
+            this.analyser.fftSize = fftSize;
+            this.analyser.smoothingTimeConstant = smoothing;
+        }
+    }
+
+    // Get available interfaces
+    getAvailableInterfaces() {
+        return [...this.availableInterfaces];
+    }
+
+    // Get selected interface
+    getSelectedInterface() {
+        return this.selectedInterface;
+    }
+
+    // Get selected channels
+    getSelectedChannels() {
+        return [...this.selectedChannels];
+    }
+
+    // Refresh interface list
+    async refreshInterfaces() {
+        await this.discoverAudioInterfaces();
+    }
+
+    // Cleanup
+    destroy() {
+        this.stopAudioCapture();
+        
+        if (this.audioContext && this.audioContext.state !== 'closed') {
+            this.audioContext.close();
+        }
+        
+        this.isInitialized = false;
+    }
+} 

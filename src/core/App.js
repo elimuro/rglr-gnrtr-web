@@ -15,6 +15,7 @@ import { MIDIControlManager } from '../midi-controls.js';
 import { GUIManager } from '../ui/GUIManager.js';
 import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
 import { VideoRecorder } from '../modules/VideoRecorder.js';
+import { AudioManager } from '../modules/AudioManager.js';
 
 export class App {
     constructor() {
@@ -31,6 +32,9 @@ export class App {
         // Initialize video recorder
         this.videoRecorder = new VideoRecorder(this);
         
+        // Initialize audio manager
+        this.audioManager = new AudioManager(this.state);
+        
         this.init();
     }
 
@@ -38,6 +42,9 @@ export class App {
         try {
             // Initialize state manager first
             await this.state.initialize();
+            
+            // Initialize audio manager
+            await this.audioManager.initialize();
             
             // Verify state is properly initialized
             if (!this.state.isInitialized()) {
@@ -97,6 +104,9 @@ export class App {
         document.getElementById('midi-disconnect').addEventListener('click', () => {
             this.midiManager.disconnect();
         });
+        
+        // Set up audio interface UI event listeners
+        this.setupAudioInterfaceUI();
 
         const refreshButton = document.getElementById('midi-refresh');
         if (refreshButton) {
@@ -232,6 +242,7 @@ export class App {
         // Set up drawer button event listeners
         const drawerButtons = [
             'drawer-connection',
+            'drawer-audio-interface',
             'drawer-cc-mapping',
             'drawer-note-controls',
             'drawer-scene-management'
@@ -1722,5 +1733,202 @@ State Keys: ${summary.stateKeys}
 History: ${summary.historySize} entries`;
         
         alert(message);
+    }
+
+    setupAudioInterfaceUI() {
+        console.log('Setting up audio interface UI...');
+        
+        // Audio interface selection
+        const interfaceSelect = document.getElementById('audio-interface-select');
+        const channelsContainer = document.getElementById('audio-channels-container');
+        const connectButton = document.getElementById('audio-connect');
+        const disconnectButton = document.getElementById('audio-disconnect');
+        const refreshButton = document.getElementById('audio-refresh-interfaces');
+        const statusIndicator = document.getElementById('audio-status-indicator');
+        const statusText = document.getElementById('audio-status-text');
+        
+        // Update interface dropdown
+        this.updateAudioInterfaceDropdown = () => {
+            const interfaces = this.audioManager.getAvailableInterfaces();
+            const selectedInterface = this.audioManager.getSelectedInterface();
+            
+            interfaceSelect.innerHTML = '';
+            
+            if (interfaces.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No interfaces available';
+                interfaceSelect.appendChild(option);
+            } else {
+                interfaces.forEach(audioInterface => {
+                    const option = document.createElement('option');
+                    option.value = audioInterface.id;
+                    option.textContent = audioInterface.label;
+                    if (selectedInterface && selectedInterface.id === audioInterface.id) {
+                        option.selected = true;
+                    }
+                    interfaceSelect.appendChild(option);
+                });
+            }
+        };
+        
+        // Update channels display
+        this.updateAudioChannelsDisplay = async () => {
+            const selectedInterface = this.audioManager.getSelectedInterface();
+            const selectedChannels = this.audioManager.getSelectedChannels();
+            
+            channelsContainer.innerHTML = '';
+            
+            if (!selectedInterface) {
+                channelsContainer.innerHTML = '<div class="text-xs text-gray-400">Select an interface first</div>';
+                return;
+            }
+            
+            try {
+                const channels = await this.audioManager.getInterfaceChannels(selectedInterface.id);
+                
+                if (channels.length === 0) {
+                    channelsContainer.innerHTML = '<div class="text-xs text-gray-400">No channels available</div>';
+                    return;
+                }
+                
+                channels.forEach(channel => {
+                    const channelDiv = document.createElement('div');
+                    channelDiv.className = 'flex items-center gap-2';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `audio-channel-${channel.id}`;
+                    checkbox.className = 'w-3 h-3 text-midi-green bg-black border-gray-600 rounded focus:ring-midi-green focus:ring-1';
+                    checkbox.checked = selectedChannels.some(c => c.id === channel.id);
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `audio-channel-${channel.id}`;
+                    label.className = 'text-xs text-gray-300';
+                    label.textContent = `${channel.label} (${channel.sampleRate}Hz)`;
+                    
+                    checkbox.addEventListener('change', () => {
+                        const newSelectedChannels = [];
+                        channels.forEach(c => {
+                            const checkbox = document.getElementById(`audio-channel-${c.id}`);
+                            if (checkbox && checkbox.checked) {
+                                newSelectedChannels.push(c);
+                            }
+                        });
+                        this.audioManager.selectChannels(newSelectedChannels);
+                    });
+                    
+                    channelDiv.appendChild(checkbox);
+                    channelDiv.appendChild(label);
+                    channelsContainer.appendChild(channelDiv);
+                });
+                
+            } catch (error) {
+                console.error('Failed to get interface channels:', error);
+                channelsContainer.innerHTML = '<div class="text-xs text-red-400">Failed to load channels</div>';
+            }
+        };
+        
+        // Update audio status
+        this.updateAudioStatus = () => {
+            const isListening = this.state.get('audioListening');
+            const isAvailable = this.state.get('audioAvailable');
+            
+            if (isListening) {
+                statusIndicator.className = 'w-2 h-2 rounded-full bg-green-500 transition-all duration-300';
+                statusText.textContent = 'Connected';
+            } else if (isAvailable) {
+                statusIndicator.className = 'w-2 h-2 rounded-full bg-yellow-500 transition-all duration-300';
+                statusText.textContent = 'Available';
+            } else {
+                statusIndicator.className = 'w-2 h-2 rounded-full bg-red-500 transition-all duration-300';
+                statusText.textContent = 'Unavailable';
+            }
+        };
+        
+        // Update audio analysis display
+        this.updateAudioAnalysisDisplay = () => {
+            const overall = this.state.get('audioOverall') || 0;
+            const bass = this.state.get('audioBass') || 0;
+            const mid = this.state.get('audioMid') || 0;
+            const treble = this.state.get('audioTreble') || 0;
+            
+            const overallElement = document.getElementById('audio-overall-value');
+            const bassElement = document.getElementById('audio-bass-value');
+            const midElement = document.getElementById('audio-mid-value');
+            const trebleElement = document.getElementById('audio-treble-value');
+            
+            if (overallElement) overallElement.textContent = overall.toFixed(2);
+            if (bassElement) bassElement.textContent = bass.toFixed(2);
+            if (midElement) midElement.textContent = mid.toFixed(2);
+            if (trebleElement) trebleElement.textContent = treble.toFixed(2);
+        };
+        
+        // Event listeners
+        interfaceSelect.addEventListener('change', (e) => {
+            const interfaceId = e.target.value;
+            const interfaces = this.audioManager.getAvailableInterfaces();
+            const selectedInterface = interfaces.find(i => i.id === interfaceId);
+            
+            if (selectedInterface) {
+                this.audioManager.selectInterface(selectedInterface);
+                this.updateAudioChannelsDisplay();
+            }
+        });
+        
+        connectButton.addEventListener('click', async () => {
+            try {
+                await this.audioManager.startAudioCapture();
+                this.updateAudioStatus();
+            } catch (error) {
+                console.error('Failed to connect audio:', error);
+                alert('Failed to connect audio interface. Please check permissions and try again.');
+            }
+        });
+        
+        disconnectButton.addEventListener('click', () => {
+            this.audioManager.stopAudioCapture();
+            this.updateAudioStatus();
+        });
+        
+        refreshButton.addEventListener('click', async () => {
+            await this.audioManager.refreshInterfaces();
+            this.updateAudioInterfaceDropdown();
+            this.updateAudioChannelsDisplay();
+        });
+        
+        // Subscribe to state changes
+        this.state.subscribe('audioListening', () => this.updateAudioStatus());
+        this.state.subscribe('audioAvailable', () => this.updateAudioStatus());
+        
+        // Only update audio analysis display if the audio interface drawer is open
+        this.state.subscribe('audioOverall', () => {
+            if (this.currentDrawer === 'audio-interface') {
+                this.updateAudioAnalysisDisplay();
+            }
+        });
+        this.state.subscribe('audioBass', () => {
+            if (this.currentDrawer === 'audio-interface') {
+                this.updateAudioAnalysisDisplay();
+            }
+        });
+        this.state.subscribe('audioMid', () => {
+            if (this.currentDrawer === 'audio-interface') {
+                this.updateAudioAnalysisDisplay();
+            }
+        });
+        this.state.subscribe('audioTreble', () => {
+            if (this.currentDrawer === 'audio-interface') {
+                this.updateAudioAnalysisDisplay();
+            }
+        });
+        
+        // Initial setup
+        this.updateAudioInterfaceDropdown();
+        this.updateAudioChannelsDisplay();
+        this.updateAudioStatus();
+        this.updateAudioAnalysisDisplay();
+        
+        console.log('Audio interface UI setup complete');
     }
 } 

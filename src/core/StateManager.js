@@ -193,7 +193,37 @@ export class StateManager {
             "midiEnabled": false,
             "midiChannel": 0,
             "midiCCMappings": {},
-            "midiNoteMappings": {}
+            "midiNoteMappings": {},
+            
+            // Audio reactivity parameters
+            "audioEnabled": false,
+            "audioListening": false,
+            "audioAvailable": false,
+            "audioReactivityEnabled": false,
+            "audioSensitivity": 1.0,
+            "audioSmoothing": 0.8,
+            "audioActiveChannel": 0,
+            "audioAffectsSize": true,
+            "audioAffectsMorphing": true,
+            "audioAffectsColors": true,
+            "audioAffectsAnimation": true,
+            
+            // Audio interface data
+            "availableAudioInterfaces": [],
+            "audioInterfaceCount": 0,
+            "selectedAudioInterface": null,
+            "selectedAudioChannels": [],
+            
+            // Audio data (will be updated by AudioManager)
+            "audioOverall": 0,
+            "audioBass": 0,
+            "audioLowMid": 0,
+            "audioMid": 0,
+            "audioHighMid": 0,
+            "audioTreble": 0,
+            "audioRMS": 0,
+            "audioPeak": 0,
+            "audioFrequency": 0
         };
     }
 
