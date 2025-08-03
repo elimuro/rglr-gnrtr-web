@@ -278,9 +278,14 @@ export class App {
         
         // Close drawer when clicking outside
         document.addEventListener('click', (e) => {
-            if (this.currentDrawer && !this.drawerContainer.contains(e.target)) {
-                const clickedButton = e.target.closest('[id^="drawer-"]');
-                if (!clickedButton) {
+            if (this.currentDrawer) {
+                // Check if the click is within the drawer container or on drawer-related elements
+                const isWithinDrawer = this.drawerContainer.contains(e.target);
+                const clickedDrawerButton = e.target.closest('[id^="drawer-"]');
+                const clickedInteractiveElement = e.target.closest('[data-drawer-interactive]');
+                
+                // Only close drawer if clicking outside AND not on any interactive drawer elements
+                if (!isWithinDrawer && !clickedDrawerButton && !clickedInteractiveElement) {
                     this.closeDrawer();
                 }
             }

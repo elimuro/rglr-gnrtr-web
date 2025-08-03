@@ -84,18 +84,18 @@ const AUDIO_MAPPING_TEMPLATES = {
             <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
             
             <div class="flex items-center gap-1 flex-1">
-                <div class="frequency-slider-container flex-1 min-w-0"></div>
+                <div class="frequency-slider-container flex-1 min-w-0" data-drawer-interactive></div>
                 
                 <span class="text-xs text-gray-400 mx-1">→</span>
                 
-                <select class="target-select px-1 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none flex-1">
+                <select class="target-select px-1 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none flex-1" data-drawer-interactive>
                     {targetOptions}
                 </select>
             </div>
             
             <div class="flex items-center gap-1">
-                <button class="learn-button px-1 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Learn</button>
-                <button class="remove-button px-1 py-0.5 bg-red-600 bg-opacity-30 text-red-400 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400">×</button>
+                <button class="learn-button px-1 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green" data-drawer-interactive>Learn</button>
+                <button class="remove-button px-1 py-0.5 bg-red-600 bg-opacity-30 text-red-400 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400" data-drawer-interactive>×</button>
             </div>
         </div>
     `

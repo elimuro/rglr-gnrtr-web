@@ -168,9 +168,9 @@
                     CC Mapping
                 </h3>
                 <div class="flex gap-1">
-                    <button id="test-cc-button" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Test</button>
-                    <button id="save-preset-button" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Save</button>
-                    <button id="load-preset-button" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load</button>
+                    <button id="test-cc-button" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Test</button>
+                    <button id="save-preset-button" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Save</button>
+                    <button id="load-preset-button" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load</button>
                 </div>
             </div>
 
@@ -180,7 +180,7 @@
             </div>
             
             <div class="mt-2">
-                <button id="add-cc-control" class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
+                <button id="add-cc-control" data-drawer-interactive class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 5v14"/>
                         <path d="M5 12h14"/>
@@ -207,7 +207,7 @@
             </div>
             
             <div class="mt-2">
-                <button id="add-note-control" class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
+                <button id="add-note-control" data-drawer-interactive class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 5v14"/>
                         <path d="M5 12h14"/>
@@ -232,29 +232,29 @@
             <!-- Scene Preset Selector -->
             <div class="mb-3">
                 <label for="scene-preset-select" class="block text-xs font-medium text-gray-300 mb-1">Scene Preset:</label>
-                <select id="scene-preset-select" class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
+                <select id="scene-preset-select" data-drawer-interactive class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
                     <option value="">Custom</option>
                     <!-- Scene presets will be dynamically loaded here -->
                 </select>
             </div>
             
             <div class="grid grid-cols-2 gap-2 mb-3">
-                <button id="save-scene-button" class="px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">Save Scene</button>
-                <button id="load-scene-button" class="px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load Scene</button>
+                <button id="save-scene-button" data-drawer-interactive class="px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">Save Scene</button>
+                <button id="load-scene-button" data-drawer-interactive class="px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load Scene</button>
             </div>
             
             <div class="space-y-2">
                 <div>
                     <label for="interpolation-duration" class="block text-xs font-medium text-gray-300 mb-1">Interpolation Duration</label>
                     <div class="flex items-center gap-2">
-                        <input type="range" id="interpolation-duration" min="0.5" max="5.0" step="0.1" value="2.0" class="flex-1 h-1 bg-gray-600 rounded appearance-none cursor-pointer slider">
+                        <input type="range" id="interpolation-duration" data-drawer-interactive min="0.5" max="5.0" step="0.1" value="2.0" class="flex-1 h-1 bg-gray-600 rounded appearance-none cursor-pointer slider">
                         <span id="interpolation-duration-value" class="text-xs font-semibold text-midi-green min-w-8 text-right">2.0s</span>
                     </div>
                 </div>
                 
                 <div>
                     <label for="interpolation-easing" class="block text-xs font-medium text-gray-300 mb-1">Easing Function</label>
-                    <select id="interpolation-easing" class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none">
+                    <select id="interpolation-easing" data-drawer-interactive class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none">
                         <option value="power2.inOut">Power 2 InOut</option>
                         <option value="power1.inOut">Power 1 InOut</option>
                         <option value="power3.inOut">Power 3 InOut</option>
@@ -271,7 +271,7 @@
             </div>
             
             <div class="text-center mt-2">
-                <button id="debug-interpolation" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Debug Interpolation</button>
+                <button id="debug-interpolation" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Debug Interpolation</button>
             </div>
         </div>
 
@@ -287,14 +287,14 @@
                     Audio Interface
                 </h3>
                 <div class="flex gap-1">
-                    <button id="audio-refresh-interfaces" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Refresh</button>
+                    <button id="audio-refresh-interfaces" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Refresh</button>
                 </div>
             </div>
             
             <!-- Interface Selection -->
             <div class="mb-3">
                 <label for="audio-interface-select" class="block text-xs font-medium text-gray-300 mb-1">Audio Interface:</label>
-                <select id="audio-interface-select" class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
+                <select id="audio-interface-select" data-drawer-interactive class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
                     <option value="">No interfaces available</option>
                 </select>
             </div>
@@ -302,21 +302,21 @@
             <!-- Channel Selection -->
             <div class="mb-3">
                 <label class="block text-xs font-medium text-gray-300 mb-1">Audio Channels:</label>
-                <div id="audio-channels-container" class="space-y-1">
+                <div id="audio-channels-container" data-drawer-interactive class="space-y-1">
                     <!-- Channel checkboxes will be dynamically generated here -->
                 </div>
             </div>
             
             <!-- Connection Controls -->
             <div class="grid grid-cols-2 gap-2 mb-3">
-                <button id="audio-connect" class="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                <button id="audio-connect" data-drawer-interactive class="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
                     <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14"/>
                         <path d="M12 5v14"/>
                     </svg>
                     Connect Audio
                 </button>
-                <button id="audio-disconnect" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                <button id="audio-disconnect" data-drawer-interactive class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
                     <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 6L6 18"/>
                         <path d="M6 6l12 12"/>
@@ -382,7 +382,7 @@
             </div>
             
             <div class="mt-2">
-                <button id="add-audio-mapping-control" class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
+                <button id="add-audio-mapping-control" data-drawer-interactive class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 5v14"/>
                         <path d="M5 12h14"/>

@@ -8,8 +8,8 @@ export class FrequencyRangeSlider {
     constructor(container, options = {}) {
         this.container = container;
         this.options = {
-            minFrequency: 20,
-            maxFrequency: 20000,
+            minFrequency: 100,
+            maxFrequency: 10000,
             defaultMin: 250,
             defaultMax: 2000,
             width: 300,
@@ -80,7 +80,7 @@ export class FrequencyRangeSlider {
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 4px;
             cursor: pointer;
-            overflow: hidden;
+            overflow: visible;
         `;
         
         // Create audio visualization layer
@@ -122,12 +122,12 @@ export class FrequencyRangeSlider {
         this.minHandle.className = 'frequency-handle min-handle';
         this.minHandle.style.cssText = `
             position: absolute;
-            top: -2px;
-            width: 8px;
-            height: 12px;
+            top: -5px;
+            width: 12px;
+            height: 18px;
             background: #4ade80;
             border: 1px solid #22c55e;
-            border-radius: 2px;
+            border-radius: 6px;
             cursor: ew-resize;
             z-index: 10;
             transition: box-shadow 0.2s ease;
@@ -139,12 +139,12 @@ export class FrequencyRangeSlider {
         this.maxHandle.className = 'frequency-handle max-handle';
         this.maxHandle.style.cssText = `
             position: absolute;
-            top: -2px;
-            width: 8px;
-            height: 12px;
+            top: -5px;
+            width: 12px;
+            height: 18px;
             background: #f97316;
             border: 1px solid #ea580c;
-            border-radius: 2px;
+            border-radius: 6px;
             cursor: ew-resize;
             z-index: 10;
             transition: box-shadow 0.2s ease;
@@ -288,8 +288,8 @@ export class FrequencyRangeSlider {
         const minPos = this.frequencyToPosition(this.minFrequency);
         const maxPos = this.frequencyToPosition(this.maxFrequency);
         
-        this.minHandle.style.left = `calc(${minPos}% - 4px)`;
-        this.maxHandle.style.left = `calc(${maxPos}% - 4px)`;
+        this.minHandle.style.left = `calc(${minPos}% - 6px)`;
+        this.maxHandle.style.left = `calc(${maxPos}% - 6px)`;
         
         // Update range indicator
         this.rangeIndicator.style.left = `${minPos}%`;
