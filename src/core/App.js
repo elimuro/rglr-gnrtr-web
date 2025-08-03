@@ -235,8 +235,6 @@ export class App {
     }
 
     setupDrawers() {
-        console.log('Setting up drawers...');
-        
         // Drawer state management
         this.currentDrawer = null;
         this.drawerContainer = document.getElementById('midi-drawer-container');
@@ -244,8 +242,6 @@ export class App {
         if (!this.drawerContainer) {
             console.error('Drawer container not found');
             return;
-        } else {
-            console.log('Drawer container found:', this.drawerContainer);
         }
         
         // Ensure drawer is hidden initially
@@ -264,11 +260,9 @@ export class App {
         drawerButtons.forEach(buttonId => {
             const button = document.getElementById(buttonId);
             if (button) {
-                console.log(`Setting up drawer button: ${buttonId}`);
                 button.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log(`Drawer button clicked: ${buttonId}`);
                     this.toggleDrawer(buttonId.replace('drawer-', ''));
                 });
             } else {
@@ -305,18 +299,6 @@ export class App {
                 this.toggleDrawer(this.currentDrawer);
             }
         });
-        
-        console.log('Drawers setup complete');
-        
-        // Test drawer functionality
-        setTimeout(() => {
-            console.log('Testing drawer functionality...');
-            this.toggleDrawer('connection');
-            // Close the test drawer after a short delay
-            setTimeout(() => {
-                this.closeDrawer();
-            }, 2000);
-        }, 1000);
     }
 
     toggleDrawer(drawerName) {
@@ -378,8 +360,6 @@ export class App {
         
         // Update button states
         this.updateDrawerButtonStates(drawerName);
-        
-        console.log(`Opened drawer: ${drawerName}`);
     }
 
     closeDrawer() {
@@ -400,8 +380,6 @@ export class App {
             
             // Reset all button states
             this.updateDrawerButtonStates(null);
-            
-            console.log('Closed drawer');
         }
     }
 
@@ -472,8 +450,6 @@ export class App {
         // Removed setupCollapsibleSections() - new design uses cards instead
 
     initializeControlManager() {
-        console.log('Initializing control manager...');
-        
         const ccContainer = document.getElementById('cc-controls-container');
         const noteContainer = document.getElementById('note-controls-container');
         
@@ -485,15 +461,10 @@ export class App {
         this.controlManager = new MIDIControlManager(ccContainer, this);
         this.controlManager.noteContainer = noteContainer;
         
-        console.log('Control manager initialized successfully');
-        console.log('MIDI CC mappings:', this.state.get('midiCCMappings'));
-        console.log('MIDI Note mappings:', this.state.get('midiNoteMappings'));
         this.recreateControlsFromPreset();
     }
     
     initializeAudioMappingManager() {
-        console.log('Initializing audio mapping manager...');
-        
         const audioMappingContainer = document.getElementById('audio-mapping-controls-container');
         
         if (!audioMappingContainer) {
@@ -503,8 +474,6 @@ export class App {
         
         this.audioMappingManager = new AudioMappingManager(audioMappingContainer, this);
         
-        console.log('Audio mapping manager initialized successfully');
-        console.log('Audio mappings:', this.state.get('audioMappings'));
         this.recreateAudioMappingControls();
     }
     
@@ -814,7 +783,7 @@ export class App {
                 this.animationLoop.resetAnimationTime();
                 break;
             case 'togglePause':
-                console.log('Toggle pause functionality - implement as needed');
+                // Toggle pause functionality - implement as needed
                 break;
             case 'toggleBasicShapes':
                 const enabledShapes = this.state.get('enabledShapes');
@@ -869,7 +838,6 @@ export class App {
                 break;
             case 'postProcessingEnabled':
                 this.state.set('postProcessingEnabled', !this.state.get('postProcessingEnabled'));
-                console.log('Post-processing toggled:', this.state.get('postProcessingEnabled'));
                 break;
         }
     }
@@ -929,13 +897,10 @@ export class App {
     }
 
     testCCValues() {
-        console.log('Testing CC values...');
-        
         const ccMappings = this.state.get('midiCCMappings');
         Object.keys(ccMappings).forEach(param => {
             const mapping = ccMappings[param];
             this.onMIDICC(mapping.cc, 64, mapping.channel);
-            console.log(`Tested Ch:${mapping.channel} CC:${mapping.cc} (${param}) with value 64`);
         });
         
         const testButton = document.getElementById('test-cc-button');
@@ -968,13 +933,12 @@ export class App {
                         return match ? match[1].replace('.json', '') : null;
                     }).filter(Boolean);
                     
-                    console.log('Available presets:', presets);
                     this.updatePresetDropdown(presets);
                     return;
                 }
             }
         } catch (error) {
-            console.log('Could not load preset list, trying individual preset discovery');
+            // Could not load preset list, trying individual preset discovery
         }
         
         // Fallback: Try to discover presets by attempting to load them
@@ -996,15 +960,13 @@ export class App {
                     const presetData = await response.json();
                     if (this.validatePreset(presetData)) {
                         availablePresets.push(preset);
-                        console.log(`Found preset: ${preset}`);
                     }
                 }
             } catch (error) {
-                console.log(`Preset ${preset} not found or invalid`);
+                // Preset not found or invalid
             }
         }
         
-        console.log('Available presets discovered:', availablePresets);
         this.updatePresetDropdown(availablePresets);
     }
 
@@ -1017,26 +979,18 @@ export class App {
     }
 
     async discoverScenePresets() {
-        console.log('Starting universal scene preset discovery...');
-        
         // First, try to load the index file which contains all available scenes
         try {
-            console.log('🔍 Trying to load index.json...');
             const indexResponse = await fetch('/scenes/index.json');
             if (indexResponse.ok) {
                 const indexData = await indexResponse.json();
                 if (indexData.scenes && Array.isArray(indexData.scenes)) {
-                    console.log('✅ Found scene index with', indexData.scenes.length, 'scenes:', indexData.scenes);
                     await this.validateAndUpdateScenePresets(indexData.scenes);
                     return;
-                } else {
-                    console.log('❌ Invalid index.json format:', indexData);
                 }
-            } else {
-                console.log('❌ Failed to load index.json:', indexResponse.status, indexResponse.statusText);
             }
         } catch (error) {
-            console.log('❌ Scene index not available, trying directory listing...', error);
+            // Scene index not available, trying directory listing
         }
         
         // Try to get a proper directory listing
@@ -1044,7 +998,6 @@ export class App {
             const response = await fetch('/scenes/');
             if (response.ok) {
                 const text = await response.text();
-                console.log('Directory listing response:', text.substring(0, 500) + '...');
                 
                 // Try multiple patterns to extract filenames from directory listing
                 const patterns = [
@@ -1066,14 +1019,11 @@ export class App {
                         }).filter(name => name.length > 0);
                         
                         if (foundFiles.length > 0) {
-                            console.log(`Found ${foundFiles.length} scene files using pattern:`, foundFiles);
                             await this.validateAndUpdateScenePresets(foundFiles);
                             return;
                         }
                     }
                 }
-                
-                console.log('No files found with standard patterns, trying alternative parsing...');
                 
                 // Alternative: try to parse the HTML structure
                 const lines = text.split('\n');
@@ -1090,23 +1040,19 @@ export class App {
                 }
                 
                 if (jsonFiles.length > 0) {
-                    console.log('Found scene files from HTML parsing:', jsonFiles);
                     await this.validateAndUpdateScenePresets(jsonFiles);
                     return;
                 }
             }
         } catch (error) {
-            console.log('Directory listing failed:', error);
+            // Directory listing failed
         }
         
         // Fallback: try a systematic approach to find any .json files
-        console.log('Directory listing unavailable, trying systematic discovery...');
         await this.systematicSceneDiscovery();
     }
 
     async systematicSceneDiscovery() {
-        console.log('Starting systematic scene discovery...');
-        
         // This is a more intelligent approach that tries to discover files
         // by attempting common patterns and learning from successful finds
         
@@ -1123,7 +1069,6 @@ export class App {
                     const sceneData = await response.json();
                     if (this.validateScenePreset(sceneData)) {
                         foundPresets.push(name);
-                        console.log(`Found known scene preset: ${name}`);
                     }
                 }
             } catch (error) {
@@ -1141,7 +1086,6 @@ export class App {
                     const sceneData = await response.json();
                     if (this.validateScenePreset(sceneData)) {
                         foundPresets.push(letter);
-                        console.log(`Found scene preset: ${letter}`);
                     }
                 }
             } catch (error) {
@@ -1168,7 +1112,6 @@ export class App {
                         const sceneData = await response.json();
                         if (this.validateScenePreset(sceneData)) {
                             foundPresets.push(name);
-                            console.log(`Found scene preset: ${name}`);
                         }
                     }
                 } catch (error) {
@@ -1177,35 +1120,26 @@ export class App {
             }
         }
         
-        console.log('Systematic discovery complete. Found presets:', foundPresets);
         this.updateScenePresetDropdown(foundPresets);
     }
 
     async validateAndUpdateScenePresets(sceneNames) {
-        console.log('Validating scene presets:', sceneNames);
         const validScenePresets = [];
         
         for (const sceneName of sceneNames) {
             try {
-                console.log(`Checking scene preset: ${sceneName}`);
                 const response = await fetch(`/scenes/${sceneName}.json`);
                 if (response.ok) {
                     const sceneData = await response.json();
                     if (this.validateScenePreset(sceneData)) {
                         validScenePresets.push(sceneName);
-                        console.log(`✅ Validated scene preset: ${sceneName}`);
-                    } else {
-                        console.log(`❌ Invalid scene preset: ${sceneName}`);
                     }
-                } else {
-                    console.log(`❌ Failed to load scene preset: ${sceneName} (${response.status})`);
                 }
             } catch (error) {
-                console.log(`❌ Error validating scene preset ${sceneName}:`, error);
+                // Error validating scene preset
             }
         }
         
-        console.log('Final valid scene presets:', validScenePresets);
         this.updateScenePresetDropdown(validScenePresets);
     }
 
@@ -1292,8 +1226,6 @@ export class App {
         }
 
         try {
-            console.log('Loading preset:', presetName);
-            
             // Load the preset file from the presets folder
             const response = await fetch(`/presets/${presetName}.json`);
             if (!response.ok) {
@@ -1301,11 +1233,9 @@ export class App {
             }
             
             const preset = await response.json();
-            console.log('Loaded preset:', preset);
             
             if (this.validatePreset(preset)) {
                 this.applyPreset(preset);
-                console.log('Preset applied successfully');
             } else {
                 console.error('Invalid preset format:', preset);
                 alert('Invalid preset file format. Please check the file structure.');
@@ -1320,12 +1250,6 @@ export class App {
         const ccMappings = this.state.get('midiCCMappings') || {};
         const noteMappings = this.state.get('midiNoteMappings') || {};
         
-        console.log('Current state before saving:');
-        console.log('CC mappings:', ccMappings);
-        console.log('Note mappings:', noteMappings);
-        console.log('CC mappings keys:', Object.keys(ccMappings));
-        console.log('Note mappings keys:', Object.keys(noteMappings));
-        
         const preset = {
             version: '1.0',
             timestamp: Date.now(),
@@ -1333,10 +1257,7 @@ export class App {
             midiNoteMappings: noteMappings
         };
         
-        console.log('Saving preset:', preset);
-        
         const dataStr = JSON.stringify(preset, null, 2);
-        console.log('JSON string:', dataStr);
         
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
         
@@ -1354,7 +1275,6 @@ export class App {
         reader.onload = (e) => {
             try {
                 const preset = JSON.parse(e.target.result);
-                console.log('Loading preset:', preset);
                 
                 // Handle both old and new preset formats for backward compatibility
                 if (preset.mappings && preset.noteMappings) {
@@ -1372,8 +1292,6 @@ export class App {
                     alert('Invalid preset file format. Please check the file structure.');
                     return;
                 }
-                
-                console.log('Preset loaded successfully');
             } catch (error) {
                 console.error('Failed to load preset:', error);
                 alert('Failed to load preset file. Please check if the file is a valid JSON preset.');
@@ -1396,20 +1314,12 @@ export class App {
     }
 
     applyPreset(preset) {
-        console.log('Applying preset:', preset);
-        
         if (preset.midiCCMappings) {
-            console.log('Setting CC mappings:', preset.midiCCMappings);
             this.state.set('midiCCMappings', preset.midiCCMappings);
         }
         if (preset.midiNoteMappings) {
-            console.log('Setting Note mappings:', preset.midiNoteMappings);
             this.state.set('midiNoteMappings', preset.midiNoteMappings);
         }
-        
-        console.log('State after applying preset:');
-        console.log('CC mappings:', this.state.get('midiCCMappings'));
-        console.log('Note mappings:', this.state.get('midiNoteMappings'));
         
         // Pass the preset data directly to recreateControlsFromPreset
         this.recreateControlsFromPreset(preset);
@@ -1509,7 +1419,6 @@ export class App {
             // Clean up the URL object
             setTimeout(() => URL.revokeObjectURL(link.href), 100);
             
-            console.log('Scene downloaded successfully');
             alert('Visual settings downloaded successfully!');
         } catch (error) {
             console.error('Error saving scene:', error);
@@ -1524,8 +1433,6 @@ export class App {
     
     loadSceneFile(sceneData) {
         try {
-            console.log('Loading scene file:', sceneData);
-            
             // Get interpolation duration from UI
             const interpolationDurationInput = document.getElementById('interpolation-duration');
             const duration = interpolationDurationInput ? parseFloat(interpolationDurationInput.value) : 2.0;
@@ -1536,9 +1443,7 @@ export class App {
             
             const success = this.state.importSceneWithInterpolation(sceneData, duration, easing);
             
-            if (success) {
-                console.log('Scene interpolation started');
-            } else {
+            if (!success) {
                 console.error('Error loading scene. Please check the file format.');
             }
         } catch (error) {
@@ -1549,13 +1454,10 @@ export class App {
 
     async applyScenePreset(presetName) {
         if (!presetName) {
-            console.log('No scene preset selected');
             return;
         }
 
         try {
-            console.log(`Loading scene preset: ${presetName}`);
-            
             // Try to load the scene preset
             const response = await fetch(`/scenes/${presetName}.json`);
             if (!response.ok) {
@@ -1563,7 +1465,6 @@ export class App {
             }
             
             const sceneData = await response.json();
-            console.log('Loaded scene preset:', sceneData);
             
             // Validate the scene data
             if (!this.validateScenePreset(sceneData)) {
@@ -1582,7 +1483,6 @@ export class App {
             const success = this.state.importSceneWithInterpolation(sceneData, duration, easing);
             
             if (success) {
-                console.log(`Scene preset "${presetName}" applied successfully`);
                 await this.showScenePresetFeedback(presetName);
             } else {
                 throw new Error('Failed to apply scene preset');
@@ -1751,24 +1651,18 @@ export class App {
     }
     
     testAudioMapping() {
-        console.log('Testing audio mapping...');
-        
         // Get current audio values
         const overall = this.state.get('audioOverall') || 0;
         const bass = this.state.get('audioBass') || 0;
         const mid = this.state.get('audioMid') || 0;
         const treble = this.state.get('audioTreble') || 0;
         
-        console.log('Current audio values:', { overall, bass, mid, treble });
-        
         // Test each active audio mapping control
         if (this.audioMappingManager) {
             const controls = this.audioMappingManager.getAllControls();
-            console.log('Active audio mapping controls:', controls.length);
             
             controls.forEach(control => {
                 const mapping = control.getMapping();
-                console.log(`Control ${control.controlId}:`, mapping);
                 
                 // Simulate audio input for testing
                 const testValue = Math.random() * 0.5 + 0.25; // Random value between 0.25 and 0.75
@@ -1994,31 +1888,16 @@ export class App {
     }
     
     debugInterpolation() {
-        console.log('=== INTERPOLATION DEBUG ===');
-        
         // Log current state
         this.state.logCurrentState();
         
         // Log interpolation info
         const debugInfo = this.state.getInterpolationDebugInfo();
-        console.log('Interpolation debug info:', debugInfo);
         
         // Log recent state changes
-        console.log('Recent state history:', this.state.history);
-        
         // Log current listeners
-        console.log('Active listeners:', this.state.listeners.size);
-        
         // Check for any active animations
-        if (this.animationLoop) {
-            console.log('Animation loop active:', this.animationLoop.isAnimating());
-            console.log('Animation time:', this.animationLoop.animationTime);
-        }
-        
         // Log scene state
-        if (this.scene) {
-            console.log('Scene performance metrics:', this.scene.getPerformanceMetrics());
-        }
         
         // Create a summary
         const summary = {
@@ -2030,8 +1909,6 @@ export class App {
             stateKeys: Object.keys(this.state.state).length,
             historySize: this.state.history.length
         };
-        
-        console.log('Debug summary:', summary);
         
         // Show alert with key info
         const message = `Interpolation Debug:
@@ -2045,7 +1922,6 @@ History: ${summary.historySize} entries`;
     }
 
     setupAudioInterfaceUI() {
-        console.log('Setting up audio interface UI...');
         
         // Audio interface selection
         const interfaceSelect = document.getElementById('audio-interface-select');
@@ -2279,7 +2155,5 @@ History: ${summary.historySize} entries`;
         this.updateAudioChannelsDisplay();
         this.updateAudioStatus();
         this.updateAudioAnalysisDisplay();
-        
-        console.log('Audio interface UI setup complete');
     }
 } 

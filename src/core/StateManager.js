@@ -30,11 +30,9 @@ export class StateManager {
         }
         
         this.initialized = true;
-        console.log('StateManager initialized with state:', this.state);
     }
 
     async reloadDefaultScene() {
-        console.log('Reloading default scene from JSON file...');
         const newState = await this.getInitialState();
         if (newState) {
             // Update all state properties
@@ -46,7 +44,6 @@ export class StateManager {
                     this.notifyListeners(key, newValue, oldValue);
                 }
             });
-            console.log('Default scene reloaded successfully');
         } else {
             console.warn('Failed to reload default scene');
         }
@@ -63,9 +60,7 @@ export class StateManager {
         
         for (const path of paths) {
             try {
-                console.log(`Attempting to load default-scene.json from: ${path}`);
                 const response = await fetch(path);
-                console.log('Response status:', response.status, response.statusText);
                 
                 if (!response.ok) {
                     console.warn(`Could not load from ${path}, trying next path...`);
@@ -73,7 +68,6 @@ export class StateManager {
                 }
                 
                 const data = await response.json();
-                console.log('Successfully loaded default scene from JSON file:', data);
                 
                 // Start with the default scene settings
                 const initialState = { ...data.settings };
@@ -89,7 +83,6 @@ export class StateManager {
                     initialState.sphereDistortionStrength = 0.1;
                 }
                 
-                console.log('Initial state prepared from JSON:', initialState);
                 return initialState;
             } catch (error) {
                 console.warn(`Error loading from ${path}:`, error.message);
@@ -566,21 +559,12 @@ export class StateManager {
                 this.interpolationTimeline.kill();
             }
             
-            // Debug: Log interpolation start
-            console.log('=== INTERPOLATION DEBUG START ===');
-            console.log('Scene data:', sceneData.name || 'Unnamed Scene');
-            console.log('Duration:', duration, 'Easing:', easing);
-            console.log('Current state keys:', Object.keys(this.state));
-            console.log('Target settings keys:', Object.keys(settings));
-            
             // Check for large changes and suggest better settings
             const suggestions = this.suggestInterpolationSettings(sceneData, this.state);
             
             // Create a new timeline for the interpolation
             this.interpolationTimeline = gsap.timeline({
                 onComplete: () => {
-                    console.log(`Scene interpolation complete: ${sceneData.name || 'Unnamed Scene'}`);
-                    console.log('=== INTERPOLATION DEBUG END ===');
                     this.interpolationTimeline = null;
                     
                     // Trigger grid recreation after interpolation is complete
@@ -622,16 +606,13 @@ export class StateManager {
                     } else {
                         interpolationTargets[key] = targetValue;
                     }
-                    console.log(`Adding interpolation for ${key}: ${currentValue} -> ${targetValue}`);
                 } else if (targetValue !== undefined) {
                     // For non-numeric values, set immediately
                     this.state[key] = targetValue;
                     this.notifyListeners(key, targetValue, currentValue);
                     immediateParameters.push(`${key}: ${currentValue} -> ${targetValue}`);
-                    console.log(`Setting immediate for ${key}: ${currentValue} -> ${targetValue}`);
                 } else {
                     skippedParameters.push(`${key}: undefined target`);
-                    console.log(`Skipping ${key}: undefined target`);
                 }
             };
             
@@ -800,14 +781,6 @@ export class StateManager {
                 }
             });
             
-            // Log summary of what's being interpolated
-            console.log('=== INTERPOLATION SUMMARY ===');
-            console.log('Parameters being interpolated:', Object.keys(interpolationTargets));
-            console.log('Parameters set immediately:', immediateParameters);
-            console.log('Parameters skipped:', skippedParameters);
-            console.log('Total interpolation targets:', Object.keys(interpolationTargets).length);
-            
-            console.log(`Scene interpolation started: ${sceneData.name || 'Unnamed Scene'}`);
             return true;
         } catch (error) {
             console.error('Error loading scene with interpolation:', error);
@@ -889,16 +862,12 @@ export class StateManager {
     
     // Method to log current state for debugging
     logCurrentState() {
-        console.log('=== CURRENT STATE DEBUG ===');
-        console.log('Active interpolation:', this.getInterpolationDebugInfo());
-        console.log('State keys:', Object.keys(this.state));
-        
         // Log some key parameters
         const keyParams = ['animationSpeed', 'movementAmplitude', 'rotationAmplitude', 'scaleAmplitude', 
                           'gridWidth', 'gridHeight', 'cellSize', 'shapeColor', 'backgroundColor'];
         keyParams.forEach(key => {
             if (this.state.hasOwnProperty(key)) {
-                console.log(`${key}:`, this.state[key]);
+                // Log key parameters for debugging
             }
         });
     }
@@ -924,11 +893,9 @@ export class StateManager {
         });
         
         if (suggestions.length > 0) {
-            console.log('=== INTERPOLATION SUGGESTIONS ===');
-            console.log('Large changes detected. Consider these adjustments:');
+            // Large changes detected. Consider these adjustments
             suggestions.forEach(s => {
-                console.log(`  ${s.parameter}: ${s.change}`);
-                console.log(`    Suggestion: ${s.suggestion}`);
+                // Log suggestions for debugging
             });
         }
         

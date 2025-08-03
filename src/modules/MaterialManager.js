@@ -124,10 +124,7 @@ export class MaterialManager {
         
         const cacheKey = `sphere_${sphereRefraction}_${sphereTransparency}_${sphereTransmission}_${sphereRoughness}_${sphereMetalness}_${sphereClearcoat}_${sphereClearcoatRoughness}_${sphereEnvMapIntensity}_${sphereWaterDistortion}_${shapeColor}`;
         
-        // console.log('Getting sphere material with refraction:', sphereRefraction, 'cache key:', cacheKey);
-        
         if (this.materialCache.has(cacheKey)) {
-            // console.log('Using cached material');
             return this.materialCache.get(cacheKey);
         }
         
@@ -158,8 +155,6 @@ export class MaterialManager {
             specularColor: new THREE.Color(0xffffff)
         });
         
-        // console.log('Creating new sphere material with IOR:', sphereRefraction);
-        
         // Add water-like properties for better visual effect
         if (state.get('sphereWaterDistortion')) {
             // Adjust material properties for water-like appearance
@@ -170,8 +165,6 @@ export class MaterialManager {
             material.ior = 1.33; // Water refraction index
             material.clearcoat = 0.9; // High clearcoat for water shine
             material.clearcoatRoughness = 0.02; // Very smooth clearcoat
-            
-            // console.log('Water-like properties applied');
         }
         
         this.materialCache.set(cacheKey, material);

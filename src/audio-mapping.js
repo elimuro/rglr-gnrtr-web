@@ -135,7 +135,6 @@ export class AudioMappingControl {
         const template = AUDIO_MAPPING_TEMPLATES[this.type];
         
         if (!config || !template) {
-            console.error(`No config or template found for audio mapping type: ${this.type}`);
             return;
         }
         
@@ -580,14 +579,12 @@ export class AudioMappingManager {
             this.audioListeners.set(controlId, []);
         }
         this.audioListeners.get(controlId).push(callback);
-        console.log('Registered audio listener for control:', controlId);
     }
     
     unregisterAudioListener(controlId) {
         if (this.audioListeners.has(controlId)) {
             this.audioListeners.delete(controlId);
         }
-        console.log('Unregistered audio listener for control:', controlId);
     }
     
     broadcastAudioUpdate(frequencyBand) {

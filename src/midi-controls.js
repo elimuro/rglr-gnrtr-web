@@ -196,7 +196,6 @@ export class MIDIControl {
         const removeButton = document.getElementById(`midi-${this.controlId}-remove`);
         
         if (!channelInput || !valueInput || !targetSelect || !learnButton || !removeButton) {
-            console.error('Failed to find control elements for', this.controlId);
             return;
         }
         
@@ -482,7 +481,6 @@ export class MIDIControlManager {
         
         // Check if control already exists
         if (this.controls.has(controlId)) {
-            console.warn(`Control ${controlId} already exists`);
             return this.controls.get(controlId);
         }
         
@@ -490,7 +488,6 @@ export class MIDIControlManager {
         const container = type === 'cc' ? this.ccContainer : this.noteContainer;
         
         if (!container) {
-            console.error(`No container found for ${type} controls`);
             return null;
         }
         

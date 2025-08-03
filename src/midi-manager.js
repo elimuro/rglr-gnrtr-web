@@ -199,7 +199,6 @@ export class MIDIManager {
     }
 
     setupMIDIInputs() {
-        console.log('Setting up MIDI inputs...');
         const inputs = Array.from(this.midiAccess.inputs.values());
         
         if (inputs.length === 0) {

@@ -129,8 +129,6 @@ export class VideoRecorder {
                 }
             }, this.settings.duration * 1000);
             
-            console.log('Video recording started');
-            
         } catch (error) {
             console.error('Failed to start recording:', error);
             this.handleRecordingError(error);
@@ -147,8 +145,6 @@ export class VideoRecorder {
             
             // Update UI
             this.updateRecordingUI(false);
-            
-            console.log('Video recording stopped');
             
         } catch (error) {
             console.error('Failed to stop recording:', error);
@@ -189,8 +185,6 @@ export class VideoRecorder {
         
         // Clean up
         setTimeout(() => URL.revokeObjectURL(url), 100);
-        
-        console.log(`Video downloaded: ${filename}`);
         
         // Show success notification
         this.showNotification('Video recording completed!', 'success');

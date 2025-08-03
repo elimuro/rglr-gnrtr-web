@@ -86,7 +86,6 @@ export class AudioManager {
             this.timeData = new Uint8Array(this.analyser.frequencyBinCount);
             
             this.isInitialized = true;
-            console.log('AudioManager initialized successfully');
             
             // Update state with audio capabilities
             this.state.set('audioAvailable', true);
@@ -117,8 +116,6 @@ export class AudioManager {
             this.state.set('availableAudioInterfaces', this.availableInterfaces);
             this.state.set('audioInterfaceCount', this.availableInterfaces.length);
             
-            console.log('Discovered audio interfaces:', this.availableInterfaces);
-            
             // Select first interface by default
             if (this.availableInterfaces.length > 0) {
                 this.selectInterface(this.availableInterfaces[0]);
@@ -135,7 +132,6 @@ export class AudioManager {
     selectInterface(audioInterface) {
         this.selectedInterface = audioInterface;
         this.state.set('selectedAudioInterface', audioInterface);
-        console.log('Selected audio interface:', audioInterface);
         
         // Reset channel selection when interface changes
         this.selectedChannels = [];
@@ -218,7 +214,6 @@ export class AudioManager {
     selectChannels(channels) {
         this.selectedChannels = channels;
         this.state.set('selectedAudioChannels', channels);
-        console.log('Selected audio channels:', channels);
     }
 
     async startAudioCapture() {
@@ -263,8 +258,6 @@ export class AudioManager {
             // Start analysis loop
             this.analyzeAudio();
             
-            console.log('Audio capture started with interface:', this.selectedInterface.label);
-            
         } catch (error) {
             console.error('Failed to start audio capture with exact device:', error);
             
@@ -298,8 +291,6 @@ export class AudioManager {
                 // Start analysis loop
                 this.analyzeAudio();
                 
-                console.log('Audio capture started with fallback interface:', this.selectedInterface.label);
-                
             } catch (fallbackError) {
                 console.error('Failed to start audio capture with fallback:', fallbackError);
                 this.state.set('audioListening', false);
@@ -322,8 +313,6 @@ export class AudioManager {
             this.microphone.disconnect();
             this.microphone = null;
         }
-        
-        console.log('Audio capture stopped');
     }
 
     analyzeAudio() {

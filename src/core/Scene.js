@@ -53,7 +53,6 @@ export class Scene {
 
     init() {
         try {
-            console.log('Initializing scene...');
             this.createGrid();
             this.updateBackgroundColor();
             
@@ -62,8 +61,6 @@ export class Scene {
             
             // Apply initial post-processing settings
             this.updatePostProcessing();
-            
-            console.log('Scene initialized with', this.shapes.length, 'shapes');
         } catch (error) {
             console.error('Error during Scene initialization:', error);
         }
@@ -410,13 +407,11 @@ export class Scene {
     }
 
     updateSphereMaterials() {
-        console.log('Updating sphere materials...');
         this.shapes.forEach(mesh => {
             if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
                 mesh.material = this.materialManager.getSphereMaterial(this.state);
             }
         });
-        console.log('Sphere materials updated');
     }
 
     updateSphereScales() {
@@ -469,8 +464,6 @@ export class Scene {
             console.warn('PostProcessingManager not initialized');
             return;
         }
-        
-        console.log('Updating post-processing effects...');
         
         // Update effect enabled states
         if (this.state.get('bloomEnabled')) {
