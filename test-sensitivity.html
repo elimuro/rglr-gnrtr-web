@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Mapping Sensitivity Test</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .sensitivity-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        .sensitivity-slider::-webkit-slider-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            height: 4px;
+        }
+        .sensitivity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            background: #8b5cf6;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 4px rgba(139, 92, 246, 0.5);
+            transition: all 0.2s ease;
+        }
+        .sensitivity-slider::-webkit-slider-thumb:hover {
+            background: #a78bfa;
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+            transform: scale(1.1);
+        }
+        .sensitivity-value {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #8b5cf6;
+            text-shadow: 0 0 4px rgba(139, 92, 246, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Audio Mapping Sensitivity Test</h1>
+        
+        <div class="test-section">
+            <h2>Sensitivity Control Test</h2>
+            <p>Test the sensitivity slider functionality:</p>
+            
+            <div class="flex items-center gap-4 p-4 bg-black bg-opacity-20 border border-gray-700 rounded">
+                <label class="text-sm font-medium text-gray-300">Sensitivity:</label>
+                <input type="range" class="sensitivity-slider w-32 h-6" 
+                       min="0" max="2" step="0.1" value="1" 
+                       title="Sensitivity: 0 = no effect, 1 = normal, 2 = double effect">
+                <span class="sensitivity-value text-sm">1.0</span>
+            </div>
+            
+            <div class="mt-4">
+                <h3>Test Values:</h3>
+                <div id="test-output" class="text-sm text-gray-400"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Normalize Value Test</h2>
+            <p>Test the normalizeValue function with different sensitivity values:</p>
+            
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm mb-2">Input Value:</label>
+                    <input type="range" id="input-value" min="0" max="1" step="0.01" value="0.5" class="w-full">
+                    <span id="input-display" class="text-sm">0.50</span>
+                </div>
+                <div>
+                    <label class="block text-sm mb-2">Sensitivity:</label>
+                    <input type="range" id="test-sensitivity" min="0" max="2" step="0.1" value="1" class="sensitivity-slider w-full">
+                    <span id="sensitivity-display" class="sensitivity-value text-sm">1.0</span>
+                </div>
+                <div>
+                    <label class="block text-sm mb-2">Output Value:</label>
+                    <div id="output-display" class="text-lg font-bold text-green-400">0.50</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test the normalizeValue function
+        function normalizeValue(audioValue, sensitivity = 1.0) {
+            // Apply curve (linear in this test)
+            let normalizedValue = audioValue;
+            
+            // Apply sensitivity
+            normalizedValue *= sensitivity;
+            
+            // Ensure the value is between 0 and 1
+            normalizedValue = Math.max(0, Math.min(1, normalizedValue));
+            
+            return normalizedValue;
+        }
+        
+        // Update displays
+        function updateTest() {
+            const inputValue = parseFloat(document.getElementById('input-value').value);
+            const sensitivity = parseFloat(document.getElementById('test-sensitivity').value);
+            const outputValue = normalizeValue(inputValue, sensitivity);
+            
+            document.getElementById('input-display').textContent = inputValue.toFixed(2);
+            document.getElementById('sensitivity-display').textContent = sensitivity.toFixed(1);
+            document.getElementById('output-display').textContent = outputValue.toFixed(3);
+        }
+        
+        // Set up event listeners
+        document.getElementById('input-value').addEventListener('input', updateTest);
+        document.getElementById('test-sensitivity').addEventListener('input', updateTest);
+        
+        // Set up sensitivity slider test
+        const sensitivitySlider = document.querySelector('.sensitivity-slider');
+        const sensitivityValue = document.querySelector('.sensitivity-value');
+        
+        sensitivitySlider.addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            sensitivityValue.textContent = value.toFixed(1);
+            
+            // Update test output
+            const testOutput = document.getElementById('test-output');
+            testOutput.innerHTML = `
+                <div>Current sensitivity: ${value.toFixed(1)}</div>
+                <div>Effect: ${value === 0 ? 'No effect' : value === 1 ? 'Normal' : value > 1 ? 'Amplified' : 'Reduced'}</div>
+                <div>Example: Input 0.5 → Output ${normalizeValue(0.5, value).toFixed(3)}</div>
+            `;
+        });
+        
+        // Initialize
+        updateTest();
+        sensitivitySlider.dispatchEvent(new Event('input'));
+    </script>
+</body>
+</html> 

@@ -3,6 +3,16 @@
  * This module manages audio frequency analysis and mapping to visual parameters.
  * It handles frequency band analysis, parameter mapping, and dynamic control creation
  * for audio-reactive visual effects.
+ * 
+ * NEW FEATURE: Sensitivity Control
+ * Each audio mapping now includes a sensitivity slider that controls the intensity
+ * of the audio effect on the target parameter:
+ * - 0.0 = No effect (audio input is ignored)
+ * - 1.0 = Normal effect (default)
+ * - 2.0 = Double effect (audio input is amplified)
+ * 
+ * The sensitivity is applied after the curve transformation but before the min/max
+ * range mapping, allowing for fine-tuned control over audio reactivity.
  */
 
 // Audio Mapping Configuration
@@ -65,11 +75,6 @@ const AUDIO_MAPPING_CONFIGS = {
         ],
         frequencyBands: [
             { value: 'overall', label: 'Overall' },
-            { value: 'bass', label: 'Bass (20-250Hz)' },
-            { value: 'lowMid', label: 'Low Mid (250-500Hz)' },
-            { value: 'mid', label: 'Mid (500-2000Hz)' },
-            { value: 'highMid', label: 'High Mid (2-4kHz)' },
-            { value: 'treble', label: 'Treble (4-20kHz)' },
             { value: 'rms', label: 'RMS' },
             { value: 'peak', label: 'Peak' },
             { value: 'frequency', label: 'Dominant Frequency' }
@@ -80,7 +85,7 @@ const AUDIO_MAPPING_CONFIGS = {
 // HTML Templates for Audio Mapping Controls
 const AUDIO_MAPPING_TEMPLATES = {
     frequency: `
-        <div class="flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
+        <div class="audio-mapping-control flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
             <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
             
             <div class="flex items-center gap-1 flex-1">
@@ -91,6 +96,14 @@ const AUDIO_MAPPING_TEMPLATES = {
                 <select class="target-select px-1 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none flex-1" data-drawer-interactive>
                     {targetOptions}
                 </select>
+                
+                <span class="text-xs text-gray-400 mx-1">×</span>
+                
+                <input type="range" class="sensitivity-slider w-16 h-6 bg-black bg-opacity-30 rounded-lg appearance-none cursor-pointer slider-thumb" 
+                       min="0" max="2" step="0.1" value="1" 
+                       title="Sensitivity: 0 = no effect, 1 = normal, 2 = double effect"
+                       data-drawer-interactive>
+                <span class="sensitivity-value text-xs text-gray-400 min-w-8 text-center">1.0</span>
             </div>
             
             <div class="flex items-center gap-1">
@@ -117,7 +130,8 @@ export class AudioMappingControl {
             target: 'animationSpeed',
             minValue: 0,
             maxValue: 1,
-            curve: 'linear'
+            curve: 'linear',
+            sensitivity: 1.0
         };
         
         this.render();
@@ -208,14 +222,15 @@ export class AudioMappingControl {
         // Get current audio data from the app
         const audioData = {
             overall: this.app.state.get('audioOverall') || 0,
-            bass: this.app.state.get('audioBass') || 0,
-            lowMid: this.app.state.get('audioLowMid') || 0,
-            mid: this.app.state.get('audioMid') || 0,
-            highMid: this.app.state.get('audioHighMid') || 0,
-            treble: this.app.state.get('audioTreble') || 0,
             rms: this.app.state.get('audioRMS') || 0,
-            peak: this.app.state.get('audioPeak') || 0
+            peak: this.app.state.get('audioPeak') || 0,
+            frequency: this.app.state.get('audioFrequency') || 0
         };
+        
+        // Debug: Log audio data occasionally
+        if (Math.random() < 0.01) { // Log 1% of the time to avoid spam
+            console.log('🎵 Audio data for mapping:', audioData);
+        }
         
         this.frequencySlider.setAudioData(audioData);
     }
@@ -231,6 +246,18 @@ export class AudioMappingControl {
                 this.mapping.target = e.target.value;
                 this.updateMapping();
             });
+        }
+        
+        // Sensitivity slider
+        const sensitivitySlider = this.element.querySelector('.sensitivity-slider');
+        if (sensitivitySlider) {
+            sensitivitySlider.value = this.mapping.sensitivity;
+            sensitivitySlider.addEventListener('input', (e) => {
+                this.mapping.sensitivity = parseFloat(e.target.value);
+                this.updateSensitivityDisplay();
+                this.updateMapping();
+            });
+            this.updateSensitivityDisplay();
         }
         
         // Learn button
@@ -274,68 +301,98 @@ export class AudioMappingControl {
     }
     
     setupAudioLearning() {
-        // Subscribe to audio analysis updates for learning/testing
-        this.audioSubscription = (frequencyBand, value) => {
-            // Update slider audio data
-            this.updateSliderAudioData();
-            
-            // Check if the frequency is within our selected range
-            const frequency = this.getFrequencyFromBand(frequencyBand);
-            if (this.isLearning && frequency >= this.mapping.minFrequency && frequency <= this.mapping.maxFrequency) {
-                this.updateParameter(value);
-                
-                // Update the UI to show the current audio value
-                const learnButton = this.element.querySelector('.learn-button');
-                if (learnButton) {
-                    learnButton.textContent = `Stop (${value.toFixed(2)})`;
-                }
-            }
-        };
-        
-        // Register this control for audio updates
-        if (this.app && this.app.audioMappingManager) {
-            this.app.audioMappingManager.registerAudioListener(this.controlId, this.audioSubscription);
-        }
-        
-        console.log('Audio learning started for control:', this.controlId, 'frequency range:', this.mapping.minFrequency, '-', this.mapping.maxFrequency);
+        // DISABLED: Old frequency band system - now using new frequency range system
+        // This method is kept for compatibility but does nothing
+        console.log('Audio learning disabled - using new frequency range system');
     }
     
     setupContinuousAudioMapping() {
         // Set up continuous audio mapping (always active)
-        this.continuousAudioSubscription = (frequencyBand, value) => {
+        this.continuousAudioSubscription = () => {
             // Update slider audio data
             this.updateSliderAudioData();
-            
-            // Check if the frequency is within our selected range
-            const frequency = this.getFrequencyFromBand(frequencyBand);
-            if (frequency >= this.mapping.minFrequency && frequency <= this.mapping.maxFrequency) {
-                this.updateParameter(value);
+            // Calculate average amplitude across the selected frequency range
+            const averageAmplitude = this.calculateFrequencyRangeAverage();
+            if (averageAmplitude !== null) {
+                this.updateParameter(averageAmplitude);
+                // Debug: Log when audio mapping is active
+                if (Math.random() < 0.005) { // Log 0.5% of the time
+                    console.log('🎵 Audio mapping active:', this.controlId, 'amplitude:', averageAmplitude.toFixed(3));
+                }
             }
         };
-        
         // Register for continuous audio updates
         if (this.app && this.app.audioMappingManager) {
             this.app.audioMappingManager.registerAudioListener(this.controlId, this.continuousAudioSubscription);
         }
         
+        // Also set up a periodic update for the slider visualization
+        this.audioUpdateInterval = setInterval(() => {
+            this.updateSliderAudioData();
+        }, 100); // Update every 100ms for smooth visualization
+        
         console.log('Continuous audio mapping enabled for control:', this.controlId, 'frequency range:', this.mapping.minFrequency, '-', this.mapping.maxFrequency);
+    }
+
+    calculateFrequencyRangeAverage() {
+        if (!this.app || !this.app.audioManager) return null;
+        
+        // Check if audio manager is listening
+        if (!this.app.audioManager.isListening) {
+            return null;
+        }
+        
+        const { frequencyData, sampleRate, fftSize } = this.app.audioManager.getRawFrequencyData();
+        if (!frequencyData || !sampleRate) {
+            return null;
+        }
+        
+        // Calculate the frequency bins that correspond to our selected range
+        // FFT bins represent frequencies from 0 to sampleRate/2 (Nyquist frequency)
+        const nyquist = sampleRate / 2;
+        const frequencyResolution = nyquist / frequencyData.length;
+        
+        const startBin = Math.floor(this.mapping.minFrequency / frequencyResolution);
+        const endBin = Math.floor(this.mapping.maxFrequency / frequencyResolution);
+        
+        // Ensure bins are within valid range
+        const validStartBin = Math.max(0, Math.min(startBin, frequencyData.length - 1));
+        const validEndBin = Math.max(validStartBin, Math.min(endBin, frequencyData.length - 1));
+        
+        // Debug: Log the frequency bin calculation (only when significant activity)
+        // console.log(`Freq: ${this.mapping.minFrequency}Hz-${this.mapping.maxFrequency}Hz -> Bins: ${validStartBin}-${validEndBin} (resolution: ${frequencyResolution.toFixed(1)}Hz)`);
+        
+        // Calculate average amplitude across the frequency range
+        let sum = 0;
+        let count = 0;
+        for (let i = validStartBin; i <= validEndBin; i++) {
+            sum += frequencyData[i];
+            count++;
+        }
+        
+        // Return normalized average (0-1)
+        const average = count > 0 ? sum / count / 255 : 0;
+        
+        // Apply smoothing to avoid jittery values
+        if (!this.lastAverage) {
+            this.lastAverage = average;
+        } else {
+            this.lastAverage = this.lastAverage * 0.8 + average * 0.2;
+        }
+        
+        // Only log when there's significant activity in the selected range
+        if (this.lastAverage > 0.1) {
+            console.log(`🎵 ${this.mapping.minFrequency}Hz-${this.mapping.maxFrequency}Hz: ${(this.lastAverage * 100).toFixed(1)}%`);
+        }
+        
+        return this.lastAverage;
     }
     
     getFrequencyFromBand(frequencyBand) {
-        // Convert frequency band to approximate frequency
-        const bandFrequencies = {
-            'overall': 1000, // Average frequency
-            'bass': 100,
-            'lowMid': 375,
-            'mid': 1250,
-            'highMid': 3000,
-            'treble': 8000,
-            'rms': 1000,
-            'peak': 1000,
-            'frequency': 1000
-        };
-        
-        return bandFrequencies[frequencyBand] || 1000;
+        // DISABLED: Old frequency band system - now using new frequency range system
+        // This method is kept for compatibility but does nothing
+        console.log('getFrequencyFromBand disabled - using new frequency range system');
+        return 1000; // Default fallback
     }
     
     cleanupAudioLearning() {
@@ -354,6 +411,12 @@ export class AudioMappingControl {
             this.app.audioMappingManager.unregisterAudioListener(this.controlId);
         }
         
+        // Clear the periodic update interval
+        if (this.audioUpdateInterval) {
+            clearInterval(this.audioUpdateInterval);
+            this.audioUpdateInterval = null;
+        }
+        
         this.continuousAudioSubscription = null;
         console.log('Continuous audio mapping disabled for control:', this.controlId);
     }
@@ -362,7 +425,6 @@ export class AudioMappingControl {
         if (!this.app || !this.app.state) return;
         
         const normalizedValue = this.normalizeValue(audioValue, this.mapping.target);
-        console.log(`Audio mapping: ${this.mapping.frequencyBand} (${audioValue.toFixed(3)}) -> ${this.mapping.target} (${normalizedValue.toFixed(3)})`);
         this.app.updateAnimationParameter(this.mapping.target, normalizedValue);
     }
     
@@ -386,6 +448,9 @@ export class AudioMappingControl {
         // Apply min/max range from the mapping
         normalizedValue = this.mapping.minValue + (normalizedValue * (this.mapping.maxValue - this.mapping.minValue));
         
+        // Apply sensitivity
+        normalizedValue *= this.mapping.sensitivity || 1;
+        
         // Ensure the value is between 0 and 1 for the updateAnimationParameter method
         normalizedValue = Math.max(0, Math.min(1, normalizedValue));
         
@@ -405,6 +470,13 @@ export class AudioMappingControl {
         };
         
         return configs[target];
+    }
+    
+    updateSensitivityDisplay() {
+        const sensitivityValue = this.element.querySelector('.sensitivity-value');
+        if (sensitivityValue) {
+            sensitivityValue.textContent = this.mapping.sensitivity.toFixed(1);
+        }
     }
     
     updateMapping() {
@@ -432,6 +504,13 @@ export class AudioMappingControl {
             // Update frequency slider if it exists
             if (this.frequencySlider) {
                 this.frequencySlider.setRange(this.mapping.minFrequency, this.mapping.maxFrequency);
+            }
+            
+            // Update sensitivity slider
+            const sensitivitySlider = this.element.querySelector('.sensitivity-slider');
+            if (sensitivitySlider) {
+                sensitivitySlider.value = this.mapping.sensitivity;
+                this.updateSensitivityDisplay();
             }
         }
     }
@@ -560,17 +639,27 @@ export class AudioMappingManager {
     }
     
     setupAudioAnalysisSubscription() {
-        // Subscribe to audio analysis state changes
+        // Subscribe to audio updates from the app's state
         if (this.app && this.app.state) {
-            this.app.state.subscribe('audioOverall', () => this.broadcastAudioUpdate('overall'));
-            this.app.state.subscribe('audioBass', () => this.broadcastAudioUpdate('bass'));
-            this.app.state.subscribe('audioLowMid', () => this.broadcastAudioUpdate('lowMid'));
-            this.app.state.subscribe('audioMid', () => this.broadcastAudioUpdate('mid'));
-            this.app.state.subscribe('audioHighMid', () => this.broadcastAudioUpdate('highMid'));
-            this.app.state.subscribe('audioTreble', () => this.broadcastAudioUpdate('treble'));
-            this.app.state.subscribe('audioRMS', () => this.broadcastAudioUpdate('rms'));
-            this.app.state.subscribe('audioPeak', () => this.broadcastAudioUpdate('peak'));
-            this.app.state.subscribe('audioFrequency', () => this.broadcastAudioUpdate('frequency'));
+            // Subscribe to overall audio changes
+            this.app.state.subscribe('audioOverall', () => {
+                this.broadcastAudioUpdate();
+            });
+            
+            // Subscribe to RMS changes
+            this.app.state.subscribe('audioRMS', () => {
+                this.broadcastAudioUpdate();
+            });
+            
+            // Subscribe to peak changes
+            this.app.state.subscribe('audioPeak', () => {
+                this.broadcastAudioUpdate();
+            });
+            
+            // Subscribe to frequency changes
+            this.app.state.subscribe('audioFrequency', () => {
+                this.broadcastAudioUpdate();
+            });
         }
     }
     
@@ -587,14 +676,16 @@ export class AudioMappingManager {
         }
     }
     
-    broadcastAudioUpdate(frequencyBand) {
-        const value = this.app.state.get(`audio${frequencyBand.charAt(0).toUpperCase() + frequencyBand.slice(1)}`) || 0;
+    broadcastAudioUpdate() {
+        // Broadcast audio updates to all registered listeners
+        if (this.audioListeners.size > 0) {
+            console.log('🎵 Broadcasting audio update to', this.audioListeners.size, 'listeners');
+        }
         
-        // Broadcast to all registered listeners
         this.audioListeners.forEach((callbacks, controlId) => {
             callbacks.forEach(callback => {
                 try {
-                    callback(frequencyBand, value);
+                    callback();
                 } catch (error) {
                     console.error('Error in audio listener callback:', error);
                 }

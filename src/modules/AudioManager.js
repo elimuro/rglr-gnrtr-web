@@ -2,7 +2,7 @@
  * AudioManager.js - Audio Interface Connection and Analysis
  * This module provides audio interface detection, connection management, and real-time frequency analysis
  * for audio-reactive visual effects. It supports multi-channel audio interfaces and provides frequency
- * band filtering for different visual parameters.
+ * range analysis for different visual parameters.
  */
 
 export class AudioManager {
@@ -23,23 +23,9 @@ export class AudioManager {
         // Audio analysis data
         this.audioData = {
             overall: 0,
-            bass: 0,
-            lowMid: 0,
-            mid: 0,
-            highMid: 0,
-            treble: 0,
             rms: 0,
             peak: 0,
             frequency: 0
-        };
-        
-        // Frequency band definitions (in Hz)
-        this.frequencyBands = {
-            bass: { min: 20, max: 250 },
-            lowMid: { min: 250, max: 500 },
-            mid: { min: 500, max: 2000 },
-            highMid: { min: 2000, max: 4000 },
-            treble: { min: 4000, max: 20000 }
         };
         
         // Analysis settings
@@ -337,58 +323,19 @@ export class AudioManager {
             if (sample > peak) peak = sample;
         }
         
-        // Analyze frequency bands
-        const bands = this.analyzeFrequencyBands();
-        
         // Update audio data with smoothing
         this.audioData = {
             overall: this.lerp(this.audioData.overall, rms * this.sensitivity, 0.1),
-            bass: this.lerp(this.audioData.bass, bands.bass * this.sensitivity, 0.1),
-            lowMid: this.lerp(this.audioData.lowMid, bands.lowMid * this.sensitivity, 0.1),
-            mid: this.lerp(this.audioData.mid, bands.mid * this.sensitivity, 0.1),
-            highMid: this.lerp(this.audioData.highMid, bands.highMid * this.sensitivity, 0.1),
-            treble: this.lerp(this.audioData.treble, bands.treble * this.sensitivity, 0.1),
             rms: this.lerp(this.audioData.rms, rms * this.sensitivity, 0.1),
             peak: this.lerp(this.audioData.peak, peak * this.sensitivity, 0.1),
             frequency: this.calculateDominantFrequency()
         };
-        
-
         
         // Update state with audio data
         this.updateAudioState();
         
         // Continue analysis loop
         requestAnimationFrame(() => this.analyzeAudio());
-    }
-
-    analyzeFrequencyBands() {
-        const bands = {
-            bass: 0,
-            lowMid: 0,
-            mid: 0,
-            highMid: 0,
-            treble: 0
-        };
-        
-        const nyquist = this.audioContext.sampleRate / 2;
-        
-        for (const [bandName, range] of Object.entries(this.frequencyBands)) {
-            const startBin = Math.floor(range.min * this.fftSize / this.audioContext.sampleRate);
-            const endBin = Math.floor(range.max * this.fftSize / this.audioContext.sampleRate);
-            
-            let sum = 0;
-            let count = 0;
-            
-            for (let i = startBin; i <= endBin && i < this.frequencyData.length; i++) {
-                sum += this.frequencyData[i];
-                count++;
-            }
-            
-            bands[bandName] = count > 0 ? sum / count / 255 : 0;
-        }
-        
-        return bands;
     }
 
     calculateDominantFrequency() {
@@ -408,11 +355,6 @@ export class AudioManager {
     updateAudioState() {
         // Update state with current audio data, ensuring all values are numbers
         this.state.set('audioOverall', this.audioData.overall || 0);
-        this.state.set('audioBass', this.audioData.bass || 0);
-        this.state.set('audioLowMid', this.audioData.lowMid || 0);
-        this.state.set('audioMid', this.audioData.mid || 0);
-        this.state.set('audioHighMid', this.audioData.highMid || 0);
-        this.state.set('audioTreble', this.audioData.treble || 0);
         this.state.set('audioRMS', this.audioData.rms || 0);
         this.state.set('audioPeak', this.audioData.peak || 0);
         this.state.set('audioFrequency', this.audioData.frequency || 0);
@@ -423,11 +365,6 @@ export class AudioManager {
         return { ...this.audioData };
     }
 
-    // Get specific frequency band
-    getBand(bandName) {
-        return this.audioData[bandName] || 0;
-    }
-
     // Get overall volume
     getVolume() {
         return this.audioData.overall;
@@ -436,11 +373,6 @@ export class AudioManager {
     // Linear interpolation helper
     lerp(start, end, factor) {
         return start + (end - start) * factor;
-    }
-
-    // Set frequency band ranges
-    setFrequencyBands(bands) {
-        this.frequencyBands = { ...this.frequencyBands, ...bands };
     }
 
     // Set analysis parameters
@@ -475,7 +407,14 @@ export class AudioManager {
         await this.discoverAudioInterfaces();
     }
 
-
+    // Get raw frequency data for custom analysis (for audio mapping)
+    getRawFrequencyData() {
+        return {
+            frequencyData: this.frequencyData,
+            sampleRate: this.audioContext?.sampleRate,
+            fftSize: this.fftSize
+        };
+    }
 
     // Cleanup
     destroy() {

@@ -1626,14 +1626,16 @@ export class App {
         const control = this.audioMappingManager.addControl('frequency', nextIndex);
         
         if (control) {
-            // Add to state
+            // Add to state with new frequency range system
             const audioMappings = this.state.get('audioMappings') || {};
             audioMappings[control.controlId] = {
-                frequencyBand: 'overall',
+                minFrequency: 250,
+                maxFrequency: 2000,
                 target: 'animationSpeed',
                 minValue: 0,
                 maxValue: 1,
-                curve: 'linear'
+                curve: 'linear',
+                sensitivity: 1.0
             };
             this.state.set('audioMappings', audioMappings);
         }
@@ -1653,9 +1655,9 @@ export class App {
     testAudioMapping() {
         // Get current audio values
         const overall = this.state.get('audioOverall') || 0;
-        const bass = this.state.get('audioBass') || 0;
-        const mid = this.state.get('audioMid') || 0;
-        const treble = this.state.get('audioTreble') || 0;
+        const rms = this.state.get('audioRMS') || 0;
+        const peak = this.state.get('audioPeak') || 0;
+        const frequency = this.state.get('audioFrequency') || 0;
         
         // Test each active audio mapping control
         if (this.audioMappingManager) {
@@ -1671,7 +1673,7 @@ export class App {
         }
         
         // Show feedback
-        alert(`Audio mapping test completed!\nCurrent audio values:\nOverall: ${overall.toFixed(2)}\nBass: ${bass.toFixed(2)}\nMid: ${mid.toFixed(2)}\nTreble: ${treble.toFixed(2)}`);
+        alert(`Audio mapping test completed!\nCurrent audio values:\nOverall: ${overall.toFixed(2)}\nRMS: ${rms.toFixed(2)}\nPeak: ${peak.toFixed(2)}\nFrequency: ${frequency.toFixed(0)}Hz`);
     }
 
     updateAnimationParameter(target, value) {
@@ -2034,36 +2036,31 @@ History: ${summary.historySize} entries`;
         // Update audio analysis display
         this.updateAudioAnalysisDisplay = () => {
             const overall = this.state.get('audioOverall') || 0;
-            const bass = this.state.get('audioBass') || 0;
-            const lowMid = this.state.get('audioLowMid') || 0;
-            const mid = this.state.get('audioMid') || 0;
-            const highMid = this.state.get('audioHighMid') || 0;
-            const treble = this.state.get('audioTreble') || 0;
             const rms = this.state.get('audioRMS') || 0;
             const peak = this.state.get('audioPeak') || 0;
             const frequency = this.state.get('audioFrequency') || 0;
             
             // Update audio interface drawer elements
             const overallElement = document.getElementById('audio-overall-value');
-            const bassElement = document.getElementById('audio-bass-value');
-            const midElement = document.getElementById('audio-mid-value');
-            const trebleElement = document.getElementById('audio-treble-value');
+            const rmsElement = document.getElementById('audio-rms-value');
+            const peakElement = document.getElementById('audio-peak-value');
+            const frequencyElement = document.getElementById('audio-frequency-value');
             
             if (overallElement) overallElement.textContent = overall.toFixed(2);
-            if (bassElement) bassElement.textContent = bass.toFixed(2);
-            if (midElement) midElement.textContent = mid.toFixed(2);
-            if (trebleElement) trebleElement.textContent = treble.toFixed(2);
+            if (rmsElement) rmsElement.textContent = rms.toFixed(2);
+            if (peakElement) peakElement.textContent = peak.toFixed(2);
+            if (frequencyElement) frequencyElement.textContent = frequency.toFixed(0);
             
             // Update audio mapping drawer elements
             const mappingOverallElement = document.getElementById('audio-mapping-overall-value');
-            const mappingBassElement = document.getElementById('audio-mapping-bass-value');
-            const mappingMidElement = document.getElementById('audio-mapping-mid-value');
-            const mappingTrebleElement = document.getElementById('audio-mapping-treble-value');
+            const mappingRMSElement = document.getElementById('audio-mapping-rms-value');
+            const mappingPeakElement = document.getElementById('audio-mapping-peak-value');
+            const mappingFrequencyElement = document.getElementById('audio-mapping-frequency-value');
             
             if (mappingOverallElement) mappingOverallElement.textContent = overall.toFixed(2);
-            if (mappingBassElement) mappingBassElement.textContent = bass.toFixed(2);
-            if (mappingMidElement) mappingMidElement.textContent = mid.toFixed(2);
-            if (mappingTrebleElement) mappingTrebleElement.textContent = treble.toFixed(2);
+            if (mappingRMSElement) mappingRMSElement.textContent = rms.toFixed(2);
+            if (mappingPeakElement) mappingPeakElement.textContent = peak.toFixed(2);
+            if (mappingFrequencyElement) mappingFrequencyElement.textContent = frequency.toFixed(0);
         };
         
         // Event listeners
@@ -2109,27 +2106,17 @@ History: ${summary.historySize} entries`;
                 this.updateAudioAnalysisDisplay();
             }
         });
-        this.state.subscribe('audioBass', () => {
+        this.state.subscribe('audioRMS', () => {
             if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
                 this.updateAudioAnalysisDisplay();
             }
         });
-        this.state.subscribe('audioLowMid', () => {
+        this.state.subscribe('audioPeak', () => {
             if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
                 this.updateAudioAnalysisDisplay();
             }
         });
-        this.state.subscribe('audioMid', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioHighMid', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioTreble', () => {
+        this.state.subscribe('audioFrequency', () => {
             if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
                 this.updateAudioAnalysisDisplay();
             }

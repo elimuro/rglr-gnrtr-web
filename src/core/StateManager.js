@@ -210,11 +210,6 @@ export class StateManager {
             
             // Audio data (will be updated by AudioManager)
             "audioOverall": 0,
-            "audioBass": 0,
-            "audioLowMid": 0,
-            "audioMid": 0,
-            "audioHighMid": 0,
-            "audioTreble": 0,
             "audioRMS": 0,
             "audioPeak": 0,
             "audioFrequency": 0

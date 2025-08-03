@@ -1819,3 +1819,76 @@ canvas {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 } 
+
+/* Audio Mapping Sensitivity Slider */
+.sensitivity-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.sensitivity-slider::-webkit-slider-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    height: 4px;
+}
+
+.sensitivity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    background: #8b5cf6;
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    cursor: pointer;
+    box-shadow: 0 0 4px rgba(139, 92, 246, 0.5);
+    transition: all 0.2s ease;
+}
+
+.sensitivity-slider::-webkit-slider-thumb:hover {
+    background: #a78bfa;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+    transform: scale(1.1);
+}
+
+.sensitivity-slider::-moz-range-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    height: 4px;
+    border: none;
+}
+
+.sensitivity-slider::-moz-range-thumb {
+    background: #8b5cf6;
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 4px rgba(139, 92, 246, 0.5);
+    transition: all 0.2s ease;
+}
+
+.sensitivity-slider::-moz-range-thumb:hover {
+    background: #a78bfa;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+    transform: scale(1.1);
+}
+
+.sensitivity-value {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #8b5cf6;
+    text-shadow: 0 0 4px rgba(139, 92, 246, 0.5);
+}
+
+/* Audio Mapping Control Hover Effects */
+.audio-mapping-control:hover .sensitivity-slider::-webkit-slider-thumb {
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.9);
+}
+
+.audio-mapping-control:hover .sensitivity-value {
+    color: #a78bfa;
+    text-shadow: 0 0 6px rgba(139, 92, 246, 0.7);
+} 

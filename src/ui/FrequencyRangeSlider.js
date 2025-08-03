@@ -337,18 +337,9 @@ export class FrequencyRangeSlider {
     getAudioIntensity(frequency) {
         if (!this.audioData) return 0.1;
         
-        // Use actual audio data based on frequency ranges
-        if (frequency < 250) {
-            return this.audioData.bass || 0.1;
-        } else if (frequency < 500) {
-            return this.audioData.lowMid || 0.1;
-        } else if (frequency < 2000) {
-            return this.audioData.mid || 0.1;
-        } else if (frequency < 4000) {
-            return this.audioData.highMid || 0.1;
-        } else {
-            return this.audioData.treble || 0.1;
-        }
+        // Use overall audio intensity for visualization
+        // The actual frequency-specific analysis is handled by the audio mapping system
+        return this.audioData.overall || 0.1;
     }
     
     formatFrequency(frequency) {
