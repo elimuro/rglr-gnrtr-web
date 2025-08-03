@@ -194,6 +194,7 @@ export class StateManager {
             "midiChannel": 0,
             "midiCCMappings": {},
             "midiNoteMappings": {},
+            "audioMappings": {},
             
             // Audio reactivity parameters
             "audioEnabled": false,

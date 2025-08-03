@@ -12,6 +12,7 @@ import { AnimationLoop } from './AnimationLoop.js';
 import { StateManager } from './StateManager.js';
 import { MIDIManager } from '../midi-manager.js';
 import { MIDIControlManager } from '../midi-controls.js';
+import { AudioMappingManager } from '../audio-mapping.js';
 import { GUIManager } from '../ui/GUIManager.js';
 import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
 import { VideoRecorder } from '../modules/VideoRecorder.js';
@@ -69,11 +70,13 @@ export class App {
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
                     this.initializeControlManager();
+                    this.initializeAudioMappingManager();
                     this.loadAvailablePresets();
                     this.loadAvailableScenePresets();
                 });
             } else {
                 this.initializeControlManager();
+                this.initializeAudioMappingManager();
                 this.loadAvailablePresets();
                 this.loadAvailableScenePresets();
             }
@@ -182,6 +185,15 @@ export class App {
             this.addNoteControl();
         });
         
+        document.getElementById('add-audio-mapping-control').addEventListener('click', () => {
+            this.addAudioMappingControl();
+        });
+        
+        // Audio mapping test button
+        document.getElementById('audio-mapping-test').addEventListener('click', () => {
+            this.testAudioMapping();
+        });
+        
         // Scene management buttons
         document.getElementById('save-scene-button').addEventListener('click', () => {
             this.saveScene();
@@ -245,7 +257,8 @@ export class App {
             'drawer-audio-interface',
             'drawer-cc-mapping',
             'drawer-note-controls',
-            'drawer-scene-management'
+            'drawer-scene-management',
+            'drawer-audio-mapping'
         ];
         
         drawerButtons.forEach(buttonId => {
@@ -422,9 +435,11 @@ export class App {
     updateDrawerButtonStates(activeDrawer) {
         const drawerButtons = [
             'drawer-connection',
+            'drawer-audio-interface',
             'drawer-cc-mapping',
             'drawer-note-controls',
-            'drawer-scene-management'
+            'drawer-scene-management',
+            'drawer-audio-mapping'
         ];
         
         drawerButtons.forEach(buttonId => {
@@ -469,6 +484,23 @@ export class App {
         console.log('MIDI CC mappings:', this.state.get('midiCCMappings'));
         console.log('MIDI Note mappings:', this.state.get('midiNoteMappings'));
         this.recreateControlsFromPreset();
+    }
+    
+    initializeAudioMappingManager() {
+        console.log('Initializing audio mapping manager...');
+        
+        const audioMappingContainer = document.getElementById('audio-mapping-controls-container');
+        
+        if (!audioMappingContainer) {
+            console.error('Could not find audio mapping controls container');
+            return;
+        }
+        
+        this.audioMappingManager = new AudioMappingManager(audioMappingContainer, this);
+        
+        console.log('Audio mapping manager initialized successfully');
+        console.log('Audio mappings:', this.state.get('audioMappings'));
+        this.recreateAudioMappingControls();
     }
     
     toggleSection(toggle) {
@@ -1681,9 +1713,275 @@ export class App {
             this.state.set('midiNoteMappings', noteMappings);
         }
     }
+    
+    addAudioMappingControl() {
+        if (!this.audioMappingManager) return;
+        
+        const nextIndex = this.audioMappingManager.getNextControlIndex('frequency');
+        const control = this.audioMappingManager.addControl('frequency', nextIndex);
+        
+        if (control) {
+            // Add to state
+            const audioMappings = this.state.get('audioMappings') || {};
+            audioMappings[control.controlId] = {
+                frequencyBand: 'overall',
+                target: 'animationSpeed',
+                minValue: 0,
+                maxValue: 1,
+                curve: 'linear'
+            };
+            this.state.set('audioMappings', audioMappings);
+        }
+    }
+    
+    recreateAudioMappingControls() {
+        if (!this.audioMappingManager) return;
+        
+        const audioMappings = this.state.get('audioMappings') || {};
+        const controlsData = Object.values(audioMappings);
+        
+        if (controlsData.length > 0) {
+            this.audioMappingManager.deserialize(controlsData);
+        }
+    }
+    
+    testAudioMapping() {
+        console.log('Testing audio mapping...');
+        
+        // Get current audio values
+        const overall = this.state.get('audioOverall') || 0;
+        const bass = this.state.get('audioBass') || 0;
+        const mid = this.state.get('audioMid') || 0;
+        const treble = this.state.get('audioTreble') || 0;
+        
+        console.log('Current audio values:', { overall, bass, mid, treble });
+        
+        // Test each active audio mapping control
+        if (this.audioMappingManager) {
+            const controls = this.audioMappingManager.getAllControls();
+            console.log('Active audio mapping controls:', controls.length);
+            
+            controls.forEach(control => {
+                const mapping = control.getMapping();
+                console.log(`Control ${control.controlId}:`, mapping);
+                
+                // Simulate audio input for testing
+                const testValue = Math.random() * 0.5 + 0.25; // Random value between 0.25 and 0.75
+                control.updateParameter(testValue);
+            });
+        }
+        
+        // Show feedback
+        alert(`Audio mapping test completed!\nCurrent audio values:\nOverall: ${overall.toFixed(2)}\nBass: ${bass.toFixed(2)}\nMid: ${mid.toFixed(2)}\nTreble: ${treble.toFixed(2)}`);
+    }
 
     updateAnimationParameter(target, value) {
-        this.state.set(target, value);
+        // Use the same logic as handleCCMapping for consistent parameter updates
+        switch (target) {
+            case 'animationSpeed':
+                this.state.set('animationSpeed', 0.01 + value * 2);
+                break;
+            case 'movementAmplitude':
+                this.state.set('movementAmplitude', value * 0.5);
+                break;
+            case 'rotationAmplitude':
+                this.state.set('rotationAmplitude', value * 2);
+                break;
+            case 'scaleAmplitude':
+                this.state.set('scaleAmplitude', value);
+                break;
+            case 'randomness':
+                this.state.set('randomness', value);
+                break;
+            case 'cellSize':
+                this.state.set('cellSize', 0.5 + value * 1.5);
+                if (this.scene) this.scene.updateCellSize();
+                break;
+            case 'movementFrequency':
+                this.state.set('movementFrequency', 0.1 + value * 2);
+                break;
+            case 'rotationFrequency':
+                this.state.set('rotationFrequency', 0.1 + value * 2);
+                break;
+            case 'scaleFrequency':
+                this.state.set('scaleFrequency', 0.1 + value * 2);
+                break;
+            case 'gridWidth':
+                const newWidth = Math.floor(1 + value * 29);
+                if (this.state.get('gridWidth') !== newWidth) {
+                    this.state.set('gridWidth', newWidth);
+                    if (this.scene) this.scene.createGrid();
+                }
+                break;
+            case 'gridHeight':
+                const newHeight = Math.floor(1 + value * 29);
+                if (this.state.get('gridHeight') !== newHeight) {
+                    this.state.set('gridHeight', newHeight);
+                    if (this.scene) this.scene.createGrid();
+                }
+                break;
+            case 'compositionWidth':
+                const newCompWidth = Math.floor(1 + value * 29);
+                if (this.state.get('compositionWidth') !== newCompWidth) {
+                    this.state.set('compositionWidth', newCompWidth);
+                    if (this.scene) this.scene.createGrid();
+                }
+                break;
+            case 'compositionHeight':
+                const newCompHeight = Math.floor(1 + value * 29);
+                if (this.state.get('compositionHeight') !== newCompHeight) {
+                    this.state.set('compositionHeight', newCompHeight);
+                    if (this.scene) this.scene.createGrid();
+                }
+                break;
+            case 'animationType':
+                this.state.set('animationType', Math.floor(value * 4));
+                break;
+            case 'sphereRefraction':
+                this.state.set('sphereRefraction', value * 2);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereTransparency':
+                this.state.set('sphereTransparency', value);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereTransmission':
+                this.state.set('sphereTransmission', value);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereRoughness':
+                this.state.set('sphereRoughness', value);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereMetalness':
+                this.state.set('sphereMetalness', value);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereScale':
+                this.state.set('sphereScale', 0.5 + value * 2.5);
+                if (this.scene) this.scene.updateSphereScales();
+                break;
+            case 'sphereClearcoat':
+                this.state.set('sphereClearcoat', value);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereClearcoatRoughness':
+                this.state.set('sphereClearcoatRoughness', value);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereEnvMapIntensity':
+                this.state.set('sphereEnvMapIntensity', value * 3);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'bloomStrength':
+                this.state.set('bloomStrength', value * 2);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'bloomRadius':
+                this.state.set('bloomRadius', value * 2);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'bloomThreshold':
+                this.state.set('bloomThreshold', value);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'chromaticIntensity':
+                this.state.set('chromaticIntensity', value);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'vignetteIntensity':
+                this.state.set('vignetteIntensity', value);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'vignetteRadius':
+                this.state.set('vignetteRadius', value);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'vignetteSoftness':
+                this.state.set('vignetteSoftness', value);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'grainIntensity':
+                this.state.set('grainIntensity', value * 0.5);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'colorHue':
+                this.state.set('colorHue', (value - 0.5) * 2);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'colorSaturation':
+                this.state.set('colorSaturation', value * 3);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'colorBrightness':
+                this.state.set('colorBrightness', value * 2);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'colorContrast':
+                this.state.set('colorContrast', value * 2);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'ambientLightIntensity':
+                this.state.set('ambientLightIntensity', value * 2);
+                if (this.scene) this.scene.updateLighting();
+                break;
+            case 'directionalLightIntensity':
+                this.state.set('directionalLightIntensity', value * 3);
+                if (this.scene) this.scene.updateLighting();
+                break;
+            case 'pointLight1Intensity':
+                this.state.set('pointLight1Intensity', value * 3);
+                if (this.scene) this.scene.updateLighting();
+                break;
+            case 'pointLight2Intensity':
+                this.state.set('pointLight2Intensity', value * 3);
+                if (this.scene) this.scene.updateLighting();
+                break;
+            case 'rimLightIntensity':
+                this.state.set('rimLightIntensity', value * 3);
+                if (this.scene) this.scene.updateLighting();
+                break;
+            case 'accentLightIntensity':
+                this.state.set('accentLightIntensity', value * 3);
+                if (this.scene) this.scene.updateLighting();
+                break;
+            case 'centerScalingEnabled':
+                this.state.set('centerScalingEnabled', value > 0.5);
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingIntensity':
+                this.state.set('centerScalingIntensity', value * 2);
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingCurve':
+                this.state.set('centerScalingCurve', Math.floor(value * 4));
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingRadius':
+                this.state.set('centerScalingRadius', 0.1 + value * 5);
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingDirection':
+                this.state.set('centerScalingDirection', Math.floor(value * 2));
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingAnimation':
+                this.state.set('centerScalingAnimation', value > 0.5);
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingAnimationSpeed':
+                this.state.set('centerScalingAnimationSpeed', 0.1 + value * 3);
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingAnimationType':
+                this.state.set('centerScalingAnimationType', Math.floor(value * 4));
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            default:
+                // For any other parameters, just set the value directly
+                this.state.set(target, value);
+                break;
+        }
     }
 
     triggerNoteAction(target) {
@@ -1856,9 +2154,15 @@ History: ${summary.historySize} entries`;
         this.updateAudioAnalysisDisplay = () => {
             const overall = this.state.get('audioOverall') || 0;
             const bass = this.state.get('audioBass') || 0;
+            const lowMid = this.state.get('audioLowMid') || 0;
             const mid = this.state.get('audioMid') || 0;
+            const highMid = this.state.get('audioHighMid') || 0;
             const treble = this.state.get('audioTreble') || 0;
+            const rms = this.state.get('audioRMS') || 0;
+            const peak = this.state.get('audioPeak') || 0;
+            const frequency = this.state.get('audioFrequency') || 0;
             
+            // Update audio interface drawer elements
             const overallElement = document.getElementById('audio-overall-value');
             const bassElement = document.getElementById('audio-bass-value');
             const midElement = document.getElementById('audio-mid-value');
@@ -1868,6 +2172,17 @@ History: ${summary.historySize} entries`;
             if (bassElement) bassElement.textContent = bass.toFixed(2);
             if (midElement) midElement.textContent = mid.toFixed(2);
             if (trebleElement) trebleElement.textContent = treble.toFixed(2);
+            
+            // Update audio mapping drawer elements
+            const mappingOverallElement = document.getElementById('audio-mapping-overall-value');
+            const mappingBassElement = document.getElementById('audio-mapping-bass-value');
+            const mappingMidElement = document.getElementById('audio-mapping-mid-value');
+            const mappingTrebleElement = document.getElementById('audio-mapping-treble-value');
+            
+            if (mappingOverallElement) mappingOverallElement.textContent = overall.toFixed(2);
+            if (mappingBassElement) mappingBassElement.textContent = bass.toFixed(2);
+            if (mappingMidElement) mappingMidElement.textContent = mid.toFixed(2);
+            if (mappingTrebleElement) mappingTrebleElement.textContent = treble.toFixed(2);
         };
         
         // Event listeners
@@ -1907,24 +2222,49 @@ History: ${summary.historySize} entries`;
         this.state.subscribe('audioListening', () => this.updateAudioStatus());
         this.state.subscribe('audioAvailable', () => this.updateAudioStatus());
         
-        // Only update audio analysis display if the audio interface drawer is open
+        // Update audio analysis display for both audio interface and audio mapping drawers
         this.state.subscribe('audioOverall', () => {
-            if (this.currentDrawer === 'audio-interface') {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
                 this.updateAudioAnalysisDisplay();
             }
         });
         this.state.subscribe('audioBass', () => {
-            if (this.currentDrawer === 'audio-interface') {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
+                this.updateAudioAnalysisDisplay();
+            }
+        });
+        this.state.subscribe('audioLowMid', () => {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
                 this.updateAudioAnalysisDisplay();
             }
         });
         this.state.subscribe('audioMid', () => {
-            if (this.currentDrawer === 'audio-interface') {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
+                this.updateAudioAnalysisDisplay();
+            }
+        });
+        this.state.subscribe('audioHighMid', () => {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
                 this.updateAudioAnalysisDisplay();
             }
         });
         this.state.subscribe('audioTreble', () => {
-            if (this.currentDrawer === 'audio-interface') {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
+                this.updateAudioAnalysisDisplay();
+            }
+        });
+        this.state.subscribe('audioRMS', () => {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
+                this.updateAudioAnalysisDisplay();
+            }
+        });
+        this.state.subscribe('audioPeak', () => {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
+                this.updateAudioAnalysisDisplay();
+            }
+        });
+        this.state.subscribe('audioFrequency', () => {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
                 this.updateAudioAnalysisDisplay();
             }
         });
