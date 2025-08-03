@@ -17,6 +17,9 @@ import { GUIManager } from '../ui/GUIManager.js';
 import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
 import { VideoRecorder } from '../modules/VideoRecorder.js';
 import { AudioManager } from '../modules/AudioManager.js';
+import { MIDIClockManager } from './MIDIClockManager.js';
+import { TransportController } from './TransportController.js';
+import { TransportUI } from '../ui/TransportUI.js';
 
 export class App {
     constructor() {
@@ -26,6 +29,11 @@ export class App {
         this.midiManager = new MIDIManager(this);
         this.controlManager = null;
         this.guiManager = null;
+        
+        // Initialize transport and timing systems
+        this.midiClockManager = new MIDIClockManager(this);
+        this.transportController = new TransportController(this);
+        this.transportUI = null; // Will be initialized after DOM is ready
         
         // Initialize morphing system
         this.morphingSystem = new ShapeMorphingSystem();
@@ -71,12 +79,14 @@ export class App {
                 document.addEventListener('DOMContentLoaded', () => {
                     this.initializeControlManager();
                     this.initializeAudioMappingManager();
+                    this.initializeTransportUI();
                     this.loadAvailablePresets();
                     this.loadAvailableScenePresets();
                 });
             } else {
                 this.initializeControlManager();
                 this.initializeAudioMappingManager();
+                this.initializeTransportUI();
                 this.loadAvailablePresets();
                 this.loadAvailableScenePresets();
             }
@@ -475,6 +485,15 @@ export class App {
         this.audioMappingManager = new AudioMappingManager(audioMappingContainer, this);
         
         this.recreateAudioMappingControls();
+    }
+    
+    initializeTransportUI() {
+        try {
+            this.transportUI = new TransportUI(this);
+            console.log('Transport UI initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize Transport UI:', error);
+        }
     }
     
     toggleSection(toggle) {

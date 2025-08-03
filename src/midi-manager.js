@@ -303,6 +303,15 @@ export class MIDIManager {
                 }
                 break;
 
+            case 0xF0: // System messages
+                if (data[0] === 0xF2 && data.length === 3) { // Song Position Pointer
+                    if (this.app.midiClockManager) {
+                        this.app.midiClockManager.handleSongPositionPointer(data);
+                    }
+                    messageType = `Song Position: ${data[1] | (data[2] << 7)}`;
+                }
+                break;
+
             case 0xD0: // Channel Pressure (Aftertouch)
                 {
                     this.app.onMIDIAftertouch(data[1] / 127);
@@ -318,10 +327,75 @@ export class MIDIManager {
                 break;
 
             default:
+                // Check for system realtime messages (single byte)
+                if (data.length === 1) {
+                    this.handleSystemRealtimeMessage(data[0], event.timeStamp);
+                }
                 return;
         }
 
         this.updateLastMessage(messageType);
+    }
+
+    // Handle MIDI System Realtime Messages
+    handleSystemRealtimeMessage(statusByte, timestamp) {
+        let messageType = '';
+
+        switch (statusByte) {
+            case 0xF8: // MIDI Clock
+                if (this.app.midiClockManager) {
+                    this.app.midiClockManager.handleMIDIClock(timestamp);
+                }
+                messageType = 'MIDI Clock';
+                break;
+
+            case 0xFA: // MIDI Start
+                if (this.app.midiClockManager) {
+                    this.app.midiClockManager.handleMIDIStart(timestamp);
+                }
+                messageType = 'MIDI Start';
+                break;
+
+            case 0xFB: // MIDI Continue
+                if (this.app.midiClockManager) {
+                    this.app.midiClockManager.handleMIDIContinue(timestamp);
+                }
+                messageType = 'MIDI Continue';
+                break;
+
+            case 0xFC: // MIDI Stop
+                if (this.app.midiClockManager) {
+                    this.app.midiClockManager.handleMIDIStop(timestamp);
+                }
+                messageType = 'MIDI Stop';
+                break;
+
+            case 0xF2: // Song Position Pointer (3 bytes total)
+                // This should be handled in the main message handler as it has data bytes
+                break;
+
+            case 0xF3: // Song Select
+                messageType = 'Song Select';
+                break;
+
+            case 0xFE: // Active Sensing
+                messageType = 'Active Sensing';
+                break;
+
+            case 0xFF: // System Reset
+                if (this.app.midiClockManager) {
+                    this.app.midiClockManager.reset();
+                }
+                messageType = 'System Reset';
+                break;
+
+            default:
+                return;
+        }
+
+        if (messageType) {
+            this.updateLastMessage(messageType);
+        }
     }
 
     showMIDIActivity() {

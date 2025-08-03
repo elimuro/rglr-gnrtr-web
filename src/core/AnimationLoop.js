@@ -74,9 +74,23 @@ export class AnimationLoop {
             this.lastFpsUpdate = currentTime;
         }
         
-        // Update animation time
+        // Update animation time based on sync source
         if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation')) {
-            this.animationTime += this.clock.getDelta() * this.state.get('animationSpeed');
+            const syncSource = this.state.get('syncSource');
+            const transportMode = this.state.get('transportMode');
+            
+            if (syncSource === 'midi' && this.scene.app.transportController && transportMode === 'playing') {
+                // Use MIDI clock timing
+                const midiAnimationTime = this.scene.app.transportController.getAnimationTime();
+                this.animationTime = midiAnimationTime * this.state.get('animationSpeed');
+            } else if (syncSource === 'internal' && this.scene.app.transportController && transportMode === 'playing') {
+                // Use internal transport timing
+                const internalAnimationTime = this.scene.app.transportController.getAnimationTime();
+                this.animationTime = internalAnimationTime * this.state.get('animationSpeed');
+            } else if (syncSource === 'internal' && transportMode === 'stopped') {
+                // Use traditional Three.js clock when not using transport
+                this.animationTime += this.clock.getDelta() * this.state.get('animationSpeed');
+            }
             
             // Apply animations to shapes
             this.scene.animateShapes(this.animationTime, this.state.get('animationSpeed'));

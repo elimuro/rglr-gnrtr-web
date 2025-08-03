@@ -78,6 +78,15 @@ export class StateManager {
                 initialState.midiCCMappings = {};
                 initialState.midiNoteMappings = {};
                 
+                // Add transport and timing parameters
+                initialState.transportMode = 'stopped';
+                initialState.syncSource = 'internal';
+                initialState.internalBPM = 120;
+                initialState.currentBPM = 120;
+                initialState.beatDivision = '1/4';
+                initialState.midiClockEnabled = false;
+                initialState.beatPosition = { bar: 1, beat: 1, tick: 1 };
+                
                 // Add sphereDistortionStrength if not present
                 if (!initialState.hasOwnProperty('sphereDistortionStrength')) {
                     initialState.sphereDistortionStrength = 0.1;
@@ -188,6 +197,15 @@ export class StateManager {
             "midiCCMappings": {},
             "midiNoteMappings": {},
             "audioMappings": {},
+            
+            // Transport and timing parameters
+            "transportMode": "stopped",
+            "syncSource": "internal",
+            "internalBPM": 120,
+            "currentBPM": 120,
+            "beatDivision": "1/4",
+            "midiClockEnabled": false,
+            "beatPosition": { "bar": 1, "beat": 1, "tick": 1 },
             
             // Audio reactivity parameters
             "audioEnabled": false,
