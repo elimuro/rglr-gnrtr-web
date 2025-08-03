@@ -304,6 +304,18 @@ canvas {
     #midi-drawer-container.connection-drawer.open {
         transform: translateY(0);
     }
+    
+    /* Audio interface drawer positioned on the left */
+    #midi-drawer-container.audio-interface-drawer {
+        left: 16px;
+        right: auto;
+        width: 400px;
+        transform: translateY(-100%);
+    }
+    
+    #midi-drawer-container.audio-interface-drawer.open {
+        transform: translateY(0);
+    }
 }
 
 /* Mobile responsive adjustments for drawer container */

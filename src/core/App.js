@@ -342,8 +342,13 @@ export class App {
             // Add specific class for connection drawer positioning
             if (drawerName === 'connection') {
                 this.drawerContainer.classList.add('connection-drawer');
+                this.drawerContainer.classList.remove('audio-interface-drawer');
+            } else if (drawerName === 'audio-interface') {
+                this.drawerContainer.classList.add('audio-interface-drawer');
+                this.drawerContainer.classList.remove('connection-drawer');
             } else {
                 this.drawerContainer.classList.remove('connection-drawer');
+                this.drawerContainer.classList.remove('audio-interface-drawer');
             }
         }
         
@@ -371,8 +376,9 @@ export class App {
             this.hideDrawerContainer();
             this.currentDrawer = null;
             
-            // Remove connection-drawer class
+            // Remove drawer-specific classes
             this.drawerContainer.classList.remove('connection-drawer');
+            this.drawerContainer.classList.remove('audio-interface-drawer');
             
             // Reset all button states
             this.updateDrawerButtonStates(null);

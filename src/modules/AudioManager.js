@@ -265,9 +265,6 @@ export class AudioManager {
             
             console.log('Audio capture started with interface:', this.selectedInterface.label);
             
-            // Test audio context with a brief tone
-            this.testAudioContext();
-            
         } catch (error) {
             console.error('Failed to start audio capture with exact device:', error);
             
@@ -302,9 +299,6 @@ export class AudioManager {
                 this.analyzeAudio();
                 
                 console.log('Audio capture started with fallback interface:', this.selectedInterface.label);
-                
-                // Test audio context with a brief tone
-                this.testAudioContext();
                 
             } catch (fallbackError) {
                 console.error('Failed to start audio capture with fallback:', fallbackError);
@@ -370,21 +364,7 @@ export class AudioManager {
             frequency: this.calculateDominantFrequency()
         };
         
-        // Debug: Log audio levels every 60 frames (about once per second)
-        if (this.frameCount === undefined) this.frameCount = 0;
-        this.frameCount++;
-        if (this.frameCount % 60 === 0) {
-            console.log('Audio Analysis Debug:', {
-                overall: this.audioData.overall.toFixed(3),
-                bass: this.audioData.bass.toFixed(3),
-                mid: this.audioData.mid.toFixed(3),
-                treble: this.audioData.treble.toFixed(3),
-                rms: this.audioData.rms.toFixed(3),
-                peak: this.audioData.peak.toFixed(3),
-                contextState: this.audioContext.state,
-                isListening: this.isListening
-            });
-        }
+
         
         // Update state with audio data
         this.updateAudioState();
@@ -506,28 +486,7 @@ export class AudioManager {
         await this.discoverAudioInterfaces();
     }
 
-    // Test audio context functionality
-    testAudioContext() {
-        try {
-            // Create a simple oscillator to test audio context
-            const oscillator = this.audioContext.createOscillator();
-            const gainNode = this.audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(this.audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime); // A4 note
-            gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime); // Low volume
-            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
-            
-            oscillator.start(this.audioContext.currentTime);
-            oscillator.stop(this.audioContext.currentTime + 0.1);
-            
-            console.log('Audio context test tone played successfully');
-        } catch (error) {
-            console.error('Audio context test failed:', error);
-        }
-    }
+
 
     // Cleanup
     destroy() {
