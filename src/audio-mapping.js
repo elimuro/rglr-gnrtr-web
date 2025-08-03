@@ -81,12 +81,10 @@ const AUDIO_MAPPING_CONFIGS = {
 const AUDIO_MAPPING_TEMPLATES = {
     frequency: `
         <div class="flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
-            <label class="text-xs font-medium text-gray-300 min-w-16 flex-shrink-0">{label} {index}:</label>
+            <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
             
             <div class="flex items-center gap-1 flex-1">
-                <select class="frequency-band-select px-1 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none min-w-20">
-                    {frequencyBandOptions}
-                </select>
+                <div class="frequency-slider-container flex-1 min-w-0"></div>
                 
                 <span class="text-xs text-gray-400 mx-1">→</span>
                 
@@ -111,9 +109,11 @@ export class AudioMappingControl {
         this.app = app;
         this.controlId = this.generateControlId();
         this.element = null;
+        this.frequencySlider = null;
         this.isLearning = false;
         this.mapping = {
-            frequencyBand: 'overall',
+            minFrequency: 250,
+            maxFrequency: 2000,
             target: 'animationSpeed',
             minValue: 0,
             maxValue: 1,
@@ -142,13 +142,16 @@ export class AudioMappingControl {
         const html = this.interpolateTemplate(template, config);
         this.element = this.createElement(html);
         this.container.appendChild(this.element);
+        
+        // Create frequency range slider
+        this.createFrequencySlider();
+        
         this.setupListeners();
     }
     
     interpolateTemplate(template, config) {
         return template
             .replace('{controlId}', this.controlId)
-            .replace('{label}', config.label)
             .replace('{index}', this.index)
             .replace('{frequencyBandOptions}', this.generateFrequencyBandOptions(config.frequencyBands))
             .replace('{targetOptions}', this.generateTargetOptions(config.targets));
@@ -172,18 +175,54 @@ export class AudioMappingControl {
         return div.firstChild;
     }
     
-    setupListeners() {
-        if (!this.element) return;
+    createFrequencySlider() {
+        const sliderContainer = this.element.querySelector('.frequency-slider-container');
+        if (!sliderContainer) return;
         
-        // Frequency band selection
-        const frequencySelect = this.element.querySelector('.frequency-band-select');
-        if (frequencySelect) {
-            frequencySelect.value = this.mapping.frequencyBand;
-            frequencySelect.addEventListener('change', (e) => {
-                this.mapping.frequencyBand = e.target.value;
+        // Import and create the frequency range slider
+        import('./ui/FrequencyRangeSlider.js').then(({ FrequencyRangeSlider }) => {
+            // Get the container width to make slider responsive
+            const containerWidth = sliderContainer.offsetWidth || 300;
+            
+            this.frequencySlider = new FrequencyRangeSlider(sliderContainer, {
+                width: containerWidth,
+                height: 24,
+                defaultMin: this.mapping.minFrequency,
+                defaultMax: this.mapping.maxFrequency
+            });
+            
+            // Listen for frequency range changes
+            this.frequencySlider.element.addEventListener('frequencyRangeChange', (e) => {
+                this.mapping.minFrequency = e.detail.minFrequency;
+                this.mapping.maxFrequency = e.detail.maxFrequency;
                 this.updateMapping();
             });
-        }
+            
+            // Update audio data for visualization
+            this.updateSliderAudioData();
+        });
+    }
+    
+    updateSliderAudioData() {
+        if (!this.frequencySlider || !this.app) return;
+        
+        // Get current audio data from the app
+        const audioData = {
+            overall: this.app.state.get('audioOverall') || 0,
+            bass: this.app.state.get('audioBass') || 0,
+            lowMid: this.app.state.get('audioLowMid') || 0,
+            mid: this.app.state.get('audioMid') || 0,
+            highMid: this.app.state.get('audioHighMid') || 0,
+            treble: this.app.state.get('audioTreble') || 0,
+            rms: this.app.state.get('audioRMS') || 0,
+            peak: this.app.state.get('audioPeak') || 0
+        };
+        
+        this.frequencySlider.setAudioData(audioData);
+    }
+    
+    setupListeners() {
+        if (!this.element) return;
         
         // Target selection
         const targetSelect = this.element.querySelector('.target-select');
@@ -238,7 +277,12 @@ export class AudioMappingControl {
     setupAudioLearning() {
         // Subscribe to audio analysis updates for learning/testing
         this.audioSubscription = (frequencyBand, value) => {
-            if (this.isLearning && frequencyBand === this.mapping.frequencyBand) {
+            // Update slider audio data
+            this.updateSliderAudioData();
+            
+            // Check if the frequency is within our selected range
+            const frequency = this.getFrequencyFromBand(frequencyBand);
+            if (this.isLearning && frequency >= this.mapping.minFrequency && frequency <= this.mapping.maxFrequency) {
                 this.updateParameter(value);
                 
                 // Update the UI to show the current audio value
@@ -254,13 +298,18 @@ export class AudioMappingControl {
             this.app.audioMappingManager.registerAudioListener(this.controlId, this.audioSubscription);
         }
         
-        console.log('Audio learning started for control:', this.controlId, 'frequency band:', this.mapping.frequencyBand);
+        console.log('Audio learning started for control:', this.controlId, 'frequency range:', this.mapping.minFrequency, '-', this.mapping.maxFrequency);
     }
     
     setupContinuousAudioMapping() {
         // Set up continuous audio mapping (always active)
         this.continuousAudioSubscription = (frequencyBand, value) => {
-            if (frequencyBand === this.mapping.frequencyBand) {
+            // Update slider audio data
+            this.updateSliderAudioData();
+            
+            // Check if the frequency is within our selected range
+            const frequency = this.getFrequencyFromBand(frequencyBand);
+            if (frequency >= this.mapping.minFrequency && frequency <= this.mapping.maxFrequency) {
                 this.updateParameter(value);
             }
         };
@@ -270,7 +319,24 @@ export class AudioMappingControl {
             this.app.audioMappingManager.registerAudioListener(this.controlId, this.continuousAudioSubscription);
         }
         
-        console.log('Continuous audio mapping enabled for control:', this.controlId, 'frequency band:', this.mapping.frequencyBand);
+        console.log('Continuous audio mapping enabled for control:', this.controlId, 'frequency range:', this.mapping.minFrequency, '-', this.mapping.maxFrequency);
+    }
+    
+    getFrequencyFromBand(frequencyBand) {
+        // Convert frequency band to approximate frequency
+        const bandFrequencies = {
+            'overall': 1000, // Average frequency
+            'bass': 100,
+            'lowMid': 375,
+            'mid': 1250,
+            'highMid': 3000,
+            'treble': 8000,
+            'rms': 1000,
+            'peak': 1000,
+            'frequency': 1000
+        };
+        
+        return bandFrequencies[frequencyBand] || 1000;
     }
     
     cleanupAudioLearning() {
@@ -361,11 +427,13 @@ export class AudioMappingControl {
         
         // Update UI elements
         if (this.element) {
-            const frequencySelect = this.element.querySelector('.frequency-band-select');
             const targetSelect = this.element.querySelector('.target-select');
-            
-            if (frequencySelect) frequencySelect.value = this.mapping.frequencyBand;
             if (targetSelect) targetSelect.value = this.mapping.target;
+            
+            // Update frequency slider if it exists
+            if (this.frequencySlider) {
+                this.frequencySlider.setRange(this.mapping.minFrequency, this.mapping.maxFrequency);
+            }
         }
     }
     
@@ -398,6 +466,12 @@ export class AudioMappingControl {
         if (this.element) {
             this.element.remove();
             this.element = null;
+        }
+        
+        // Clean up frequency slider
+        if (this.frequencySlider) {
+            this.frequencySlider.destroy();
+            this.frequencySlider = null;
         }
         
         // Clean up audio subscriptions

@@ -97,7 +97,7 @@ const CONTROL_CONFIGS = {
 const CONTROL_TEMPLATES = {
     cc: `
         <div class="flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
-            <label class="text-xs font-medium text-gray-300 min-w-16 flex-shrink-0">{label} {index}:</label>
+            <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
             <div class="flex gap-1 items-center flex-1">
                 <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-midi-green rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch">
                 <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}">
@@ -111,7 +111,7 @@ const CONTROL_TEMPLATES = {
     `,
     note: `
         <div class="flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
-            <label class="text-xs font-medium text-gray-300 min-w-16 flex-shrink-0">{label} {index}:</label>
+            <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
             <div class="flex gap-1 items-center flex-1">
                 <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-midi-green rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch">
                 <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}">
@@ -173,7 +173,6 @@ export class MIDIControl {
         
         return template
             .replace(/{controlId}/g, this.controlId)
-            .replace(/{label}/g, this.config.label)
             .replace(/{index}/g, this.index)
             .replace(/{defaultValue}/g, this.config.defaultValue)
             .replace(/{inputPlaceholder}/g, this.config.inputPlaceholder)
