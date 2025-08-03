@@ -300,7 +300,7 @@ export class AudioMappingControl {
     setupAudioLearning() {
         // DISABLED: Old frequency band system - now using new frequency range system
         // This method is kept for compatibility but does nothing
-        console.log('Audio learning disabled - using new frequency range system');
+        // console.log('Audio learning disabled - using new frequency range system');
     }
     
     setupContinuousAudioMapping() {
@@ -325,7 +325,7 @@ export class AudioMappingControl {
             this.updateSliderAudioData();
         }, 100); // Update every 100ms for smooth visualization
         
-        console.log('Continuous audio mapping enabled for control:', this.controlId, 'frequency range:', this.mapping.minFrequency, '-', this.mapping.maxFrequency);
+        // console.log('Continuous audio mapping enabled for control:', this.controlId, 'frequency range:', this.mapping.minFrequency, '-', this.mapping.maxFrequency);
     }
 
     calculateFrequencyRangeAverage() {
@@ -375,9 +375,9 @@ export class AudioMappingControl {
         }
         
         // Only log when there's significant activity in the selected range
-        if (this.lastAverage > 0.1) {
-            console.log(`🎵 ${this.mapping.minFrequency}Hz-${this.mapping.maxFrequency}Hz: ${(this.lastAverage * 100).toFixed(1)}%`);
-        }
+        // if (this.lastAverage > 0.1) {
+        //     console.log(`🎵 ${this.mapping.minFrequency}Hz-${this.mapping.maxFrequency}Hz: ${(this.lastAverage * 100).toFixed(1)}%`);
+        // }
         
         return this.lastAverage;
     }
@@ -385,7 +385,7 @@ export class AudioMappingControl {
     getFrequencyFromBand(frequencyBand) {
         // DISABLED: Old frequency band system - now using new frequency range system
         // This method is kept for compatibility but does nothing
-        console.log('getFrequencyFromBand disabled - using new frequency range system');
+        // console.log('getFrequencyFromBand disabled - using new frequency range system');
         return 1000; // Default fallback
     }
     
@@ -396,7 +396,7 @@ export class AudioMappingControl {
         }
         
         this.audioSubscription = null;
-        console.log('Audio learning stopped for control:', this.controlId);
+        // console.log('Audio learning stopped for control:', this.controlId);
     }
     
     cleanupContinuousAudioMapping() {
@@ -412,7 +412,7 @@ export class AudioMappingControl {
         }
         
         this.continuousAudioSubscription = null;
-        console.log('Continuous audio mapping disabled for control:', this.controlId);
+        // console.log('Continuous audio mapping disabled for control:', this.controlId);
     }
     
     updateParameter(audioValue) {

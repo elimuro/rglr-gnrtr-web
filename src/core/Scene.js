@@ -47,7 +47,6 @@ export class Scene {
             accent: null
         };
         
-        this.setupLighting();
         this.setupEventListeners();
     }
 
@@ -55,6 +54,9 @@ export class Scene {
         try {
             this.createGrid();
             this.updateBackgroundColor();
+            
+            // Setup lighting after state is initialized
+            this.setupLighting();
             
             // Initialize post-processing
             this.postProcessingManager = new PostProcessingManager(this.scene, this.camera, this.renderer);
@@ -88,11 +90,66 @@ export class Scene {
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.2; // Slightly increased exposure
         this.renderer.physicallyCorrectLights = true; // Better for physical materials
-        this.renderer.useLegacyLights = false; // Use modern lighting
         document.body.appendChild(this.renderer.domElement);
     }
 
     setupLighting() {
+        // Add safety check for state initialization
+        if (!this.state.isInitialized()) {
+            console.warn('StateManager not initialized, using default lighting values');
+            // Use default values if state is not ready
+            const defaultIntensities = {
+                ambientLightIntensity: 0.97,
+                directionalLightIntensity: 0.04,
+                pointLight1Intensity: 2.94,
+                pointLight2Intensity: 3,
+                rimLightIntensity: 3,
+                accentLightIntensity: 2.97
+            };
+            
+            // Enhanced ambient light for better overall illumination
+            const ambientLight = new THREE.AmbientLight(0x404040, defaultIntensities.ambientLightIntensity);
+            this.scene.add(ambientLight);
+            this.lights.ambient = ambientLight;
+
+            // Main directional light for shadows and primary illumination
+            const directionalLight = new THREE.DirectionalLight(0xffffff, defaultIntensities.directionalLightIntensity);
+            directionalLight.position.set(10, 10, 5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 50;
+            this.scene.add(directionalLight);
+            this.lights.directional = directionalLight;
+
+            // Enhanced point light for refractive materials
+            const pointLight = new THREE.PointLight(0xffffff, defaultIntensities.pointLight1Intensity, 100);
+            pointLight.position.set(0, 0, 10);
+            this.scene.add(pointLight);
+            this.lights.point1 = pointLight;
+
+            // Additional point light for better sphere illumination
+            const pointLight2 = new THREE.PointLight(0x87ceeb, defaultIntensities.pointLight2Intensity, 80);
+            pointLight2.position.set(-5, 5, 8);
+            this.scene.add(pointLight2);
+            this.lights.point2 = pointLight2;
+
+            // Rim light for better sphere definition
+            const rimLight = new THREE.DirectionalLight(0xffffff, defaultIntensities.rimLightIntensity);
+            rimLight.position.set(-8, -8, 3);
+            this.scene.add(rimLight);
+            this.lights.rim = rimLight;
+
+            // Colored accent light for more interesting lighting
+            const accentLight = new THREE.PointLight(0xff6b6b, defaultIntensities.accentLightIntensity, 60);
+            accentLight.position.set(8, -5, 6);
+            this.scene.add(accentLight);
+            this.lights.accent = accentLight;
+            
+            return;
+        }
+        
         // Enhanced ambient light for better overall illumination
         const ambientLight = new THREE.AmbientLight(0x404040, this.state.get('ambientLightIntensity'));
         this.scene.add(ambientLight);
