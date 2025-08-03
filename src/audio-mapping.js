@@ -227,10 +227,7 @@ export class AudioMappingControl {
             frequency: this.app.state.get('audioFrequency') || 0
         };
         
-        // Debug: Log audio data occasionally
-        if (Math.random() < 0.01) { // Log 1% of the time to avoid spam
-            console.log('🎵 Audio data for mapping:', audioData);
-        }
+
         
         this.frequencySlider.setAudioData(audioData);
     }
@@ -315,10 +312,7 @@ export class AudioMappingControl {
             const averageAmplitude = this.calculateFrequencyRangeAverage();
             if (averageAmplitude !== null) {
                 this.updateParameter(averageAmplitude);
-                // Debug: Log when audio mapping is active
-                if (Math.random() < 0.005) { // Log 0.5% of the time
-                    console.log('🎵 Audio mapping active:', this.controlId, 'amplitude:', averageAmplitude.toFixed(3));
-                }
+
             }
         };
         // Register for continuous audio updates
@@ -677,10 +671,7 @@ export class AudioMappingManager {
     }
     
     broadcastAudioUpdate() {
-        // Broadcast audio updates to all registered listeners
-        if (this.audioListeners.size > 0) {
-            console.log('🎵 Broadcasting audio update to', this.audioListeners.size, 'listeners');
-        }
+
         
         this.audioListeners.forEach((callbacks, controlId) => {
             callbacks.forEach(callback => {

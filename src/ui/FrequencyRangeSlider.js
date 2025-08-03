@@ -96,6 +96,7 @@ export class FrequencyRangeSlider {
                 rgba(249, 115, 22, 0.1) 50%, 
                 rgba(239, 68, 68, 0.1) 100%);
             pointer-events: none;
+            z-index: 1;
         `;
         this.trackContainer.appendChild(this.audioVisualization);
         
@@ -314,19 +315,20 @@ export class FrequencyRangeSlider {
             const frequency = this.positionToFrequency(position);
             const intensity = this.getAudioIntensity(frequency);
             
-            const height = Math.max(1, intensity * 6);
-            const opacity = Math.max(0.1, intensity);
+            const height = Math.max(2, intensity * 8);
+            const opacity = Math.max(0.2, intensity);
             
             bars.push(`
                 <div style="
                     position: absolute;
                     left: ${(i / (numBars - 1)) * 100}%;
                     top: ${4 - height/2}px;
-                    width: 2px;
+                    width: 3px;
                     height: ${height}px;
                     background: rgba(74, 222, 128, ${opacity});
                     border-radius: 1px;
                     transform: translateX(-50%);
+                    z-index: 2;
                 "></div>
             `);
         }
@@ -337,9 +339,32 @@ export class FrequencyRangeSlider {
     getAudioIntensity(frequency) {
         if (!this.audioData) return 0.1;
         
-        // Use overall audio intensity for visualization
-        // The actual frequency-specific analysis is handled by the audio mapping system
-        return this.audioData.overall || 0.1;
+        // Create a more realistic frequency visualization
+        // Use overall audio intensity but add some frequency-dependent variation
+        const baseIntensity = this.audioData.overall || 0.1;
+        
+        // Add frequency-dependent variation to make it more interesting
+        // Lower frequencies (bass) tend to have more energy
+        let frequencyMultiplier = 1.0;
+        
+        if (frequency < 250) {
+            // Bass frequencies - slightly more intense
+            frequencyMultiplier = 1.2;
+        } else if (frequency < 1000) {
+            // Mid frequencies - normal intensity
+            frequencyMultiplier = 1.0;
+        } else if (frequency < 4000) {
+            // High mid frequencies - slightly less intense
+            frequencyMultiplier = 0.8;
+        } else {
+            // High frequencies - less intense
+            frequencyMultiplier = 0.6;
+        }
+        
+        // Add some randomness to make it more dynamic
+        const randomVariation = 0.8 + (Math.random() * 0.4); // 0.8 to 1.2
+        
+        return Math.min(1.0, baseIntensity * frequencyMultiplier * randomVariation);
     }
     
     formatFrequency(frequency) {
@@ -377,6 +402,18 @@ export class FrequencyRangeSlider {
     
     setAudioData(audioData) {
         this.audioData = audioData;
+        
+
+        
+        // Add a simple visual indicator that audio data is being received
+        if (audioData && audioData.overall > 0.1) {
+            // Flash the track background to show audio activity
+            this.track.style.background = 'rgba(74, 222, 128, 0.3)';
+            setTimeout(() => {
+                this.track.style.background = 'rgba(255, 255, 255, 0.05)';
+            }, 100);
+        }
+        
         this.updateAudioVisualization();
     }
     
