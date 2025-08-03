@@ -182,7 +182,7 @@ export class FrequencyRangeSlider {
         this.minHandle.addEventListener('touchstart', (e) => this.startDragging(e, 'min'));
         this.maxHandle.addEventListener('touchstart', (e) => this.startDragging(e, 'max'));
         this.trackContainer.addEventListener('touchstart', (e) => this.handleTrackClick(e));
-        document.addEventListener('touchmove', (e) => this.handleMouseMove(e));
+        document.addEventListener('touchmove', (e) => this.handleMouseMove(e), { passive: false });
         document.addEventListener('touchend', (e) => this.stopDragging(e));
     }
     
