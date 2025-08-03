@@ -144,14 +144,15 @@ export class AudioManager {
 
     async getInterfaceChannels(interfaceId) {
         try {
-            // Try to get stream with specific device
+            // Try to get stream with specific device, but with more flexible constraints
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     deviceId: { exact: interfaceId },
                     echoCancellation: false,
                     noiseSuppression: false,
                     autoGainControl: false,
-                    channelCount: { ideal: 2 }
+                    channelCount: { min: 1, ideal: 2, max: 8 },
+                    sampleRate: { min: 22050, ideal: 44100, max: 48000 }
                 }
             });
             
@@ -163,8 +164,8 @@ export class AudioManager {
                 channels.push({
                     id: i,
                     label: `Channel ${i + 1}`,
-                    sampleRate: settings.sampleRate,
-                    channelCount: settings.channelCount
+                    sampleRate: settings.sampleRate || 44100,
+                    channelCount: settings.channelCount || 1
                 });
             }
             
@@ -175,7 +176,42 @@ export class AudioManager {
             
         } catch (error) {
             console.error('Failed to get interface channels:', error);
-            return [];
+            
+            // If exact device selection fails, try with preferred device
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        deviceId: { preferred: interfaceId },
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                        channelCount: { min: 1, ideal: 2, max: 8 },
+                        sampleRate: { min: 22050, ideal: 44100, max: 48000 }
+                    }
+                });
+                
+                const audioTracks = stream.getAudioTracks();
+                const channels = [];
+                
+                for (let i = 0; i < audioTracks.length; i++) {
+                    const settings = audioTracks[i].getSettings();
+                    channels.push({
+                        id: i,
+                        label: `Channel ${i + 1}`,
+                        sampleRate: settings.sampleRate || 44100,
+                        channelCount: settings.channelCount || 1
+                    });
+                }
+                
+                // Stop the test stream
+                stream.getTracks().forEach(track => track.stop());
+                
+                return channels;
+                
+            } catch (fallbackError) {
+                console.error('Failed to get interface channels with fallback:', fallbackError);
+                return [];
+            }
         }
     }
 
@@ -205,8 +241,8 @@ export class AudioManager {
                     echoCancellation: false,
                     noiseSuppression: false,
                     autoGainControl: false,
-                    channelCount: { ideal: this.selectedChannels.length || 2 },
-                    sampleRate: { ideal: 44100 }
+                    channelCount: { min: 1, ideal: this.selectedChannels.length || 2, max: 8 },
+                    sampleRate: { min: 22050, ideal: 44100, max: 48000 }
                 }
             });
             
@@ -225,8 +261,39 @@ export class AudioManager {
             console.log('Audio capture started with interface:', this.selectedInterface.label);
             
         } catch (error) {
-            console.error('Failed to start audio capture:', error);
-            this.state.set('audioListening', false);
+            console.error('Failed to start audio capture with exact device:', error);
+            
+            // Try with preferred device as fallback
+            try {
+                this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        deviceId: { preferred: this.selectedInterface.id },
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                        channelCount: { min: 1, ideal: this.selectedChannels.length || 2, max: 8 },
+                        sampleRate: { min: 22050, ideal: 44100, max: 48000 }
+                    }
+                });
+                
+                // Create microphone source
+                this.microphone = this.audioContext.createMediaStreamSource(this.mediaStream);
+                
+                // Connect to analyser
+                this.microphone.connect(this.analyser);
+                
+                this.isListening = true;
+                this.state.set('audioListening', true);
+                
+                // Start analysis loop
+                this.analyzeAudio();
+                
+                console.log('Audio capture started with fallback interface:', this.selectedInterface.label);
+                
+            } catch (fallbackError) {
+                console.error('Failed to start audio capture with fallback:', fallbackError);
+                this.state.set('audioListening', false);
+            }
         }
     }
 
