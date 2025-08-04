@@ -186,40 +186,6 @@ canvas {
     display: block;
 }
 
-#gui-container {
-    position: absolute;
-    top: 52px; /* Account for top bar height (48px) + small margin */
-    right: 10px;
-    z-index: 30; /* Ensure it's below the top bar but above other elements */
-}
-
-/* dat.GUI specific styling to ensure proper positioning */
-#gui-container .dg {
-    position: relative !important;
-    top: 0 !important;
-    right: 0 !important;
-    margin-top: 0 !important;
-}
-
-#gui-container .dg.main {
-    position: relative !important;
-    top: 0 !important;
-    right: 0 !important;
-    margin-top: 0 !important;
-}
-
-/* Target the specific dat.GUI class that's causing the issue */
-.dg.ac {
-    top: 52px !important;
-    margin-top: 0 !important;
-}
-
-/* Also target any dat.GUI elements that might be positioned absolutely */
-.dg {
-    top: 52px !important;
-    margin-top: 0 !important;
-}
-
 /* MIDI Top Bar */
 #midi-top-bar {
     position: fixed;
@@ -233,6 +199,61 @@ canvas {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--color-border-primary);
+}
+
+/* Transport Bottom Bar */
+#transport-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: linear-gradient(to right, var(--color-bg-primary), var(--color-bg-secondary), var(--color-bg-primary));
+    color: var(--color-text-primary);
+    z-index: 50;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--color-border-primary);
+}
+
+/* Adjust GUI container to account for bottom bar */
+#gui-container {
+    position: absolute;
+    top: 52px; /* Account for top bar height (48px) + small margin */
+    right: 10px;
+    bottom: 62px; /* Account for bottom bar height (48px) + small margin */
+    z-index: 30; /* Ensure it's below the bars but above other elements */
+    overflow-y: auto;
+}
+
+/* dat.GUI specific styling to ensure proper positioning */
+#gui-container .dg {
+    position: relative !important;
+    top: 0 !important;
+    right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+#gui-container .dg.main {
+    position: relative !important;
+    top: 0 !important;
+    right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Target the specific dat.GUI class that's causing the issue */
+.dg.ac {
+    top: 52px !important;
+    margin-top: 0 !important;
+    margin-bottom: 62px !important;
+}
+
+/* Only apply bottom margin to the main GUI container, not individual elements */
+.dg {
+    top: 52px !important;
+    margin-top: 0 !important;
 }
 
 /* Mobile responsive adjustments for top bar */

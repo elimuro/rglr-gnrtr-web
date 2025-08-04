@@ -112,6 +112,20 @@
                 </div>
 
                 <div class="nav-section">
+                    <h4 class="nav-section-title">NEW: MIDI Clock</h4>
+                    <a href="#midi-clock" class="nav-item">MIDI Clock Sync</a>
+                    <a href="#transport-controls" class="nav-item">Transport Controls</a>
+                    <a href="#tempo-divisions" class="nav-item">Tempo Divisions</a>
+                </div>
+
+                <div class="nav-section">
+                    <h4 class="nav-section-title">NEW: Audio Mapping</h4>
+                    <a href="#audio-mapping" class="nav-item">Audio Frequency Mapping</a>
+                    <a href="#sensitivity-controls" class="nav-item">Sensitivity Controls</a>
+                    <a href="#frequency-ranges" class="nav-item">Frequency Ranges</a>
+                </div>
+
+                <div class="nav-section">
                     <h4 class="nav-section-title">Parameters</h4>
                     <a href="#parameter-reference" class="nav-item">Parameter Reference</a>
                     <a href="#animation-params" class="nav-item">Animation Parameters</a>
@@ -121,6 +135,12 @@
                     <a href="#post-processing-params" class="nav-item">Post-Processing</a>
                     <a href="#color-params" class="nav-item">Color Parameters</a>
                     <a href="#lighting-params" class="nav-item">Lighting Parameters</a>
+                </div>
+
+                <div class="nav-section">
+                    <h4 class="nav-section-title">NEW: Video Recording</h4>
+                    <a href="#video-recording" class="nav-item">Video Recording</a>
+                    <a href="#recording-settings" class="nav-item">Recording Settings</a>
                 </div>
 
                 <div class="nav-section">
@@ -277,6 +297,159 @@
                     </ul>
                 </div>
 
+                <!-- NEW: MIDI Clock Section -->
+                <div id="midi-clock" class="help-section">
+                    <h2 class="help-h2">NEW: MIDI Clock Synchronization</h2>
+                    <p>The application now supports MIDI clock synchronization for precise timing control:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Clock Messages</h3>
+                        <ul>
+                            <li><strong>MIDI Clock (0xF8):</strong> 24 pulses per quarter note for precise timing</li>
+                            <li><strong>MIDI Start (0xFA):</strong> Starts the transport and resets to beginning</li>
+                            <li><strong>MIDI Continue (0xFB):</strong> Continues from current position</li>
+                            <li><strong>MIDI Stop (0xFC):</strong> Stops the transport</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Clock Features</h3>
+                        <ul>
+                            <li><strong>Real-time BPM Detection:</strong> Automatically calculates and displays BPM from external clock</li>
+                            <li><strong>Clock Source Detection:</strong> Shows whether using external or internal clock</li>
+                            <li><strong>Transport Controls:</strong> Play, Stop, and Reset buttons in bottom transport bar</li>
+                            <li><strong>Animation Sync:</strong> Animations can be synchronized to musical timing</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Clock Status Indicators:</strong> The bottom transport bar shows:
+                        <ul>
+                            <li><strong>Green dot:</strong> External clock active</li>
+                            <li><strong>Yellow dot:</strong> Internal clock active</li>
+                            <li><strong>Red dot:</strong> Clock stopped</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="transport-controls" class="help-section">
+                    <h2 class="help-h2">Transport Controls</h2>
+                    <p>The bottom transport bar provides comprehensive clock and transport control:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Transport Buttons</h3>
+                        <ul>
+                            <li><strong>Play:</strong> Start internal clock when no external clock is present</li>
+                            <li><strong>Stop:</strong> Stop all clock activity</li>
+                            <li><strong>Reset:</strong> Reset clock position to beginning</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Clock Display</h3>
+                        <ul>
+                            <li><strong>BPM Display:</strong> Shows current tempo (updates in real-time)</li>
+                            <li><strong>Clock Source:</strong> Shows "External Clock", "Internal Clock", or "Clock Stopped"</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="tempo-divisions" class="help-section">
+                    <h2 class="help-h2">Tempo Divisions</h2>
+                    <p>Control the musical subdivision for synchronized animations:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Available Divisions</h3>
+                        <ul>
+                            <li><strong>Whole Note:</strong> 96 pulses (4 beats)</li>
+                            <li><strong>Half Note:</strong> 48 pulses (2 beats)</li>
+                            <li><strong>Quarter Note:</strong> 24 pulses (1 beat) - Default</li>
+                            <li><strong>Eighth Note:</strong> 12 pulses (1/2 beat)</li>
+                            <li><strong>Sixteenth Note:</strong> 6 pulses (1/4 beat)</li>
+                            <li><strong>Thirty-Second Note:</strong> 3 pulses (1/8 beat)</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Sync Modes</h3>
+                        <ul>
+                            <li><strong>Auto:</strong> Automatically syncs to external clock when available</li>
+                            <li><strong>Manual:</strong> Manual control of internal clock</li>
+                            <li><strong>Off:</strong> Disables clock synchronization</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- NEW: Audio Mapping Section -->
+                <div id="audio-mapping" class="help-section">
+                    <h2 class="help-h2">NEW: Audio Frequency Mapping</h2>
+                    <p>The application now supports real-time audio analysis and frequency-based parameter control:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Audio Mapping Features</h3>
+                        <ul>
+                            <li><strong>Frequency Range Selection:</strong> Choose specific frequency ranges to monitor</li>
+                            <li><strong>Real-time Analysis:</strong> Continuous audio analysis with visual feedback</li>
+                            <li><strong>Parameter Mapping:</strong> Map any audio frequency to any visual parameter</li>
+                            <li><strong>Sensitivity Control:</strong> Adjust the intensity of audio effects</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Frequency Bands</h3>
+                        <ul>
+                            <li><strong>Overall:</strong> Full frequency spectrum analysis</li>
+                            <li><strong>RMS:</strong> Root Mean Square energy measurement</li>
+                            <li><strong>Peak:</strong> Peak amplitude detection</li>
+                            <li><strong>Dominant Frequency:</strong> Most prominent frequency component</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Audio Input:</strong> The application requires microphone access for audio analysis. 
+                        Allow microphone permissions when prompted.
+                    </div>
+                </div>
+
+                <div id="sensitivity-controls" class="help-section">
+                    <h2 class="help-h2">Sensitivity Controls</h2>
+                    <p>Each audio mapping includes a sensitivity slider for fine-tuned control:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Sensitivity Settings</h3>
+                        <ul>
+                            <li><strong>0.0:</strong> No effect (audio input is ignored)</li>
+                            <li><strong>1.0:</strong> Normal effect (default)</li>
+                            <li><strong>2.0:</strong> Double effect (audio input is amplified)</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Application Order:</strong> Sensitivity is applied after curve transformation but before 
+                        min/max range mapping, allowing for precise control over audio reactivity.
+                    </div>
+                </div>
+
+                <div id="frequency-ranges" class="help-section">
+                    <h2 class="help-h2">Frequency Range Selection</h2>
+                    <p>Use the frequency range slider to select specific frequency bands:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Range Selection</h3>
+                        <ul>
+                            <li><strong>Low Frequencies:</strong> 20Hz - 250Hz (bass and kick drums)</li>
+                            <li><strong>Low-Mid Frequencies:</strong> 250Hz - 2000Hz (vocals and instruments)</li>
+                            <li><strong>High-Mid Frequencies:</strong> 2000Hz - 8000Hz (cymbals and effects)</li>
+                            <li><strong>High Frequencies:</strong> 8000Hz - 20000Hz (brightness and air)</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Visual Feedback:</strong> The frequency slider shows real-time audio levels across 
+                        the selected frequency range for easy monitoring and adjustment.
+                    </div>
+                </div>
+
                 <!-- Parameter Reference Section -->
                 <div id="parameter-reference" class="help-section">
                     <h2 class="help-h2">Parameter Reference</h2>
@@ -321,6 +494,7 @@
                             </li>
                             <li><strong>centerScalingAnimation:</strong> Enables animated scaling effects</li>
                             <li><strong>centerScalingAnimationSpeed:</strong> Controls the speed of animated scaling (0.1-3)</li>
+                            <li><strong>centerScalingAnimationType:</strong> Controls the type of scaling animation (0-3)</li>
                         </ul>
                         
                         <div class="help-note">
@@ -387,6 +561,67 @@
                             <li><strong>rimLightIntensity:</strong> Controls rim light intensity</li>
                             <li><strong>accentLightIntensity:</strong> Controls accent light intensity</li>
                         </ul>
+                    </div>
+                </div>
+
+                <!-- NEW: Video Recording Section -->
+                <div id="video-recording" class="help-section">
+                    <h2 class="help-h2">NEW: Video Recording</h2>
+                    <p>The application now includes a powerful video recording system for capturing your compositions:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Recording Features</h3>
+                        <ul>
+                            <li><strong>Real-time Recording:</strong> Capture your composition directly from the canvas</li>
+                            <li><strong>Multiple Formats:</strong> Support for WebM (VP9) and MP4 (H.264) formats</li>
+                            <li><strong>Quality Settings:</strong> Low (1 Mbps), Medium (3 Mbps), High (5 Mbps)</li>
+                            <li><strong>Frame Rates:</strong> 24, 30, or 60 FPS options</li>
+                            <li><strong>Duration Control:</strong> Set recording duration from 1 to 60 seconds</li>
+                            <li><strong>Resolution Options:</strong> Use canvas size or custom dimensions</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Quick Presets</h3>
+                        <ul>
+                            <li><strong>Social Media:</strong> Optimized for Instagram, TikTok (15s, Medium quality)</li>
+                            <li><strong>HD Quality:</strong> High-definition export (10s, 60 FPS, 1920x1080)</li>
+                            <li><strong>Fast Export:</strong> Quick preview generation (5s, Low quality, 24 FPS)</li>
+                            <li><strong>Custom:</strong> User-defined settings for specific needs</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>File Naming:</strong> Recorded videos are automatically named with the pattern:
+                        <code>rglr-composition-YYYY-MM-DDTHH-MM-SS-sssZ.webm</code>
+                    </div>
+                </div>
+
+                <div id="recording-settings" class="help-section">
+                    <h2 class="help-h2">Recording Settings</h2>
+                    <p>Configure your recording settings for optimal results:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Quality Settings</h3>
+                        <ul>
+                            <li><strong>Low (1 Mbps):</strong> Fast export, smaller files</li>
+                            <li><strong>Medium (3 Mbps):</strong> Balanced quality and size</li>
+                            <li><strong>High (5 Mbps):</strong> Best quality, larger files</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Format Options</h3>
+                        <ul>
+                            <li><strong>WebM (VP9):</strong> Best for web use, smaller file sizes, widely supported</li>
+                            <li><strong>WebM (VP8):</strong> Good compatibility, moderate file sizes</li>
+                            <li><strong>MP4 (H.264):</strong> Universal compatibility, larger file sizes (browser-dependent)</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Browser Compatibility:</strong> The system automatically detects browser support and 
+                        falls back to supported formats if your preferred choice isn't available.
                     </div>
                 </div>
 
@@ -533,6 +768,9 @@
                         <li>Post-processing effects can be CPU intensive - disable unused effects for better performance
                         </li>
                         <li>Use FXAA for smoother visuals without significant performance impact</li>
+                        <li><strong>NEW:</strong> Audio mapping can be CPU intensive - use sensitivity controls to optimize performance</li>
+                        <li><strong>NEW:</strong> Video recording requires significant resources - close other applications during recording</li>
+                        <li><strong>NEW:</strong> MIDI clock sync works best with stable external clock sources</li>
                     </ul>
                 </div>
 
@@ -556,6 +794,38 @@
                             <li>Reduce the number of active shapes or grid size</li>
                             <li>Lower animation frequencies for smoother performance</li>
                             <li>Close other browser tabs to free up resources</li>
+                            <li><strong>NEW:</strong> Reduce audio mapping sensitivity if experiencing audio-related lag</li>
+                            <li><strong>NEW:</strong> Use lower quality settings for video recording if experiencing issues</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-warning">
+                        <strong>NEW: Audio mapping not working?</strong>
+                        <ul>
+                            <li>Check microphone permissions in your browser</li>
+                            <li>Ensure your microphone is properly connected and working</li>
+                            <li>Try refreshing the page to reinitialize audio analysis</li>
+                            <li>Check that your browser supports Web Audio API</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-warning">
+                        <strong>NEW: Video recording issues?</strong>
+                        <ul>
+                            <li>Try different format settings (WebM vs MP4)</li>
+                            <li>Reduce quality settings for better compatibility</li>
+                            <li>Ensure sufficient disk space for recording</li>
+                            <li>Check browser support for MediaRecorder API</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-warning">
+                        <strong>NEW: MIDI clock not syncing?</strong>
+                        <ul>
+                            <li>Check that your MIDI device is sending clock messages</li>
+                            <li>Verify the clock source indicator in the transport bar</li>
+                            <li>Try different sync modes (Auto/Manual/Off)</li>
+                            <li>Ensure stable BPM from your external clock source</li>
                         </ul>
                     </div>
                 </div>

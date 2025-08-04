@@ -17,6 +17,7 @@ import { GUIManager } from '../ui/GUIManager.js';
 import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
 import { VideoRecorder } from '../modules/VideoRecorder.js';
 import { AudioManager } from '../modules/AudioManager.js';
+import { MIDIClockManager } from '../modules/MIDIClockManager.js';
 
 export class App {
     constructor() {
@@ -35,6 +36,9 @@ export class App {
         
         // Initialize audio manager
         this.audioManager = new AudioManager(this.state);
+        
+        // Initialize MIDI clock manager
+        this.midiClockManager = new MIDIClockManager(this);
         
         this.init();
     }
@@ -2142,5 +2146,22 @@ History: ${summary.historySize} entries`;
         this.updateAudioChannelsDisplay();
         this.updateAudioStatus();
         this.updateAudioAnalysisDisplay();
+    }
+
+    // MIDI Clock Event Handlers
+    onMIDIClock() {
+        this.midiClockManager.onMIDIClock();
+    }
+
+    onMIDIStart() {
+        this.midiClockManager.onMIDIStart();
+    }
+
+    onMIDIStop() {
+        this.midiClockManager.onMIDIStop();
+    }
+
+    onMIDIContinue() {
+        this.midiClockManager.onMIDIContinue();
     }
 } 

@@ -245,7 +245,7 @@ export class MIDIManager {
     // --- MODIFIED handleMIDIMessage TO SUPPORT LEARN MODE ---
     handleMIDIMessage(event) {
         const data = event.data;
-        const status = data[0] & 0xf0;
+        const rawStatus = data[0];
         const channel = data[0] & 0x0f;
 
         // Show MIDI activity for all message types
@@ -253,72 +253,144 @@ export class MIDIManager {
 
         let messageType = '';
 
-        // Handle different MIDI message types
-        switch (status) {
-            case 0x80: // Note Off
-                {
-                    const note = data[1];
-                    const velocity = data[2];
-                    // Call learn listeners for notes
-                    if (this._learnNoteListeners.size > 0) {
-                        this._learnNoteListeners.forEach(cb => cb(note, velocity, false, channel));
+        // Check if this is a system real-time message (0xF8-0xFF)
+        // These don't need status masking
+        if (rawStatus >= 0xF8) {
+            switch (rawStatus) {
+                case 0xF8: // MIDI Clock (24 pulses per quarter note)
+                    this.app.onMIDIClock();
+                    messageType = 'MIDI Clock';
+                    break;
+
+                case 0xFA: // MIDI Start
+                    this.app.onMIDIStart();
+                    messageType = 'MIDI Start';
+                    break;
+
+                case 0xFB: // MIDI Continue
+                    this.app.onMIDIContinue();
+                    messageType = 'MIDI Continue';
+                    break;
+
+                case 0xFC: // MIDI Stop
+                    this.app.onMIDIStop();
+                    messageType = 'MIDI Stop';
+                    break;
+
+                case 0xFF: // System Reset
+                    messageType = 'System Reset';
+                    break;
+
+                default:
+                    // Log unhandled system real-time messages for debugging
+                    console.log('Unhandled system real-time MIDI message:', data, 'Status:', rawStatus.toString(16));
+                    return;
+            }
+        } else if (rawStatus >= 0xF0) {
+            // System common messages (0xF0-0xF7)
+            switch (rawStatus) {
+                case 0xF0: // System Exclusive Start
+                    messageType = 'SysEx Start';
+                    break;
+
+                case 0xF1: // MIDI Time Code Quarter Frame
+                    messageType = 'MTC Quarter Frame';
+                    break;
+
+                case 0xF2: // Song Position Pointer
+                    const songPosition = ((data[2] << 7) | data[1]) * 6; // Convert to MIDI clock pulses
+                    messageType = `Song Position: ${songPosition}`;
+                    break;
+
+                case 0xF3: // Song Select
+                    messageType = `Song Select: ${data[1]}`;
+                    break;
+
+                case 0xF6: // Tune Request
+                    messageType = 'Tune Request';
+                    break;
+
+                case 0xF7: // System Exclusive End
+                    messageType = 'SysEx End';
+                    break;
+
+                default:
+                    // Log unhandled system common messages for debugging
+                    console.log('Unhandled system common MIDI message:', data, 'Status:', rawStatus.toString(16));
+                    return;
+            }
+        } else {
+            // Regular MIDI messages - apply status masking to strip channel
+            const status = rawStatus & 0xf0;
+            
+            switch (status) {
+                case 0x80: // Note Off
+                    {
+                        const note = data[1];
+                        const velocity = data[2];
+                        // Call learn listeners for notes
+                        if (this._learnNoteListeners.size > 0) {
+                            this._learnNoteListeners.forEach(cb => cb(note, velocity, false, channel));
+                        }
+                        this.app.onMIDINote(note, velocity, false, channel);
+                        messageType = `Note Off: ${note}`;
                     }
-                    this.app.onMIDINote(note, velocity, false, channel);
-                    messageType = `Note Off: ${note}`;
-                }
-                break;
+                    break;
 
-            case 0x90: // Note On
-                {
-                    const note = data[1];
-                    const velocity = data[2];
-                    const isNoteOn = (velocity > 0);
-                    // Call learn listeners for notes
-                    if (this._learnNoteListeners.size > 0) {
-                        this._learnNoteListeners.forEach(cb => cb(note, velocity, isNoteOn, channel));
+                case 0x90: // Note On
+                    {
+                        const note = data[1];
+                        const velocity = data[2];
+                        const isNoteOn = (velocity > 0);
+                        // Call learn listeners for notes
+                        if (this._learnNoteListeners.size > 0) {
+                            this._learnNoteListeners.forEach(cb => cb(note, velocity, isNoteOn, channel));
+                        }
+                        this.app.onMIDINote(note, velocity, isNoteOn, channel);
+                        messageType = `Note On: ${note} (${velocity})`;
                     }
-                    this.app.onMIDINote(note, velocity, isNoteOn, channel);
-                    messageType = `Note On: ${note} (${velocity})`;
-                }
-                break;
+                    break;
 
-            case 0xB0: // Control Change
-                {
-                    const controller = data[1];
-                    const value = data[2];
-                    // Call learn listeners for CC
-                    if (this._learnCCListeners.size > 0) {
-                        this._learnCCListeners.forEach(cb => cb(controller, value, channel));
+                case 0xB0: // Control Change
+                    {
+                        const controller = data[1];
+                        const value = data[2];
+                        // Call learn listeners for CC
+                        if (this._learnCCListeners.size > 0) {
+                            this._learnCCListeners.forEach(cb => cb(controller, value, channel));
+                        }
+                        this.app.onMIDICC(controller, value, channel);
+                        messageType = `CC: ${controller} = ${value} (Ch:${channel})`;
                     }
-                    this.app.onMIDICC(controller, value, channel);
-                    messageType = `CC: ${controller} = ${value} (Ch:${channel})`;
-                }
-                break;
+                    break;
 
-            case 0xE0: // Pitch Bend
-                {
-                    const pitchBendValue = ((data[2] << 7) | data[1]) / 16384; // Normalize to 0-1
-                    this.app.onMIDIPitchBend(pitchBendValue);
-                    messageType = `Pitch Bend: ${pitchBendValue.toFixed(2)}`;
-                }
-                break;
+                case 0xE0: // Pitch Bend
+                    {
+                        const pitchBendValue = ((data[2] << 7) | data[1]) / 16384; // Normalize to 0-1
+                        this.app.onMIDIPitchBend(pitchBendValue);
+                        messageType = `Pitch Bend: ${pitchBendValue.toFixed(2)}`;
+                    }
+                    break;
 
-            case 0xD0: // Channel Pressure (Aftertouch)
-                {
-                    this.app.onMIDIAftertouch(data[1] / 127);
-                    messageType = `Aftertouch: ${data[1]}`;
-                }
-                break;
+                case 0xD0: // Channel Pressure (Aftertouch)
+                    {
+                        this.app.onMIDIAftertouch(data[1] / 127);
+                        messageType = `Aftertouch: ${data[1]}`;
+                    }
+                    break;
 
-            case 0xA0: // Polyphonic Key Pressure
-                {
-                    this.app.onMIDIAftertouch(data[2] / 127);
-                    messageType = `Poly Pressure: ${data[2]}`;
-                }
-                break;
+                case 0xA0: // Polyphonic Key Pressure
+                    {
+                        this.app.onMIDIAftertouch(data[2] / 127);
+                        messageType = `Poly Pressure: ${data[2]}`;
+                    }
+                    break;
 
-            default:
-                return;
+                default:
+                    // Log unhandled MIDI messages for debugging
+                    console.log('Unhandled MIDI message:', data, 'Status:', rawStatus.toString(16));
+                    return;
+            }
         }
 
         this.updateLastMessage(messageType);
