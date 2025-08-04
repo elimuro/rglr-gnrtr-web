@@ -150,6 +150,19 @@ export class MIDIClockManager {
         if (this.clockSource === 'external' && this.isClockActive) {
             return this.clockPulses / 24; // Return time in quarter notes
         } else {
+            // Return internal time converted to quarter notes based on BPM
+            const internalTime = this.app.animationLoop.getAnimationTime();
+            const secondsPerQuarter = 60 / this.bpm;
+            return internalTime / secondsPerQuarter;
+        }
+    }
+
+    getClockTimeInSeconds() {
+        if (this.clockSource === 'external' && this.isClockActive) {
+            const quarterNotes = this.clockPulses / 24;
+            const secondsPerQuarter = 60 / this.bpm;
+            return quarterNotes * secondsPerQuarter;
+        } else {
             return this.app.animationLoop.getAnimationTime();
         }
     }
@@ -199,7 +212,7 @@ export class MIDIClockManager {
         transportBar.className = 'fixed bottom-0 left-0 right-0 h-12 md:h-12 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white font-mono z-50 shadow-lg backdrop-blur-md border-t border-gray-700';
         
         transportBar.innerHTML = `
-            <div class="flex flex-col md:flex-row md:items-center md:justify-start h-full px-4 py-1 md:py-0">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between h-full px-4 py-1 md:py-0">
                 <!-- All controls on the left side -->
                 <div class="flex items-center justify-start gap-2 md:gap-4 mb-1 md:mb-0">
                     <button id="transport-play" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
@@ -270,6 +283,18 @@ export class MIDIClockManager {
                         <span class="text-xs font-medium text-white">Sync: <span id="sync-value">Auto</span></span>
                     </div>
                 </div>
+                
+                <!-- Right side - Help button -->
+                <div class="flex items-center justify-end gap-2 md:gap-4 mb-1 md:mb-0">
+                    <button id="midi-help" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <path d="M12 17h.01"/>
+                        </svg>
+                        <span>Help</span>
+                    </button>
+                </div>
             </div>
         `;
         
@@ -304,6 +329,11 @@ export class MIDIClockManager {
         // Sync mode toggle
         document.getElementById('sync-toggle').addEventListener('click', () => {
             this.toggleSyncMode();
+        });
+        
+        // Help button
+        document.getElementById('midi-help').addEventListener('click', () => {
+            window.open('midi-help.html', '_blank');
         });
     }
 
@@ -416,6 +446,14 @@ export class MIDIClockManager {
         // Update tempo division and sync mode displays
         this.updateTempoDivisionDisplay();
         this.updateSyncModeDisplay();
+        
+        // Debug: Log sync status occasionally
+        if (Math.random() < 0.01) { // 1% chance per update
+            const animationLoop = this.app.animationLoop;
+            if (animationLoop) {
+                console.log(`Clock Status: Source=${this.clockSource}, Active=${this.isClockActive}, Sync=${animationLoop.getSyncMode()}, Using External=${animationLoop.isUsingExternalClock()}`);
+            }
+        }
     }
 
     updateTransportDisplay() {

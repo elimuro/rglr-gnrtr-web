@@ -23,7 +23,13 @@ export class App {
     constructor() {
         this.state = new StateManager();
         this.scene = new Scene(this.state);
-        this.animationLoop = new AnimationLoop(this.scene, this.state);
+        
+        // Initialize MIDI clock manager first
+        this.midiClockManager = new MIDIClockManager(this);
+        
+        // Initialize animation loop with clock manager
+        this.animationLoop = new AnimationLoop(this.scene, this.state, this.midiClockManager);
+        
         this.midiManager = new MIDIManager(this);
         this.controlManager = null;
         this.guiManager = null;
@@ -36,9 +42,6 @@ export class App {
         
         // Initialize audio manager
         this.audioManager = new AudioManager(this.state);
-        
-        // Initialize MIDI clock manager
-        this.midiClockManager = new MIDIClockManager(this);
         
         this.init();
     }
@@ -122,12 +125,7 @@ export class App {
             });
         }
 
-        const helpButton = document.getElementById('midi-help');
-        if (helpButton) {
-            helpButton.addEventListener('click', () => {
-                window.open('midi-help.html', '_blank');
-            });
-        }
+
         
         // Test CC values button
         document.getElementById('test-cc-button').addEventListener('click', () => {
