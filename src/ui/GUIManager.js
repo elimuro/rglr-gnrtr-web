@@ -84,6 +84,18 @@ export class GUIManager {
             }
         });
         
+        // Grid visibility control
+        shapeFolder.add(this.state.state, 'showGrid').name('Show Grid').onChange(() => {
+            this.state.set('showGrid', this.state.get('showGrid'));
+            this.app.scene.updateGridLines();
+        });
+        
+        // Grid color control
+        this.addColorController(shapeFolder, 'gridColor', 'Grid Color', () => {
+            this.state.set('gridColor', this.state.get('gridColor'));
+            this.app.scene.updateGridLines();
+        });
+        
         // Shape selection controls
         const shapeSelectionFolder = shapeFolder.addFolder('Shape Selection');
         const enabledShapes = this.state.get('enabledShapes');

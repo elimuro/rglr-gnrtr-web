@@ -142,7 +142,7 @@ export class AnimationLoop {
         const deltaTime = this.getClockDelta();
         
         // Update animation time
-        if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation')) {
+        if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation') || this.state.get('centerScalingEnabled')) {
             this.animationTime += deltaTime * this.state.get('animationSpeed');
             
             // Apply animations to shapes

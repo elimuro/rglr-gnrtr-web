@@ -201,6 +201,7 @@ export class Scene {
         this.state.subscribe('enabledShapes', () => this.createGrid());
         this.state.subscribe('randomness', () => this.createGrid());
         this.state.subscribe('showGrid', () => this.updateGridLines());
+        this.state.subscribe('gridColor', () => this.updateGridLines());
         this.state.subscribe('cellSize', () => this.updateCellSize());
         this.state.subscribe('shapeColor', () => this.updateShapeColors());
         this.state.subscribe('sphereRefraction', () => this.updateSphereMaterials());
@@ -390,7 +391,8 @@ export class Scene {
         const cellSize = this.state.get('cellSize');
         const halfGridW = gridWidth / 2;
         const halfGridH = gridHeight / 2;
-        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        const gridColor = this.state.get('gridColor') || '#ff0000';
+        const lineMaterial = new THREE.LineBasicMaterial({ color: gridColor });
         
         // Vertical lines
         for (let i = 0; i <= gridWidth; i++) {
@@ -496,12 +498,34 @@ export class Scene {
         const gridWidth = this.state.get('gridWidth');
         const gridHeight = this.state.get('gridHeight');
         
+        // Debug: Check if center scaling is enabled
+        const isEnabled = this.state.get('centerScalingEnabled');
+        if (isEnabled) {
+            console.log('Center scaling is enabled, updating shapes...');
+            console.log('Center scaling settings:', {
+                intensity: this.state.get('centerScalingIntensity'),
+                curve: this.state.get('centerScalingCurve'),
+                radius: this.state.get('centerScalingRadius'),
+                direction: this.state.get('centerScalingDirection'),
+                animation: this.state.get('centerScalingAnimation'),
+                animationSpeed: this.state.get('centerScalingAnimationSpeed'),
+                animationType: this.state.get('centerScalingAnimationType')
+            });
+        }
+        
         let shapeIndex = 0;
         for (let x = 0; x < gridWidth; x++) {
             for (let y = 0; y < gridHeight; y++) {
                 const mesh = this.shapes[shapeIndex];
                 if (mesh) {
                     const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize);
+                    
+                    // Debug: Log scaling factors for a few shapes
+                    if (x === 0 && y === 0) {
+                        console.log('Center shape scaling factor:', centerScalingFactor);
+                    } else if (x === gridWidth - 1 && y === gridHeight - 1) {
+                        console.log('Corner shape scaling factor:', centerScalingFactor);
+                    }
                     
                     if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
                         const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
@@ -766,7 +790,8 @@ export class Scene {
             Math.pow(centerY * cellSize, 2)
         ) * radius;
         
-        const normalizedDistance = Math.min(distanceFromCenter / maxDistance, 1.0);
+        // Prevent division by zero and ensure valid normalized distance
+        const normalizedDistance = maxDistance > 0 ? Math.min(distanceFromCenter / maxDistance, 1.0) : 0;
 
         // Apply curve function
         let curveFactor;
@@ -778,7 +803,7 @@ export class Scene {
                 curveFactor = Math.pow(normalizedDistance, 2);
                 break;
             case 2: // Logarithmic
-                curveFactor = Math.log(normalizedDistance + 1) / Math.log(2);
+                curveFactor = normalizedDistance > 0 ? Math.log(normalizedDistance + 1) / Math.log(2) : 0;
                 break;
             case 3: // Sine wave
                 curveFactor = Math.sin(normalizedDistance * Math.PI);
@@ -826,8 +851,11 @@ export class Scene {
             }
         }
 
+        // Clamp animation offset to prevent extreme scaling
+        const clampedAnimationOffset = Math.max(-0.5, Math.min(0.5, animationOffset));
+        
         // Calculate scaling factor with more dramatic range
-        let scalingFactor = 1.0 + (curveFactor * intensity + animationOffset);
+        let scalingFactor = 1.0 + (curveFactor * intensity + clampedAnimationOffset);
         
         // Apply direction (0 = convex, 1 = concave)
         if (direction > 0.5) {
@@ -1049,20 +1077,28 @@ export class Scene {
             mesh.material = material;
             mesh.userData.shapeName = shapeName;
             
-            // Enable shadows for spheres
+            // Reset scale for all shapes to prevent scaling issues during cycling
+            const cellSize = this.state.get('cellSize');
+            
             if (shapeName.startsWith('sphere_')) {
+                // Enable shadows for spheres
                 mesh.castShadow = true;
                 mesh.receiveShadow = true;
                 // Apply sphere scale
-                const cellSize = this.state.get('cellSize');
                 const sphereScale = cellSize * this.state.get('sphereScale');
                 mesh.scale.set(sphereScale, sphereScale, sphereScale);
+            } else {
+                // Reset to base scale for non-sphere shapes
+                mesh.scale.set(cellSize, cellSize, 1);
             }
         } else {
             // Fallback to plane geometry if shape generation fails
             mesh.geometry = new THREE.PlaneGeometry(1, 1);
             mesh.material = material;
             mesh.userData.shapeName = 'Rect'; // Default shape name
+            // Reset to base scale for fallback shapes
+            const cellSize = this.state.get('cellSize');
+            mesh.scale.set(cellSize, cellSize, 1);
         }
     }
 
