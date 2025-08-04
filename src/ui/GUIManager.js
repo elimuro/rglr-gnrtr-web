@@ -33,14 +33,12 @@ export class GUIManager {
             this.setupPerformanceControls();
             this.setupShapeControls();
             this.setupCompositionControls();
-            this.setupGridControls();
             this.setupColorControls();
             this.setupSphereControls();
             this.setupAnimationControls();
             this.setupMorphingControls();
             this.setupPostProcessingControls();
             this.setupLightingControls();
-            // Removed this.setupMIDIControls(); - MIDI settings are already available in the left-side GUI
             
             // Collapse all folders by default
             this.collapseAllFolders();
@@ -51,8 +49,6 @@ export class GUIManager {
     
     collapseAllFolders() {
         // This method ensures all folders start collapsed
-        // The .open() calls have been removed from individual setup methods
-        // so folders will naturally start collapsed
     }
 
     setupShapeControls() {
@@ -100,9 +96,6 @@ export class GUIManager {
                 }
             });
         });
-        // shapeSelectionFolder.open(); // Removed to keep collapsed by default
-        
-        // shapeFolder.open(); // Removed to keep collapsed by default
     }
 
     setupCompositionControls() {
@@ -123,19 +116,6 @@ export class GUIManager {
                 this.app.animationLoop.resetAnimationTime();
             }
         });
-        
-        // compositionFolder.open(); // Removed to keep collapsed by default
-    }
-
-    setupGridControls() {
-        const gridFolder = this.gui.addFolder('Grid');
-        
-        this.addController(gridFolder, 'showGrid', false, true, false, 'Show Grid Lines', () => {
-            this.state.set('showGrid', this.state.get('showGrid'));
-            this.app.scene.updateGridLines();
-        });
-        
-        // gridFolder.open(); // Removed to keep collapsed by default
     }
 
     setupColorControls() {
@@ -155,8 +135,6 @@ export class GUIManager {
             this.app.scene.updateBackgroundColor();
             this.app.scene.createGrid();
         });
-        
-        // colorFolder.open(); // Removed to keep collapsed by default
     }
 
     setupSphereControls() {
@@ -212,19 +190,18 @@ export class GUIManager {
             this.state.set('sphereWaterDistortion', this.state.get('sphereWaterDistortion'));
             this.app.scene.updateSphereMaterials();
         });
-        
-        // sphereFolder.open(); // Removed to keep collapsed by default
     }
 
     setupAnimationControls() {
         const animationFolder = this.gui.addFolder('Animation');
-        // animationFolder.open(); // Removed to keep collapsed by default
         
         // Main controls
         this.addController(animationFolder, 'animationSpeed', 0.01, 2, 0.01, 'Global Speed');
         
-        // Animation type selector with dynamic parameter visibility
-        const animationTypeController = animationFolder.add(this.state.state, 'animationType', 0, 3, 1).name('Animation Type');
+        // Animation type selector
+        animationFolder.add(this.state.state, 'animationType', 0, 3, 1).name('Animation Type').onChange(() => {
+            this.state.set('animationType', this.state.get('animationType'));
+        });
         
         // Effect toggles
         this.addController(animationFolder, 'enableShapeCycling', false, true, false, 'Shape Cycling', () => {
@@ -242,16 +219,16 @@ export class GUIManager {
         });
         
         // Movement parameters
-        const movementAmpController = this.addController(animationFolder, 'movementAmplitude', 0.01, 0.5, 0.01, 'Movement Amp');
-        const movementFreqController = this.addController(animationFolder, 'movementFrequency', 0.1, 2, 0.1, 'Movement Freq');
+        this.addController(animationFolder, 'movementAmplitude', 0.01, 0.5, 0.01, 'Movement Amp');
+        this.addController(animationFolder, 'movementFrequency', 0.1, 2, 0.1, 'Movement Freq');
         
         // Rotation parameters
-        const rotationAmpController = this.addController(animationFolder, 'rotationAmplitude', 0.01, 2, 0.01, 'Rotation Amp');
-        const rotationFreqController = this.addController(animationFolder, 'rotationFrequency', 0.1, 2, 0.1, 'Rotation Freq');
+        this.addController(animationFolder, 'rotationAmplitude', 0.01, 2, 0.01, 'Rotation Amp');
+        this.addController(animationFolder, 'rotationFrequency', 0.1, 2, 0.1, 'Rotation Freq');
         
         // Scale parameters
-        const scaleAmpController = this.addController(animationFolder, 'scaleAmplitude', 0.01, 1, 0.01, 'Scale Amp');
-        const scaleFreqController = this.addController(animationFolder, 'scaleFrequency', 0.1, 2, 0.1, 'Scale Freq');
+        this.addController(animationFolder, 'scaleAmplitude', 0.01, 1, 0.01, 'Scale Amp');
+        this.addController(animationFolder, 'scaleFrequency', 0.1, 2, 0.1, 'Scale Freq');
         
         // Center Scaling controls
         const centerScalingFolder = animationFolder.addFolder('Center Scaling');
@@ -308,31 +285,24 @@ export class GUIManager {
         // Shape cycling controls
         const shapeCyclingFolder = animationFolder.addFolder('Shape Cycling');
         
-        this.addController(shapeCyclingFolder, 'enableShapeCycling', false, true, false, 'Enable Shape Cycling', () => {
-            this.state.set('enableShapeCycling', this.state.get('enableShapeCycling'));
-            if (!this.state.get('enableShapeCycling')) {
-                this.app.animationLoop.resetAnimationTime();
-            }
-        });
-        
         this.addController(shapeCyclingFolder, 'shapeCyclingSpeed', 0.1, 5, 0.1, 'Cycling Speed');
         
         const patternNames = ['Sequential', 'Random', 'Wave', 'Pulse', 'Staggered'];
-        const patternController = shapeCyclingFolder.add({ pattern: 0 }, 'pattern', 0, 4, 1)
+        shapeCyclingFolder.add({ pattern: 0 }, 'pattern', 0, 4, 1)
             .name('Pattern')
             .onChange((value) => {
                 this.state.set('shapeCyclingPattern', value);
             });
         
         const directionNames = ['Forward', 'Reverse', 'Ping-Pong', 'Random'];
-        const directionController = shapeCyclingFolder.add({ direction: 0 }, 'direction', 0, 3, 1)
+        shapeCyclingFolder.add({ direction: 0 }, 'direction', 0, 3, 1)
             .name('Direction')
             .onChange((value) => {
                 this.state.set('shapeCyclingDirection', value);
             });
         
         const syncNames = ['Independent', 'Synchronized', 'Wave', 'Cluster'];
-        const syncController = shapeCyclingFolder.add({ sync: 0 }, 'sync', 0, 3, 1)
+        shapeCyclingFolder.add({ sync: 0 }, 'sync', 0, 3, 1)
             .name('Synchronization')
             .onChange((value) => {
                 this.state.set('shapeCyclingSync', value);
@@ -341,67 +311,15 @@ export class GUIManager {
         this.addController(shapeCyclingFolder, 'shapeCyclingIntensity', 0.1, 1, 0.1, 'Intensity');
         
         const triggerNames = ['Time-based', 'Movement-triggered', 'Rotation-triggered', 'Manual'];
-        const triggerController = shapeCyclingFolder.add({ trigger: 0 }, 'trigger', 0, 3, 1)
+        shapeCyclingFolder.add({ trigger: 0 }, 'trigger', 0, 3, 1)
             .name('Trigger')
             .onChange((value) => {
                 this.state.set('shapeCyclingTrigger', value);
             });
-        
-        // Function to update parameter visibility based on animation type
-        const updateParameterVisibility = () => {
-            const animationType = this.state.get('animationType');
-            
-            // Movement parameters (visible for Movement and Combined)
-            const showMovement = animationType === 0 || animationType === 3;
-            if (movementAmpController.domElement) {
-                const movementAmpRow = movementAmpController.domElement.parentElement.parentElement;
-                movementAmpRow.style.display = showMovement ? 'flex' : 'none';
-            }
-            if (movementFreqController.domElement) {
-                const movementFreqRow = movementFreqController.domElement.parentElement.parentElement;
-                movementFreqRow.style.display = showMovement ? 'flex' : 'none';
-            }
-            
-            // Rotation parameters (visible for Rotation and Combined)
-            const showRotation = animationType === 1 || animationType === 3;
-            if (rotationAmpController.domElement) {
-                const rotationAmpRow = rotationAmpController.domElement.parentElement.parentElement;
-                rotationAmpRow.style.display = showRotation ? 'flex' : 'none';
-            }
-            if (rotationFreqController.domElement) {
-                const rotationFreqRow = rotationFreqController.domElement.parentElement.parentElement;
-                rotationFreqRow.style.display = showRotation ? 'flex' : 'none';
-            }
-            
-            // Scale parameters (visible for Scale and Combined)
-            const showScale = animationType === 2 || animationType === 3;
-            if (scaleAmpController.domElement) {
-                const scaleAmpRow = scaleAmpController.domElement.parentElement.parentElement;
-                scaleAmpRow.style.display = showScale ? 'flex' : 'none';
-            }
-            if (scaleFreqController.domElement) {
-                const scaleFreqRow = scaleFreqController.domElement.parentElement.parentElement;
-                scaleFreqRow.style.display = showScale ? 'flex' : 'none';
-            }
-        };
-        
-        // Set up the change listener for animation type
-        animationTypeController.onChange(() => {
-            this.state.set('animationType', this.state.get('animationType'));
-            updateParameterVisibility();
-        });
-        
-        // Initialize visibility
-        updateParameterVisibility();
     }
 
     setupMorphingControls() {
         const morphingFolder = this.gui.addFolder('Shape Morphing');
-        
-        // Enable/disable morphing
-        morphingFolder.add(this.state.state, 'morphingEnabled').name('Enable Morphing').onChange(() => {
-            this.state.set('morphingEnabled', this.state.state.morphingEnabled);
-        });
         
         // Morphing speed
         this.addController(morphingFolder, 'morphingSpeed', 0.5, 5.0, 0.1, 'Morphing Speed', () => {
@@ -432,228 +350,29 @@ export class GUIManager {
             this.state.set('morphingEasing', easingOptions[easingController.getValue()]);
         });
         
-        // Auto morphing
-        morphingFolder.add(this.state.state, 'autoMorphing').name('Auto Morphing').onChange(() => {
-            this.state.set('autoMorphing', this.state.state.autoMorphing);
-        });
-        
-        // Cross-category morphing
-        morphingFolder.add(this.state.state, 'crossCategoryMorphing').name('Cross-Category Morphing').onChange(() => {
-            this.state.set('crossCategoryMorphing', this.state.state.crossCategoryMorphing);
-        });
-        
-        // Morphing aggressiveness
-        this.addController(morphingFolder, 'morphingAggressiveness', 0.0, 1.0, 0.01, 'Morphing Aggressiveness', () => {
-            this.state.set('morphingAggressiveness', this.state.get('morphingAggressiveness'));
-        });
-        
-        // Random morphing
-        morphingFolder.add(this.state.state, 'randomMorphing').name('Random Morphing').onChange(() => {
-            this.state.set('randomMorphing', this.state.state.randomMorphing);
-        });
-        
-        // Morphing presets
-        const presetOptions = {
-            'Geometric Evolution': 'geometric_evolution',
-            'Organic Growth': 'organic_growth',
-            'Mechanical Transform': 'mechanical_transform',
-            'Chaos Flow': 'chaos_flow',
-            'Triangle Cycle': 'triangle_cycle',
-            'Rectangle Cycle': 'rectangle_cycle',
-            'Ellipse Cycle': 'ellipse_cycle',
-            'Shape Evolution': 'shape_evolution'
-        };
-        
-        const presetController = morphingFolder.add({ preset: this.state.get('morphingPreset') }, 'preset', Object.keys(presetOptions)).name('Morphing Preset');
-        presetController.onChange(() => {
-            this.state.set('morphingPreset', presetOptions[presetController.getValue()]);
-        });
-        
-        // Manual morphing controls
-        const manualMorphingFolder = morphingFolder.addFolder('Manual Morphing');
-        
-        // Test morphing button
-        const testMorphButton = { testMorph: () => {
-            if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                // Filter out sphere shapes - only select 2D shapes for morphing
-                const morphableShapes = this.app.scene.shapes.filter(shape => {
-                    // Check if the shape has a geometry that's not a sphere
-                    return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-                });
-                
-                if (morphableShapes.length === 0) {
-                    return;
-                }
-                
-                const randomShape = morphableShapes[Math.floor(Math.random() * morphableShapes.length)];
-                
-                const morphablePairs = this.app.scene.shapeGenerator.getMorphableShapePairs();
-                const pairNames = Object.keys(morphablePairs);
-                const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                
-                this.app.scene.shapeGenerator.startShapeMorph(
-                    randomShape, 
-                    randomPair[0], 
-                    randomPair[1], 
-                    this.state.get('morphingSpeed')
-                );
-            }
+        // Individual morph buttons
+        const randomMorphButton = { execute: () => {
+            this.app.triggerRandomMorph();
         }};
         
-        manualMorphingFolder.add(testMorphButton, 'testMorph').name('Test Random Morph');
-        
-        // Morph all shapes button
-        const morphAllButton = { morphAllShapes: () => {
-            if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                // Filter out sphere shapes - only select 2D shapes for morphing
-                const morphableShapes = this.app.scene.shapes.filter(shape => {
-                    return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-                });
-                
-                if (morphableShapes.length === 0) {
-                    return;
-                }
-                
-                // Get morphable pairs
-                const morphablePairs = this.app.scene.shapeGenerator.getMorphableShapePairs();
-                const pairNames = Object.keys(morphablePairs);
-                
-                // Morph each shape to a random target
-                morphableShapes.forEach((shape, index) => {
-                    // Select a random morph pair
-                    const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                    
-                    // Add slight delay to each shape for staggered effect
-                    setTimeout(() => {
-                        this.app.scene.shapeGenerator.startShapeMorph(
-                            shape, 
-                            randomPair[0], 
-                            randomPair[1], 
-                            this.state.get('morphingSpeed')
-                        );
-                    }, index * 100); // 100ms delay between each shape
-                });
-            }
+        const morphAllButton = { execute: () => {
+            this.app.triggerMorphAllShapes();
         }};
         
-        manualMorphingFolder.add(morphAllButton, 'morphAllShapes').name('Morph All Shapes');
-        
-        // Morph all to same shape button
-        const morphAllToSameButton = { morphAllToSame: () => {
-            if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                // Filter out sphere shapes - only select 2D shapes for morphing
-                const morphableShapes = this.app.scene.shapes.filter(shape => {
-                    return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-                });
-                
-                if (morphableShapes.length === 0) {
-                    return;
-                }
-                
-                // Get all available shape names
-                const shapeGenerators = this.app.scene.shapeGenerator.getShapeGenerators();
-                const availableShapes = Object.keys(shapeGenerators).filter(name => !name.startsWith('sphere_'));
-                
-                // Select a random target shape
-                const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
-                
-                // Morph each shape to the same target
-                morphableShapes.forEach((shape, index) => {
-                    // Add slight delay to each shape for staggered effect
-                    setTimeout(() => {
-                        this.app.scene.shapeGenerator.startShapeMorph(
-                            shape, 
-                            'triangle_UP', // Use a default starting shape
-                            targetShape, 
-                            this.state.get('morphingSpeed')
-                        );
-                    }, index * 50); // 50ms delay between each shape
-                });
-            }
+        const morphAllToSameButton = { execute: () => {
+            this.app.triggerMorphAllToSame();
         }};
         
-        manualMorphingFolder.add(morphAllToSameButton, 'morphAllToSame').name('Morph All to Same Shape');
-        
-        // Morph all shapes simultaneously button
-        const morphAllSimultaneouslyButton = { morphAllSimultaneously: () => {
-            if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                // Filter out sphere shapes - only select 2D shapes for morphing
-                const morphableShapes = this.app.scene.shapes.filter(shape => {
-                    return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-                });
-                
-                if (morphableShapes.length === 0) {
-                    return;
-                }
-                
-                // Get morphable pairs
-                const morphablePairs = this.app.scene.shapeGenerator.getMorphableShapePairs();
-                const pairNames = Object.keys(morphablePairs);
-                
-                // Morph all shapes at the exact same time
-                morphableShapes.forEach((shape, index) => {
-                    // Select a random morph pair
-                    const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                    
-                    // Start morphing immediately - no delay
-                    this.app.scene.shapeGenerator.startShapeMorph(
-                        shape, 
-                        randomPair[0], 
-                        randomPair[1], 
-                        this.state.get('morphingSpeed')
-                    );
-                });
-            }
+        const morphAllSimultaneouslyButton = { execute: () => {
+            this.app.triggerMorphAllSimultaneously();
         }};
         
-        manualMorphingFolder.add(morphAllSimultaneouslyButton, 'morphAllSimultaneously').name('Morph All Simultaneously');
-        
-        // Morph all to same shape simultaneously button
-        const morphAllToSameSimultaneouslyButton = { morphAllToSameSimultaneously: () => {
-            if (this.app && this.app.scene && this.app.scene.shapes.length > 0) {
-                // Filter out sphere shapes - only select 2D shapes for morphing
-                const morphableShapes = this.app.scene.shapes.filter(shape => {
-                    return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-                });
-                
-                if (morphableShapes.length === 0) {
-                    return;
-                }
-                
-                // Get all available shape names
-                const shapeGenerators = this.app.scene.shapeGenerator.getShapeGenerators();
-                const availableShapes = Object.keys(shapeGenerators).filter(name => !name.startsWith('sphere_'));
-                
-                // Select a random target shape
-                const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
-                
-                // Morph all shapes to the same target at the exact same time
-                morphableShapes.forEach((shape, index) => {
-                    // Start morphing immediately - no delay
-                    this.app.scene.shapeGenerator.startShapeMorph(
-                        shape, 
-                        'triangle_UP', // Use a default starting shape
-                        targetShape, 
-                        this.state.get('morphingSpeed')
-                    );
-                });
-            }
-        }};
-        
-        manualMorphingFolder.add(morphAllToSameSimultaneouslyButton, 'morphAllToSameSimultaneously').name('Morph All to Same Shape Simultaneously');
-        
-        // Morphing progress slider
-        const progressController = manualMorphingFolder.add(this.state.state, 'currentMorphProgress', 0, 1, 0.01).name('Morph Progress');
-        progressController.onChange(() => {
-            this.state.set('currentMorphProgress', this.state.state.currentMorphProgress);
-        });
-        
-        // morphingFolder.open(); // Keep collapsed by default
+        // Add individual morph buttons
+        morphingFolder.add(randomMorphButton, 'execute').name('Random Morph');
+        morphingFolder.add(morphAllButton, 'execute').name('Morph All Shapes');
+        morphingFolder.add(morphAllToSameButton, 'execute').name('Morph All to Same');
+        morphingFolder.add(morphAllSimultaneouslyButton, 'execute').name('Morph All Simultaneously');
     }
-
-    // Removed setupMIDIControls() - MIDI settings are already available in the left-side GUI
-
-
 
     setupPerformanceControls() {
         const performanceFolder = this.gui.addFolder('Performance');
@@ -697,13 +416,11 @@ export class GUIManager {
         performanceFolder.add(metrics, 'pooledMeshes').name('Pooled Meshes').listen();
         
         // Add optimization toggle
-        const optimizationController = performanceFolder.add({ enableFrustumCulling: true }, 'enableFrustumCulling')
+        performanceFolder.add({ enableFrustumCulling: true }, 'enableFrustumCulling')
             .name('Enable Frustum Culling')
             .onChange((value) => {
                 this.state.set('enableFrustumCulling', value);
             });
-        
-        // performanceFolder.open(); // Removed to keep collapsed by default
     }
 
     setupPostProcessingControls() {
@@ -729,7 +446,6 @@ export class GUIManager {
         this.addController(bloomFolder, 'bloomThreshold', 0, 1, 0.01, 'Threshold', () => {
             this.app.scene.updatePostProcessing();
         });
-        // bloomFolder.open(); // Removed to keep collapsed by default
         
         // Chromatic aberration controls
         const chromaticFolder = postProcessingFolder.addFolder('Chromatic Aberration');
@@ -740,7 +456,6 @@ export class GUIManager {
         this.addController(chromaticFolder, 'chromaticIntensity', 0, 1, 0.01, 'Intensity', () => {
             this.app.scene.updatePostProcessing();
         });
-        // chromaticFolder.open(); // Removed to keep collapsed by default
         
         // Vignette controls
         const vignetteFolder = postProcessingFolder.addFolder('Vignette');
@@ -757,7 +472,6 @@ export class GUIManager {
         this.addController(vignetteFolder, 'vignetteSoftness', 0, 1, 0.01, 'Softness', () => {
             this.app.scene.updatePostProcessing();
         });
-        // vignetteFolder.open(); // Removed to keep collapsed by default
         
         // Film grain controls
         const grainFolder = postProcessingFolder.addFolder('Film Grain');
@@ -768,7 +482,6 @@ export class GUIManager {
         this.addController(grainFolder, 'grainIntensity', 0, 0.5, 0.01, 'Intensity', () => {
             this.app.scene.updatePostProcessing();
         });
-        // grainFolder.open(); // Removed to keep collapsed by default
         
         // Color grading controls
         const colorGradingFolder = postProcessingFolder.addFolder('Color Grading');
@@ -788,15 +501,12 @@ export class GUIManager {
         this.addController(colorGradingFolder, 'colorContrast', 0, 2, 0.01, 'Contrast', () => {
             this.app.scene.updatePostProcessing();
         });
-        // colorGradingFolder.open(); // Removed to keep collapsed by default
         
         // FXAA toggle
         postProcessingFolder.add(this.state.state, 'fxaaEnabled').name('Enable FXAA').onChange(() => {
             this.state.set('fxaaEnabled', this.state.get('fxaaEnabled'));
             this.app.scene.updatePostProcessing();
         });
-        
-        // postProcessingFolder.open(); // Removed to keep collapsed by default
     }
 
     setupLightingControls() {
@@ -844,9 +554,7 @@ export class GUIManager {
                     this.app.scene.updateLighting();
                 }
             });
-            
-                    // lightingFolder.open(); // Removed to keep collapsed by default
-    } catch (error) {
+        } catch (error) {
             // Error setting up lighting controls
         }
     }

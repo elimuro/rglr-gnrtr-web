@@ -841,6 +841,19 @@ export class App {
             case 'postProcessingEnabled':
                 this.state.set('postProcessingEnabled', !this.state.get('postProcessingEnabled'));
                 break;
+            // Morphing triggers
+            case 'randomMorph':
+                this.triggerRandomMorph();
+                break;
+            case 'morphAllShapes':
+                this.triggerMorphAllShapes();
+                break;
+            case 'morphAllToSame':
+                this.triggerMorphAllToSame();
+                break;
+            case 'morphAllSimultaneously':
+                this.triggerMorphAllSimultaneously();
+                break;
         }
     }
 
@@ -1610,12 +1623,15 @@ export class App {
         const control = this.controlManager.addControl('note', nextIndex);
         
         if (control) {
-            // Add to state
+            // Add to state with morphing trigger as default
             const noteMappings = this.state.get('midiNoteMappings');
+            const morphingTargets = ['randomMorph', 'morphAllShapes', 'morphAllToSame', 'morphAllSimultaneously'];
+            const defaultTarget = morphingTargets[nextIndex % morphingTargets.length];
+            
             noteMappings[control.controlId] = {
                 channel: 0,
                 note: 60 + nextIndex,
-                target: 'shapeCycling'
+                target: defaultTarget
             };
             this.state.set('midiNoteMappings', noteMappings);
         }
@@ -1889,6 +1905,81 @@ export class App {
 
     triggerNoteAction(target) {
         this.handleNoteMapping(target);
+    }
+
+    // Morphing trigger methods
+    triggerRandomMorph() {
+        if (this.scene && this.scene.shapes.length > 0) {
+            const morphableShapes = this.scene.shapes.filter(shape => {
+                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
+            });
+            
+            if (morphableShapes.length === 0) return;
+            
+            const morphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
+            const pairNames = Object.keys(morphablePairs);
+            const randomShape = morphableShapes[Math.floor(Math.random() * morphableShapes.length)];
+            const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
+            this.scene.shapeGenerator.startShapeMorph(randomShape, randomPair[0], randomPair[1], this.state.get('morphingSpeed'));
+        }
+    }
+
+    triggerMorphAllShapes() {
+        if (this.scene && this.scene.shapes.length > 0) {
+            const morphableShapes = this.scene.shapes.filter(shape => {
+                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
+            });
+            
+            if (morphableShapes.length === 0) return;
+            
+            const morphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
+            const pairNames = Object.keys(morphablePairs);
+            
+            morphableShapes.forEach((shape, index) => {
+                setTimeout(() => {
+                    const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
+                    this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.state.get('morphingSpeed'));
+                }, index * 100);
+            });
+        }
+    }
+
+    triggerMorphAllToSame() {
+        if (this.scene && this.scene.shapes.length > 0) {
+            const morphableShapes = this.scene.shapes.filter(shape => {
+                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
+            });
+            
+            if (morphableShapes.length === 0) return;
+            
+            const shapeGenerators = this.scene.shapeGenerator.getShapeGenerators();
+            const availableShapes = Object.keys(shapeGenerators).filter(name => !name.startsWith('sphere_'));
+            const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
+            
+            morphableShapes.forEach((shape, index) => {
+                setTimeout(() => {
+                    this.scene.shapeGenerator.startShapeMorph(shape, 'triangle_UP', targetShape, this.state.get('morphingSpeed'));
+                }, index * 50);
+            });
+        }
+    }
+
+    triggerMorphAllSimultaneously() {
+        if (this.scene && this.scene.shapes.length > 0) {
+            const morphableShapes = this.scene.shapes.filter(shape => {
+                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
+            });
+            
+            if (morphableShapes.length === 0) return;
+            
+            const morphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
+            const pairNames = Object.keys(morphablePairs);
+            
+            morphableShapes.forEach(shape => {
+                const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
+                this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.state.get('morphingSpeed'));
+            });
+        }
     }
     
     debugInterpolation() {

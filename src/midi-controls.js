@@ -88,7 +88,12 @@ const CONTROL_CONFIGS = {
             { value: 'vignetteEnabled', label: 'Toggle Vignette' },
             { value: 'grainEnabled', label: 'Toggle Film Grain' },
             { value: 'colorGradingEnabled', label: 'Toggle Color Grading' },
-            { value: 'postProcessingEnabled', label: 'Toggle Post Processing' }
+            { value: 'postProcessingEnabled', label: 'Toggle Post Processing' },
+            // Morphing triggers
+            { value: 'randomMorph', label: 'Random Morph' },
+            { value: 'morphAllShapes', label: 'Morph All Shapes' },
+            { value: 'morphAllToSame', label: 'Morph All to Same' },
+            { value: 'morphAllSimultaneously', label: 'Morph All Simultaneously' }
         ]
     }
 };
