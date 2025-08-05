@@ -211,8 +211,11 @@ export class GUIManager {
         this.addController(animationFolder, 'animationSpeed', 0.01, 2, 0.01, 'Global Speed');
         
         // Animation type selector
-        animationFolder.add(this.state.state, 'animationType', 0, 3, 1).name('Animation Type').onChange(() => {
-            this.state.set('animationType', this.state.get('animationType'));
+        const mainAnimationTypeNames = ['None', 'Wave', 'Pulse', 'Random'];
+        const currentAnimationType = mainAnimationTypeNames[this.state.get('animationType')] || mainAnimationTypeNames[0];
+        animationFolder.add({ animationType: currentAnimationType }, 'animationType', mainAnimationTypeNames).name('Animation Type').onChange((value) => {
+            const index = mainAnimationTypeNames.indexOf(value);
+            this.state.set('animationType', index);
         });
         
         // Effect toggles
@@ -256,10 +259,12 @@ export class GUIManager {
         });
         
         const curveNames = ['Linear', 'Exponential', 'Logarithmic', 'Sine Wave'];
-        centerScalingFolder.add({ curve: 0 }, 'curve', 0, 3, 1)
+        const currentCurve = curveNames[this.state.get('centerScalingCurve')] || curveNames[0];
+        centerScalingFolder.add({ curve: currentCurve }, 'curve', curveNames)
             .name('Scaling Curve')
             .onChange((value) => {
-                this.state.set('centerScalingCurve', value);
+                const index = curveNames.indexOf(value);
+                this.state.set('centerScalingCurve', index);
                 this.app.scene.updateCenterScaling();
             });
         
@@ -269,10 +274,12 @@ export class GUIManager {
         });
         
         const scalingDirectionNames = ['Convex (Center Larger)', 'Concave (Center Smaller)'];
-        centerScalingFolder.add({ direction: 0 }, 'direction', 0, 1, 1)
+        const currentScalingDirection = scalingDirectionNames[this.state.get('centerScalingDirection')] || scalingDirectionNames[0];
+        centerScalingFolder.add({ direction: currentScalingDirection }, 'direction', scalingDirectionNames)
             .name('Scaling Direction')
             .onChange((value) => {
-                this.state.set('centerScalingDirection', value);
+                const index = scalingDirectionNames.indexOf(value);
+                this.state.set('centerScalingDirection', index);
                 this.app.scene.updateCenterScaling();
             });
         
@@ -286,11 +293,13 @@ export class GUIManager {
             this.app.scene.updateCenterScaling();
         });
         
-        const animationTypeNames = ['Complex Wave', 'Radial Pulse', 'Spiral Effect', 'Chaos Pattern'];
-        centerScalingFolder.add({ animationType: 0 }, 'animationType', 0, 3, 1)
+        const centerScalingAnimationTypeNames = ['Complex Wave', 'Radial Pulse', 'Spiral Effect', 'Chaos Pattern'];
+        const currentCenterScalingAnimationType = centerScalingAnimationTypeNames[this.state.get('centerScalingAnimationType')] || centerScalingAnimationTypeNames[0];
+        centerScalingFolder.add({ animationType: currentCenterScalingAnimationType }, 'animationType', centerScalingAnimationTypeNames)
             .name('Animation Type')
             .onChange((value) => {
-                this.state.set('centerScalingAnimationType', value);
+                const index = centerScalingAnimationTypeNames.indexOf(value);
+                this.state.set('centerScalingAnimationType', index);
                 this.app.scene.updateCenterScaling();
             });
         
@@ -300,33 +309,41 @@ export class GUIManager {
         this.addController(shapeCyclingFolder, 'shapeCyclingSpeed', 0.1, 5, 0.1, 'Cycling Speed');
         
         const patternNames = ['Sequential', 'Random', 'Wave', 'Pulse', 'Staggered'];
-        shapeCyclingFolder.add({ pattern: 0 }, 'pattern', 0, 4, 1)
+        const currentPattern = patternNames[this.state.get('shapeCyclingPattern')] || patternNames[0];
+        shapeCyclingFolder.add({ pattern: currentPattern }, 'pattern', patternNames)
             .name('Pattern')
             .onChange((value) => {
-                this.state.set('shapeCyclingPattern', value);
+                const index = patternNames.indexOf(value);
+                this.state.set('shapeCyclingPattern', index);
             });
         
         const directionNames = ['Forward', 'Reverse', 'Ping-Pong', 'Random'];
-        shapeCyclingFolder.add({ direction: 0 }, 'direction', 0, 3, 1)
+        const currentDirection = directionNames[this.state.get('shapeCyclingDirection')] || directionNames[0];
+        shapeCyclingFolder.add({ direction: currentDirection }, 'direction', directionNames)
             .name('Direction')
             .onChange((value) => {
-                this.state.set('shapeCyclingDirection', value);
+                const index = directionNames.indexOf(value);
+                this.state.set('shapeCyclingDirection', index);
             });
         
         const syncNames = ['Independent', 'Synchronized', 'Wave', 'Cluster'];
-        shapeCyclingFolder.add({ sync: 0 }, 'sync', 0, 3, 1)
+        const currentSync = syncNames[this.state.get('shapeCyclingSync')] || syncNames[0];
+        shapeCyclingFolder.add({ sync: currentSync }, 'sync', syncNames)
             .name('Synchronization')
             .onChange((value) => {
-                this.state.set('shapeCyclingSync', value);
+                const index = syncNames.indexOf(value);
+                this.state.set('shapeCyclingSync', index);
             });
         
         this.addController(shapeCyclingFolder, 'shapeCyclingIntensity', 0.1, 1, 0.1, 'Intensity');
         
         const triggerNames = ['Time-based', 'Movement-triggered', 'Rotation-triggered', 'Manual'];
-        shapeCyclingFolder.add({ trigger: 0 }, 'trigger', 0, 3, 1)
+        const currentTrigger = triggerNames[this.state.get('shapeCyclingTrigger')] || triggerNames[0];
+        shapeCyclingFolder.add({ trigger: currentTrigger }, 'trigger', triggerNames)
             .name('Trigger')
             .onChange((value) => {
-                this.state.set('shapeCyclingTrigger', value);
+                const index = triggerNames.indexOf(value);
+                this.state.set('shapeCyclingTrigger', index);
             });
     }
 
@@ -357,7 +374,11 @@ export class GUIManager {
             'Bounce Out': 'bounce.out'
         };
         
-        const easingController = morphingFolder.add({ easing: this.state.get('morphingEasing') }, 'easing', Object.keys(easingOptions)).name('Easing');
+        // Find the current easing display name from the state value
+        const currentEasingValue = this.state.get('morphingEasing');
+        const currentEasingDisplayName = Object.keys(easingOptions).find(key => easingOptions[key] === currentEasingValue) || 'Power 2 InOut';
+        
+        const easingController = morphingFolder.add({ easing: currentEasingDisplayName }, 'easing', Object.keys(easingOptions)).name('Easing');
         easingController.onChange(() => {
             this.state.set('morphingEasing', easingOptions[easingController.getValue()]);
         });
