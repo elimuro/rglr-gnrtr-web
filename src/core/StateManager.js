@@ -77,6 +77,7 @@ export class StateManager {
                 initialState.midiChannel = 0;
                 initialState.midiCCMappings = {};
                 initialState.midiNoteMappings = {};
+                initialState.midiStopStopsAnimation = false;
                 
                 // Add sphereDistortionStrength if not present
                 if (!initialState.hasOwnProperty('sphereDistortionStrength')) {
@@ -194,6 +195,7 @@ export class StateManager {
             "midiChannel": 0,
             "midiCCMappings": {},
             "midiNoteMappings": {},
+            "midiStopStopsAnimation": false,
             "audioMappings": {},
             
             // Audio reactivity parameters

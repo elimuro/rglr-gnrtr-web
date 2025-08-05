@@ -24,8 +24,6 @@ export class MIDIClockManager {
         this.bpmSamples = []; // Store recent BPM samples for averaging
         this.maxBpmSamples = 4; // Number of samples to average
         
-        // Tempo division settings
-        this.tempoDivision = 'quarter'; // 'whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second'
         this.syncMode = 'auto'; // 'auto', 'manual', 'off'
         
         // Clock subdivisions
@@ -55,26 +53,38 @@ export class MIDIClockManager {
         if (this.lastClockTime > 0) {
             this.clockInterval = now - this.lastClockTime;
             
-            // Calculate BPM from this interval
-            const currentBpm = 60000 / (this.clockInterval * 24);
-            
-            // Add to samples for averaging
-            this.bpmSamples.push(currentBpm);
-            if (this.bpmSamples.length > this.maxBpmSamples) {
-                this.bpmSamples.shift(); // Remove oldest sample
-            }
-            
-            // Update BPM less frequently (every quarter note)
-            if (this.clockPulses % this.bpmUpdateInterval === 0) {
-                // Calculate average BPM from recent samples
-                const avgBpm = this.bpmSamples.reduce((sum, bpm) => sum + bpm, 0) / this.bpmSamples.length;
-                const oldBpm = this.bpm;
+            // Validate clock interval to prevent division by zero or very small values
+            if (this.clockInterval > 0 && this.clockInterval < 10000) { // Max 10 seconds between pulses
+                // Calculate BPM from this interval
+                const currentBpm = 60000 / (this.clockInterval * 24);
                 
-                // Use setBPM to ensure state and UI are updated
-                if (Math.abs(avgBpm - oldBpm) > 0.5) { // Only update if BPM changed by more than 0.5
-                    this.setBPM(avgBpm);
-                    console.log(`MIDI BPM changed to: ${Math.round(avgBpm)}`);
+                // Validate BPM is within reasonable bounds (40-300 BPM)
+                if (currentBpm >= 40 && currentBpm <= 300 && isFinite(currentBpm)) {
+                    // Add to samples for averaging
+                    this.bpmSamples.push(currentBpm);
+                    if (this.bpmSamples.length > this.maxBpmSamples) {
+                        this.bpmSamples.shift(); // Remove oldest sample
+                    }
+                    
+                    // Update BPM less frequently (every quarter note)
+                    if (this.clockPulses % this.bpmUpdateInterval === 0) {
+                        // Calculate average BPM from recent samples
+                        const avgBpm = this.bpmSamples.reduce((sum, bpm) => sum + bpm, 0) / this.bpmSamples.length;
+                        const oldBpm = this.bpm;
+                        
+                        // Use setBPM to ensure state and UI are updated
+                        if (Math.abs(avgBpm - oldBpm) > 0.5) { // Only update if BPM changed by more than 0.5
+                            this.setBPM(avgBpm);
+                            console.log(`MIDI BPM changed to: ${Math.round(avgBpm)}`);
+                        }
+                    }
+                } else {
+                    // Log invalid BPM calculation for debugging
+                    console.warn(`Invalid BPM calculation: ${currentBpm} (interval: ${this.clockInterval}ms)`);
                 }
+            } else {
+                // Log invalid interval for debugging
+                console.warn(`Invalid clock interval: ${this.clockInterval}ms`);
             }
         }
         
@@ -189,29 +199,7 @@ export class MIDIClockManager {
         return this.bpmTimingManager;
     }
 
-    getTempoDivisionPulses() {
-        const divisionMap = {
-            'whole': 96,      // 4 beats * 24 pulses
-            'half': 48,       // 2 beats * 24 pulses
-            'quarter': 24,    // 1 beat * 24 pulses
-            'eighth': 12,     // 1/2 beat * 24 pulses
-            'sixteenth': 6,   // 1/4 beat * 24 pulses
-            'thirty-second': 3 // 1/8 beat * 24 pulses
-        };
-        return divisionMap[this.tempoDivision] || 24;
-    }
 
-    getTempoDivisionName() {
-        const nameMap = {
-            'whole': 'Whole',
-            'half': 'Half',
-            'quarter': 'Quarter',
-            'eighth': 'Eighth',
-            'sixteenth': '16th',
-            'thirty-second': '32nd'
-        };
-        return nameMap[this.tempoDivision] || 'Quarter';
-    }
 
     isExternalClockActive() {
         return this.isClockActive && this.clockSource === 'external';
@@ -279,21 +267,7 @@ export class MIDIClockManager {
                         </svg>
                     </button>
                     
-                    <div id="tempo-division" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
-                        <span class="text-xs font-medium text-white">Div: <span id="division-value">Quarter</span></span>
-                    </div>
-                    
-                    <button id="division-down" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 9l6 6 6-6"/>
-                        </svg>
-                    </button>
-                    
-                    <button id="division-up" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 15l6-6 6 6"/>
-                        </svg>
-                    </button>
+
                     
                     <button id="sync-toggle" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
                         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -347,14 +321,7 @@ export class MIDIClockManager {
             this.resetClock();
         });
         
-        // Tempo division controls
-        document.getElementById('division-up').addEventListener('click', () => {
-            this.increaseTempoDivision();
-        });
-        
-        document.getElementById('division-down').addEventListener('click', () => {
-            this.decreaseTempoDivision();
-        });
+
         
         // Sync mode toggle
         document.getElementById('sync-toggle').addEventListener('click', () => {
@@ -400,25 +367,7 @@ export class MIDIClockManager {
         console.log('Clock reset');
     }
 
-    increaseTempoDivision() {
-        const divisions = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second'];
-        const currentIndex = divisions.indexOf(this.tempoDivision);
-        if (currentIndex > 0) {
-            this.tempoDivision = divisions[currentIndex - 1];
-            this.updateTempoDivisionDisplay();
-            console.log(`Tempo division increased to: ${this.getTempoDivisionName()}`);
-        }
-    }
 
-    decreaseTempoDivision() {
-        const divisions = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second'];
-        const currentIndex = divisions.indexOf(this.tempoDivision);
-        if (currentIndex < divisions.length - 1) {
-            this.tempoDivision = divisions[currentIndex + 1];
-            this.updateTempoDivisionDisplay();
-            console.log(`Tempo division decreased to: ${this.getTempoDivisionName()}`);
-        }
-    }
 
     toggleSyncMode() {
         const modes = ['auto', 'manual', 'off'];
@@ -441,15 +390,20 @@ export class MIDIClockManager {
     }
 
     setBPM(bpm) {
-        this.bpm = bpm;
-        this.bpmTimingManager.setBPM(bpm);
-        
-        // Update state if app is available
-        if (this.app && this.app.state) {
-            this.app.state.set('globalBPM', Math.round(bpm));
+        // Validate BPM value before setting
+        if (bpm >= 40 && bpm <= 300 && isFinite(bpm)) {
+            this.bpm = bpm;
+            this.bpmTimingManager.setBPM(bpm);
+            
+            // Update state if app is available
+            if (this.app && this.app.state) {
+                this.app.state.set('globalBPM', Math.round(bpm));
+            }
+            
+            this.updateClockDisplay();
+        } else {
+            console.warn(`Attempted to set invalid BPM: ${bpm}. BPM must be between 40-300 and finite.`);
         }
-        
-        this.updateClockDisplay();
     }
 
     /**
@@ -497,26 +451,36 @@ export class MIDIClockManager {
         if (this.tapTimes.length >= 2) {
             const intervals = [];
             for (let i = 1; i < this.tapTimes.length; i++) {
-                intervals.push(this.tapTimes[i] - this.tapTimes[i - 1]);
+                const interval = this.tapTimes[i] - this.tapTimes[i - 1];
+                // Validate interval is reasonable (between 100ms and 10 seconds)
+                if (interval >= 100 && interval <= 10000) {
+                    intervals.push(interval);
+                }
             }
             
-            // Calculate average interval
-            const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
-            const newBPM = 60000 / avgInterval; // Convert to BPM
-            
-            if (newBPM >= 40 && newBPM <= 300) { // Reasonable BPM range
-                this.setBPM(newBPM);
-                console.log(`MIDI Tap Tempo: ${Math.round(newBPM)} BPM`);
+            // Only proceed if we have valid intervals
+            if (intervals.length >= 1) {
+                // Calculate average interval
+                const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+                
+                // Validate average interval before calculating BPM
+                if (avgInterval > 0 && avgInterval < 10000 && isFinite(avgInterval)) {
+                    const newBPM = 60000 / avgInterval; // Convert to BPM
+                    
+                    if (newBPM >= 40 && newBPM <= 300 && isFinite(newBPM)) { // Reasonable BPM range
+                        this.setBPM(newBPM);
+                        console.log(`MIDI Tap Tempo: ${Math.round(newBPM)} BPM`);
+                    } else {
+                        console.warn(`Invalid tap tempo BPM: ${newBPM} (avg interval: ${avgInterval}ms)`);
+                    }
+                } else {
+                    console.warn(`Invalid average tap interval: ${avgInterval}ms`);
+                }
             }
         }
     }
 
-    updateTempoDivisionDisplay() {
-        const divisionElement = document.getElementById('division-value');
-        if (divisionElement) {
-            divisionElement.textContent = this.getTempoDivisionName();
-        }
-    }
+
 
     updateSyncModeDisplay() {
         const syncElement = document.getElementById('sync-value');
@@ -573,8 +537,7 @@ export class MIDIClockManager {
             }
         }
         
-        // Update tempo division and sync mode displays
-        this.updateTempoDivisionDisplay();
+        // Update sync mode display
         this.updateSyncModeDisplay();
         
         // Debug: Log sync status occasionally

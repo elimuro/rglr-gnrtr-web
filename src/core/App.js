@@ -199,6 +199,18 @@ export class App {
             this.testAudioMapping();
         });
         
+        // MIDI stop animation checkbox
+        const midiStopAnimationCheckbox = document.getElementById('midi-stop-animation');
+        if (midiStopAnimationCheckbox) {
+            // Set initial state
+            midiStopAnimationCheckbox.checked = this.state.get('midiStopStopsAnimation') || false;
+            
+            // Add event listener
+            midiStopAnimationCheckbox.addEventListener('change', (e) => {
+                this.state.set('midiStopStopsAnimation', e.target.checked);
+            });
+        }
+        
         // Scene management buttons
         document.getElementById('save-scene-button').addEventListener('click', () => {
             this.saveScene();
@@ -2285,10 +2297,22 @@ History: ${summary.historySize} entries`;
 
     onMIDIStart() {
         this.midiClockManager.onMIDIStart();
+        
+        // Check if MIDI stop should stop the animation loop (and restart it on start)
+        if (this.state.get('midiStopStopsAnimation')) {
+            this.animationLoop.start();
+            console.log('Animation loop started by MIDI start message');
+        }
     }
 
     onMIDIStop() {
         this.midiClockManager.onMIDIStop();
+        
+        // Check if MIDI stop should stop the animation loop
+        if (this.state.get('midiStopStopsAnimation')) {
+            this.animationLoop.stop();
+            console.log('Animation loop stopped by MIDI stop message');
+        }
     }
 
     onMIDIContinue() {
