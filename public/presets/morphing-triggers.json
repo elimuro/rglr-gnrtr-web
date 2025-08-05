@@ -4,14 +4,14 @@
   "version": "1.0",
   "created": "2024-01-15T10:30:00Z",
   "midiCCMappings": {
-    "cc1": { "channel": 0, "value": 13, "target": "morphingSpeed" },
-    "cc2": { "channel": 0, "value": 14, "target": "animationSpeed" },
+    "cc1": { "channel": 0, "value": 13, "target": "morphingDivision" },
+    "cc2": { "channel": 0, "value": 14, "target": "globalBPM" },
     "cc3": { "channel": 0, "value": 15, "target": "movementAmplitude" },
     "cc4": { "channel": 0, "value": 16, "target": "rotationAmplitude" },
     "cc5": { "channel": 0, "value": 17, "target": "scaleAmplitude" },
     "cc6": { "channel": 0, "value": 18, "target": "randomness" },
     "cc7": { "channel": 0, "value": 19, "target": "cellSize" },
-    "cc8": { "channel": 0, "value": 20, "target": "movementFrequency" }
+    "cc8": { "channel": 0, "value": 20, "target": "movementDivision" }
   },
   "midiNoteMappings": {
     "note1": { "channel": 0, "note": 36, "target": "randomMorph" },

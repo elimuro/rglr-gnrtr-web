@@ -112,6 +112,11 @@
                 </div>
 
                 <div class="nav-section">
+                    <h4 class="nav-section-title">NEW: BPM Timing System</h4>
+                    <a href="#bpm-timing-system" class="nav-item">BPM-Based Timing</a>
+                </div>
+
+                <div class="nav-section">
                     <h4 class="nav-section-title">NEW: MIDI Clock</h4>
                     <a href="#midi-clock" class="nav-item">MIDI Clock Sync</a>
                     <a href="#transport-controls" class="nav-item">Transport Controls</a>
@@ -182,6 +187,10 @@
                     <div class="help-note">
                         <strong>Note:</strong> Web MIDI API requires HTTPS in most browsers. Make sure you're running
                         the application over HTTPS or localhost.
+                    </div>
+                    
+                    <div class="help-note">
+                        <strong>NEW:</strong> The application now uses a BPM-based timing system where all animations sync to musical time. See the "BPM-Based Timing System" section for details on the new musical timing features.
                     </div>
                 </div>
 
@@ -289,6 +298,57 @@
                     <div class="help-note">
                         <strong>Note:</strong> The Learn function works for both CC and Note controls. For CC controls,
                         it learns the CC number and channel. For Note controls, it learns the note number and channel.
+                    </div>
+                </div>
+
+                <!-- BPM-Based Timing System Section -->
+                <div id="bpm-timing-system" class="help-section">
+                    <h2 class="help-h2">BPM-Based Timing System</h2>
+                    <p>The application now uses a musical timing system where all animations sync to a global BPM (Beats Per Minute). This creates rhythmic, synchronized animations that follow musical time instead of arbitrary speeds.</p>
+                    
+                    <h3 class="help-h3">Global BPM Control</h3>
+                    <ul>
+                        <li><strong>Range:</strong> 60-300 BPM</li>
+                        <li><strong>Default:</strong> 120 BPM</li>
+                        <li><strong>MIDI Control:</strong> Can be mapped to any CC controller</li>
+                        <li><strong>External Sync:</strong> Automatically syncs to incoming MIDI clock</li>
+                    </ul>
+                    
+                    <h3 class="help-h3">Musical Timing Divisions</h3>
+                    <p>Each animation type can be set to different musical divisions, creating complex rhythmic patterns:</p>
+                    <ul>
+                        <li><strong>32nd Note:</strong> Very fast (1/8 beat) - 0.0625s at 120 BPM</li>
+                        <li><strong>16th Note:</strong> Fast (1/4 beat) - 0.125s at 120 BPM</li>
+                        <li><strong>8th Note:</strong> Medium-fast (1/2 beat) - 0.25s at 120 BPM</li>
+                        <li><strong>Quarter Note:</strong> Medium (1 beat) - 0.5s at 120 BPM</li>
+                        <li><strong>Half Note:</strong> Slow (2 beats) - 1s at 120 BPM</li>
+                        <li><strong>Whole Note:</strong> Very slow (4 beats) - 2s at 120 BPM</li>
+                        <li><strong>1 Bar:</strong> Very slow (4 beats) - 2s at 120 BPM</li>
+                        <li><strong>2 Bars:</strong> Extremely slow (8 beats) - 4s at 120 BPM</li>
+                        <li><strong>4 Bars:</strong> Very long (16 beats) - 8s at 120 BPM</li>
+                        <li><strong>8 Bars:</strong> Longest (32 beats) - 16s at 120 BPM</li>
+                    </ul>
+                    
+                    <h3 class="help-h3">Animation Types with Musical Timing</h3>
+                    <ul>
+                        <li><strong>Movement:</strong> Shapes move in rhythmic patterns</li>
+                        <li><strong>Rotation:</strong> Shapes rotate at musical intervals</li>
+                        <li><strong>Scaling:</strong> Shapes scale in time with the beat</li>
+                        <li><strong>Shape Cycling:</strong> Shapes change at musical divisions</li>
+                        <li><strong>Morphing:</strong> Shape morphing follows musical timing</li>
+                        <li><strong>Center Scaling:</strong> 3D scaling pulses with the rhythm</li>
+                    </ul>
+                    
+                    <h3 class="help-h3">MIDI Clock Integration</h3>
+                    <ul>
+                        <li><strong>External Clock:</strong> Automatically detects and syncs to MIDI clock</li>
+                        <li><strong>BPM Detection:</strong> Calculates BPM from incoming clock signals</li>
+                        <li><strong>Transport Control:</strong> Start/Stop/Continue messages control animation</li>
+                        <li><strong>Tap Tempo:</strong> Press 'T' key to set BPM from manual taps</li>
+                    </ul>
+                    
+                    <div class="help-note">
+                        <strong>Musical Synchronization:</strong> This system allows for precise musical timing and synchronization with external MIDI devices, DAWs, and other musical equipment. All animations become rhythmically coherent and can be used for live performance or synchronized video creation.
                     </div>
                 </div>
 
@@ -465,16 +525,55 @@
                     <div id="animation-params" class="help-section">
                         <h3 class="help-h3">Animation Parameters</h3>
                         <ul>
-                            <li><strong>animationSpeed:</strong> Controls the overall animation speed</li>
+                            <li><strong>globalBPM:</strong> Controls the global BPM (60-300) - the master tempo for all animations</li>
                             <li><strong>movementAmplitude:</strong> Controls the amplitude of movement</li>
                             <li><strong>rotationAmplitude:</strong> Controls the amplitude of rotation</li>
                             <li><strong>scaleAmplitude:</strong> Controls the amplitude of scaling</li>
                             <li><strong>randomness:</strong> Controls the randomness of animations</li>
                             <li><strong>cellSize:</strong> Controls the size of individual cells</li>
-                            <li><strong>movementFrequency:</strong> Controls the frequency of movement</li>
-                            <li><strong>rotationFrequency:</strong> Controls the frequency of rotation</li>
-                            <li><strong>scaleFrequency:</strong> Controls the frequency of scaling</li>
                         </ul>
+                        
+                        <h4 class="help-h4">Musical Timing Divisions</h4>
+                        <p>All animations now use musical timing divisions instead of arbitrary frequencies. These divisions sync with the global BPM:</p>
+                        <ul>
+                            <li><strong>movementDivision:</strong> Controls the timing of movement animations:
+                                <ul>
+                                    <li><strong>32nd:</strong> Very fast (1/8 beat)</li>
+                                    <li><strong>16th:</strong> Fast (1/4 beat)</li>
+                                    <li><strong>8th:</strong> Medium-fast (1/2 beat)</li>
+                                    <li><strong>Quarter:</strong> Medium (1 beat)</li>
+                                    <li><strong>Half:</strong> Slow (2 beats)</li>
+                                    <li><strong>Whole:</strong> Very slow (4 beats)</li>
+                                    <li><strong>1 Bar:</strong> Very slow (4 beats)</li>
+                                    <li><strong>2 Bars:</strong> Extremely slow (8 beats)</li>
+                                    <li><strong>4 Bars:</strong> Very long (16 beats)</li>
+                                    <li><strong>8 Bars:</strong> Longest (32 beats)</li>
+                                </ul>
+                            </li>
+                            <li><strong>rotationDivision:</strong> Controls the timing of rotation animations (same divisions as movement)</li>
+                            <li><strong>scaleDivision:</strong> Controls the timing of scaling animations (same divisions as movement)</li>
+                            <li><strong>shapeCyclingDivision:</strong> Controls the timing of shape cycling animations (same divisions as movement)</li>
+                            <li><strong>morphingDivision:</strong> Controls the timing of morphing animations (same divisions as movement)</li>
+                            <li><strong>centerScalingDivision:</strong> Controls the timing of center scaling animations (same divisions as movement)</li>
+                        </ul>
+                        
+                        <div class="help-note">
+                            <strong>Musical Timing:</strong> All animations now sync to musical time instead of arbitrary speeds. The global BPM serves as the master tempo, and each animation type can be set to different musical divisions for complex rhythmic patterns.
+                        </div>
+                        
+                        <div class="help-note">
+                            <strong>Deprecated Parameters:</strong> The following old parameters have been replaced with the new musical timing system:
+                            <ul>
+                                <li><code>animationSpeed</code> → <code>globalBPM</code></li>
+                                <li><code>movementFrequency</code> → <code>movementDivision</code></li>
+                                <li><code>rotationFrequency</code> → <code>rotationDivision</code></li>
+                                <li><code>scaleFrequency</code> → <code>scaleDivision</code></li>
+                                <li><code>shapeCyclingSpeed</code> → <code>shapeCyclingDivision</code></li>
+                                <li><code>morphingSpeed</code> → <code>morphingDivision</code></li>
+                                <li><code>centerScalingAnimationSpeed</code> → <code>centerScalingDivision</code></li>
+                            </ul>
+                            Old scene files will automatically migrate to use the new parameters with sensible defaults.
+                        </div>
                     </div>
 
                     <div id="center-scaling-params" class="help-section">
@@ -499,7 +598,7 @@
                                 </ul>
                             </li>
                             <li><strong>centerScalingAnimation:</strong> Enables animated scaling effects</li>
-                            <li><strong>centerScalingAnimationSpeed:</strong> Controls the speed of animated scaling (0.1-3)</li>
+                            <li><strong>centerScalingDivision:</strong> Controls the timing of center scaling animations using musical divisions (same as movement divisions)</li>
                             <li><strong>centerScalingAnimationType:</strong> Controls the type of scaling animation (0-3)</li>
                         </ul>
                         
@@ -650,8 +749,12 @@
   "version": "1.0",
   "created": "2024-01-15T10:30:00Z",
   "midiCCMappings": {
-    "cc1": { "channel": 0, "value": 1, "target": "animationSpeed" },
-    "cc2": { "channel": 1, "value": 1, "target": "movementAmplitude" }
+    "cc1": { "channel": 0, "value": 1, "target": "globalBPM" },
+    "cc2": { "channel": 1, "value": 1, "target": "movementAmplitude" },
+    "cc3": { "channel": 2, "value": 1, "target": "movementDivision" },
+    "cc4": { "channel": 3, "value": 1, "target": "rotationDivision" },
+    "cc5": { "channel": 4, "value": 1, "target": "scaleDivision" },
+    "cc6": { "channel": 5, "value": 1, "target": "morphingDivision" }
   },
   "midiNoteMappings": {
     "note1": { "channel": 0, "note": 60, "target": "shapeCycling" },

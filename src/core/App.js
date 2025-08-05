@@ -51,6 +51,9 @@ export class App {
             // Initialize state manager first
             await this.state.initialize();
             
+            // Initialize BPM from state
+            this.midiClockManager.initializeFromState();
+            
             // Initialize audio manager
             await this.audioManager.initialize();
             
@@ -903,6 +906,11 @@ export class App {
                 break;
             case 'c':
                 this.state.set('animationType', (this.state.get('animationType') + 1) % 4);
+                break;
+            case 't':
+                // Test tap tempo functionality
+                this.onMIDITempoTap();
+                console.log('Tap tempo triggered via keyboard (T key)');
                 break;
         }
     }
@@ -1907,6 +1915,36 @@ export class App {
     }
 
     // Morphing trigger methods
+    getMorphingDuration() {
+        const morphingDivision = this.state.get('morphingDivision') || 'quarter';
+        const globalBPM = this.state.get('globalBPM') || 120;
+        
+        // Get division beats
+        const divisionBeats = this.getDivisionBeats(morphingDivision);
+        
+        // Calculate duration in seconds
+        const secondsPerBeat = 60 / globalBPM;
+        const duration = divisionBeats * secondsPerBeat;
+        
+        return duration;
+    }
+
+    getDivisionBeats(division) {
+        const divisionMap = {
+            '32nd': 0.125,    // 1/8 beat
+            '16th': 0.25,     // 1/4 beat
+            '8th': 0.5,       // 1/2 beat
+            'quarter': 1,      // 1 beat
+            'half': 2,         // 2 beats
+            'whole': 4,        // 4 beats
+            '1bar': 4,         // 1 bar = 4 beats
+            '2bars': 8,        // 2 bars = 8 beats
+            '4bars': 16,       // 4 bars = 16 beats
+            '8bars': 32        // 8 bars = 32 beats
+        };
+        return divisionMap[division] || 1;
+    }
+
     triggerRandomMorph() {
         if (this.scene && this.scene.shapes.length > 0) {
             const morphableShapes = this.scene.shapes.filter(shape => {
@@ -1919,7 +1957,7 @@ export class App {
             const pairNames = Object.keys(morphablePairs);
             const randomShape = morphableShapes[Math.floor(Math.random() * morphableShapes.length)];
             const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-            this.scene.shapeGenerator.startShapeMorph(randomShape, randomPair[0], randomPair[1], this.state.get('morphingSpeed'));
+            this.scene.shapeGenerator.startShapeMorph(randomShape, randomPair[0], randomPair[1], this.getMorphingDuration());
         }
     }
 
@@ -1937,7 +1975,7 @@ export class App {
             morphableShapes.forEach((shape, index) => {
                 setTimeout(() => {
                     const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                    this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.state.get('morphingSpeed'));
+                    this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.getMorphingDuration());
                 }, index * 100);
             });
         }
@@ -1957,7 +1995,7 @@ export class App {
             
             morphableShapes.forEach((shape, index) => {
                 setTimeout(() => {
-                    this.scene.shapeGenerator.startShapeMorph(shape, 'triangle_UP', targetShape, this.state.get('morphingSpeed'));
+                    this.scene.shapeGenerator.startShapeMorph(shape, 'triangle_UP', targetShape, this.getMorphingDuration());
                 }, index * 50);
             });
         }
@@ -1976,7 +2014,7 @@ export class App {
             
             morphableShapes.forEach(shape => {
                 const randomPair = morphablePairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.state.get('morphingSpeed'));
+                this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.getMorphingDuration());
             });
         }
     }
@@ -2251,5 +2289,15 @@ History: ${summary.historySize} entries`;
 
     onMIDIContinue() {
         this.midiClockManager.onMIDIContinue();
+    }
+
+    // MIDI Tempo Change Handler
+    onMIDITempoChange(newBPM) {
+        this.midiClockManager.onMIDITempoChange(newBPM);
+    }
+
+    // MIDI Tap Tempo Handler
+    onMIDITempoTap() {
+        this.midiClockManager.onMIDITempoTap();
     }
 } 

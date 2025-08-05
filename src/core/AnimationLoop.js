@@ -141,12 +141,15 @@ export class AnimationLoop {
         // Get clock-aware delta time
         const deltaTime = this.getClockDelta();
         
-        // Update animation time
+        // Update animation time using BPM-based timing
         if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation') || this.state.get('centerScalingEnabled')) {
-            this.animationTime += deltaTime * this.state.get('animationSpeed');
+            // Use BPM-based timing instead of animationSpeed multiplier
+            const globalBPM = this.state.get('globalBPM') || 120;
+            const secondsPerBeat = 60 / globalBPM;
+            this.animationTime += deltaTime / secondsPerBeat; // Convert to beats
             
-            // Apply animations to shapes
-            this.scene.animateShapes(this.animationTime, this.state.get('animationSpeed'));
+            // Apply animations to shapes with BPM-based timing
+            this.scene.animateShapes(this.animationTime, globalBPM);
         }
         
         // Update post-processing grain time
@@ -212,5 +215,15 @@ export class AnimationLoop {
         } else {
             return 'stopped';
         }
+    }
+
+    /**
+     * Get the BPM timing manager for musical calculations
+     */
+    getBPMTimingManager() {
+        if (this.midiClockManager) {
+            return this.midiClockManager.getBPMTimingManager();
+        }
+        return null;
     }
 } 

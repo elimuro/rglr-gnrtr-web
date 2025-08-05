@@ -97,6 +97,7 @@ export class StateManager {
     getFallbackState() {
         // Fallback state if JSON file can't be loaded
         return {
+            "globalBPM": 120,
             "animationType": 0,
             "animationSpeed": 1.89,
             "enableShapeCycling": false,
@@ -183,6 +184,12 @@ export class StateManager {
             "centerScalingAnimation": false,
             "centerScalingAnimationSpeed": 1.0,
             "centerScalingAnimationType": 0,
+            "shapeCyclingDivision": "quarter",
+            "movementDivision": "8th",
+            "rotationDivision": "16th",
+            "scaleDivision": "half",
+            "morphingDivision": "quarter",
+            "centerScalingDivision": "quarter",
             "midiEnabled": false,
             "midiChannel": 0,
             "midiCCMappings": {},

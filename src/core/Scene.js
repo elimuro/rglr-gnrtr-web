@@ -763,7 +763,7 @@ export class Scene {
         };
     }
 
-    calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize) {
+    calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize, animationTime = null, globalBPM = null) {
         if (!this.state.get('centerScalingEnabled')) {
             return 1.0; // No scaling if disabled
         }
@@ -773,7 +773,7 @@ export class Scene {
         const radius = this.state.get('centerScalingRadius');
         const direction = this.state.get('centerScalingDirection');
         const animation = this.state.get('centerScalingAnimation');
-        const animationSpeed = this.state.get('centerScalingAnimationSpeed');
+        const centerScalingDivision = this.state.get('centerScalingDivision') || 'quarter';
         const animationType = this.state.get('centerScalingAnimationType');
 
         // Calculate distance from center (0,0)
@@ -815,7 +815,16 @@ export class Scene {
         // Apply animation if enabled
         let animationOffset = 0;
         if (animation) {
-            const time = Date.now() * 0.001 * animationSpeed;
+            let time;
+            if (animationTime !== null && globalBPM !== null) {
+                // Use musical timing
+                const divisionBeats = this.getDivisionBeats(centerScalingDivision);
+                time = animationTime / divisionBeats;
+            } else {
+                // Fallback to old timing system
+                const animationSpeed = this.state.get('centerScalingAnimationSpeed');
+                time = Date.now() * 0.001 * animationSpeed;
+            }
             
             // Different animation types for more dramatic effects
             switch (Math.floor(animationType)) {
@@ -867,7 +876,7 @@ export class Scene {
     }
 
     // Animation helpers
-    animateShapes(animationTime, animationSpeed) {
+    animateShapes(animationTime, globalBPM) {
         const gridWidth = this.state.get('gridWidth');
         const gridHeight = this.state.get('gridHeight');
         const cellSize = this.state.get('cellSize');
@@ -903,13 +912,13 @@ export class Scene {
                     
                     // Shape cycling (independent of size/movement animations)
                     if (this.state.get('enableShapeCycling')) {
-                        this.cycleShapeInCell(mesh, x, y, availableShapes, animationTime, animationSpeed);
+                        this.cycleShapeInCell(mesh, x, y, availableShapes, animationTime, globalBPM);
                         isAnimated = true;
                     }
                     
                     // Size/movement animations (using manual calculations for now)
                     if (this.state.get('enableSizeAnimation')) {
-                        this.animateShapeTransformations(mesh, x, y, animationTime);
+                        this.animateShapeTransformations(mesh, x, y, animationTime, globalBPM);
                         isAnimated = true;
                     } else {
                         // Reset to original positions when size animation is disabled
@@ -922,7 +931,7 @@ export class Scene {
                     
                     // Always apply center scaling animation when enabled (independent of other animations)
                     if (this.state.get('centerScalingEnabled')) {
-                        const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize);
+                        const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize, animationTime, globalBPM);
                         
                         if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
                             const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
@@ -952,10 +961,10 @@ export class Scene {
         };
     }
 
-    cycleShapeInCell(mesh, x, y, availableShapes, animationTime, animationSpeed) {
+    cycleShapeInCell(mesh, x, y, availableShapes, animationTime, globalBPM) {
         if (availableShapes.length === 0) return;
         
-        const shapeCyclingSpeed = this.state.get('shapeCyclingSpeed');
+        const shapeCyclingDivision = this.state.get('shapeCyclingDivision') || 'quarter';
         const shapeCyclingPattern = this.state.get('shapeCyclingPattern');
         const shapeCyclingDirection = this.state.get('shapeCyclingDirection');
         const shapeCyclingSync = this.state.get('shapeCyclingSync');
@@ -976,9 +985,11 @@ export class Scene {
         
         if (!shouldCycle) return;
         
-        // Calculate effective animation speed
-        const effectiveSpeed = animationSpeed * shapeCyclingSpeed;
-        const timeOffset = animationTime * effectiveSpeed;
+        // Calculate effective animation time using musical divisions
+        const secondsPerBeat = 60 / globalBPM;
+        const divisionBeats = this.getDivisionBeats(shapeCyclingDivision);
+        // Invert the timing: smaller divisions = faster cycling
+        const timeOffset = animationTime / divisionBeats;
         
         // Calculate shape index based on pattern and sync
         let shapeIndex = 0;
@@ -1102,7 +1113,7 @@ export class Scene {
         }
     }
 
-    animateShapeTransformations(mesh, x, y, animationTime) {
+    animateShapeTransformations(mesh, x, y, animationTime, globalBPM) {
         const cellSize = this.state.get('cellSize');
         const gridWidth = this.state.get('gridWidth');
         const gridHeight = this.state.get('gridHeight');
@@ -1110,13 +1121,20 @@ export class Scene {
         const halfGridH = gridHeight / 2;
         
         // Calculate center scaling factor
-        const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize);
+        const centerScalingFactor = this.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize, animationTime, globalBPM);
+        
+        // Get musical divisions for animations
+        const movementDivision = this.state.get('movementDivision') || '8th';
+        const rotationDivision = this.state.get('rotationDivision') || '16th';
+        const scaleDivision = this.state.get('scaleDivision') || 'half';
         
         // Apply different animation types
         switch (this.state.get('animationType')) {
             case 0: // Movement
-                const xOffset = Math.sin(animationTime * this.state.get('movementFrequency') + x * 0.5) * this.state.get('movementAmplitude') * cellSize;
-                const yOffset = Math.cos(animationTime * this.state.get('movementFrequency') + y * 0.5) * this.state.get('movementAmplitude') * cellSize;
+                const movementBeats = this.getDivisionBeats(movementDivision);
+                const movementTime = animationTime / movementBeats;
+                const xOffset = Math.sin(movementTime + x * 0.5) * this.state.get('movementAmplitude') * cellSize;
+                const yOffset = Math.cos(movementTime + y * 0.5) * this.state.get('movementAmplitude') * cellSize;
                 mesh.position.x = (x - halfGridW + 0.5) * cellSize + xOffset;
                 mesh.position.y = (y - halfGridH + 0.5) * cellSize + yOffset;
                 
@@ -1132,7 +1150,9 @@ export class Scene {
                 }
                 break;
             case 1: // Rotation
-                mesh.rotation.z = Math.sin(animationTime * this.state.get('rotationFrequency') + x * 0.3 + y * 0.3) * this.state.get('rotationAmplitude');
+                const rotationBeats = this.getDivisionBeats(rotationDivision);
+                const rotationTime = animationTime / rotationBeats;
+                mesh.rotation.z = Math.sin(rotationTime + x * 0.3 + y * 0.3) * this.state.get('rotationAmplitude');
                 
                 // Apply center scaling for rotation animations
                 if (this.state.get('centerScalingEnabled')) {
@@ -1146,7 +1166,9 @@ export class Scene {
                 }
                 break;
             case 2: // Scale
-                const scale = 1 + Math.sin(animationTime * this.state.get('scaleFrequency') + x * 0.5 + y * 0.5) * this.state.get('scaleAmplitude');
+                const scaleBeats = this.getDivisionBeats(scaleDivision);
+                const scaleTime = animationTime / scaleBeats;
+                const scale = 1 + Math.sin(scaleTime + x * 0.5 + y * 0.5) * this.state.get('scaleAmplitude');
                 if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
                     const sphereScale = cellSize * this.state.get('sphereScale') * scale * centerScalingFactor;
                     mesh.scale.set(sphereScale, sphereScale, sphereScale);
@@ -1156,10 +1178,16 @@ export class Scene {
                 }
                 break;
             case 3: // Combined effects
-                const combinedXOffset = Math.sin(animationTime * this.state.get('movementFrequency') + x * 0.5) * this.state.get('movementAmplitude') * cellSize;
-                const combinedYOffset = Math.cos(animationTime * this.state.get('movementFrequency') + y * 0.5) * this.state.get('movementAmplitude') * cellSize;
-                const combinedRotation = Math.sin(animationTime * this.state.get('rotationFrequency') + x * 0.3 + y * 0.3) * this.state.get('rotationAmplitude');
-                const combinedScale = 1 + Math.sin(animationTime * this.state.get('scaleFrequency') + x * 0.5 + y * 0.5) * this.state.get('scaleAmplitude');
+                const combinedMovementBeats = this.getDivisionBeats(movementDivision);
+                const combinedRotationBeats = this.getDivisionBeats(rotationDivision);
+                const combinedScaleBeats = this.getDivisionBeats(scaleDivision);
+                const combinedMovementTime = animationTime / combinedMovementBeats;
+                const combinedRotationTime = animationTime / combinedRotationBeats;
+                const combinedScaleTime = animationTime / combinedScaleBeats;
+                const combinedXOffset = Math.sin(combinedMovementTime + x * 0.5) * this.state.get('movementAmplitude') * cellSize;
+                const combinedYOffset = Math.cos(combinedMovementTime + y * 0.5) * this.state.get('movementAmplitude') * cellSize;
+                const combinedRotation = Math.sin(combinedRotationTime + x * 0.3 + y * 0.3) * this.state.get('rotationAmplitude');
+                const combinedScale = 1 + Math.sin(combinedScaleTime + x * 0.5 + y * 0.5) * this.state.get('scaleAmplitude');
                 mesh.position.x = (x - halfGridW + 0.5) * cellSize + combinedXOffset;
                 mesh.position.y = (y - halfGridH + 0.5) * cellSize + combinedYOffset;
                 mesh.rotation.z = combinedRotation;
@@ -1172,6 +1200,24 @@ export class Scene {
                 }
                 break;
         }
+    }
+
+    getDivisionBeats(division) {
+        const divisionMap = {
+            // Note divisions
+            '32nd': 0.125,    // 1/8 beat
+            '16th': 0.25,     // 1/4 beat
+            '8th': 0.5,       // 1/2 beat
+            'quarter': 1,      // 1 beat
+            'half': 2,         // 2 beats
+            'whole': 4,        // 4 beats
+            // Bar divisions (assuming 4/4 time)
+            '1bar': 4,         // 1 bar = 4 beats
+            '2bars': 8,        // 2 bars = 8 beats
+            '4bars': 16,       // 4 bars = 16 beats
+            '8bars': 32        // 8 bars = 32 beats
+        };
+        return divisionMap[division] || 1;
     }
 
     animateShapeWithGSAP(mesh, x, y, cellSize) {

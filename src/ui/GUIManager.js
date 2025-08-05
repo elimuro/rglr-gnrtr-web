@@ -208,7 +208,7 @@ export class GUIManager {
         const animationFolder = this.gui.addFolder('Animation');
         
         // Main controls
-        this.addController(animationFolder, 'animationSpeed', 0.01, 2, 0.01, 'Global Speed');
+        this.addController(animationFolder, 'globalBPM', 60, 300, 1, 'Global BPM');
         
         // Animation type selector
         const mainAnimationTypeNames = ['Movement', 'Rotation', 'Scale', 'Combined'];
@@ -235,15 +235,42 @@ export class GUIManager {
         
         // Movement parameters
         this.addController(animationFolder, 'movementAmplitude', 0.01, 0.5, 0.01, 'Movement Amp');
-        this.addController(animationFolder, 'movementFrequency', 0.1, 2, 0.1, 'Movement Freq');
+        
+        // Movement division selector
+        const movementDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
+        const currentMovementDivision = this.getDivisionDisplayName(this.state.get('movementDivision') || '8th');
+        animationFolder.add({ movementDivision: currentMovementDivision }, 'movementDivision', movementDivisionNames)
+            .name('Movement Division ♪')
+            .onChange((value) => {
+                const division = this.getDivisionFromDisplayName(value);
+                this.state.set('movementDivision', division);
+            });
         
         // Rotation parameters
         this.addController(animationFolder, 'rotationAmplitude', 0.01, 2, 0.01, 'Rotation Amp');
-        this.addController(animationFolder, 'rotationFrequency', 0.1, 2, 0.1, 'Rotation Freq');
+        
+        // Rotation division selector
+        const rotationDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
+        const currentRotationDivision = this.getDivisionDisplayName(this.state.get('rotationDivision') || '16th');
+        animationFolder.add({ rotationDivision: currentRotationDivision }, 'rotationDivision', rotationDivisionNames)
+            .name('Rotation Division ♩')
+            .onChange((value) => {
+                const division = this.getDivisionFromDisplayName(value);
+                this.state.set('rotationDivision', division);
+            });
         
         // Scale parameters
         this.addController(animationFolder, 'scaleAmplitude', 0.01, 1, 0.01, 'Scale Amp');
-        this.addController(animationFolder, 'scaleFrequency', 0.1, 2, 0.1, 'Scale Freq');
+        
+        // Scale division selector
+        const scaleDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
+        const currentScaleDivision = this.getDivisionDisplayName(this.state.get('scaleDivision') || 'half');
+        animationFolder.add({ scaleDivision: currentScaleDivision }, 'scaleDivision', scaleDivisionNames)
+            .name('Scale Division ♬')
+            .onChange((value) => {
+                const division = this.getDivisionFromDisplayName(value);
+                this.state.set('scaleDivision', division);
+            });
         
         // Center Scaling controls
         const centerScalingFolder = animationFolder.addFolder('Center Scaling');
@@ -288,6 +315,17 @@ export class GUIManager {
             this.app.scene.updateCenterScaling();
         });
         
+        // Center scaling division selector
+        const centerScalingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
+        const currentCenterScalingDivision = this.getDivisionDisplayName(this.state.get('centerScalingDivision') || 'quarter');
+        centerScalingFolder.add({ centerScalingDivision: currentCenterScalingDivision }, 'centerScalingDivision', centerScalingDivisionNames)
+            .name('Scaling Division ♬')
+            .onChange((value) => {
+                const division = this.getDivisionFromDisplayName(value);
+                this.state.set('centerScalingDivision', division);
+            });
+        
+        // Center scaling animation speed (keeping for backward compatibility)
         this.addController(centerScalingFolder, 'centerScalingAnimationSpeed', 0.1, 3, 0.1, 'Animation Speed', () => {
             this.state.set('centerScalingAnimationSpeed', this.state.get('centerScalingAnimationSpeed'));
             this.app.scene.updateCenterScaling();
@@ -306,7 +344,15 @@ export class GUIManager {
         // Shape cycling controls
         const shapeCyclingFolder = animationFolder.addFolder('Shape Cycling');
         
-        this.addController(shapeCyclingFolder, 'shapeCyclingSpeed', 0.1, 5, 0.1, 'Cycling Speed');
+        // Shape cycling division selector
+        const shapeCyclingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
+        const currentShapeCyclingDivision = this.getDivisionDisplayName(this.state.get('shapeCyclingDivision') || 'quarter');
+        shapeCyclingFolder.add({ shapeCyclingDivision: currentShapeCyclingDivision }, 'shapeCyclingDivision', shapeCyclingDivisionNames)
+            .name('Cycling Division ♩')
+            .onChange((value) => {
+                const division = this.getDivisionFromDisplayName(value);
+                this.state.set('shapeCyclingDivision', division);
+            });
         
         const patternNames = ['Sequential', 'Random', 'Wave', 'Pulse', 'Staggered'];
         const currentPattern = patternNames[this.state.get('shapeCyclingPattern')] || patternNames[0];
@@ -350,7 +396,17 @@ export class GUIManager {
     setupMorphingControls() {
         const morphingFolder = this.gui.addFolder('Shape Morphing');
         
-        // Morphing speed
+        // Morphing division selector
+        const morphingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
+        const currentMorphingDivision = this.getDivisionDisplayName(this.state.get('morphingDivision') || 'quarter');
+        morphingFolder.add({ morphingDivision: currentMorphingDivision }, 'morphingDivision', morphingDivisionNames)
+            .name('Morphing Division ♩')
+            .onChange((value) => {
+                const division = this.getDivisionFromDisplayName(value);
+                this.state.set('morphingDivision', division);
+            });
+        
+        // Morphing speed (keeping for backward compatibility)
         this.addController(morphingFolder, 'morphingSpeed', 0.5, 5.0, 0.1, 'Morphing Speed', () => {
             this.state.set('morphingSpeed', this.state.get('morphingSpeed'));
         });
@@ -641,6 +697,44 @@ export class GUIManager {
             this.gui = null;
         }
         this.controllers.clear();
+    }
+
+    /**
+     * Get display name for a musical division
+     */
+    getDivisionDisplayName(division) {
+        const nameMap = {
+            '32nd': '32nd',
+            '16th': '16th', 
+            '8th': '8th',
+            'quarter': 'Quarter',
+            'half': 'Half',
+            'whole': 'Whole',
+            '1bar': '1 Bar',
+            '2bars': '2 Bars',
+            '4bars': '4 Bars',
+            '8bars': '8 Bars'
+        };
+        return nameMap[division] || division;
+    }
+
+    /**
+     * Get division value from display name
+     */
+    getDivisionFromDisplayName(displayName) {
+        const divisionMap = {
+            '32nd': '32nd',
+            '16th': '16th',
+            '8th': '8th',
+            'Quarter': 'quarter',
+            'Half': 'half',
+            'Whole': 'whole',
+            '1 Bar': '1bar',
+            '2 Bars': '2bars',
+            '4 Bars': '4bars',
+            '8 Bars': '8bars'
+        };
+        return divisionMap[displayName] || 'quarter';
     }
     
 } 

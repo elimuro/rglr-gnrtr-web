@@ -3,6 +3,7 @@
   "timestamp": "2025-07-31T19:25:57.305Z",
   "version": "1.0",
   "settings": {
+    "globalBPM": 120,
     "animationType": 0,
     "animationSpeed": 0.25,
     "enableShapeCycling": false,
@@ -90,6 +91,12 @@
     "centerScalingDirection": 0,
     "centerScalingAnimation": false,
     "centerScalingAnimationSpeed": 1.0,
-    "centerScalingAnimationType": 0
+    "centerScalingAnimationType": 0,
+    "shapeCyclingDivision": "quarter",
+    "movementDivision": "8th",
+    "rotationDivision": "16th",
+    "scaleDivision": "half",
+    "morphingDivision": "quarter",
+    "centerScalingDivision": "quarter"
   }
 }

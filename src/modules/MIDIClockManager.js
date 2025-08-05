@@ -4,6 +4,8 @@
  * and provides clock-based timing for animations and effects.
  */
 
+import { BPMTimingManager } from './BPMTimingManager.js';
+
 export class MIDIClockManager {
     constructor(app) {
         this.app = app;
@@ -13,6 +15,9 @@ export class MIDIClockManager {
         this.clockInterval = 0; // Time between clock pulses
         this.bpm = 120; // Default BPM
         this.clockSource = 'internal'; // 'internal' or 'external'
+        
+        // Initialize BPM timing manager
+        this.bpmTimingManager = new BPMTimingManager(this.bpm);
         
         // BPM calculation improvements
         this.bpmUpdateInterval = 24; // Update BPM every quarter note (24 pulses)
@@ -63,7 +68,13 @@ export class MIDIClockManager {
             if (this.clockPulses % this.bpmUpdateInterval === 0) {
                 // Calculate average BPM from recent samples
                 const avgBpm = this.bpmSamples.reduce((sum, bpm) => sum + bpm, 0) / this.bpmSamples.length;
-                this.bpm = avgBpm;
+                const oldBpm = this.bpm;
+                
+                // Use setBPM to ensure state and UI are updated
+                if (Math.abs(avgBpm - oldBpm) > 0.5) { // Only update if BPM changed by more than 0.5
+                    this.setBPM(avgBpm);
+                    console.log(`MIDI BPM changed to: ${Math.round(avgBpm)}`);
+                }
             }
         }
         
@@ -171,6 +182,13 @@ export class MIDIClockManager {
         return this.bpm;
     }
 
+    /**
+     * Get the BPM timing manager for musical calculations
+     */
+    getBPMTimingManager() {
+        return this.bpmTimingManager;
+    }
+
     getTempoDivisionPulses() {
         const divisionMap = {
             'whole': 96,      // 4 beats * 24 pulses
@@ -248,6 +266,18 @@ export class MIDIClockManager {
                     <div id="bpm-display" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
                         <span class="text-xs font-medium text-white">BPM: <span id="bpm-value">120</span></span>
                     </div>
+                    
+                    <button id="bpm-down" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    
+                    <button id="bpm-up" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 15l6-6 6 6"/>
+                        </svg>
+                    </button>
                     
                     <div id="tempo-division" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
                         <span class="text-xs font-medium text-white">Div: <span id="division-value">Quarter</span></span>
@@ -331,6 +361,15 @@ export class MIDIClockManager {
             this.toggleSyncMode();
         });
         
+        // BPM controls
+        document.getElementById('bpm-up').addEventListener('click', () => {
+            this.increaseBPM();
+        });
+        
+        document.getElementById('bpm-down').addEventListener('click', () => {
+            this.decreaseBPM();
+        });
+        
         // Help button
         document.getElementById('midi-help').addEventListener('click', () => {
             window.open('midi-help.html', '_blank');
@@ -389,6 +428,89 @@ export class MIDIClockManager {
         console.log(`Sync mode changed to: ${this.syncMode}`);
     }
 
+    increaseBPM() {
+        const newBPM = Math.min(300, this.bpm + 1);
+        this.setBPM(newBPM);
+        console.log(`BPM increased to: ${newBPM}`);
+    }
+
+    decreaseBPM() {
+        const newBPM = Math.max(1, this.bpm - 1);
+        this.setBPM(newBPM);
+        console.log(`BPM decreased to: ${newBPM}`);
+    }
+
+    setBPM(bpm) {
+        this.bpm = bpm;
+        this.bpmTimingManager.setBPM(bpm);
+        
+        // Update state if app is available
+        if (this.app && this.app.state) {
+            this.app.state.set('globalBPM', Math.round(bpm));
+        }
+        
+        this.updateClockDisplay();
+    }
+
+    /**
+     * Initialize BPM from state after state is loaded
+     */
+    initializeFromState() {
+        if (this.app && this.app.state) {
+            const stateBPM = this.app.state.get('globalBPM');
+            if (stateBPM) {
+                this.setBPM(stateBPM);
+            }
+        }
+    }
+
+    /**
+     * Handle MIDI tempo change from external device
+     * @param {number} newBPM - New BPM from MIDI device
+     */
+    onMIDITempoChange(newBPM) {
+        if (newBPM > 0 && newBPM <= 300) {
+            this.setBPM(newBPM);
+            console.log(`MIDI Tempo Change: ${Math.round(newBPM)} BPM`);
+        }
+    }
+
+    /**
+     * Handle MIDI tempo tap (for devices with tap tempo functionality)
+     */
+    onMIDITempoTap() {
+        const now = performance.now();
+        
+        if (!this.tapTimes) {
+            this.tapTimes = [];
+        }
+        
+        // Add current tap time
+        this.tapTimes.push(now);
+        
+        // Keep only last 4 taps
+        if (this.tapTimes.length > 4) {
+            this.tapTimes.shift();
+        }
+        
+        // Calculate BPM from tap intervals (need at least 2 taps)
+        if (this.tapTimes.length >= 2) {
+            const intervals = [];
+            for (let i = 1; i < this.tapTimes.length; i++) {
+                intervals.push(this.tapTimes[i] - this.tapTimes[i - 1]);
+            }
+            
+            // Calculate average interval
+            const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+            const newBPM = 60000 / avgInterval; // Convert to BPM
+            
+            if (newBPM >= 40 && newBPM <= 300) { // Reasonable BPM range
+                this.setBPM(newBPM);
+                console.log(`MIDI Tap Tempo: ${Math.round(newBPM)} BPM`);
+            }
+        }
+    }
+
     updateTempoDivisionDisplay() {
         const divisionElement = document.getElementById('division-value');
         if (divisionElement) {
@@ -413,8 +535,16 @@ export class MIDIClockManager {
         const bpmElement = document.getElementById('bpm-value');
         const clockStatusElement = document.getElementById('clock-status');
         
+        // Update BPM display - use state value if available, otherwise use calculated BPM
         if (bpmElement) {
-            bpmElement.textContent = Math.round(this.bpm);
+            let displayBPM = this.bpm;
+            if (this.app && this.app.state) {
+                const stateBPM = this.app.state.get('globalBPM');
+                if (stateBPM) {
+                    displayBPM = stateBPM;
+                }
+            }
+            bpmElement.textContent = Math.round(displayBPM);
         }
         
         if (clockStatusElement) {
