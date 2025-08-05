@@ -1,5 +1,7 @@
 {
   "scenes": [
+    "rglr-mode",
+    "angles-mode",
     "meat-mode",
     "worm-mode",
     "matcha-mode", 

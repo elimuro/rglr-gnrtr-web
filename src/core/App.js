@@ -1005,8 +1005,10 @@ export class App {
         // First, try to load the index file which contains all available scenes
         try {
             const indexResponse = await fetch('/scenes/index.json');
+            
             if (indexResponse.ok) {
                 const indexData = await indexResponse.json();
+                
                 if (indexData.scenes && Array.isArray(indexData.scenes)) {
                     await this.validateAndUpdateScenePresets(indexData.scenes);
                     return;
@@ -1152,8 +1154,10 @@ export class App {
         for (const sceneName of sceneNames) {
             try {
                 const response = await fetch(`/scenes/${sceneName}.json`);
+                
                 if (response.ok) {
                     const sceneData = await response.json();
+                    
                     if (this.validateScenePreset(sceneData)) {
                         validScenePresets.push(sceneName);
                     }
@@ -1527,8 +1531,8 @@ export class App {
             return false;
         }
         
-        // Check for some essential settings
-        const requiredSettings = ['animationSpeed', 'movementAmplitude', 'gridWidth', 'gridHeight'];
+        // Check for some essential settings that actually exist in the scene files
+        const requiredSettings = ['movementAmplitude', 'gridWidth', 'gridHeight'];
         for (const setting of requiredSettings) {
             if (typeof sceneData.settings[setting] === 'undefined') {
                 return false;

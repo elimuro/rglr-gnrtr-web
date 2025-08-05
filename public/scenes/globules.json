@@ -35,6 +35,7 @@
     "compositionWidth": 30,
     "compositionHeight": 30,
     "showGrid": false,
+    "gridColor": "#ff0000",
     "randomness": 1,
     "shapeColor": "#00ff5d",
     "backgroundColor": "#010b19",

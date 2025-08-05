@@ -465,6 +465,7 @@ export class StateManager {
                 compositionWidth: this.state.compositionWidth,
                 compositionHeight: this.state.compositionHeight,
                 showGrid: this.state.showGrid,
+                gridColor: this.state.gridColor,
                 randomness: this.state.randomness,
                 
                 // Color parameters
@@ -658,6 +659,11 @@ export class StateManager {
             addInterpolation('compositionHeight', settings.compositionHeight, currentState.compositionHeight);
             addInterpolation('showGrid', settings.showGrid, currentState.showGrid);
             addInterpolation('randomness', settings.randomness, currentState.randomness);
+            
+            // Grid color (handle as color interpolation)
+            if (settings.gridColor && settings.gridColor !== currentState.gridColor) {
+                this.interpolateColor('gridColor', currentState.gridColor, settings.gridColor, duration, easing);
+            }
             
             // Color parameters (handle colors specially)
             if (settings.shapeColor && settings.shapeColor !== currentState.shapeColor) {
