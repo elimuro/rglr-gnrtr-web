@@ -120,9 +120,10 @@ export class MaterialManager {
         const sphereClearcoatRoughness = state.get('sphereClearcoatRoughness');
         const sphereEnvMapIntensity = state.get('sphereEnvMapIntensity');
         const sphereWaterDistortion = state.get('sphereWaterDistortion');
+        const sphereDistortionStrength = state.get('sphereDistortionStrength');
         const shapeColor = state.get('shapeColor');
         
-        const cacheKey = `sphere_${sphereRefraction}_${sphereTransparency}_${sphereTransmission}_${sphereRoughness}_${sphereMetalness}_${sphereClearcoat}_${sphereClearcoatRoughness}_${sphereEnvMapIntensity}_${sphereWaterDistortion}_${shapeColor}`;
+        const cacheKey = `sphere_${sphereRefraction}_${sphereTransparency}_${sphereTransmission}_${sphereRoughness}_${sphereMetalness}_${sphereClearcoat}_${sphereClearcoatRoughness}_${sphereEnvMapIntensity}_${sphereWaterDistortion}_${sphereDistortionStrength}_${shapeColor}`;
         
         if (this.materialCache.has(cacheKey)) {
             return this.materialCache.get(cacheKey);
@@ -159,12 +160,30 @@ export class MaterialManager {
         if (state.get('sphereWaterDistortion')) {
             // Adjust material properties for water-like appearance
             material.roughness = Math.max(0.05, material.roughness); // Very smooth
-            material.metalness = 0.0; // No metalness for water
-            material.transmission = Math.min(0.98, material.transmission); // High transmission
+            material.metalness = Math.min(0.1, sphereMetalness); // Reduce metalness for water
+            material.transmission = Math.min(0.98, sphereTransmission); // High transmission
             material.thickness = 0.8; // Thicker for more distortion
-            material.ior = 1.33; // Water refraction index
-            material.clearcoat = 0.9; // High clearcoat for water shine
-            material.clearcoatRoughness = 0.02; // Very smooth clearcoat
+            material.ior = sphereRefraction; // Use user's refraction index
+            material.clearcoat = Math.max(0.9, sphereClearcoat); // High clearcoat for water shine
+            material.clearcoatRoughness = Math.min(0.02, sphereClearcoatRoughness); // Very smooth clearcoat
+            
+            // Apply distortion strength to material properties
+            if (sphereDistortionStrength > 0) {
+                // Increase thickness for more distortion
+                material.thickness = 0.8 + (sphereDistortionStrength * 0.4);
+                
+                // Adjust transmission based on distortion strength
+                material.transmission = Math.min(0.98, material.transmission + (sphereDistortionStrength * 0.1));
+                
+                // Adjust IOR for more dramatic refraction
+                material.ior = material.ior + (sphereDistortionStrength * 0.5);
+                
+                // Adjust clearcoat for more shine with distortion
+                material.clearcoat = material.clearcoat + (sphereDistortionStrength * 0.1);
+                
+                // Adjust envMapIntensity for more dramatic environment reflection
+                material.envMapIntensity = sphereEnvMapIntensity + (sphereDistortionStrength * 0.5);
+            }
         }
         
         this.materialCache.set(cacheKey, material);

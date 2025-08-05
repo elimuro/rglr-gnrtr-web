@@ -182,12 +182,12 @@ export class GUIManager {
             this.app.scene.updateSphereScales();
         });
         
-        this.addController(sphereFolder, 'sphereClearcoat', 0, 1, 0.01, 'Clearcoat', () => {
+        this.addController(sphereFolder, 'sphereClearcoat', 0, 1, 0.01, 'Clearcoat Intensity', () => {
             this.state.set('sphereClearcoat', this.state.get('sphereClearcoat'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(sphereFolder, 'sphereClearcoatRoughness', 0, 1, 0.01, 'Clearcoat Roughness', () => {
+        this.addController(sphereFolder, 'sphereClearcoatRoughness', 0, 1, 0.01, 'Clearcoat Smoothness', () => {
             this.state.set('sphereClearcoatRoughness', this.state.get('sphereClearcoatRoughness'));
             this.app.scene.updateSphereMaterials();
         });
@@ -200,6 +200,12 @@ export class GUIManager {
         // Water distortion toggle
         sphereFolder.add(this.state.state, 'sphereWaterDistortion').name('Water Effect').onChange(() => {
             this.state.set('sphereWaterDistortion', this.state.get('sphereWaterDistortion'));
+            this.app.scene.updateSphereMaterials();
+        });
+        
+        // Distortion strength control
+        this.addController(sphereFolder, 'sphereDistortionStrength', 0.0, 1.0, 0.01, 'Distortion Strength', () => {
+            this.state.set('sphereDistortionStrength', this.state.get('sphereDistortionStrength'));
             this.app.scene.updateSphereMaterials();
         });
     }

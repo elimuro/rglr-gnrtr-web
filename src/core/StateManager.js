@@ -428,6 +428,9 @@ export class StateManager {
             timestamp: new Date().toISOString(),
             version: '1.0',
             settings: {
+                // Global BPM parameter
+                globalBPM: this.state.globalBPM,
+                
                 // Animation parameters
                 animationType: this.state.animationType,
                 animationSpeed: this.state.animationSpeed,
@@ -439,6 +442,14 @@ export class StateManager {
                 rotationFrequency: this.state.rotationFrequency,
                 scaleAmplitude: this.state.scaleAmplitude,
                 scaleFrequency: this.state.scaleFrequency,
+                
+                // Division parameters
+                movementDivision: this.state.movementDivision,
+                rotationDivision: this.state.rotationDivision,
+                scaleDivision: this.state.scaleDivision,
+                shapeCyclingDivision: this.state.shapeCyclingDivision,
+                morphingDivision: this.state.morphingDivision,
+                centerScalingDivision: this.state.centerScalingDivision,
                 
                 // Shape cycling parameters
                 shapeCyclingSpeed: this.state.shapeCyclingSpeed,

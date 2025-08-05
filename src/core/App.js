@@ -1815,6 +1815,10 @@ export class App {
                 this.state.set('sphereEnvMapIntensity', value * 3);
                 if (this.scene) this.scene.updateSphereMaterials();
                 break;
+            case 'sphereDistortionStrength':
+                this.state.set('sphereDistortionStrength', value);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
             case 'bloomStrength':
                 this.state.set('bloomStrength', value * 2);
                 if (this.scene) this.scene.updatePostProcessing();
