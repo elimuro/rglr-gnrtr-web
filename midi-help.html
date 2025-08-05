@@ -156,6 +156,12 @@
                 </div>
 
                 <div class="nav-section">
+                    <h4 class="nav-section-title">NEW: GUI Improvements</h4>
+                    <a href="#improved-dropdowns" class="nav-item">Improved Dropdown Controls</a>
+                    <a href="#animation-type-fix" class="nav-item">Animation Type Labels</a>
+                </div>
+
+                <div class="nav-section">
                     <h4 class="nav-section-title">Help</h4>
                     <a href="#performance-tips" class="nav-item">Performance Tips</a>
                     <a href="#troubleshooting" class="nav-item">Troubleshooting</a>
@@ -755,6 +761,50 @@
                         <li><strong>FXAA Enabled:</strong> Toggles fast approximate anti-aliasing for smoother edges
                         </li>
                     </ul>
+                </div>
+
+                <!-- NEW: GUI Improvements Section -->
+                <div id="improved-dropdowns" class="help-section">
+                    <h2 class="help-h2">NEW: Improved Dropdown Controls</h2>
+                    <p>The GUI has been significantly improved with proper dropdown controls that show meaningful labels instead of confusing numeric values:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Fixed Dropdown Controls</h3>
+                        <ul>
+                            <li><strong>Animation Type:</strong> Now shows "Movement", "Rotation", "Scale", "Combined" instead of numbers</li>
+                            <li><strong>Scaling Curve:</strong> Now shows "Linear", "Exponential", "Logarithmic", "Sine Wave"</li>
+                            <li><strong>Scaling Direction:</strong> Now shows "Convex (Center Larger)", "Concave (Center Smaller)"</li>
+                            <li><strong>Center Scaling Animation Type:</strong> Now shows "Complex Wave", "Radial Pulse", "Spiral Effect", "Chaos Pattern"</li>
+                            <li><strong>Shape Cycling Pattern:</strong> Now shows "Sequential", "Random", "Wave", "Pulse", "Staggered"</li>
+                            <li><strong>Shape Cycling Direction:</strong> Now shows "Forward", "Reverse", "Ping-Pong", "Random"</li>
+                            <li><strong>Shape Cycling Synchronization:</strong> Now shows "Independent", "Synchronized", "Wave", "Cluster"</li>
+                            <li><strong>Shape Cycling Trigger:</strong> Now shows "Time-based", "Movement-triggered", "Rotation-triggered", "Manual"</li>
+                            <li><strong>Morphing Easing:</strong> Now shows proper easing function names like "Power 2 InOut", "Elastic Out", etc.</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>User Experience:</strong> All dropdowns now display proper default values and meaningful labels, making the interface much more intuitive and user-friendly.
+                    </div>
+                </div>
+
+                <div id="animation-type-fix" class="help-section">
+                    <h2 class="help-h2">Animation Type Label Correction</h2>
+                    <p>The animation type dropdown has been corrected to show accurate labels that match what each option actually does:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Corrected Animation Types</h3>
+                        <ul>
+                            <li><strong>Movement:</strong> Animates the position of shapes using sine/cosine waves</li>
+                            <li><strong>Rotation:</strong> Animates the rotation of shapes around their Z-axis</li>
+                            <li><strong>Scale:</strong> Animates the size/scale of shapes (grow and shrink)</li>
+                            <li><strong>Combined:</strong> Combines all three effects (movement, rotation, and scale) simultaneously</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Previous Issue:</strong> The labels were incorrectly showing "None", "Wave", "Pulse", "Random" which didn't match the actual functionality. Now the labels accurately describe what each animation type does.
+                    </div>
                 </div>
 
                 <!-- Performance Tips Section -->

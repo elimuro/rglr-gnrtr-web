@@ -211,7 +211,7 @@ export class GUIManager {
         this.addController(animationFolder, 'animationSpeed', 0.01, 2, 0.01, 'Global Speed');
         
         // Animation type selector
-        const mainAnimationTypeNames = ['None', 'Wave', 'Pulse', 'Random'];
+        const mainAnimationTypeNames = ['Movement', 'Rotation', 'Scale', 'Combined'];
         const currentAnimationType = mainAnimationTypeNames[this.state.get('animationType')] || mainAnimationTypeNames[0];
         animationFolder.add({ animationType: currentAnimationType }, 'animationType', mainAnimationTypeNames).name('Animation Type').onChange((value) => {
             const index = mainAnimationTypeNames.indexOf(value);

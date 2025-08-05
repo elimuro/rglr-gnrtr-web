@@ -329,42 +329,66 @@ export class MIDIControl {
         learnButton.classList.add('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
         learnButton.textContent = 'Learning';
         
-        const onMIDI = (controller, value, channel) => {
-            this.updateMapping({ value: controller, channel });
-            
-            const channelInput = document.getElementById(`midi-${this.controlId}-channel`);
-            const valueInput = document.getElementById(`midi-${this.controlId}-value`);
-            
-            if (channelInput && valueInput) {
-                channelInput.value = channel + 1;
-                valueInput.value = controller;
-            }
-            
-            // Remove learning state and add learned state
-            learnButton.classList.remove('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
-            learnButton.classList.add('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
-            learnButton.textContent = 'Learned';
-            
-            setTimeout(() => {
-                learnButton.classList.remove('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
-                learnButton.classList.add('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
-                learnButton.textContent = 'Learn';
-            }, 1500);
-            
-            // Remove the temporary listener
-            if (this.type === 'cc') {
-                this.app.midiManager.offCC(onMIDI);
-            } else {
-                this.app.midiManager.offNote(onMIDI);
-            }
-        };
-        
-        // Store the temporary handler for potential cancellation
-        this.tempMIDIHandler = onMIDI;
-        
         if (this.type === 'cc') {
+            const onMIDI = (controller, value, channel) => {
+                this.updateMapping({ value: controller, channel });
+                
+                const channelInput = document.getElementById(`midi-${this.controlId}-channel`);
+                const valueInput = document.getElementById(`midi-${this.controlId}-value`);
+                
+                if (channelInput && valueInput) {
+                    channelInput.value = channel + 1;
+                    valueInput.value = controller;
+                }
+                
+                // Remove learning state and add learned state
+                learnButton.classList.remove('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
+                learnButton.classList.add('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
+                learnButton.textContent = 'Learned';
+                
+                setTimeout(() => {
+                    learnButton.classList.remove('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
+                    learnButton.classList.add('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
+                    learnButton.textContent = 'Learn';
+                }, 1500);
+                
+                // Remove the temporary listener
+                this.app.midiManager.offCC(onMIDI);
+            };
+            
+            // Store the temporary handler for potential cancellation
+            this.tempMIDIHandler = onMIDI;
             this.app.midiManager.onCC(onMIDI);
         } else {
+            // For notes, the callback signature is (note, velocity, isNoteOn, channel)
+            const onMIDI = (note, velocity, isNoteOn, channel) => {
+                this.updateMapping({ value: note, channel });
+                
+                const channelInput = document.getElementById(`midi-${this.controlId}-channel`);
+                const valueInput = document.getElementById(`midi-${this.controlId}-value`);
+                
+                if (channelInput && valueInput) {
+                    channelInput.value = channel + 1;
+                    valueInput.value = note;
+                }
+                
+                // Remove learning state and add learned state
+                learnButton.classList.remove('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
+                learnButton.classList.add('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
+                learnButton.textContent = 'Learned';
+                
+                setTimeout(() => {
+                    learnButton.classList.remove('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
+                    learnButton.classList.add('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
+                    learnButton.textContent = 'Learn';
+                }, 1500);
+                
+                // Remove the temporary listener
+                this.app.midiManager.offNote(onMIDI);
+            };
+            
+            // Store the temporary handler for potential cancellation
+            this.tempMIDIHandler = onMIDI;
             this.app.midiManager.onNote(onMIDI);
         }
     }

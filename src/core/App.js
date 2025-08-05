@@ -1623,10 +1623,9 @@ export class App {
         const control = this.controlManager.addControl('note', nextIndex);
         
         if (control) {
-            // Add to state with morphing trigger as default
+            // Add to state with the first target from CONTROL_CONFIGS as default
             const noteMappings = this.state.get('midiNoteMappings');
-            const morphingTargets = ['randomMorph', 'morphAllShapes', 'morphAllToSame', 'morphAllSimultaneously'];
-            const defaultTarget = morphingTargets[nextIndex % morphingTargets.length];
+            const defaultTarget = 'shapeCycling'; // Use the first target from CONTROL_CONFIGS.note.targets
             
             noteMappings[control.controlId] = {
                 channel: 0,
