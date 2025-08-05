@@ -94,7 +94,7 @@
     "centerScalingAnimationSpeed": 1.0,
     "centerScalingAnimationType": 0,
     "shapeCyclingDivision": "quarter",
-    "movementDivision": "8th",
+    "movementDivision": "half",
     "rotationDivision": "16th",
     "scaleDivision": "half",
     "morphingDivision": "quarter",
