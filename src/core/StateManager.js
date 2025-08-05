@@ -84,6 +84,8 @@ export class StateManager {
                     initialState.sphereDistortionStrength = 0.1;
                 }
                 
+
+                
                 return initialState;
             } catch (error) {
                 console.warn(`Error loading from ${path}:`, error.message);
@@ -151,6 +153,7 @@ export class StateManager {
             "sphereClearcoatRoughness": 0.05,
             "sphereEnvMapIntensity": 0.28,
             "sphereWaterDistortion": true,
+            "sphereDistortionStrength": 0.1,
             "postProcessingEnabled": false,
             "bloomEnabled": true,
             "bloomStrength": 0.41,
@@ -748,6 +751,8 @@ export class StateManager {
             
             // Sphere distortion parameter
             addInterpolation('sphereDistortionStrength', settings.sphereDistortionStrength, currentState.sphereDistortionStrength);
+            
+
             
             // Create the interpolation animation
             this.interpolationTimeline.to(this.state, {

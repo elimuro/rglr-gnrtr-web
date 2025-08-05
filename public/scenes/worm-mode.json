@@ -90,6 +90,10 @@
     "centerScalingDirection": 0,
     "centerScalingAnimation": true,
     "centerScalingDivision": "quarter",
-    "centerScalingAnimationType": 3
+    "centerScalingAnimationType": 3,
+    "animatedWaves": false,
+    "waveSpeedDivision": "quarter",
+    "waveIntensity": 0.1,
+    "waveDirection": 0
   }
 }

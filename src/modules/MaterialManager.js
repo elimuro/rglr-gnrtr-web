@@ -158,8 +158,8 @@ export class MaterialManager {
         
         // Add water-like properties for better visual effect
         if (state.get('sphereWaterDistortion')) {
-            // Adjust material properties for water-like appearance
-            material.roughness = Math.max(0.05, material.roughness); // Very smooth
+            // Base water properties
+            material.roughness = Math.max(0.05, sphereRoughness); // Very smooth
             material.metalness = Math.min(0.1, sphereMetalness); // Reduce metalness for water
             material.transmission = Math.min(0.98, sphereTransmission); // High transmission
             material.thickness = 0.8; // Thicker for more distortion
@@ -169,22 +169,29 @@ export class MaterialManager {
             
             // Apply distortion strength to material properties
             if (sphereDistortionStrength > 0) {
-                // Increase thickness for more distortion
+                // Increase thickness for more distortion (0.8 to 1.2)
                 material.thickness = 0.8 + (sphereDistortionStrength * 0.4);
                 
-                // Adjust transmission based on distortion strength
+                // Adjust transmission based on distortion strength (higher = more transparent)
                 material.transmission = Math.min(0.98, material.transmission + (sphereDistortionStrength * 0.1));
                 
-                // Adjust IOR for more dramatic refraction
-                material.ior = material.ior + (sphereDistortionStrength * 0.5);
+                // Adjust IOR for more dramatic refraction (builds on base value)
+                material.ior = sphereRefraction + (sphereDistortionStrength * 0.5);
                 
-                // Adjust clearcoat for more shine with distortion
-                material.clearcoat = material.clearcoat + (sphereDistortionStrength * 0.1);
+                // Adjust clearcoat for more shine with distortion (capped at 1.0)
+                material.clearcoat = Math.min(1.0, material.clearcoat + (sphereDistortionStrength * 0.1));
                 
                 // Adjust envMapIntensity for more dramatic environment reflection
                 material.envMapIntensity = sphereEnvMapIntensity + (sphereDistortionStrength * 0.5);
+                
+                // Add additional distortion effects for more comprehensive water-like appearance
+                material.attenuationDistance = 0.5 - (sphereDistortionStrength * 0.3); // Shorter distance for more intense effect
+                material.specularIntensity = 1.0 + (sphereDistortionStrength * 0.5); // More specular highlights
             }
         }
+        
+        // Cache management - clear old entries if cache is too large
+        this.clearOldestCacheEntries();
         
         this.materialCache.set(cacheKey, material);
         return material;
@@ -245,6 +252,38 @@ export class MaterialManager {
 
     getCacheKeys() {
         return Array.from(this.materialCache.keys());
+    }
+    
+    clearOldestCacheEntries() {
+        const MAX_CACHE_SIZE = 100;
+        if (this.materialCache.size > MAX_CACHE_SIZE) {
+            // Remove oldest entries (simple FIFO approach)
+            const keysToRemove = [];
+            let count = 0;
+            const removeCount = this.materialCache.size - MAX_CACHE_SIZE + 10; // Remove extra to make room
+            
+            for (const key of this.materialCache.keys()) {
+                if (count >= removeCount) break;
+                keysToRemove.push(key);
+                count++;
+            }
+            
+            keysToRemove.forEach(key => {
+                const material = this.materialCache.get(key);
+                this.disposeMaterial(material);
+                this.materialCache.delete(key);
+            });
+            
+            console.log(`Cleared ${keysToRemove.length} old cache entries. Cache size: ${this.materialCache.size}`);
+        }
+    }
+    
+    getCacheStats() {
+        return {
+            size: this.materialCache.size,
+            keys: this.getCacheKeys(),
+            maxSize: 100
+        };
     }
 
 } 

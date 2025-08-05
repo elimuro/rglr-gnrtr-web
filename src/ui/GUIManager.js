@@ -208,6 +208,8 @@ export class GUIManager {
             this.state.set('sphereDistortionStrength', this.state.get('sphereDistortionStrength'));
             this.app.scene.updateSphereMaterials();
         });
+        
+
     }
 
     setupAnimationControls() {
