@@ -76,6 +76,7 @@
     "colorBrightness": 1,
     "colorContrast": 1,
     "fxaaEnabled": true,
+    "lightColour": "#ffffff",
     "ambientLightIntensity": 0.8,
     "directionalLightIntensity": 1.6600000000000001,
     "pointLight1Intensity": 2.52,

@@ -566,6 +566,34 @@ export class App {
         this.state.set('shapeColor', color);
     }
 
+    hsvToHex(h, s, v) {
+        // Convert HSV to RGB, then to hex
+        const c = v * s / 100;
+        const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        const m = v - c;
+        
+        let r, g, b;
+        if (h < 60) {
+            [r, g, b] = [c, x, 0];
+        } else if (h < 120) {
+            [r, g, b] = [x, c, 0];
+        } else if (h < 180) {
+            [r, g, b] = [0, c, x];
+        } else if (h < 240) {
+            [r, g, b] = [0, x, c];
+        } else if (h < 300) {
+            [r, g, b] = [x, 0, c];
+        } else {
+            [r, g, b] = [c, 0, x];
+        }
+        
+        r = Math.round((r + m) * 255);
+        g = Math.round((g + m) * 255);
+        b = Math.round((b + m) * 255);
+        
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+
     handleCCMapping(target, normalizedValue) {
         switch (target) {
             case 'animationSpeed':
@@ -744,6 +772,13 @@ export class App {
                 break;
             case 'accentLightIntensity':
                 this.state.set('accentLightIntensity', normalizedValue * 2);
+                this.scene.updateLighting();
+                break;
+            case 'lightColour':
+                // Map normalized value to hue (0-360 degrees)
+                const hue = Math.floor(normalizedValue * 360);
+                const color = this.hsvToHex(hue, 100, 100);
+                this.state.set('lightColour', color);
                 this.scene.updateLighting();
                 break;
             // Shape cycling parameters
@@ -1899,6 +1934,13 @@ export class App {
                 break;
             case 'accentLightIntensity':
                 this.state.set('accentLightIntensity', value * 3);
+                if (this.scene) this.scene.updateLighting();
+                break;
+            case 'lightColour':
+                // Map value to hue (0-360 degrees)
+                const hue = Math.floor(value * 360);
+                const color = this.hsvToHex(hue, 100, 100);
+                this.state.set('lightColour', color);
                 if (this.scene) this.scene.updateLighting();
                 break;
             case 'centerScalingEnabled':

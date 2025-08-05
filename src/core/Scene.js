@@ -150,13 +150,17 @@ export class Scene {
             return;
         }
         
+        // Get light color from state or use default
+        const lightColor = this.state.get('lightColour') || '#ffffff';
+        const lightColorHex = parseInt(lightColor.replace('#', ''), 16);
+        
         // Enhanced ambient light for better overall illumination
-        const ambientLight = new THREE.AmbientLight(0x404040, this.state.get('ambientLightIntensity'));
+        const ambientLight = new THREE.AmbientLight(lightColorHex, this.state.get('ambientLightIntensity'));
         this.scene.add(ambientLight);
         this.lights.ambient = ambientLight;
 
         // Main directional light for shadows and primary illumination
-        const directionalLight = new THREE.DirectionalLight(0xffffff, this.state.get('directionalLightIntensity'));
+        const directionalLight = new THREE.DirectionalLight(lightColorHex, this.state.get('directionalLightIntensity'));
         directionalLight.position.set(10, 10, 5);
         directionalLight.castShadow = true;
         directionalLight.shadow.mapSize.width = 2048;
@@ -167,25 +171,27 @@ export class Scene {
         this.lights.directional = directionalLight;
 
         // Enhanced point light for refractive materials
-        const pointLight = new THREE.PointLight(0xffffff, this.state.get('pointLight1Intensity'), 100);
+        const pointLight = new THREE.PointLight(lightColorHex, this.state.get('pointLight1Intensity'), 100);
         pointLight.position.set(0, 0, 10);
         this.scene.add(pointLight);
         this.lights.point1 = pointLight;
 
-        // Additional point light for better sphere illumination
-        const pointLight2 = new THREE.PointLight(0x87ceeb, this.state.get('pointLight2Intensity'), 80);
+        // Additional point light for better sphere illumination (keep some blue tint)
+        const pointLight2Color = this.blendColors(lightColorHex, 0x87ceeb, 0.7);
+        const pointLight2 = new THREE.PointLight(pointLight2Color, this.state.get('pointLight2Intensity'), 80);
         pointLight2.position.set(-5, 5, 8);
         this.scene.add(pointLight2);
         this.lights.point2 = pointLight2;
 
         // Rim light for better sphere definition
-        const rimLight = new THREE.DirectionalLight(0xffffff, this.state.get('rimLightIntensity'));
+        const rimLight = new THREE.DirectionalLight(lightColorHex, this.state.get('rimLightIntensity'));
         rimLight.position.set(-8, -8, 3);
         this.scene.add(rimLight);
         this.lights.rim = rimLight;
 
-        // Colored accent light for more interesting lighting
-        const accentLight = new THREE.PointLight(0xff6b6b, this.state.get('accentLightIntensity'), 60);
+        // Colored accent light for more interesting lighting (keep some red tint)
+        const accentLightColor = this.blendColors(lightColorHex, 0xff6b6b, 0.6);
+        const accentLight = new THREE.PointLight(accentLightColor, this.state.get('accentLightIntensity'), 60);
         accentLight.position.set(8, -5, 6);
         this.scene.add(accentLight);
         this.lights.accent = accentLight;
@@ -222,6 +228,7 @@ export class Scene {
         this.state.subscribe('pointLight2Intensity', () => this.updateLighting());
         this.state.subscribe('rimLightIntensity', () => this.updateLighting());
         this.state.subscribe('accentLightIntensity', () => this.updateLighting());
+        this.state.subscribe('lightColour', () => this.updateLighting());
         
         // Post-processing state subscriptions
         this.state.subscribe('bloomEnabled', () => this.updatePostProcessing());
@@ -620,28 +627,60 @@ export class Scene {
                 return;
             }
             
-            // Update all light intensities
+            // Get light color from state or use default
+            const lightColor = this.state.get('lightColour') || '#ffffff';
+            const lightColorHex = parseInt(lightColor.replace('#', ''), 16);
+            
+            // Update all light intensities and colors
             if (this.lights.ambient) {
                 this.lights.ambient.intensity = this.state.get('ambientLightIntensity');
+                this.lights.ambient.color.setHex(lightColorHex);
             }
             if (this.lights.directional) {
                 this.lights.directional.intensity = this.state.get('directionalLightIntensity');
+                this.lights.directional.color.setHex(lightColorHex);
             }
             if (this.lights.point1) {
                 this.lights.point1.intensity = this.state.get('pointLight1Intensity');
+                this.lights.point1.color.setHex(lightColorHex);
             }
             if (this.lights.point2) {
                 this.lights.point2.intensity = this.state.get('pointLight2Intensity');
+                // Blend with blue tint
+                const pointLight2Color = this.blendColors(lightColorHex, 0x87ceeb, 0.7);
+                this.lights.point2.color.setHex(pointLight2Color);
             }
             if (this.lights.rim) {
                 this.lights.rim.intensity = this.state.get('rimLightIntensity');
+                this.lights.rim.color.setHex(lightColorHex);
             }
             if (this.lights.accent) {
                 this.lights.accent.intensity = this.state.get('accentLightIntensity');
+                // Blend with red tint
+                const accentLightColor = this.blendColors(lightColorHex, 0xff6b6b, 0.6);
+                this.lights.accent.color.setHex(accentLightColor);
             }
         } catch (error) {
             console.error('Error updating lighting:', error);
         }
+    }
+
+    blendColors(color1, color2, ratio) {
+        // Convert hex colors to RGB
+        const r1 = (color1 >> 16) & 255;
+        const g1 = (color1 >> 8) & 255;
+        const b1 = color1 & 255;
+        
+        const r2 = (color2 >> 16) & 255;
+        const g2 = (color2 >> 8) & 255;
+        const b2 = color2 & 255;
+        
+        // Blend colors
+        const r = Math.round(r1 * (1 - ratio) + r2 * ratio);
+        const g = Math.round(g1 * (1 - ratio) + g2 * ratio);
+        const b = Math.round(b1 * (1 - ratio) + b2 * ratio);
+        
+        return (r << 16) | (g << 8) | b;
     }
 
     onWindowResize() {

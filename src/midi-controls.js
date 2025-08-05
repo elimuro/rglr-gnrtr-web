@@ -53,6 +53,7 @@ const CONTROL_CONFIGS = {
             { value: 'colorSaturation', label: 'Color Saturation' },
             { value: 'colorBrightness', label: 'Color Brightness' },
             { value: 'colorContrast', label: 'Color Contrast' },
+            { value: 'lightColour', label: 'Light Colour' },
             { value: 'ambientLightIntensity', label: 'Ambient Light' },
             { value: 'directionalLightIntensity', label: 'Directional Light' },
             { value: 'pointLight1Intensity', label: 'Point Light 1' },

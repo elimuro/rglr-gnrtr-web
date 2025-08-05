@@ -617,6 +617,13 @@ export class GUIManager {
         try {
             const lightingFolder = this.gui.addFolder('Lighting');
             
+            // Light color control
+            this.addColorController(lightingFolder, 'lightColour', 'Light Colour', () => {
+                if (this.app && this.app.scene) {
+                    this.app.scene.updateLighting();
+                }
+            });
+            
             // Ambient light control
             this.addController(lightingFolder, 'ambientLightIntensity', 0, 2, 0.01, 'Ambient Light', () => {
                 if (this.app && this.app.scene) {
@@ -667,13 +674,13 @@ export class GUIManager {
         const controller = folder.add(this.state.state, key, min, max, step).name(name);
         
         if (onChange) {
-            controller.onChange(() => {
-                this.state.set(key, this.state.get(key));
-                onChange(this.state.get(key));
+            controller.onChange((value) => {
+                this.state.set(key, value);
+                onChange(value);
             });
         } else {
-            controller.onChange(() => {
-                this.state.set(key, this.state.get(key));
+            controller.onChange((value) => {
+                this.state.set(key, value);
             });
         }
         
@@ -685,13 +692,13 @@ export class GUIManager {
         const controller = folder.addColor(this.state.state, key).name(name);
         
         if (onChange) {
-            controller.onChange(() => {
-                this.state.set(key, this.state.get(key));
-                onChange(this.state.get(key));
+            controller.onChange((value) => {
+                this.state.set(key, value);
+                onChange(value);
             });
         } else {
-            controller.onChange(() => {
-                this.state.set(key, this.state.get(key));
+            controller.onChange((value) => {
+                this.state.set(key, value);
             });
         }
         
