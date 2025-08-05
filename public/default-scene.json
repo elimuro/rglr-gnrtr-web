@@ -58,6 +58,7 @@
     "sphereEnvMapIntensity": 0.28,
     "sphereWaterDistortion": true,
     "sphereDistortionStrength": 0.1,
+    "sphereHighPerformanceMode": false,
     "postProcessingEnabled": false,
     "bloomEnabled": true,
     "bloomStrength": 0.41,

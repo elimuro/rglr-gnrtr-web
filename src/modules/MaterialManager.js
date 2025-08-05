@@ -123,11 +123,79 @@ export class MaterialManager {
         const sphereDistortionStrength = state.get('sphereDistortionStrength');
         const shapeColor = state.get('shapeColor');
         
-        const cacheKey = `sphere_${sphereRefraction}_${sphereTransparency}_${sphereTransmission}_${sphereRoughness}_${sphereMetalness}_${sphereClearcoat}_${sphereClearcoatRoughness}_${sphereEnvMapIntensity}_${sphereWaterDistortion}_${sphereDistortionStrength}_${shapeColor}`;
+        // Check if high performance mode is enabled
+        const useHighPerformance = state.get('sphereHighPerformanceMode') || false;
+        
+        const cacheKey = `sphere_${sphereRefraction}_${sphereTransparency}_${sphereTransmission}_${sphereRoughness}_${sphereMetalness}_${sphereClearcoat}_${sphereClearcoatRoughness}_${sphereEnvMapIntensity}_${sphereWaterDistortion}_${sphereDistortionStrength}_${shapeColor}_${useHighPerformance}`;
         
         if (this.materialCache.has(cacheKey)) {
             return this.materialCache.get(cacheKey);
         }
+        
+        let material;
+        
+        if (useHighPerformance) {
+            // High-performance MeshStandardMaterial (3-5x faster than MeshPhysicalMaterial)
+            material = this.createHighPerformanceSphereMaterial(state);
+        } else {
+            // Original MeshPhysicalMaterial for maximum visual quality
+            material = this.createHighQualitySphereMaterial(state);
+        }
+        
+        // Cache management - clear old entries if cache is too large
+        this.clearOldestCacheEntries();
+        
+        this.materialCache.set(cacheKey, material);
+        return material;
+    }
+
+    createHighPerformanceSphereMaterial(state) {
+        const sphereTransparency = state.get('sphereTransparency');
+        const sphereRoughness = state.get('sphereRoughness');
+        const sphereMetalness = state.get('sphereMetalness');
+        const sphereEnvMapIntensity = state.get('sphereEnvMapIntensity');
+        const sphereWaterDistortion = state.get('sphereWaterDistortion');
+        const sphereDistortionStrength = state.get('sphereDistortionStrength');
+        const shapeColor = state.get('shapeColor');
+        
+        // Use MeshStandardMaterial for much better performance
+        const material = new THREE.MeshStandardMaterial({
+            color: shapeColor,
+            transparent: true,
+            opacity: sphereTransparency,
+            roughness: sphereRoughness,
+            metalness: sphereMetalness,
+            envMap: this.envMap,
+            envMapIntensity: sphereEnvMapIntensity,
+            side: THREE.DoubleSide
+        });
+        
+        // Apply water-like effects using standard material properties
+        if (sphereWaterDistortion) {
+            // Simulate water effect with standard material properties
+            material.roughness = Math.max(0.05, sphereRoughness); // Very smooth
+            material.metalness = Math.min(0.1, sphereMetalness); // Reduce metalness for water
+            material.envMapIntensity = sphereEnvMapIntensity + (sphereDistortionStrength * 0.3);
+            
+            // Enhance reflectivity for water-like appearance
+            material.roughness = Math.max(0.02, material.roughness - (sphereDistortionStrength * 0.1));
+        }
+        
+        return material;
+    }
+
+    createHighQualitySphereMaterial(state) {
+        const sphereRefraction = state.get('sphereRefraction');
+        const sphereTransparency = state.get('sphereTransparency');
+        const sphereTransmission = state.get('sphereTransmission');
+        const sphereRoughness = state.get('sphereRoughness');
+        const sphereMetalness = state.get('sphereMetalness');
+        const sphereClearcoat = state.get('sphereClearcoat');
+        const sphereClearcoatRoughness = state.get('sphereClearcoatRoughness');
+        const sphereEnvMapIntensity = state.get('sphereEnvMapIntensity');
+        const sphereWaterDistortion = state.get('sphereWaterDistortion');
+        const sphereDistortionStrength = state.get('sphereDistortionStrength');
+        const shapeColor = state.get('shapeColor');
         
         // Water-like sphere material with enhanced distortion
         const material = new THREE.MeshPhysicalMaterial({
@@ -157,7 +225,7 @@ export class MaterialManager {
         });
         
         // Add water-like properties for better visual effect
-        if (state.get('sphereWaterDistortion')) {
+        if (sphereWaterDistortion) {
             // Base water properties
             material.roughness = Math.max(0.05, sphereRoughness); // Very smooth
             material.metalness = Math.min(0.1, sphereMetalness); // Reduce metalness for water
@@ -190,10 +258,6 @@ export class MaterialManager {
             }
         }
         
-        // Cache management - clear old entries if cache is too large
-        this.clearOldestCacheEntries();
-        
-        this.materialCache.set(cacheKey, material);
         return material;
     }
 

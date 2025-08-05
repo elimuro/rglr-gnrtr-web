@@ -208,7 +208,6 @@ export class GUIManager {
             this.state.set('sphereDistortionStrength', this.state.get('sphereDistortionStrength'));
             this.app.scene.updateSphereMaterials();
         });
-        
 
     }
 
@@ -512,11 +511,19 @@ export class GUIManager {
         performanceFolder.add(metrics, 'pooledGeometries').name('Pooled Geometries').listen();
         performanceFolder.add(metrics, 'pooledMeshes').name('Pooled Meshes').listen();
         
-        // Add optimization toggle
+        // Add optimization toggles
         performanceFolder.add({ enableFrustumCulling: true }, 'enableFrustumCulling')
             .name('Enable Frustum Culling')
             .onChange((value) => {
                 this.state.set('enableFrustumCulling', value);
+            });
+            
+        // Sphere performance mode toggle
+        performanceFolder.add(this.state.state, 'sphereHighPerformanceMode')
+            .name('High Performance')
+            .onChange(() => {
+                this.state.set('sphereHighPerformanceMode', this.state.get('sphereHighPerformanceMode'));
+                this.app.scene.updateSphereMaterials();
             });
     }
 

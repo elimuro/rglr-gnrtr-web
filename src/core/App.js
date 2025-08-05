@@ -667,6 +667,10 @@ export class App {
                 this.state.set('sphereDistortionStrength', normalizedValue);
                 this.scene.updateSphereMaterials();
                 break;
+            case 'sphereHighPerformanceMode':
+                this.state.set('sphereHighPerformanceMode', normalizedValue > 0.5);
+                this.scene.updateSphereMaterials();
+                break;
 
             // Post-processing parameters
             case 'bloomStrength':
@@ -1818,6 +1822,10 @@ export class App {
                 break;
             case 'sphereDistortionStrength':
                 this.state.set('sphereDistortionStrength', value);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereHighPerformanceMode':
+                this.state.set('sphereHighPerformanceMode', value > 0.5);
                 if (this.scene) this.scene.updateSphereMaterials();
                 break;
 

@@ -154,6 +154,7 @@ export class StateManager {
             "sphereEnvMapIntensity": 0.28,
             "sphereWaterDistortion": true,
             "sphereDistortionStrength": 0.1,
+            "sphereHighPerformanceMode": false,
             "postProcessingEnabled": false,
             "bloomEnabled": true,
             "bloomStrength": 0.41,
@@ -503,6 +504,7 @@ export class StateManager {
                 sphereEnvMapIntensity: this.state.sphereEnvMapIntensity,
                 sphereWaterDistortion: this.state.sphereWaterDistortion,
                 sphereDistortionStrength: this.state.sphereDistortionStrength,
+                sphereHighPerformanceMode: this.state.sphereHighPerformanceMode,
                 
                 // Post-processing parameters
                 postProcessingEnabled: this.state.postProcessingEnabled,
@@ -706,6 +708,7 @@ export class StateManager {
             addInterpolation('sphereClearcoatRoughness', settings.sphereClearcoatRoughness, currentState.sphereClearcoatRoughness);
             addInterpolation('sphereEnvMapIntensity', settings.sphereEnvMapIntensity, currentState.sphereEnvMapIntensity);
             addInterpolation('sphereWaterDistortion', settings.sphereWaterDistortion, currentState.sphereWaterDistortion);
+            addInterpolation('sphereHighPerformanceMode', settings.sphereHighPerformanceMode, currentState.sphereHighPerformanceMode);
             
             // Post-processing parameters
             addInterpolation('postProcessingEnabled', settings.postProcessingEnabled, currentState.postProcessingEnabled);
