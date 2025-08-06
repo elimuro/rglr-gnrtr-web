@@ -11,26 +11,12 @@ export class ShapeMorphingSystem {
     constructor() {
         this.morphingShapes = new Map(); // Track currently morphing shapes
         this.morphingTimelines = new Map(); // GSAP timelines for morphing
-        this.morphingPresets = this.createMorphingPresets();
         this.shapeGenerator = null; // Will be set by external system
     }
 
     // Set the shape generator reference
     setShapeGenerator(shapeGenerator) {
         this.shapeGenerator = shapeGenerator;
-    }
-
-    createMorphingPresets() {
-        return {
-            'geometric_evolution': ['triangle_UP', 'Rect', 'ellipse'],
-            'organic_growth': ['triangle_UP', 'ellipse', 'triangle_DOWN'],
-            'mechanical_transform': ['Rect', 'triangle_UP', 'ellipse_neg'],
-            'chaos_flow': ['triangle_neg_UP', 'ellipse_semi_UP', 'rect_angled_TOP'],
-            'triangle_cycle': ['triangle_UP', 'triangle_DOWN', 'triangle_LEFT', 'triangle_RIGHT'],
-            'rectangle_cycle': ['Rect', 'longRect_V', 'longRect_H', 'diamond'],
-            'ellipse_cycle': ['ellipse', 'ellipse_neg', 'ellipse_BL', 'ellipse_BR', 'ellipse_TL', 'ellipse_TR'],
-            'shape_evolution': ['triangle_UP', 'Rect', 'ellipse', 'diamond', 'triangle_DOWN']
-        };
     }
 
     // Start morphing between two shapes
@@ -398,33 +384,6 @@ export class ShapeMorphingSystem {
     completeMorph(mesh) {
         this.morphingShapes.delete(mesh);
         this.morphingTimelines.delete(mesh);
-    }
-
-    // Get morphing presets
-    getMorphingPresets() {
-        return this.morphingPresets;
-    }
-
-    // Start a preset morphing sequence
-    startPresetMorph(mesh, presetName, duration = 2.0) {
-        const preset = this.morphingPresets[presetName];
-        if (!preset || preset.length < 2) {
-            return;
-        }
-
-        // Create a sequence of morphs
-        const sequence = gsap.timeline();
-        
-        for (let i = 0; i < preset.length - 1; i++) {
-            const fromShape = preset[i];
-            const toShape = preset[i + 1];
-            
-            sequence.add(() => {
-                this.startMorph(mesh, fromShape, toShape, duration / (preset.length - 1));
-            }, i * duration / (preset.length - 1));
-        }
-
-        return sequence;
     }
 
     // Clean up all morphing

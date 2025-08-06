@@ -116,8 +116,6 @@ export class StateManager {
             "shapeCyclingTrigger": 0,
 
             "morphingEasing": "power2.inOut",
-            "morphingPreset": "geometric_evolution",
-            "morphingTargetShape": null,
             "gridWidth": 19,
             "gridHeight": 6,
             "cellSize": 0.76,
@@ -454,8 +452,6 @@ export class StateManager {
                 
                 // Morphing parameters
                 morphingEasing: this.state.morphingEasing,
-                morphingPreset: this.state.morphingPreset,
-                morphingTargetShape: this.state.morphingTargetShape,
                 
                 // Grid parameters
                 gridWidth: this.state.gridWidth,
@@ -639,8 +635,6 @@ export class StateManager {
             
             // Morphing parameters
             addInterpolation('morphingEasing', settings.morphingEasing, currentState.morphingEasing);
-            addInterpolation('morphingPreset', settings.morphingPreset, currentState.morphingPreset);
-            addInterpolation('morphingTargetShape', settings.morphingTargetShape, currentState.morphingTargetShape);
             
             // Grid parameters
             addInterpolation('gridWidth', settings.gridWidth, currentState.gridWidth);

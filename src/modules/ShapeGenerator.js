@@ -173,39 +173,19 @@ export class ShapeGenerator {
         return targets;
     }
 
-    // Create a morphing preset sequence
-    createMorphingPreset(presetName, shapeSequence) {
-        if (!this.morphingSystem) return;
-        
-        // Add the preset to the morphing system
-        this.morphingSystem.morphingPresets[presetName] = shapeSequence;
-    }
-
-    // Start a morphing preset sequence
-    startMorphingPreset(mesh, presetName, duration = 2.0) {
-        if (!this.morphingSystem) {
-            return null;
-        }
-
-        return this.morphingSystem.startPresetMorph(mesh, presetName, duration);
-    }
-
     // Get current shape name from mesh
     getCurrentShapeName(mesh) {
-        // This is a simplified approach - in practice you might want to store
-        // the current shape name with the mesh or track it separately
-        return 'triangle_UP'; // Default fallback
+        return mesh.userData.shapeName || 'triangle_UP';
     }
 
-    // Update mesh to a new shape (non-morphing)
+    // Update mesh shape
     updateMeshShape(mesh, shapeName) {
         const geometry = this.createGeometryForShape(shapeName);
         if (geometry) {
             mesh.geometry.dispose();
             mesh.geometry = geometry;
-            return true;
+            mesh.userData.shapeName = shapeName;
         }
-        return false;
     }
 
     createShapeGenerators() {

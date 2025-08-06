@@ -21,8 +21,6 @@
     "shapeCyclingTrigger": 0,
     "morphingDivision": "quarter",
     "morphingEasing": "power2.inOut",
-    "morphingPreset": "geometric_evolution",
-    "morphingTargetShape": null,
     "gridWidth": 22,
     "gridHeight": 14,
     "cellSize": 0.76,
