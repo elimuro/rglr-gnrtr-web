@@ -255,7 +255,6 @@ export class Scene {
         this.state.subscribe('centerScalingCurve', () => this.updateCenterScaling());
         this.state.subscribe('centerScalingRadius', () => this.updateCenterScaling());
         this.state.subscribe('centerScalingDirection', () => this.updateCenterScaling());
-        this.state.subscribe('centerScalingAnimation', () => this.updateCenterScaling());
         this.state.subscribe('centerScalingAnimationSpeed', () => this.updateCenterScaling());
         this.state.subscribe('centerScalingAnimationType', () => this.updateCenterScaling());
     }
@@ -811,7 +810,6 @@ export class Scene {
         const curve = this.state.get('centerScalingCurve');
         const radius = this.state.get('centerScalingRadius');
         const direction = this.state.get('centerScalingDirection');
-        const animation = this.state.get('centerScalingAnimation');
         const centerScalingDivision = this.state.get('centerScalingDivision') || 'quarter';
         const animationType = this.state.get('centerScalingAnimationType');
 
@@ -851,52 +849,50 @@ export class Scene {
                 curveFactor = normalizedDistance;
         }
 
-        // Apply animation if enabled
+        // Always apply animation when center scaling is enabled
         let animationOffset = 0;
-        if (animation) {
-            let time;
-            if (animationTime !== null && globalBPM !== null) {
-                // Use musical timing
-                const divisionBeats = this.getDivisionBeats(centerScalingDivision);
-                time = animationTime / divisionBeats;
-            } else {
-                // Fallback to old timing system
-                const animationSpeed = this.state.get('centerScalingAnimationSpeed');
-                time = Date.now() * 0.001 * animationSpeed;
-            }
-            
-            // Different animation types for more dramatic effects
-            switch (Math.floor(animationType)) {
-                case 0: // Complex Wave
-                    const wave1 = Math.sin(time + x * 0.3 + y * 0.2) * 0.4;
-                    const wave2 = Math.cos(time * 0.7 + x * 0.4 + y * 0.1) * 0.3;
-                    const pulse = Math.sin(time * 2 + (x + y) * 0.1) * 0.3;
-                    animationOffset = wave1 + wave2 + pulse;
-                    break;
-                    
-                case 1: // Radial Pulse
-                    const radialDistance = Math.sqrt(x * x + y * y);
-                    const radialWave = Math.sin(time * 3 + radialDistance * 0.5) * 0.5;
-                    animationOffset = radialWave;
-                    break;
-                    
-                case 2: // Spiral Effect
-                    const angle = Math.atan2(y - centerY, x - centerX);
-                    const spiralWave = Math.sin(time * 2 + angle * 3 + distanceFromCenter * 0.2) * 0.4;
-                    animationOffset = spiralWave;
-                    break;
-                    
-                case 3: // Chaos Pattern
-                    const chaos1 = Math.sin(time * 1.5 + x * 0.8 + y * 0.6) * 0.3;
-                    const chaos2 = Math.cos(time * 0.8 + x * 0.4 + y * 0.9) * 0.3;
-                    const chaos3 = Math.sin(time * 2.2 + (x + y) * 0.7) * 0.2;
-                    animationOffset = chaos1 + chaos2 + chaos3;
-                    break;
-                    
-                default:
-                    // Simple wave as fallback
-                    animationOffset = Math.sin(time + x * 0.5 + y * 0.3) * 0.3;
-            }
+        let time;
+        if (animationTime !== null && globalBPM !== null) {
+            // Use musical timing
+            const divisionBeats = this.getDivisionBeats(centerScalingDivision);
+            time = animationTime / divisionBeats;
+        } else {
+            // Fallback to old timing system
+            const animationSpeed = this.state.get('centerScalingAnimationSpeed');
+            time = Date.now() * 0.001 * animationSpeed;
+        }
+        
+        // Different animation types for more dramatic effects
+        switch (Math.floor(animationType)) {
+            case 0: // Complex Wave
+                const wave1 = Math.sin(time + x * 0.3 + y * 0.2) * 0.4;
+                const wave2 = Math.cos(time * 0.7 + x * 0.4 + y * 0.1) * 0.3;
+                const pulse = Math.sin(time * 2 + (x + y) * 0.1) * 0.3;
+                animationOffset = wave1 + wave2 + pulse;
+                break;
+                
+            case 1: // Radial Pulse
+                const radialDistance = Math.sqrt(x * x + y * y);
+                const radialWave = Math.sin(time * 3 + radialDistance * 0.5) * 0.5;
+                animationOffset = radialWave;
+                break;
+                
+            case 2: // Spiral Effect
+                const angle = Math.atan2(y - centerY, x - centerX);
+                const spiralWave = Math.sin(time * 2 + angle * 3 + distanceFromCenter * 0.2) * 0.4;
+                animationOffset = spiralWave;
+                break;
+                
+            case 3: // Chaos Pattern
+                const chaos1 = Math.sin(time * 1.5 + x * 0.8 + y * 0.6) * 0.3;
+                const chaos2 = Math.cos(time * 0.8 + x * 0.4 + y * 0.9) * 0.3;
+                const chaos3 = Math.sin(time * 2.2 + (x + y) * 0.7) * 0.2;
+                animationOffset = chaos1 + chaos2 + chaos3;
+                break;
+                
+            default:
+                // Simple wave as fallback
+                animationOffset = Math.sin(time + x * 0.5 + y * 0.3) * 0.3;
         }
 
         // Clamp animation offset to prevent extreme scaling
@@ -905,13 +901,12 @@ export class Scene {
         // Calculate scaling factor with more dramatic range
         let scalingFactor = 1.0 + (curveFactor * intensity + clampedAnimationOffset);
         
-        // Apply direction (0 = convex, 1 = concave)
-        if (direction > 0.5) {
-            scalingFactor = 2.0 - scalingFactor; // Invert for concave effect
+        // Apply direction (convex vs concave)
+        if (direction === 1) { // Concave (center smaller)
+            scalingFactor = 2.0 - scalingFactor; // Invert the scaling
         }
-
-        // Allow for more dramatic scaling range (0.3 to 2.5 instead of 0.1 to 2.0)
-        return Math.max(0.3, Math.min(2.5, scalingFactor));
+        
+        return Math.max(0.1, scalingFactor); // Ensure minimum scale
     }
 
     // Animation helpers
@@ -956,11 +951,11 @@ export class Scene {
                     }
                     
                     // Size/movement animations (using manual calculations for now)
-                    if (this.state.get('enableSizeAnimation')) {
+                    if (this.state.get('enableMovementAnimation') || this.state.get('enableRotationAnimation') || this.state.get('enableScaleAnimation')) {
                         this.animateShapeTransformations(mesh, x, y, animationTime, globalBPM);
                         isAnimated = true;
                     } else {
-                        // Reset to original positions when size animation is disabled
+                        // Reset to original positions when no animations are enabled
                         const halfGridW = gridWidth / 2;
                         const halfGridH = gridHeight / 2;
                         mesh.position.x = (x - halfGridW + 0.5) * cellSize;
@@ -1167,77 +1162,67 @@ export class Scene {
         const rotationDivision = this.state.get('rotationDivision') || '16th';
         const scaleDivision = this.state.get('scaleDivision') || 'half';
         
-        // Apply different animation types
-        switch (this.state.get('animationType')) {
-            case 0: // Movement
-                const movementBeats = this.getDivisionBeats(movementDivision);
-                const movementTime = animationTime / movementBeats;
-                const xOffset = Math.sin(movementTime + x * 0.5) * this.state.get('movementAmplitude') * cellSize;
-                const yOffset = Math.cos(movementTime + y * 0.5) * this.state.get('movementAmplitude') * cellSize;
-                mesh.position.x = (x - halfGridW + 0.5) * cellSize + xOffset;
-                mesh.position.y = (y - halfGridH + 0.5) * cellSize + yOffset;
-                
-                // Apply center scaling for movement animations
-                if (this.state.get('centerScalingEnabled')) {
-                    if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
-                        const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
-                        mesh.scale.set(sphereScale, sphereScale, sphereScale);
-                    } else {
-                        const baseScale = cellSize * centerScalingFactor;
-                        mesh.scale.set(baseScale, baseScale, 1);
-                    }
-                }
-                break;
-            case 1: // Rotation
-                const rotationBeats = this.getDivisionBeats(rotationDivision);
-                const rotationTime = animationTime / rotationBeats;
-                mesh.rotation.z = Math.sin(rotationTime + x * 0.3 + y * 0.3) * this.state.get('rotationAmplitude');
-                
-                // Apply center scaling for rotation animations
-                if (this.state.get('centerScalingEnabled')) {
-                    if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
-                        const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
-                        mesh.scale.set(sphereScale, sphereScale, sphereScale);
-                    } else {
-                        const baseScale = cellSize * centerScalingFactor;
-                        mesh.scale.set(baseScale, baseScale, 1);
-                    }
-                }
-                break;
-            case 2: // Scale
-                const scaleBeats = this.getDivisionBeats(scaleDivision);
-                const scaleTime = animationTime / scaleBeats;
-                const scale = 1 + Math.sin(scaleTime + x * 0.5 + y * 0.5) * this.state.get('scaleAmplitude');
-                if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
-                    const sphereScale = cellSize * this.state.get('sphereScale') * scale * centerScalingFactor;
-                    mesh.scale.set(sphereScale, sphereScale, sphereScale);
-                } else {
-                    const baseScale = cellSize * scale * centerScalingFactor;
-                    mesh.scale.set(baseScale, baseScale, 1);
-                }
-                break;
-            case 3: // Combined effects
-                const combinedMovementBeats = this.getDivisionBeats(movementDivision);
-                const combinedRotationBeats = this.getDivisionBeats(rotationDivision);
-                const combinedScaleBeats = this.getDivisionBeats(scaleDivision);
-                const combinedMovementTime = animationTime / combinedMovementBeats;
-                const combinedRotationTime = animationTime / combinedRotationBeats;
-                const combinedScaleTime = animationTime / combinedScaleBeats;
-                const combinedXOffset = Math.sin(combinedMovementTime + x * 0.5) * this.state.get('movementAmplitude') * cellSize;
-                const combinedYOffset = Math.cos(combinedMovementTime + y * 0.5) * this.state.get('movementAmplitude') * cellSize;
-                const combinedRotation = Math.sin(combinedRotationTime + x * 0.3 + y * 0.3) * this.state.get('rotationAmplitude');
-                const combinedScale = 1 + Math.sin(combinedScaleTime + x * 0.5 + y * 0.5) * this.state.get('scaleAmplitude');
-                mesh.position.x = (x - halfGridW + 0.5) * cellSize + combinedXOffset;
-                mesh.position.y = (y - halfGridH + 0.5) * cellSize + combinedYOffset;
-                mesh.rotation.z = combinedRotation;
-                if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
-                    const sphereScale = cellSize * this.state.get('sphereScale') * combinedScale * centerScalingFactor;
-                    mesh.scale.set(sphereScale, sphereScale, sphereScale);
-                } else {
-                    const baseScale = cellSize * combinedScale * centerScalingFactor;
-                    mesh.scale.set(baseScale, baseScale, 1);
-                }
-                break;
+        // Check individual animation toggles
+        const enableMovement = this.state.get('enableMovementAnimation');
+        const enableRotation = this.state.get('enableRotationAnimation');
+        const enableScale = this.state.get('enableScaleAnimation');
+        
+        // Apply movement animation if enabled
+        if (enableMovement) {
+            const movementBeats = this.getDivisionBeats(movementDivision);
+            const movementTime = animationTime / movementBeats;
+            const xOffset = Math.sin(movementTime + x * 0.5) * this.state.get('movementAmplitude') * cellSize;
+            const yOffset = Math.cos(movementTime + y * 0.5) * this.state.get('movementAmplitude') * cellSize;
+            mesh.position.x = (x - halfGridW + 0.5) * cellSize + xOffset;
+            mesh.position.y = (y - halfGridH + 0.5) * cellSize + yOffset;
+        } else {
+            // Reset to original position if movement is disabled
+            mesh.position.x = (x - halfGridW + 0.5) * cellSize;
+            mesh.position.y = (y - halfGridH + 0.5) * cellSize;
+        }
+        
+        // Apply rotation animation if enabled
+        if (enableRotation) {
+            const rotationBeats = this.getDivisionBeats(rotationDivision);
+            const rotationTime = animationTime / rotationBeats;
+            mesh.rotation.z = Math.sin(rotationTime + x * 0.3 + y * 0.3) * this.state.get('rotationAmplitude');
+        } else {
+            // Reset rotation if disabled
+            mesh.rotation.z = 0;
+        }
+        
+        // Apply scale animation if enabled
+        if (enableScale) {
+            const scaleBeats = this.getDivisionBeats(scaleDivision);
+            const scaleTime = animationTime / scaleBeats;
+            const scale = 1 + Math.sin(scaleTime + x * 0.5 + y * 0.5) * this.state.get('scaleAmplitude');
+            if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
+                const sphereScale = cellSize * this.state.get('sphereScale') * scale * centerScalingFactor;
+                mesh.scale.set(sphereScale, sphereScale, sphereScale);
+            } else {
+                const baseScale = cellSize * scale * centerScalingFactor;
+                mesh.scale.set(baseScale, baseScale, 1);
+            }
+        } else {
+            // Reset scale if disabled
+            if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
+                const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
+                mesh.scale.set(sphereScale, sphereScale, sphereScale);
+            } else {
+                const baseScale = cellSize * centerScalingFactor;
+                mesh.scale.set(baseScale, baseScale, 1);
+            }
+        }
+        
+        // Apply center scaling if enabled (independent of other animations)
+        if (this.state.get('centerScalingEnabled')) {
+            if (mesh.geometry && mesh.geometry.type === 'SphereGeometry') {
+                const sphereScale = cellSize * this.state.get('sphereScale') * centerScalingFactor;
+                mesh.scale.set(sphereScale, sphereScale, sphereScale);
+            } else {
+                const baseScale = cellSize * centerScalingFactor;
+                mesh.scale.set(baseScale, baseScale, 1);
+            }
         }
     }
 

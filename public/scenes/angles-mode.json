@@ -90,10 +90,6 @@
     "rotationDivision": "16th",
     "scaleDivision": "half",
     "morphingDivision": "quarter",
-    "centerScalingDivision": "quarter",
-    "animatedWaves": false,
-    "waveSpeedDivision": "quarter",
-    "waveIntensity": 0.1,
-    "waveDirection": 0
+    "centerScalingDivision": "quarter"
   }
 }

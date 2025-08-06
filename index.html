@@ -82,14 +82,6 @@
                     <span>Notes</span>
                 </button>
                 
-                <button id="drawer-scene-management" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-                        <circle cx="12" cy="13" r="3"/>
-                    </svg>
-                    <span>Scenes</span>
-                </button>
-                
                 <button id="drawer-audio-mapping" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 18V5l12-2v13"/>
@@ -98,6 +90,14 @@
                         <path d="M12 2v20"/>
                     </svg>
                     <span>Audio Map</span>
+                </button>
+                
+                <button id="drawer-scene-management" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                        <circle cx="12" cy="13" r="3"/>
+                    </svg>
+                    <span>Scenes</span>
                 </button>
             </div>
         </div>
@@ -171,6 +171,13 @@
                 </div>
             </div>
 
+            <!-- CC Mapping Description -->
+            <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                <div class="text-xs text-gray-300">
+                    <p class="mb-1"><strong>CC Mapping:</strong> Control visual parameters with MIDI CC messages. Use "Learn" mode to assign controls, adjust sensitivity, and save presets.</p>
+                </div>
+            </div>
+
             <!-- MIDI Connection Status -->
             <div id="cc-midi-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
                 <div class="flex items-center gap-2">
@@ -215,6 +222,13 @@
                     Note Controls
                 </h3>
             </div>
+
+            <!-- Note Controls Description -->
+            <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                <div class="text-xs text-gray-300">
+                    <p class="mb-1"><strong>Note Controls:</strong> Trigger visual effects with MIDI notes. Set note ranges, choose trigger actions, and control velocity sensitivity and duration.</p>
+                </div>
+            </div>
             
             <!-- MIDI Connection Status -->
             <div id="note-midi-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
@@ -258,6 +272,13 @@
                     </svg>
                     Scene Management
                 </h3>
+            </div>
+
+            <!-- Scene Management Description -->
+            <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                <div class="text-xs text-gray-300">
+                    <p class="mb-1"><strong>Scene Management:</strong> Save and load visual configurations. Use interpolation to smoothly transition between scenes with customizable duration and easing.</p>
+                </div>
             </div>
             
             <!-- Scene Preset Selector -->
@@ -319,6 +340,13 @@
                 </h3>
                 <div class="flex gap-1">
                     <button id="audio-refresh-interfaces" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Refresh</button>
+                </div>
+            </div>
+
+            <!-- Audio Interface Description -->
+            <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                <div class="text-xs text-gray-300">
+                    <p class="mb-1"><strong>Audio Interface:</strong> Connect audio input devices for real-time analysis. Select interface, channels, and monitor audio levels and frequency.</p>
                 </div>
             </div>
             
@@ -404,6 +432,13 @@
                     <button id="audio-mapping-test" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Test</button>
                     <button id="audio-mapping-save" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Save</button>
                     <button id="audio-mapping-load" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load</button>
+                </div>
+            </div>
+
+            <!-- Audio Mapping Description -->
+            <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                <div class="text-xs text-gray-300">
+                    <p class="mb-1"><strong>Audio Mapping:</strong> Control visual parameters with real-time audio analysis. Set frequency ranges, choose targets, adjust sensitivity, and save presets.</p>
                 </div>
             </div>
             

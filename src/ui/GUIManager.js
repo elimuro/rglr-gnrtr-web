@@ -152,78 +152,92 @@ export class GUIManager {
     setupSphereControls() {
         const sphereFolder = this.gui.addFolder('Refractive Spheres');
         
-        this.addController(sphereFolder, 'sphereRefraction', 0.0, 2.0, 0.01, 'Refraction Index', () => {
+        // Material Properties Folder
+        const materialFolder = sphereFolder.addFolder('Material Properties');
+        
+        this.addController(materialFolder, 'sphereRefraction', 0.0, 2.0, 0.01, 'Refraction Index', () => {
             this.state.set('sphereRefraction', this.state.get('sphereRefraction'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(sphereFolder, 'sphereTransparency', 0.0, 1.0, 0.01, 'Transparency', () => {
+        this.addController(materialFolder, 'sphereTransparency', 0.0, 1.0, 0.01, 'Transparency', () => {
             this.state.set('sphereTransparency', this.state.get('sphereTransparency'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(sphereFolder, 'sphereTransmission', 0.0, 1.0, 0.01, 'Transmission', () => {
+        this.addController(materialFolder, 'sphereTransmission', 0.0, 1.0, 0.01, 'Transmission', () => {
             this.state.set('sphereTransmission', this.state.get('sphereTransmission'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(sphereFolder, 'sphereRoughness', 0.0, 1.0, 0.01, 'Roughness', () => {
+        this.addController(materialFolder, 'sphereRoughness', 0.0, 1.0, 0.01, 'Roughness', () => {
             this.state.set('sphereRoughness', this.state.get('sphereRoughness'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(sphereFolder, 'sphereMetalness', 0.0, 1.0, 0.01, 'Metalness', () => {
+        this.addController(materialFolder, 'sphereMetalness', 0.0, 1.0, 0.01, 'Metalness', () => {
             this.state.set('sphereMetalness', this.state.get('sphereMetalness'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(sphereFolder, 'sphereScale', 0.5, 3.0, 0.1, 'Sphere Scale', () => {
-            this.state.set('sphereScale', this.state.get('sphereScale'));
-            this.app.scene.updateSphereScales();
-        });
+        // Clearcoat Properties Folder
+        const clearcoatFolder = sphereFolder.addFolder('Clearcoat Properties');
         
-        this.addController(sphereFolder, 'sphereClearcoat', 0, 1, 0.01, 'Clearcoat Intensity', () => {
+        this.addController(clearcoatFolder, 'sphereClearcoat', 0, 1, 0.01, 'Intensity', () => {
             this.state.set('sphereClearcoat', this.state.get('sphereClearcoat'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(sphereFolder, 'sphereClearcoatRoughness', 0, 1, 0.01, 'Clearcoat Smoothness', () => {
+        this.addController(clearcoatFolder, 'sphereClearcoatRoughness', 0, 1, 0.01, 'Smoothness', () => {
             this.state.set('sphereClearcoatRoughness', this.state.get('sphereClearcoatRoughness'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(sphereFolder, 'sphereEnvMapIntensity', 0, 3, 0.01, 'Environment Map Intensity', () => {
+        // Environment & Effects Folder
+        const effectsFolder = sphereFolder.addFolder('Environment & Effects');
+        
+        this.addController(effectsFolder, 'sphereEnvMapIntensity', 0, 3, 0.01, 'Environment Map Intensity', () => {
             this.state.set('sphereEnvMapIntensity', this.state.get('sphereEnvMapIntensity'));
             this.app.scene.updateSphereMaterials();
         });
         
         // Water distortion toggle
-        sphereFolder.add(this.state.state, 'sphereWaterDistortion').name('Water Effect').onChange(() => {
+        effectsFolder.add(this.state.state, 'sphereWaterDistortion').name('Water Effect').onChange(() => {
             this.state.set('sphereWaterDistortion', this.state.get('sphereWaterDistortion'));
             this.app.scene.updateSphereMaterials();
         });
         
         // Distortion strength control
-        this.addController(sphereFolder, 'sphereDistortionStrength', 0.0, 1.0, 0.01, 'Distortion Strength', () => {
+        this.addController(effectsFolder, 'sphereDistortionStrength', 0.0, 1.0, 0.01, 'Distortion Strength', () => {
             this.state.set('sphereDistortionStrength', this.state.get('sphereDistortionStrength'));
             this.app.scene.updateSphereMaterials();
         });
-
+        
+        // Size & Performance Folder
+        const sizeFolder = sphereFolder.addFolder('Size');
+        
+        this.addController(sizeFolder, 'sphereScale', 0.5, 3.0, 0.1, 'Scale', () => {
+            this.state.set('sphereScale', this.state.get('sphereScale'));
+            this.app.scene.updateSphereScales();
+        });
     }
 
     setupAnimationControls() {
         const animationFolder = this.gui.addFolder('Animation');
         
+        // Ensure new animation toggle parameters exist in state
+        if (!this.state.has('enableMovementAnimation')) {
+            this.state.set('enableMovementAnimation', false);
+        }
+        if (!this.state.has('enableRotationAnimation')) {
+            this.state.set('enableRotationAnimation', false);
+        }
+        if (!this.state.has('enableScaleAnimation')) {
+            this.state.set('enableScaleAnimation', false);
+        }
+        
         // Main controls
         this.addController(animationFolder, 'globalBPM', 60, 300, 1, 'Global BPM');
-        
-        // Animation type selector
-        const mainAnimationTypeNames = ['Movement', 'Rotation', 'Scale', 'Combined'];
-        const currentAnimationType = mainAnimationTypeNames[this.state.get('animationType')] || mainAnimationTypeNames[0];
-        animationFolder.add({ animationType: currentAnimationType }, 'animationType', mainAnimationTypeNames).name('Animation Type').onChange((value) => {
-            const index = mainAnimationTypeNames.indexOf(value);
-            this.state.set('animationType', index);
-        });
         
         // Effect toggles
         this.addController(animationFolder, 'enableShapeCycling', false, true, false, 'Shape Cycling', () => {
@@ -233,129 +247,77 @@ export class GUIManager {
             }
         });
         
-        this.addController(animationFolder, 'enableSizeAnimation', false, true, false, 'Size/Movement', () => {
-            this.state.set('enableSizeAnimation', this.state.get('enableSizeAnimation'));
-            if (!this.state.get('enableSizeAnimation')) {
-                this.app.scene.updateCellSize();
-            }
+        this.addController(animationFolder, 'centerScalingEnabled', false, true, false, 'Center Scaling', () => {
+            this.state.set('centerScalingEnabled', this.state.get('centerScalingEnabled'));
+            this.app.scene.updateCenterScaling();
         });
         
-        // Movement parameters
-        this.addController(animationFolder, 'movementAmplitude', 0.01, 0.5, 0.01, 'Movement Amp');
+        // Individual animation toggles
+        animationFolder.add(this.state.state, 'enableMovementAnimation').name('Movement Animation').onChange(() => {
+            this.state.set('enableMovementAnimation', this.state.get('enableMovementAnimation'));
+        });
+        
+        animationFolder.add(this.state.state, 'enableRotationAnimation').name('Rotation Animation').onChange(() => {
+            this.state.set('enableRotationAnimation', this.state.get('enableRotationAnimation'));
+        });
+        
+        animationFolder.add(this.state.state, 'enableScaleAnimation').name('Scale Animation').onChange(() => {
+            this.state.set('enableScaleAnimation', this.state.get('enableScaleAnimation'));
+        });
+        
+        // Movement Animation Folder
+        const movementFolder = animationFolder.addFolder('Movement Animations');
+        
+        this.addController(movementFolder, 'movementAmplitude', 0.01, 0.5, 0.01, 'Amplitude');
         
         // Movement division selector
         const movementDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
         const currentMovementDivision = this.getDivisionDisplayName(this.state.get('movementDivision') || '8th');
-        animationFolder.add({ movementDivision: currentMovementDivision }, 'movementDivision', movementDivisionNames)
-            .name('Movement Division ♪')
+        movementFolder.add({ movementDivision: currentMovementDivision }, 'movementDivision', movementDivisionNames)
+            .name('Division ♪')
             .onChange((value) => {
                 const division = this.getDivisionFromDisplayName(value);
                 this.state.set('movementDivision', division);
             });
         
-        // Rotation parameters
-        this.addController(animationFolder, 'rotationAmplitude', 0.01, 2, 0.01, 'Rotation Amp');
+        // Rotation Animation Folder
+        const rotationFolder = animationFolder.addFolder('Rotation Animations');
+        
+        this.addController(rotationFolder, 'rotationAmplitude', 0.01, 2, 0.01, 'Amplitude');
         
         // Rotation division selector
         const rotationDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
         const currentRotationDivision = this.getDivisionDisplayName(this.state.get('rotationDivision') || '16th');
-        animationFolder.add({ rotationDivision: currentRotationDivision }, 'rotationDivision', rotationDivisionNames)
-            .name('Rotation Division ♩')
+        rotationFolder.add({ rotationDivision: currentRotationDivision }, 'rotationDivision', rotationDivisionNames)
+            .name('Division ♩')
             .onChange((value) => {
                 const division = this.getDivisionFromDisplayName(value);
                 this.state.set('rotationDivision', division);
             });
         
-        // Scale parameters
-        this.addController(animationFolder, 'scaleAmplitude', 0.01, 1, 0.01, 'Scale Amp');
+        // Scale Animation Folder
+        const scaleFolder = animationFolder.addFolder('Scale Animations');
+        
+        this.addController(scaleFolder, 'scaleAmplitude', 0.01, 1, 0.01, 'Amplitude');
         
         // Scale division selector
         const scaleDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
         const currentScaleDivision = this.getDivisionDisplayName(this.state.get('scaleDivision') || 'half');
-        animationFolder.add({ scaleDivision: currentScaleDivision }, 'scaleDivision', scaleDivisionNames)
-            .name('Scale Division ♬')
+        scaleFolder.add({ scaleDivision: currentScaleDivision }, 'scaleDivision', scaleDivisionNames)
+            .name('Division ♬')
             .onChange((value) => {
                 const division = this.getDivisionFromDisplayName(value);
                 this.state.set('scaleDivision', division);
             });
         
-        // Center Scaling controls
-        const centerScalingFolder = animationFolder.addFolder('Center Scaling');
-        
-        this.addController(centerScalingFolder, 'centerScalingEnabled', false, true, false, 'Enable Center Scaling', () => {
-            this.state.set('centerScalingEnabled', this.state.get('centerScalingEnabled'));
-            this.app.scene.updateCenterScaling();
-        });
-        
-        this.addController(centerScalingFolder, 'centerScalingIntensity', 0, 2, 0.01, 'Scaling Intensity', () => {
-            this.state.set('centerScalingIntensity', this.state.get('centerScalingIntensity'));
-            this.app.scene.updateCenterScaling();
-        });
-        
-        const curveNames = ['Linear', 'Exponential', 'Logarithmic', 'Sine Wave'];
-        const currentCurve = curveNames[this.state.get('centerScalingCurve')] || curveNames[0];
-        centerScalingFolder.add({ curve: currentCurve }, 'curve', curveNames)
-            .name('Scaling Curve')
-            .onChange((value) => {
-                const index = curveNames.indexOf(value);
-                this.state.set('centerScalingCurve', index);
-                this.app.scene.updateCenterScaling();
-            });
-        
-        this.addController(centerScalingFolder, 'centerScalingRadius', 0.1, 5, 0.1, 'Scaling Radius', () => {
-            this.state.set('centerScalingRadius', this.state.get('centerScalingRadius'));
-            this.app.scene.updateCenterScaling();
-        });
-        
-        const scalingDirectionNames = ['Convex (Center Larger)', 'Concave (Center Smaller)'];
-        const currentScalingDirection = scalingDirectionNames[this.state.get('centerScalingDirection')] || scalingDirectionNames[0];
-        centerScalingFolder.add({ direction: currentScalingDirection }, 'direction', scalingDirectionNames)
-            .name('Scaling Direction')
-            .onChange((value) => {
-                const index = scalingDirectionNames.indexOf(value);
-                this.state.set('centerScalingDirection', index);
-                this.app.scene.updateCenterScaling();
-            });
-        
-        this.addController(centerScalingFolder, 'centerScalingAnimation', false, true, false, 'Animated Scaling', () => {
-            this.state.set('centerScalingAnimation', this.state.get('centerScalingAnimation'));
-            this.app.scene.updateCenterScaling();
-        });
-        
-        // Center scaling division selector
-        const centerScalingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
-        const currentCenterScalingDivision = this.getDivisionDisplayName(this.state.get('centerScalingDivision') || 'quarter');
-        centerScalingFolder.add({ centerScalingDivision: currentCenterScalingDivision }, 'centerScalingDivision', centerScalingDivisionNames)
-            .name('Scaling Division ♬')
-            .onChange((value) => {
-                const division = this.getDivisionFromDisplayName(value);
-                this.state.set('centerScalingDivision', division);
-            });
-        
-        // Center scaling animation speed (keeping for backward compatibility)
-        this.addController(centerScalingFolder, 'centerScalingAnimationSpeed', 0.1, 3, 0.1, 'Animation Speed', () => {
-            this.state.set('centerScalingAnimationSpeed', this.state.get('centerScalingAnimationSpeed'));
-            this.app.scene.updateCenterScaling();
-        });
-        
-        const centerScalingAnimationTypeNames = ['Complex Wave', 'Radial Pulse', 'Spiral Effect', 'Chaos Pattern'];
-        const currentCenterScalingAnimationType = centerScalingAnimationTypeNames[this.state.get('centerScalingAnimationType')] || centerScalingAnimationTypeNames[0];
-        centerScalingFolder.add({ animationType: currentCenterScalingAnimationType }, 'animationType', centerScalingAnimationTypeNames)
-            .name('Animation Type')
-            .onChange((value) => {
-                const index = centerScalingAnimationTypeNames.indexOf(value);
-                this.state.set('centerScalingAnimationType', index);
-                this.app.scene.updateCenterScaling();
-            });
-        
-        // Shape cycling controls
+        // Shape Cycling Folder
         const shapeCyclingFolder = animationFolder.addFolder('Shape Cycling');
         
         // Shape cycling division selector
         const shapeCyclingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
         const currentShapeCyclingDivision = this.getDivisionDisplayName(this.state.get('shapeCyclingDivision') || 'quarter');
         shapeCyclingFolder.add({ shapeCyclingDivision: currentShapeCyclingDivision }, 'shapeCyclingDivision', shapeCyclingDivisionNames)
-            .name('Cycling Division ♩')
+            .name('Division ♩')
             .onChange((value) => {
                 const division = this.getDivisionFromDisplayName(value);
                 this.state.set('shapeCyclingDivision', division);
@@ -398,6 +360,65 @@ export class GUIManager {
                 const index = triggerNames.indexOf(value);
                 this.state.set('shapeCyclingTrigger', index);
             });
+        
+        // Center Scaling Folder
+        const centerScalingFolder = animationFolder.addFolder('Center Scaling');
+        
+        this.addController(centerScalingFolder, 'centerScalingIntensity', 0, 2, 0.01, 'Intensity', () => {
+            this.state.set('centerScalingIntensity', this.state.get('centerScalingIntensity'));
+            this.app.scene.updateCenterScaling();
+        });
+        
+        const curveNames = ['Linear', 'Exponential', 'Logarithmic', 'Sine Wave'];
+        const currentCurve = curveNames[this.state.get('centerScalingCurve')] || curveNames[0];
+        centerScalingFolder.add({ curve: currentCurve }, 'curve', curveNames)
+            .name('Curve')
+            .onChange((value) => {
+                const index = curveNames.indexOf(value);
+                this.state.set('centerScalingCurve', index);
+                this.app.scene.updateCenterScaling();
+            });
+        
+        this.addController(centerScalingFolder, 'centerScalingRadius', 0.1, 5, 0.1, 'Radius', () => {
+            this.state.set('centerScalingRadius', this.state.get('centerScalingRadius'));
+            this.app.scene.updateCenterScaling();
+        });
+        
+        const scalingDirectionNames = ['Convex (Center Larger)', 'Concave (Center Smaller)'];
+        const currentScalingDirection = scalingDirectionNames[this.state.get('centerScalingDirection')] || scalingDirectionNames[0];
+        centerScalingFolder.add({ direction: currentScalingDirection }, 'direction', scalingDirectionNames)
+            .name('Direction')
+            .onChange((value) => {
+                const index = scalingDirectionNames.indexOf(value);
+                this.state.set('centerScalingDirection', index);
+                this.app.scene.updateCenterScaling();
+            });
+        
+        // Center scaling division selector
+        const centerScalingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
+        const currentCenterScalingDivision = this.getDivisionDisplayName(this.state.get('centerScalingDivision') || 'quarter');
+        centerScalingFolder.add({ centerScalingDivision: currentCenterScalingDivision }, 'centerScalingDivision', centerScalingDivisionNames)
+            .name('Division ♬')
+            .onChange((value) => {
+                const division = this.getDivisionFromDisplayName(value);
+                this.state.set('centerScalingDivision', division);
+            });
+        
+        // Center scaling animation speed
+        this.addController(centerScalingFolder, 'centerScalingAnimationSpeed', 0.1, 3, 0.1, 'Animation Speed', () => {
+            this.state.set('centerScalingAnimationSpeed', this.state.get('centerScalingAnimationSpeed'));
+            this.app.scene.updateCenterScaling();
+        });
+        
+        const centerScalingAnimationTypeNames = ['Complex Wave', 'Radial Pulse', 'Spiral Effect', 'Chaos Pattern'];
+        const currentCenterScalingAnimationType = centerScalingAnimationTypeNames[this.state.get('centerScalingAnimationType')] || centerScalingAnimationTypeNames[0];
+        centerScalingFolder.add({ animationType: currentCenterScalingAnimationType }, 'animationType', centerScalingAnimationTypeNames)
+            .name('Animation Type')
+            .onChange((value) => {
+                const index = centerScalingAnimationTypeNames.indexOf(value);
+                this.state.set('centerScalingAnimationType', index);
+                this.app.scene.updateCenterScaling();
+            });
     }
 
     setupMorphingControls() {
@@ -407,7 +428,7 @@ export class GUIManager {
         const morphingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
         const currentMorphingDivision = this.getDivisionDisplayName(this.state.get('morphingDivision') || 'quarter');
         morphingFolder.add({ morphingDivision: currentMorphingDivision }, 'morphingDivision', morphingDivisionNames)
-            .name('Morphing Division ♩')
+            .name('Division ♩')
             .onChange((value) => {
                 const division = this.getDivisionFromDisplayName(value);
                 this.state.set('morphingDivision', division);
@@ -626,43 +647,52 @@ export class GUIManager {
                 }
             });
             
+            // Ambient & Directional Lights Folder
+            const ambientDirectionalFolder = lightingFolder.addFolder('Ambient & Directional');
+            
             // Ambient light control
-            this.addController(lightingFolder, 'ambientLightIntensity', 0, 2, 0.01, 'Ambient Light', () => {
+            this.addController(ambientDirectionalFolder, 'ambientLightIntensity', 0, 2, 0.01, 'Ambient Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
             });
             
             // Directional light control
-            this.addController(lightingFolder, 'directionalLightIntensity', 0, 3, 0.01, 'Directional Light', () => {
+            this.addController(ambientDirectionalFolder, 'directionalLightIntensity', 0, 3, 0.01, 'Directional Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
             });
             
+            // Point Lights Folder
+            const pointLightsFolder = lightingFolder.addFolder('Point Lights');
+            
             // Point light 1 control
-            this.addController(lightingFolder, 'pointLight1Intensity', 0, 3, 0.01, 'Point Light 1', () => {
+            this.addController(pointLightsFolder, 'pointLight1Intensity', 0, 3, 0.01, 'Point Light 1', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
             });
             
             // Point light 2 control
-            this.addController(lightingFolder, 'pointLight2Intensity', 0, 3, 0.01, 'Point Light 2', () => {
+            this.addController(pointLightsFolder, 'pointLight2Intensity', 0, 3, 0.01, 'Point Light 2', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
             });
             
+            // Special Effects Lights Folder
+            const effectsLightsFolder = lightingFolder.addFolder('Special Effects');
+            
             // Rim light control
-            this.addController(lightingFolder, 'rimLightIntensity', 0, 3, 0.01, 'Rim Light', () => {
+            this.addController(effectsLightsFolder, 'rimLightIntensity', 0, 3, 0.01, 'Rim Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
             });
             
             // Accent light control
-            this.addController(lightingFolder, 'accentLightIntensity', 0, 3, 0.01, 'Accent Light', () => {
+            this.addController(effectsLightsFolder, 'accentLightIntensity', 0, 3, 0.01, 'Accent Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }

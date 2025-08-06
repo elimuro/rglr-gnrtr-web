@@ -104,7 +104,9 @@ export class StateManager {
             "animationType": 0,
             "animationSpeed": 1.89,
             "enableShapeCycling": false,
-            "enableSizeAnimation": true,
+            "enableMovementAnimation": false,
+            "enableRotationAnimation": false,
+            "enableScaleAnimation": false,
             "movementAmplitude": 0.08,
             "rotationAmplitude": 0.5,
             "scaleAmplitude": 0.2,
@@ -176,15 +178,17 @@ export class StateManager {
             "centerScalingCurve": 0,
             "centerScalingRadius": 1.0,
             "centerScalingDirection": 0,
-            "centerScalingAnimation": false,
             "centerScalingAnimationSpeed": 1.0,
             "centerScalingAnimationType": 0,
+            "centerScalingAnimation": false,
             "shapeCyclingDivision": "quarter",
             "movementDivision": "8th",
             "rotationDivision": "16th",
             "scaleDivision": "half",
             "morphingDivision": "quarter",
             "centerScalingDivision": "quarter",
+            "enableSizeAnimation": true,
+            "gridColor": "#ff0000",
             "midiEnabled": false,
             "midiChannel": 0,
             "midiCCMappings": {},
@@ -429,7 +433,9 @@ export class StateManager {
                 animationType: this.state.animationType,
                 animationSpeed: this.state.animationSpeed,
                 enableShapeCycling: this.state.enableShapeCycling,
-                enableSizeAnimation: this.state.enableSizeAnimation,
+                enableMovementAnimation: this.state.enableMovementAnimation,
+                enableRotationAnimation: this.state.enableRotationAnimation,
+                enableScaleAnimation: this.state.enableScaleAnimation,
                 movementAmplitude: this.state.movementAmplitude,
                 rotationAmplitude: this.state.rotationAmplitude,
                 scaleAmplitude: this.state.scaleAmplitude,
@@ -523,7 +529,6 @@ export class StateManager {
                 centerScalingCurve: this.state.centerScalingCurve,
                 centerScalingRadius: this.state.centerScalingRadius,
                 centerScalingDirection: this.state.centerScalingDirection,
-                centerScalingAnimation: this.state.centerScalingAnimation,
                 centerScalingAnimationSpeed: this.state.centerScalingAnimationSpeed,
                 centerScalingAnimationType: this.state.centerScalingAnimationType
             }
@@ -620,7 +625,9 @@ export class StateManager {
             addInterpolation('animationType', settings.animationType, currentState.animationType);
             addInterpolation('animationSpeed', settings.animationSpeed, currentState.animationSpeed);
             addInterpolation('enableShapeCycling', settings.enableShapeCycling, currentState.enableShapeCycling);
-            addInterpolation('enableSizeAnimation', settings.enableSizeAnimation, currentState.enableSizeAnimation);
+            addInterpolation('enableMovementAnimation', settings.enableMovementAnimation, currentState.enableMovementAnimation);
+            addInterpolation('enableRotationAnimation', settings.enableRotationAnimation, currentState.enableRotationAnimation);
+            addInterpolation('enableScaleAnimation', settings.enableScaleAnimation, currentState.enableScaleAnimation);
             addInterpolation('movementAmplitude', settings.movementAmplitude, currentState.movementAmplitude);
             addInterpolation('rotationAmplitude', settings.rotationAmplitude, currentState.rotationAmplitude);
             addInterpolation('scaleAmplitude', settings.scaleAmplitude, currentState.scaleAmplitude);
@@ -716,7 +723,6 @@ export class StateManager {
             addInterpolation('centerScalingCurve', settings.centerScalingCurve, currentState.centerScalingCurve);
             addInterpolation('centerScalingRadius', settings.centerScalingRadius, currentState.centerScalingRadius);
             addInterpolation('centerScalingDirection', settings.centerScalingDirection, currentState.centerScalingDirection);
-            addInterpolation('centerScalingAnimation', settings.centerScalingAnimation, currentState.centerScalingAnimation);
             addInterpolation('centerScalingAnimationSpeed', settings.centerScalingAnimationSpeed, currentState.centerScalingAnimationSpeed);
             addInterpolation('centerScalingAnimationType', settings.centerScalingAnimationType, currentState.centerScalingAnimationType);
             

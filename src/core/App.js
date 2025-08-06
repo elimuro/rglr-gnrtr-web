@@ -907,12 +907,6 @@ export class App {
                     this.animationLoop.resetAnimationTime();
                 }
                 break;
-            case 'sizeAnimation':
-                this.state.set('enableSizeAnimation', !this.state.get('enableSizeAnimation'));
-                if (!this.state.get('enableSizeAnimation')) {
-                    this.scene.updateCellSize();
-                }
-                break;
             case 'showGrid':
                 this.state.set('showGrid', !this.state.get('showGrid'));
                 this.scene.updateGridLines();
@@ -920,17 +914,14 @@ export class App {
             case 'enableShapeCycling':
                 this.state.set('enableShapeCycling', true);
                 break;
-            case 'enableSizeAnimation':
-                this.state.set('enableSizeAnimation', true);
-                break;
             case 'enableMovementAnimation':
-                this.state.set('movementAmplitude', Math.max(0.1, this.state.get('movementAmplitude')));
+                this.state.set('enableMovementAnimation', !this.state.get('enableMovementAnimation'));
                 break;
             case 'enableRotationAnimation':
-                this.state.set('rotationAmplitude', Math.max(0.1, this.state.get('rotationAmplitude')));
+                this.state.set('enableRotationAnimation', !this.state.get('enableRotationAnimation'));
                 break;
             case 'enableScaleAnimation':
-                this.state.set('scaleAmplitude', Math.max(0.1, this.state.get('scaleAmplitude')));
+                this.state.set('enableScaleAnimation', !this.state.get('enableScaleAnimation'));
                 break;
             case 'resetAnimation':
                 this.animationLoop.resetAnimationTime();
@@ -1007,9 +998,10 @@ export class App {
                 this.state.set('centerScalingEnabled', !this.state.get('centerScalingEnabled'));
                 this.scene.updateCenterScaling();
                 break;
-            case 'centerScalingAnimation':
-                this.state.set('centerScalingAnimation', !this.state.get('centerScalingAnimation'));
-                this.scene.updateCenterScaling();
+
+            case 'centerScalingAnimationSpeed':
+                this.state.set('centerScalingAnimationSpeed', 0.1 + value * 3);
+                if (this.scene) this.scene.updateCenterScaling();
                 break;
             // Morphing triggers
             case 'randomMorph':
@@ -1052,10 +1044,7 @@ export class App {
                 this.state.set('scaleAmplitude', Math.max(0, this.state.get('scaleAmplitude') - 0.05));
                 break;
             case 'a':
-                this.state.set('enableSizeAnimation', !this.state.get('enableSizeAnimation'));
-                if (!this.state.get('enableSizeAnimation')) {
-                    this.scene.updateCellSize();
-                }
+                this.state.set('enableMovementAnimation', !this.state.get('enableMovementAnimation'));
                 break;
             case 'g':
                 this.state.set('showGrid', !this.state.get('showGrid'));
@@ -1984,10 +1973,6 @@ export class App {
                 this.state.set('sphereWaterDistortion', value > 0.5);
                 if (this.scene) this.scene.updateSphereMaterials();
                 break;
-            case 'sphereHighPerformanceMode':
-                this.state.set('sphereHighPerformanceMode', value > 0.5);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
 
             case 'bloomStrength':
                 this.state.set('bloomStrength', value * 2);
@@ -2068,6 +2053,76 @@ export class App {
                 this.state.set('lightColour', color);
                 if (this.scene) this.scene.updateLighting();
                 break;
+            
+            // New parameters from reorganized GUI
+            case 'globalBPM':
+                this.state.set('globalBPM', 60 + Math.floor(value * 240));
+                break;
+            case 'enableShapeCycling':
+                this.state.set('enableShapeCycling', value > 0.5);
+                break;
+            case 'showGrid':
+                this.state.set('showGrid', value > 0.5);
+                if (this.scene) this.scene.updateGridLines();
+                break;
+            case 'shapeColor':
+                // Map value to hue (0-360 degrees)
+                const shapeHue = Math.floor(value * 360);
+                const shapeColor = this.hsvToHex(shapeHue, 100, 100);
+                this.state.set('shapeColor', shapeColor);
+                if (this.scene) this.scene.updateShapeColors();
+                break;
+            case 'backgroundColor':
+                // Map value to hue (0-360 degrees)
+                const bgHue = Math.floor(value * 360);
+                const bgColor = this.hsvToHex(bgHue, 100, 100);
+                this.state.set('backgroundColor', bgColor);
+                if (this.scene) this.scene.updateBackgroundColor();
+                break;
+            case 'bloomEnabled':
+                this.state.set('bloomEnabled', value > 0.5);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'chromaticAberrationEnabled':
+                this.state.set('chromaticAberrationEnabled', value > 0.5);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'vignetteEnabled':
+                this.state.set('vignetteEnabled', value > 0.5);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'grainEnabled':
+                this.state.set('grainEnabled', value > 0.5);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'colorGradingEnabled':
+                this.state.set('colorGradingEnabled', value > 0.5);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'postProcessingEnabled':
+                this.state.set('postProcessingEnabled', value > 0.5);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'fxaaEnabled':
+                this.state.set('fxaaEnabled', value > 0.5);
+                if (this.scene) this.scene.updatePostProcessing();
+                break;
+            case 'enableFrustumCulling':
+                this.state.set('enableFrustumCulling', value > 0.5);
+                break;
+            case 'morphingEasing':
+                // Map to easing options (simplified mapping)
+                const easingOptions = ['power2.inOut', 'power2.in', 'power2.out', 'power3.inOut', 'power3.in', 'power3.out'];
+                const easingIndex = Math.floor(value * easingOptions.length);
+                this.state.set('morphingEasing', easingOptions[easingIndex]);
+                break;
+            case 'gridColor':
+                // Map value to hue (0-360 degrees)
+                const gridHue = Math.floor(value * 360);
+                const gridColor = this.hsvToHex(gridHue, 100, 100);
+                this.state.set('gridColor', gridColor);
+                if (this.scene) this.scene.updateGridLines();
+                break;
             case 'centerScalingEnabled':
                 this.state.set('centerScalingEnabled', value > 0.5);
                 if (this.scene) this.scene.updateCenterScaling();
@@ -2088,10 +2143,7 @@ export class App {
                 this.state.set('centerScalingDirection', Math.floor(value * 2));
                 if (this.scene) this.scene.updateCenterScaling();
                 break;
-            case 'centerScalingAnimation':
-                this.state.set('centerScalingAnimation', value > 0.5);
-                if (this.scene) this.scene.updateCenterScaling();
-                break;
+
             case 'centerScalingAnimationSpeed':
                 this.state.set('centerScalingAnimationSpeed', 0.1 + value * 3);
                 if (this.scene) this.scene.updateCenterScaling();
@@ -2155,6 +2207,16 @@ export class App {
                 break;
             case 'centerScalingDivision':
                 this.state.set('centerScalingDivision', this.getDivisionFromIndex(value));
+                break;
+
+            case 'enableMovementAnimation':
+                this.state.set('enableMovementAnimation', value > 0.5);
+                break;
+            case 'enableRotationAnimation':
+                this.state.set('enableRotationAnimation', value > 0.5);
+                break;
+            case 'enableScaleAnimation':
+                this.state.set('enableScaleAnimation', value > 0.5);
                 break;
             default:
                 // For any other parameters, just set the value directly

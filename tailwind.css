@@ -1845,63 +1845,102 @@ canvas {
 .sensitivity-slider {
     -webkit-appearance: none;
     appearance: none;
-    background: transparent;
+    background: linear-gradient(to right, rgba(139, 92, 246, 0.6), rgba(139, 92, 246, 0.9));
+    border-radius: 8px;
+    height: 8px;
+    border: 2px solid rgba(139, 92, 246, 0.8);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(139, 92, 246, 0.3);
     cursor: pointer;
+    position: relative;
 }
 
 .sensitivity-slider::-webkit-slider-track {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    height: 4px;
+    background: linear-gradient(to right, rgba(139, 92, 246, 0.6), rgba(139, 92, 246, 0.9));
+    border-radius: 8px;
+    height: 8px;
+    border: 2px solid rgba(139, 92, 246, 0.8);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(139, 92, 246, 0.3);
 }
 
 .sensitivity-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    background: #8b5cf6;
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
     border-radius: 50%;
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
     cursor: pointer;
-    box-shadow: 0 0 4px rgba(139, 92, 246, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.6), 0 0 0 1px rgba(139, 92, 246, 0.3);
     transition: all 0.2s ease;
+    position: relative;
+}
+
+.sensitivity-slider::-webkit-slider-thumb::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
 }
 
 .sensitivity-slider::-webkit-slider-thumb:hover {
-    background: #a78bfa;
-    box-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
-    transform: scale(1.1);
+    background: linear-gradient(135deg, #a78bfa, #c4b5fd);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.8), 0 0 0 2px rgba(139, 92, 246, 0.5);
+    transform: scale(1.15);
+}
+
+.sensitivity-slider::-webkit-slider-thumb:active {
+    transform: scale(1.2);
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 1), 0 0 0 3px rgba(139, 92, 246, 0.7);
 }
 
 .sensitivity-slider::-moz-range-track {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    height: 4px;
-    border: none;
+    background: linear-gradient(to right, rgba(139, 92, 246, 0.6), rgba(139, 92, 246, 0.9));
+    border-radius: 8px;
+    height: 8px;
+    border: 2px solid rgba(139, 92, 246, 0.8);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(139, 92, 246, 0.3);
 }
 
 .sensitivity-slider::-moz-range-thumb {
-    background: #8b5cf6;
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
     border-radius: 50%;
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
     cursor: pointer;
-    border: none;
-    box-shadow: 0 0 4px rgba(139, 92, 246, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.6), 0 0 0 1px rgba(139, 92, 246, 0.3);
     transition: all 0.2s ease;
 }
 
 .sensitivity-slider::-moz-range-thumb:hover {
-    background: #a78bfa;
-    box-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
-    transform: scale(1.1);
+    background: linear-gradient(135deg, #a78bfa, #c4b5fd);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.8), 0 0 0 2px rgba(139, 92, 246, 0.5);
+    transform: scale(1.15);
+}
+
+.sensitivity-slider::-moz-range-thumb:active {
+    transform: scale(1.2);
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 1), 0 0 0 3px rgba(139, 92, 246, 0.7);
 }
 
 .sensitivity-value {
     font-family: 'Courier New', monospace;
-    font-weight: 600;
+    font-weight: 700;
     color: #8b5cf6;
-    text-shadow: 0 0 4px rgba(139, 92, 246, 0.5);
+    text-shadow: 0 0 6px rgba(139, 92, 246, 0.7);
+    background: rgba(139, 92, 246, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    min-width: 32px;
+    text-align: center;
+    transition: all 0.2s ease;
 }
 
 /* Audio Mapping Control Hover Effects */
@@ -1911,5 +1950,8 @@ canvas {
 
 .audio-mapping-control:hover .sensitivity-value {
     color: #a78bfa;
-    text-shadow: 0 0 6px rgba(139, 92, 246, 0.7);
+    text-shadow: 0 0 8px rgba(139, 92, 246, 0.9);
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.6);
+    transform: scale(1.05);
 } 

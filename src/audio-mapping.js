@@ -23,7 +23,6 @@ const AUDIO_MAPPING_CONFIGS = {
         inputType: 'Frequency',
         inputPlaceholder: 'Frequency Band',
         targets: [
-            { value: 'animationSpeed', label: 'Animation Speed' },
             { value: 'movementAmplitude', label: 'Movement Amplitude' },
             { value: 'rotationAmplitude', label: 'Rotation Amplitude' },
             { value: 'scaleAmplitude', label: 'Scale Amplitude' },
@@ -64,14 +63,17 @@ const AUDIO_MAPPING_CONFIGS = {
             { value: 'pointLight2Intensity', label: 'Point Light 2' },
             { value: 'rimLightIntensity', label: 'Rim Light' },
             { value: 'accentLightIntensity', label: 'Accent Light' },
-            { value: 'centerScalingEnabled', label: 'Center Scaling' },
             { value: 'centerScalingIntensity', label: 'Center Scaling Intensity' },
             { value: 'centerScalingCurve', label: 'Center Scaling Curve' },
             { value: 'centerScalingRadius', label: 'Center Scaling Radius' },
             { value: 'centerScalingDirection', label: 'Center Scaling Direction' },
-            { value: 'centerScalingAnimation', label: 'Center Scaling Animation' },
             { value: 'centerScalingAnimationSpeed', label: 'Center Scaling Animation Speed' },
-            { value: 'centerScalingAnimationType', label: 'Center Scaling Animation Type' }
+            { value: 'centerScalingAnimationType', label: 'Center Scaling Animation Type' },
+            { value: 'shapeCyclingSpeed', label: 'Shape Cycling Speed' },
+            { value: 'shapeCyclingPattern', label: 'Shape Cycling Pattern' },
+            { value: 'shapeCyclingDirection', label: 'Shape Cycling Direction' },
+            { value: 'shapeCyclingSync', label: 'Shape Cycling Sync' },
+            { value: 'shapeCyclingIntensity', label: 'Shape Cycling Intensity' }
         ],
         frequencyBands: [
             { value: 'overall', label: 'Overall' },
@@ -99,15 +101,14 @@ const AUDIO_MAPPING_TEMPLATES = {
                 
                 <span class="text-xs text-gray-400 mx-1">×</span>
                 
-                <input type="range" class="sensitivity-slider w-16 h-6 bg-black bg-opacity-30 rounded-lg appearance-none cursor-pointer slider-thumb" 
+                <input type="range" class="sensitivity-slider w-20 h-6 appearance-none cursor-pointer slider-thumb" 
                        min="0" max="2" step="0.1" value="1" 
                        title="Sensitivity: 0 = no effect, 1 = normal, 2 = double effect"
                        data-drawer-interactive>
-                <span class="sensitivity-value text-xs text-gray-400 min-w-8 text-center">1.0</span>
+                <span class="sensitivity-value text-xs min-w-8 text-center">1.0</span>
             </div>
             
             <div class="flex items-center gap-1">
-                <button class="learn-button px-1 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green" data-drawer-interactive>Learn</button>
                 <button class="remove-button px-1 py-0.5 bg-red-600 bg-opacity-30 text-red-400 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400" data-drawer-interactive>×</button>
             </div>
         </div>
@@ -127,7 +128,7 @@ export class AudioMappingControl {
         this.mapping = {
             minFrequency: 250,
             maxFrequency: 2000,
-            target: 'animationSpeed',
+            target: 'movementAmplitude',
             minValue: 0,
             maxValue: 1,
             curve: 'linear',
@@ -257,13 +258,7 @@ export class AudioMappingControl {
             this.updateSensitivityDisplay();
         }
         
-        // Learn button
-        const learnButton = this.element.querySelector('.learn-button');
-        if (learnButton) {
-            learnButton.addEventListener('click', () => {
-                this.startLearning(learnButton);
-            });
-        }
+
         
         // Remove button
         const removeButton = this.element.querySelector('.remove-button');
@@ -274,34 +269,7 @@ export class AudioMappingControl {
         }
     }
     
-    startLearning(learnButton) {
-        if (this.isLearning) {
-            this.stopLearning(learnButton);
-            return;
-        }
-        
-        this.isLearning = true;
-        learnButton.textContent = 'Stop';
-        learnButton.classList.add('bg-midi-green', 'text-black');
-        
-        // Start listening for audio analysis
-        this.setupAudioLearning();
-    }
-    
-    stopLearning(learnButton) {
-        this.isLearning = false;
-        learnButton.textContent = 'Learn';
-        learnButton.classList.remove('bg-midi-green', 'text-black');
-        
-        // Stop listening for audio analysis
-        this.cleanupAudioLearning();
-    }
-    
-    setupAudioLearning() {
-        // DISABLED: Old frequency band system - now using new frequency range system
-        // This method is kept for compatibility but does nothing
-        // console.log('Audio learning disabled - using new frequency range system');
-    }
+
     
     setupContinuousAudioMapping() {
         // Set up continuous audio mapping (always active)
@@ -389,15 +357,7 @@ export class AudioMappingControl {
         return 1000; // Default fallback
     }
     
-    cleanupAudioLearning() {
-        // Unregister from audio updates
-        if (this.app && this.app.audioMappingManager) {
-            this.app.audioMappingManager.unregisterAudioListener(this.controlId);
-        }
-        
-        this.audioSubscription = null;
-        // console.log('Audio learning stopped for control:', this.controlId);
-    }
+
     
     cleanupContinuousAudioMapping() {
         // Unregister from continuous audio updates

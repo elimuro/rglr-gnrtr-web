@@ -41,8 +41,20 @@ export class AnimationLoop {
             }
         });
         
-        this.state.subscribe('enableSizeAnimation', () => {
-            if (!this.state.get('enableSizeAnimation')) {
+        this.state.subscribe('enableMovementAnimation', () => {
+            if (!this.state.get('enableMovementAnimation')) {
+                this.scene.updateCellSize();
+            }
+        });
+        
+        this.state.subscribe('enableRotationAnimation', () => {
+            if (!this.state.get('enableRotationAnimation')) {
+                this.scene.updateCellSize();
+            }
+        });
+        
+        this.state.subscribe('enableScaleAnimation', () => {
+            if (!this.state.get('enableScaleAnimation')) {
                 this.scene.updateCellSize();
             }
         });
@@ -142,7 +154,7 @@ export class AnimationLoop {
         const deltaTime = this.getClockDelta();
         
         // Update animation time using BPM-based timing
-        if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation') || this.state.get('centerScalingEnabled')) {
+        if (this.state.get('enableShapeCycling') || this.state.get('enableMovementAnimation') || this.state.get('enableRotationAnimation') || this.state.get('enableScaleAnimation') || this.state.get('centerScalingEnabled')) {
             // Use BPM-based timing instead of animationSpeed multiplier
             const globalBPM = this.state.get('globalBPM') || 120;
             const secondsPerBeat = 60 / globalBPM;
@@ -178,7 +190,7 @@ export class AnimationLoop {
     }
 
     isAnimating() {
-        return this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation');
+        return this.state.get('enableShapeCycling') || this.state.get('enableMovementAnimation') || this.state.get('enableRotationAnimation') || this.state.get('enableScaleAnimation');
     }
 
     getFPS() {

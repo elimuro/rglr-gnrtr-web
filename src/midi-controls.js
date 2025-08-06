@@ -17,66 +17,103 @@ const CONTROL_CONFIGS = {
         inputType: 'CC',
         inputPlaceholder: 'CC',
         targets: [
-            { value: 'movementAmplitude', label: 'Movement Amplitude' },
-            { value: 'rotationAmplitude', label: 'Rotation Amplitude' },
-            { value: 'scaleAmplitude', label: 'Scale Amplitude' },
-            { value: 'randomness', label: 'Randomness' },
-            { value: 'cellSize', label: 'Cell Size' },
+            // Shape Controls
             { value: 'gridWidth', label: 'Grid Width' },
             { value: 'gridHeight', label: 'Grid Height' },
+            { value: 'cellSize', label: 'Cell Size' },
+            { value: 'randomness', label: 'Randomness' },
+            
+            // Composition Controls
             { value: 'compositionWidth', label: 'Composition Width' },
             { value: 'compositionHeight', label: 'Composition Height' },
-            { value: 'animationType', label: 'Animation Type' },
+            
+            // Color Controls
+            { value: 'shapeColor', label: 'Shape Color' },
+            { value: 'backgroundColor', label: 'Background Color' },
+            { value: 'gridColor', label: 'Grid Color' },
+            
+            // Sphere Controls - Material Properties
             { value: 'sphereRefraction', label: 'Sphere Refraction' },
             { value: 'sphereTransparency', label: 'Sphere Transparency' },
             { value: 'sphereTransmission', label: 'Sphere Transmission' },
             { value: 'sphereRoughness', label: 'Sphere Roughness' },
             { value: 'sphereMetalness', label: 'Sphere Metalness' },
-            { value: 'sphereScale', label: 'Sphere Scale' },
+            
+            // Sphere Controls - Clearcoat Properties
             { value: 'sphereClearcoat', label: 'Sphere Clearcoat' },
             { value: 'sphereClearcoatRoughness', label: 'Sphere Clearcoat Roughness' },
+            
+            // Sphere Controls - Environment & Effects
             { value: 'sphereEnvMapIntensity', label: 'Sphere Environment Map Intensity' },
             { value: 'sphereDistortionStrength', label: 'Sphere Distortion Strength' },
-            { value: 'sphereHighPerformanceMode', label: 'Sphere High Performance Mode' },
-            { value: 'bloomStrength', label: 'Bloom Strength' },
-            { value: 'bloomRadius', label: 'Bloom Radius' },
-            { value: 'bloomThreshold', label: 'Bloom Threshold' },
-            { value: 'chromaticIntensity', label: 'Chromatic Aberration' },
-            { value: 'vignetteIntensity', label: 'Vignette Intensity' },
-            { value: 'vignetteRadius', label: 'Vignette Radius' },
-            { value: 'vignetteSoftness', label: 'Vignette Softness' },
-            { value: 'grainIntensity', label: 'Film Grain' },
-            { value: 'colorHue', label: 'Color Hue' },
-            { value: 'colorSaturation', label: 'Color Saturation' },
-            { value: 'colorBrightness', label: 'Color Brightness' },
-            { value: 'colorContrast', label: 'Color Contrast' },
-            { value: 'lightColour', label: 'Light Colour' },
-            { value: 'ambientLightIntensity', label: 'Ambient Light' },
-            { value: 'directionalLightIntensity', label: 'Directional Light' },
-            { value: 'pointLight1Intensity', label: 'Point Light 1' },
-            { value: 'pointLight2Intensity', label: 'Point Light 2' },
-            { value: 'rimLightIntensity', label: 'Rim Light' },
-            { value: 'accentLightIntensity', label: 'Accent Light' },
-            { value: 'centerScalingIntensity', label: 'Center Scaling Intensity' },
-            { value: 'centerScalingCurve', label: 'Center Scaling Curve' },
-            { value: 'centerScalingRadius', label: 'Center Scaling Radius' },
-            { value: 'centerScalingDirection', label: 'Center Scaling Direction' },
-            { value: 'centerScalingAnimationSpeed', label: 'Center Scaling Animation Speed' },
-            { value: 'centerScalingAnimationType', label: 'Center Scaling Animation Type' },
-            { value: 'shapeCyclingSpeed', label: 'Shape Cycling Speed' },
+            { value: 'sphereScale', label: 'Sphere Scale' },
+            
+            // Animation Controls - Global
+            { value: 'globalBPM', label: 'Global BPM' },
+            
+            // Animation Controls - Movement
+            { value: 'movementAmplitude', label: 'Movement Amplitude' },
+            { value: 'movementDivision', label: 'Movement Division' },
+            
+            // Animation Controls - Rotation
+            { value: 'rotationAmplitude', label: 'Rotation Amplitude' },
+            { value: 'rotationDivision', label: 'Rotation Division' },
+            
+            // Animation Controls - Scale
+            { value: 'scaleAmplitude', label: 'Scale Amplitude' },
+            { value: 'scaleDivision', label: 'Scale Division' },
+            
+            // Animation Controls - Shape Cycling
+            { value: 'shapeCyclingDivision', label: 'Shape Cycling Division' },
             { value: 'shapeCyclingPattern', label: 'Shape Cycling Pattern' },
             { value: 'shapeCyclingDirection', label: 'Shape Cycling Direction' },
             { value: 'shapeCyclingSync', label: 'Shape Cycling Sync' },
             { value: 'shapeCyclingIntensity', label: 'Shape Cycling Intensity' },
             { value: 'shapeCyclingTrigger', label: 'Shape Cycling Trigger' },
-
-
-            { value: 'movementDivision', label: 'Movement Division' },
-            { value: 'rotationDivision', label: 'Rotation Division' },
-            { value: 'scaleDivision', label: 'Scale Division' },
-            { value: 'shapeCyclingDivision', label: 'Shape Cycling Division' },
+            
+            // Animation Controls - Center Scaling
+            { value: 'centerScalingIntensity', label: 'Center Scaling Intensity' },
+            { value: 'centerScalingCurve', label: 'Center Scaling Curve' },
+            { value: 'centerScalingRadius', label: 'Center Scaling Radius' },
+            { value: 'centerScalingDirection', label: 'Center Scaling Direction' },
+            { value: 'centerScalingDivision', label: 'Center Scaling Division' },
+            { value: 'centerScalingAnimationSpeed', label: 'Center Scaling Animation Speed' },
+            { value: 'centerScalingAnimationType', label: 'Center Scaling Animation Type' },
+            
+            // Morphing Controls
             { value: 'morphingDivision', label: 'Morphing Division' },
-            { value: 'centerScalingDivision', label: 'Center Scaling Division' }
+            { value: 'morphingEasing', label: 'Morphing Easing' },
+            
+            // Post Processing Controls - Bloom
+            { value: 'bloomStrength', label: 'Bloom Strength' },
+            { value: 'bloomRadius', label: 'Bloom Radius' },
+            { value: 'bloomThreshold', label: 'Bloom Threshold' },
+            
+            // Post Processing Controls - Chromatic Aberration
+            { value: 'chromaticIntensity', label: 'Chromatic Aberration Intensity' },
+            
+            // Post Processing Controls - Vignette
+            { value: 'vignetteIntensity', label: 'Vignette Intensity' },
+            { value: 'vignetteRadius', label: 'Vignette Radius' },
+            { value: 'vignetteSoftness', label: 'Vignette Softness' },
+            
+            // Post Processing Controls - Film Grain
+            { value: 'grainIntensity', label: 'Film Grain Intensity' },
+            
+            // Post Processing Controls - Color Grading
+            { value: 'colorHue', label: 'Color Hue' },
+            { value: 'colorSaturation', label: 'Color Saturation' },
+            { value: 'colorBrightness', label: 'Color Brightness' },
+            { value: 'colorContrast', label: 'Color Contrast' },
+            
+            // Lighting Controls
+            { value: 'lightColour', label: 'Light Colour' },
+            { value: 'ambientLightIntensity', label: 'Ambient Light Intensity' },
+            { value: 'directionalLightIntensity', label: 'Directional Light Intensity' },
+            { value: 'pointLight1Intensity', label: 'Point Light 1 Intensity' },
+            { value: 'pointLight2Intensity', label: 'Point Light 2 Intensity' },
+            { value: 'rimLightIntensity', label: 'Rim Light Intensity' },
+            { value: 'accentLightIntensity', label: 'Accent Light Intensity' }
         ]
     },
     note: {
@@ -85,15 +122,27 @@ const CONTROL_CONFIGS = {
         inputType: 'Note',
         inputPlaceholder: 'Note',
         targets: [
-            { value: 'shapeCycling', label: 'Toggle Shape Cycling' },
-            { value: 'sizeAnimation', label: 'Toggle Size Animation' },
-            { value: 'showGrid', label: 'Toggle Grid' },
-            { value: 'resetAnimation', label: 'Reset Animation' },
+            // Shape toggles
             { value: 'toggleBasicShapes', label: 'Toggle Basic Shapes' },
             { value: 'toggleTriangles', label: 'Toggle Triangles' },
             { value: 'toggleRectangles', label: 'Toggle Rectangles' },
             { value: 'toggleEllipses', label: 'Toggle Ellipses' },
             { value: 'toggleRefractiveSpheres', label: 'Toggle Refractive Spheres' },
+            { value: 'showGrid', label: 'Toggle Grid' },
+            
+            // Animation toggles
+            { value: 'shapeCycling', label: 'Toggle Shape Cycling' },
+            { value: 'sizeAnimation', label: 'Toggle Size Animation' },
+            { value: 'enableShapeCycling', label: 'Toggle Shape Cycling' },
+            { value: 'centerScalingEnabled', label: 'Toggle Center Scaling' },
+            { value: 'enableMovementAnimation', label: 'Toggle Movement Animation' },
+            { value: 'enableRotationAnimation', label: 'Toggle Rotation Animation' },
+            { value: 'enableScaleAnimation', label: 'Toggle Scale Animation' },
+            { value: 'enableSizeAnimation', label: 'Toggle Size Animation' },
+            { value: 'centerScalingAnimation', label: 'Toggle Center Scaling Animation' },
+            { value: 'resetAnimation', label: 'Reset Animation' },
+            
+            // Post processing toggles
             { value: 'bloomEnabled', label: 'Toggle Bloom' },
             { value: 'chromaticAberrationEnabled', label: 'Toggle Chromatic Aberration' },
             { value: 'vignetteEnabled', label: 'Toggle Vignette' },
@@ -101,10 +150,14 @@ const CONTROL_CONFIGS = {
             { value: 'colorGradingEnabled', label: 'Toggle Color Grading' },
             { value: 'postProcessingEnabled', label: 'Toggle Post Processing' },
             { value: 'fxaaEnabled', label: 'Toggle FXAA' },
+            
+            // Performance toggles
             { value: 'enableFrustumCulling', label: 'Toggle Frustum Culling' },
+            { value: 'sphereHighPerformanceMode', label: 'Toggle Sphere High Performance' },
+            
+            // Sphere effects
             { value: 'sphereWaterDistortion', label: 'Toggle Sphere Water Distortion' },
-            { value: 'centerScalingEnabled', label: 'Toggle Center Scaling' },
-            { value: 'centerScalingAnimation', label: 'Toggle Center Scaling Animation' },
+            
             // Morphing triggers
             { value: 'randomMorph', label: 'Random Morph' },
             { value: 'morphAllShapes', label: 'Morph All Shapes' },
@@ -296,44 +349,103 @@ export class MIDIControl {
     getParameterConfig(target) {
         // Define parameter ranges for different targets
         const configs = {
-            movementAmplitude: { min: 0, max: 1 },
-            rotationAmplitude: { min: 0, max: Math.PI * 2 },
-            scaleAmplitude: { min: 0, max: 1 },
-            randomness: { min: 0, max: 2 },
-            cellSize: { min: 0.1, max: 3 },
-            gridWidth: { min: 1, max: 20 },
-            gridHeight: { min: 1, max: 20 },
-            compositionWidth: { min: 10, max: 100 },
-            compositionHeight: { min: 10, max: 100 },
-            sphereRefraction: { min: 1, max: 3 },
+            // Shape Controls
+            gridWidth: { min: 1, max: 30 },
+            gridHeight: { min: 1, max: 30 },
+            cellSize: { min: 0.5, max: 2 },
+            randomness: { min: 0, max: 1 },
+            
+            // Composition Controls
+            compositionWidth: { min: 1, max: 30 },
+            compositionHeight: { min: 1, max: 30 },
+            
+            // Color Controls (handled as colors, not numeric)
+            shapeColor: { min: 0, max: 1 },
+            backgroundColor: { min: 0, max: 1 },
+            gridColor: { min: 0, max: 1 },
+            
+            // Sphere Controls - Material Properties
+            sphereRefraction: { min: 0, max: 2 },
             sphereTransparency: { min: 0, max: 1 },
             sphereTransmission: { min: 0, max: 1 },
             sphereRoughness: { min: 0, max: 1 },
             sphereMetalness: { min: 0, max: 1 },
-            sphereScale: { min: 0.1, max: 3 },
+            
+            // Sphere Controls - Clearcoat Properties
+            sphereClearcoat: { min: 0, max: 1 },
+            sphereClearcoatRoughness: { min: 0, max: 1 },
+            
+            // Sphere Controls - Environment & Effects
+            sphereEnvMapIntensity: { min: 0, max: 3 },
             sphereDistortionStrength: { min: 0, max: 1 },
-            sphereHighPerformanceMode: { min: 0, max: 1 },
-            centerScalingIntensity: { min: 0, max: 2 },
-            centerScalingCurve: { min: 0, max: 3 },
-            centerScalingRadius: { min: 0.1, max: 5 },
-            centerScalingDirection: { min: 0, max: 1 },
-            centerScalingAnimationSpeed: { min: 0.1, max: 3 },
-            centerScalingAnimationType: { min: 0, max: 3 },
-            shapeCyclingSpeed: { min: 0.1, max: 2 },
+            sphereScale: { min: 0.5, max: 3 },
+            
+            // Animation Controls - Global
+            globalBPM: { min: 60, max: 300 },
+            
+            // Animation Controls - Movement
+            movementAmplitude: { min: 0.01, max: 0.5 },
+            movementDivision: { min: 0, max: 127 },
+            
+            // Animation Controls - Rotation
+            rotationAmplitude: { min: 0.01, max: 2 },
+            rotationDivision: { min: 0, max: 127 },
+            
+            // Animation Controls - Scale
+            scaleAmplitude: { min: 0.01, max: 1 },
+            scaleDivision: { min: 0, max: 127 },
+            
+            // Animation Controls - Shape Cycling
+            shapeCyclingDivision: { min: 0, max: 127 },
             shapeCyclingPattern: { min: 0, max: 4 },
             shapeCyclingDirection: { min: 0, max: 3 },
             shapeCyclingSync: { min: 0, max: 3 },
             shapeCyclingIntensity: { min: 0.1, max: 1 },
             shapeCyclingTrigger: { min: 0, max: 3 },
-
-
-            // Division parameters (these will be handled specially)
-            movementDivision: { min: 0, max: 127 },
-            rotationDivision: { min: 0, max: 127 },
-            scaleDivision: { min: 0, max: 127 },
-            shapeCyclingDivision: { min: 0, max: 127 },
+            
+            // Animation Controls - Center Scaling
+            centerScalingIntensity: { min: 0, max: 2 },
+            centerScalingCurve: { min: 0, max: 3 },
+            centerScalingRadius: { min: 0.1, max: 5 },
+            centerScalingDirection: { min: 0, max: 1 },
+            centerScalingDivision: { min: 0, max: 127 },
+            centerScalingAnimationSpeed: { min: 0.1, max: 3 },
+            centerScalingAnimationType: { min: 0, max: 3 },
+            
+            // Morphing Controls
             morphingDivision: { min: 0, max: 127 },
-            centerScalingDivision: { min: 0, max: 127 }
+            morphingEasing: { min: 0, max: 1 },
+            
+            // Post Processing Controls - Bloom
+            bloomStrength: { min: 0, max: 2 },
+            bloomRadius: { min: 0, max: 2 },
+            bloomThreshold: { min: 0, max: 1 },
+            
+            // Post Processing Controls - Chromatic Aberration
+            chromaticIntensity: { min: 0, max: 1 },
+            
+            // Post Processing Controls - Vignette
+            vignetteIntensity: { min: 0, max: 1 },
+            vignetteRadius: { min: 0.1, max: 1 },
+            vignetteSoftness: { min: 0, max: 1 },
+            
+            // Post Processing Controls - Film Grain
+            grainIntensity: { min: 0, max: 0.5 },
+            
+            // Post Processing Controls - Color Grading
+            colorHue: { min: -0.5, max: 0.5 },
+            colorSaturation: { min: 0, max: 3 },
+            colorBrightness: { min: 0, max: 2 },
+            colorContrast: { min: 0, max: 2 },
+            
+            // Lighting Controls
+            lightColour: { min: 0, max: 1 },
+            ambientLightIntensity: { min: 0, max: 2 },
+            directionalLightIntensity: { min: 0, max: 3 },
+            pointLight1Intensity: { min: 0, max: 3 },
+            pointLight2Intensity: { min: 0, max: 3 },
+            rimLightIntensity: { min: 0, max: 3 },
+            accentLightIntensity: { min: 0, max: 3 }
         };
         return configs[target];
     }
