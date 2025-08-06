@@ -15,7 +15,7 @@ import { MIDIControlManager } from '../midi-controls.js';
 import { AudioMappingManager } from '../audio-mapping.js';
 import { GUIManager } from '../ui/GUIManager.js';
 import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
-import { VideoRecorder } from '../modules/VideoRecorder.js';
+// import { VideoRecorder } from '../modules/VideoRecorder.js';
 import { AudioManager } from '../modules/AudioManager.js';
 import { MIDIClockManager } from '../modules/MIDIClockManager.js';
 
@@ -37,8 +37,8 @@ export class App {
         // Initialize morphing system
         this.morphingSystem = new ShapeMorphingSystem();
         
-        // Initialize video recorder
-        this.videoRecorder = new VideoRecorder(this);
+        // Initialize video recorder (temporarily disabled)
+        // this.videoRecorder = new VideoRecorder(this);
         
         // Initialize audio manager
         this.audioManager = new AudioManager(this.state);
