@@ -1,17 +1,21 @@
 {
-  "name": "Morphing Triggers",
-  "description": "Preset with MIDI note mappings for all morphing triggers",
+  "name": "Morphing & Transitions",
+  "description": "Advanced morphing and transition controls for dynamic shape transformations",
   "version": "1.0",
   "created": "2024-01-15T10:30:00Z",
   "midiCCMappings": {
-    "cc1": { "channel": 0, "value": 13, "target": "morphingDivision" },
-    "cc2": { "channel": 0, "value": 14, "target": "globalBPM" },
-    "cc3": { "channel": 0, "value": 15, "target": "movementAmplitude" },
-    "cc4": { "channel": 0, "value": 16, "target": "rotationAmplitude" },
-    "cc5": { "channel": 0, "value": 17, "target": "scaleAmplitude" },
-    "cc6": { "channel": 0, "value": 18, "target": "randomness" },
-    "cc7": { "channel": 0, "value": 19, "target": "cellSize" },
-    "cc8": { "channel": 0, "value": 20, "target": "movementDivision" }
+    "cc1": { "channel": 0, "value": 1, "target": "morphingDivision" },
+    "cc2": { "channel": 0, "value": 2, "target": "globalBPM" },
+    "cc3": { "channel": 0, "value": 3, "target": "movementAmplitude" },
+    "cc4": { "channel": 0, "value": 4, "target": "rotationAmplitude" },
+    "cc5": { "channel": 0, "value": 5, "target": "scaleAmplitude" },
+    "cc6": { "channel": 0, "value": 6, "target": "randomness" },
+    "cc7": { "channel": 0, "value": 7, "target": "cellSize" },
+    "cc8": { "channel": 0, "value": 8, "target": "movementDivision" },
+    "cc9": { "channel": 0, "value": 9, "target": "rotationDivision" },
+    "cc10": { "channel": 0, "value": 10, "target": "scaleDivision" },
+    "cc11": { "channel": 0, "value": 11, "target": "shapeCyclingDivision" },
+    "cc12": { "channel": 0, "value": 12, "target": "centerScalingDivision" }
   },
   "midiNoteMappings": {
     "note1": { "channel": 0, "note": 36, "target": "randomMorph" },
@@ -28,7 +32,6 @@
     "note12": { "channel": 0, "note": 47, "target": "toggleRectangles" },
     "note13": { "channel": 0, "note": 48, "target": "toggleEllipses" },
     "note14": { "channel": 0, "note": 49, "target": "toggleRefractiveSpheres" },
-    "note15": { "channel": 0, "note": 50, "target": "bloomEnabled" },
-    "note16": { "channel": 0, "note": 51, "target": "postProcessingEnabled" }
+    "note15": { "channel": 0, "note": 50, "target": "postProcessingEnabled" }
   }
 } 

@@ -1,0 +1,36 @@
+{
+  "name": "Essential Controls",
+  "description": "Most essential parameters for quick and effective control of the visual experience",
+  "version": "1.0",
+  "created": "2024-01-15T10:30:00Z",
+  "midiCCMappings": {
+    "cc1": { "channel": 0, "value": 1, "target": "globalBPM" },
+    "cc2": { "channel": 0, "value": 2, "target": "movementAmplitude" },
+    "cc3": { "channel": 0, "value": 3, "target": "rotationAmplitude" },
+    "cc4": { "channel": 0, "value": 4, "target": "scaleAmplitude" },
+    "cc5": { "channel": 0, "value": 5, "target": "randomness" },
+    "cc6": { "channel": 0, "value": 6, "target": "cellSize" },
+    "cc7": { "channel": 0, "value": 7, "target": "gridWidth" },
+    "cc8": { "channel": 0, "value": 8, "target": "gridHeight" },
+    "cc9": { "channel": 0, "value": 9, "target": "animationType" },
+    "cc10": { "channel": 0, "value": 10, "target": "bloomStrength" },
+    "cc11": { "channel": 0, "value": 11, "target": "colorHue" },
+    "cc12": { "channel": 0, "value": 12, "target": "colorSaturation" },
+    "cc13": { "channel": 0, "value": 13, "target": "colorBrightness" },
+    "cc14": { "channel": 0, "value": 14, "target": "ambientLightIntensity" },
+    "cc15": { "channel": 0, "value": 15, "target": "sphereRefraction" },
+    "cc16": { "channel": 0, "value": 16, "target": "sphereScale" }
+  },
+  "midiNoteMappings": {
+    "note1": { "channel": 0, "note": 36, "target": "shapeCycling" },
+    "note2": { "channel": 0, "note": 37, "target": "sizeAnimation" },
+    "note3": { "channel": 0, "note": 38, "target": "showGrid" },
+    "note4": { "channel": 0, "note": 39, "target": "resetAnimation" },
+    "note5": { "channel": 0, "note": 40, "target": "bloomEnabled" },
+    "note6": { "channel": 0, "note": 41, "target": "postProcessingEnabled" },
+    "note7": { "channel": 0, "note": 42, "target": "toggleBasicShapes" },
+    "note8": { "channel": 0, "note": 43, "target": "toggleRefractiveSpheres" },
+    "note9": { "channel": 0, "note": 44, "target": "randomMorph" },
+    "note10": { "channel": 0, "note": 45, "target": "morphAllShapes" }
+  }
+} 

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Status Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .status-message {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-message.hidden {
+            display: none;
+        }
+        .midi-status {
+            background: rgba(220, 38, 38, 0.2);
+            border: 1px solid #dc2626;
+        }
+        .audio-status {
+            background: rgba(220, 38, 38, 0.2);
+            border: 1px solid #dc2626;
+        }
+        .controls-container {
+            padding: 15px;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .controls-container.opacity-50 {
+            opacity: 0.5;
+        }
+        .test-button {
+            background: #dc2626;
+            color: white;
+            border: 1px solid #dc2626;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: rgba(220, 38, 38, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Connection Status Test</h1>
+        
+        <h2>MIDI Connection Status</h2>
+        <div id="cc-midi-connection-status" class="status-message midi-status hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20"/>
+                <path d="M2 12h20"/>
+            </svg>
+            <div>
+                <div style="font-weight: 600; color: #f87171;">MIDI Device Required</div>
+                <div style="font-size: 12px; color: #fca5a5;">Please connect a MIDI device to use CC mapping controls</div>
+            </div>
+            <button class="test-button">Connect MIDI Device</button>
+        </div>
+        
+        <div id="cc-controls-container" class="controls-container">
+            <h3>CC Controls (should be dimmed when MIDI not connected)</h3>
+            <p>This container should have opacity-50 class when MIDI is not connected.</p>
+        </div>
+        
+        <h2>Audio Connection Status</h2>
+        <div id="audio-mapping-connection-status" class="status-message audio-status hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20"/>
+                <path d="M2 12h20"/>
+            </svg>
+            <div>
+                <div style="font-weight: 600; color: #f87171;">Audio Device Required</div>
+                <div style="font-size: 12px; color: #fca5a5;">Please connect an audio device to use audio mapping controls</div>
+            </div>
+            <button class="test-button">Connect Audio Device</button>
+        </div>
+        
+        <div id="audio-mapping-controls-container" class="controls-container">
+            <h3>Audio Mapping Controls (should be dimmed when audio not connected)</h3>
+            <p>This container should have opacity-50 class when audio is not connected.</p>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3>Test Controls</h3>
+            <button onclick="toggleMIDIStatus()" class="test-button">Toggle MIDI Connection</button>
+            <button onclick="toggleAudioStatus()" class="test-button">Toggle Audio Connection</button>
+        </div>
+    </div>
+
+    <script>
+        let midiConnected = false;
+        let audioConnected = false;
+
+        function checkMIDIConnectionStatus() {
+            const statusElement = document.getElementById('cc-midi-connection-status');
+            const controlsContainer = document.getElementById('cc-controls-container');
+            
+            if (!midiConnected) {
+                statusElement.classList.remove('hidden');
+                controlsContainer.classList.add('opacity-50');
+            } else {
+                statusElement.classList.add('hidden');
+                controlsContainer.classList.remove('opacity-50');
+            }
+        }
+
+        function checkAudioConnectionStatus() {
+            const statusElement = document.getElementById('audio-mapping-connection-status');
+            const controlsContainer = document.getElementById('audio-mapping-controls-container');
+            
+            if (!audioConnected) {
+                statusElement.classList.remove('hidden');
+                controlsContainer.classList.add('opacity-50');
+            } else {
+                statusElement.classList.add('hidden');
+                controlsContainer.classList.remove('opacity-50');
+            }
+        }
+
+        function toggleMIDIStatus() {
+            midiConnected = !midiConnected;
+            checkMIDIConnectionStatus();
+            console.log('MIDI connected:', midiConnected);
+        }
+
+        function toggleAudioStatus() {
+            audioConnected = !audioConnected;
+            checkAudioConnectionStatus();
+            console.log('Audio connected:', audioConnected);
+        }
+
+        // Initialize status
+        checkMIDIConnectionStatus();
+        checkAudioConnectionStatus();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,21 @@
+{
+  "name": "Shape Controls",
+  "description": "Shape-specific controls and toggles for managing different shape types",
+  "version": "1.0",
+  "created": "2024-01-15T10:30:00Z",
+  "midiCCMappings": {
+    "cc1": { "channel": 0, "value": 1, "target": "shapeColor" },
+    "cc2": { "channel": 0, "value": 2, "target": "backgroundColor" },
+    "cc3": { "channel": 0, "value": 3, "target": "lightColour" }
+  },
+  "midiNoteMappings": {
+    "note1": { "channel": 0, "note": 36, "target": "toggleBasicShapes" },
+    "note2": { "channel": 0, "note": 37, "target": "toggleTriangles" },
+    "note3": { "channel": 0, "note": 38, "target": "toggleRectangles" },
+    "note4": { "channel": 0, "note": 39, "target": "toggleEllipses" },
+    "note5": { "channel": 0, "note": 40, "target": "toggleRefractiveSpheres" },
+    "note6": { "channel": 0, "note": 41, "target": "shapeCycling" },
+    "note7": { "channel": 0, "note": 42, "target": "sizeAnimation" },
+    "note8": { "channel": 0, "note": 43, "target": "resetAnimation" }
+  }
+} 

@@ -1,0 +1,24 @@
+{
+  "name": "Grid & Composition",
+  "description": "Layout and composition parameters for controlling the structure and arrangement",
+  "version": "1.0",
+  "created": "2024-01-15T10:30:00Z",
+  "midiCCMappings": {
+    "cc1": { "channel": 0, "value": 1, "target": "gridWidth" },
+    "cc2": { "channel": 0, "value": 2, "target": "gridHeight" },
+    "cc3": { "channel": 0, "value": 3, "target": "cellSize" },
+    "cc4": { "channel": 0, "value": 4, "target": "compositionWidth" },
+    "cc5": { "channel": 0, "value": 5, "target": "compositionHeight" },
+    "cc6": { "channel": 0, "value": 6, "target": "centerScalingIntensity" },
+    "cc7": { "channel": 0, "value": 7, "target": "centerScalingCurve" },
+    "cc8": { "channel": 0, "value": 8, "target": "centerScalingRadius" },
+    "cc9": { "channel": 0, "value": 9, "target": "centerScalingDirection" },
+    "cc10": { "channel": 0, "value": 10, "target": "centerScalingAnimationSpeed" },
+    "cc11": { "channel": 0, "value": 11, "target": "centerScalingAnimationType" }
+  },
+  "midiNoteMappings": {
+    "note1": { "channel": 0, "note": 36, "target": "showGrid" },
+    "note2": { "channel": 0, "note": 37, "target": "centerScalingEnabled" },
+    "note3": { "channel": 0, "note": 38, "target": "centerScalingAnimation" }
+  }
+} 

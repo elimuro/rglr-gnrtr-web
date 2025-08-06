@@ -1,0 +1,29 @@
+{
+  "name": "Lighting & Materials",
+  "description": "Lighting and material properties for controlling the visual quality and atmosphere",
+  "version": "1.0",
+  "created": "2024-01-15T10:30:00Z",
+  "midiCCMappings": {
+    "cc1": { "channel": 0, "value": 1, "target": "ambientLightIntensity" },
+    "cc2": { "channel": 0, "value": 2, "target": "directionalLightIntensity" },
+    "cc3": { "channel": 0, "value": 3, "target": "pointLight1Intensity" },
+    "cc4": { "channel": 0, "value": 4, "target": "pointLight2Intensity" },
+    "cc5": { "channel": 0, "value": 5, "target": "rimLightIntensity" },
+    "cc6": { "channel": 0, "value": 6, "target": "accentLightIntensity" },
+    "cc7": { "channel": 0, "value": 7, "target": "sphereRefraction" },
+    "cc8": { "channel": 0, "value": 8, "target": "sphereTransparency" },
+    "cc9": { "channel": 0, "value": 9, "target": "sphereTransmission" },
+    "cc10": { "channel": 0, "value": 10, "target": "sphereRoughness" },
+    "cc11": { "channel": 0, "value": 11, "target": "sphereMetalness" },
+    "cc12": { "channel": 0, "value": 12, "target": "sphereScale" },
+    "cc13": { "channel": 0, "value": 13, "target": "sphereClearcoat" },
+    "cc14": { "channel": 0, "value": 14, "target": "sphereClearcoatRoughness" },
+    "cc15": { "channel": 0, "value": 15, "target": "sphereEnvMapIntensity" },
+    "cc16": { "channel": 0, "value": 16, "target": "sphereDistortionStrength" }
+  },
+  "midiNoteMappings": {
+    "note1": { "channel": 0, "note": 36, "target": "sphereWaterDistortion" },
+    "note2": { "channel": 0, "note": 37, "target": "sphereHighPerformanceMode" },
+    "note3": { "channel": 0, "note": 38, "target": "enableFrustumCulling" }
+  }
+} 

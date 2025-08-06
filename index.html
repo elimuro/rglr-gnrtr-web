@@ -56,9 +56,13 @@
                     <select id="midi-preset-select" class="px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
                         <option value="">Custom</option>
                         <option value="sample-multi-channel">Sample Multi-Channel</option>
-                        <option value="novation-launch-control">Novation Launch Control XL</option>
-                        <option value="akai-mpk-mini">Akai MPK Mini</option>
-                        <option value="arturia-beatstep-pro">Arturia BeatStep Pro</option>
+                        <option value="essential-controls">Essential Controls</option>
+                        <option value="animation-movement">Animation & Movement</option>
+                        <option value="visual-effects">Visual Effects</option>
+                        <option value="lighting-materials">Lighting & Materials</option>
+                        <option value="grid-composition">Grid & Composition</option>
+                        <option value="shape-controls">Shape Controls</option>
+                        <option value="morphing-transitions">Morphing & Transitions</option>
                     </select>
                 </div>
                 
@@ -167,6 +171,22 @@
                 </div>
             </div>
 
+            <!-- MIDI Connection Status -->
+            <div id="cc-midi-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20"/>
+                        <path d="M2 12h20"/>
+                    </svg>
+                    <div>
+                        <div class="text-sm font-medium text-red-400">MIDI Device Required</div>
+                        <div class="text-xs text-red-300">Please connect a MIDI device to use CC mapping controls</div>
+                    </div>
+                </div>
+                <button id="cc-connect-midi" class="mt-2 px-3 py-1 bg-red-600 bg-opacity-30 text-red-300 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400">
+                    Connect MIDI Device
+                </button>
+            </div>
             
             <div id="cc-controls-container" class="mb-3">
                 <!-- CC Controls will be dynamically generated here -->
@@ -195,6 +215,24 @@
                     Note Controls
                 </h3>
             </div>
+            
+            <!-- MIDI Connection Status -->
+            <div id="note-midi-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20"/>
+                        <path d="M2 12h20"/>
+                    </svg>
+                    <div>
+                        <div class="text-sm font-medium text-red-400">MIDI Device Required</div>
+                        <div class="text-xs text-red-300">Please connect a MIDI device to use note controls</div>
+                    </div>
+                </div>
+                <button id="note-connect-midi" class="mt-2 px-3 py-1 bg-red-600 bg-opacity-30 text-red-300 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400">
+                    Connect MIDI Device
+                </button>
+            </div>
+            
             <div id="note-controls-container" class="mb-3">
                 <!-- Note Controls will be dynamically generated here -->
             </div>
@@ -367,6 +405,23 @@
                     <button id="audio-mapping-save" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Save</button>
                     <button id="audio-mapping-load" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load</button>
                 </div>
+            </div>
+            
+            <!-- Audio Connection Status -->
+            <div id="audio-mapping-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20"/>
+                        <path d="M2 12h20"/>
+                    </svg>
+                    <div>
+                        <div class="text-sm font-medium text-red-400">Audio Device Required</div>
+                        <div class="text-xs text-red-300">Please connect an audio device to use audio mapping controls</div>
+                    </div>
+                </div>
+                <button id="audio-mapping-connect-audio" class="mt-2 px-3 py-1 bg-red-600 bg-opacity-30 text-red-300 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400">
+                    Connect Audio Device
+                </button>
             </div>
             
             <!-- Audio Mapping Controls Container -->

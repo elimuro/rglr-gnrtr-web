@@ -1,0 +1,29 @@
+{
+  "name": "Visual Effects",
+  "description": "Post-processing and visual effects for creating atmospheric and stylized visuals",
+  "version": "1.0",
+  "created": "2024-01-15T10:30:00Z",
+  "midiCCMappings": {
+    "cc1": { "channel": 0, "value": 1, "target": "bloomStrength" },
+    "cc2": { "channel": 0, "value": 2, "target": "bloomRadius" },
+    "cc3": { "channel": 0, "value": 3, "target": "bloomThreshold" },
+    "cc4": { "channel": 0, "value": 4, "target": "chromaticIntensity" },
+    "cc5": { "channel": 0, "value": 5, "target": "vignetteIntensity" },
+    "cc6": { "channel": 0, "value": 6, "target": "vignetteRadius" },
+    "cc7": { "channel": 0, "value": 7, "target": "vignetteSoftness" },
+    "cc8": { "channel": 0, "value": 8, "target": "grainIntensity" },
+    "cc9": { "channel": 0, "value": 9, "target": "colorHue" },
+    "cc10": { "channel": 0, "value": 10, "target": "colorSaturation" },
+    "cc11": { "channel": 0, "value": 11, "target": "colorBrightness" },
+    "cc12": { "channel": 0, "value": 12, "target": "colorContrast" }
+  },
+  "midiNoteMappings": {
+    "note1": { "channel": 0, "note": 36, "target": "bloomEnabled" },
+    "note2": { "channel": 0, "note": 37, "target": "chromaticAberrationEnabled" },
+    "note3": { "channel": 0, "note": 38, "target": "vignetteEnabled" },
+    "note4": { "channel": 0, "note": 39, "target": "grainEnabled" },
+    "note5": { "channel": 0, "note": 40, "target": "colorGradingEnabled" },
+    "note6": { "channel": 0, "note": 41, "target": "postProcessingEnabled" },
+    "note7": { "channel": 0, "note": 42, "target": "fxaaEnabled" }
+  }
+} 

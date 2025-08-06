@@ -316,6 +316,39 @@ export class App {
                 this.toggleDrawer(this.currentDrawer);
             }
         });
+
+        // Set up connection button event handlers
+        this.setupConnectionButtonHandlers();
+    }
+
+    setupConnectionButtonHandlers() {
+        // MIDI connection buttons
+        const ccConnectButton = document.getElementById('cc-connect-midi');
+        const noteConnectButton = document.getElementById('note-connect-midi');
+        
+        if (ccConnectButton) {
+            ccConnectButton.addEventListener('click', () => {
+                // Open the connection drawer to help user connect MIDI
+                this.toggleDrawer('connection');
+            });
+        }
+        
+        if (noteConnectButton) {
+            noteConnectButton.addEventListener('click', () => {
+                // Open the connection drawer to help user connect MIDI
+                this.toggleDrawer('connection');
+            });
+        }
+        
+        // Audio connection button
+        const audioConnectButton = document.getElementById('audio-mapping-connect-audio');
+        
+        if (audioConnectButton) {
+            audioConnectButton.addEventListener('click', () => {
+                // Open the audio interface drawer to help user connect
+                this.toggleDrawer('audio-interface');
+            });
+        }
     }
 
     toggleDrawer(drawerName) {
@@ -377,6 +410,9 @@ export class App {
         
         // Update button states
         this.updateDrawerButtonStates(drawerName);
+        
+        // Check connection status for mapping drawers
+        this.checkDrawerConnectionStatus(drawerName);
     }
 
     closeDrawer() {
@@ -420,6 +456,54 @@ export class App {
         
         // Add a hidden class to completely remove it from layout when not active
         this.drawerContainer.classList.add('drawer-hidden');
+    }
+
+    checkDrawerConnectionStatus(drawerName) {
+        switch (drawerName) {
+            case 'cc-mapping':
+                this.checkMIDIConnectionStatus('cc-midi-connection-status', 'cc-controls-container');
+                break;
+            case 'note-controls':
+                this.checkMIDIConnectionStatus('note-midi-connection-status', 'note-controls-container');
+                break;
+            case 'audio-mapping':
+                this.checkAudioConnectionStatus('audio-mapping-connection-status', 'audio-mapping-controls-container');
+                break;
+        }
+    }
+
+    checkMIDIConnectionStatus(statusElementId, controlsContainerId) {
+        const statusElement = document.getElementById(statusElementId);
+        const controlsContainer = document.getElementById(controlsContainerId);
+        
+        if (!statusElement || !controlsContainer) return;
+        
+        const isMIDIConnected = this.midiManager && this.midiManager.isConnected;
+        
+        if (!isMIDIConnected) {
+            statusElement.classList.remove('hidden');
+            controlsContainer.classList.add('opacity-50');
+        } else {
+            statusElement.classList.add('hidden');
+            controlsContainer.classList.remove('opacity-50');
+        }
+    }
+
+    checkAudioConnectionStatus(statusElementId, controlsContainerId) {
+        const statusElement = document.getElementById(statusElementId);
+        const controlsContainer = document.getElementById(controlsContainerId);
+        
+        if (!statusElement || !controlsContainer) return;
+        
+        const isAudioConnected = this.audioManager && this.audioManager.isListening;
+        
+        if (!isAudioConnected) {
+            statusElement.classList.remove('hidden');
+            controlsContainer.classList.add('opacity-50');
+        } else {
+            statusElement.classList.add('hidden');
+            controlsContainer.classList.remove('opacity-50');
+        }
     }
 
     addStaggeredAnimations(content) {
@@ -510,10 +594,20 @@ export class App {
     onMIDIConnected() {
         this.state.set('midiEnabled', true);
         this.midiManager.updateDeviceStatus();
+        
+        // Update drawer connection status if a mapping drawer is open
+        if (this.currentDrawer) {
+            this.checkDrawerConnectionStatus(this.currentDrawer);
+        }
     }
 
     onMIDIDisconnected() {
         this.state.set('midiEnabled', false);
+        
+        // Update drawer connection status if a mapping drawer is open
+        if (this.currentDrawer) {
+            this.checkDrawerConnectionStatus(this.currentDrawer);
+        }
     }
 
     onMIDICC(controller, value, channel) {
@@ -1038,10 +1132,13 @@ export class App {
         // Fallback: Try to discover presets by attempting to load them
         const knownPresets = [
             'sample-multi-channel',
-            'novation-launch-control',
-            'akai-mpk-mini',
-            'arturia-beatstep-pro',
-            'elektron-analog-rytm-mk2'
+            'essential-controls',
+            'animation-movement',
+            'visual-effects',
+            'lighting-materials',
+            'grid-composition',
+            'shape-controls',
+            'morphing-transitions'
         ];
         
         const availablePresets = [];
@@ -1292,10 +1389,13 @@ export class App {
     getPresetDisplayName(presetName) {
         const displayNames = {
             'sample-multi-channel': 'Sample Multi-Channel',
-            'novation-launch-control': 'Novation Launch Control XL',
-            'akai-mpk-mini': 'Akai MPK Mini',
-            'arturia-beatstep-pro': 'Arturia BeatStep Pro',
-            'elektron-analog-rytm-mk2': 'Elektron Analog Rytm MK2'
+            'essential-controls': 'Essential Controls',
+            'animation-movement': 'Animation & Movement',
+            'visual-effects': 'Visual Effects',
+            'lighting-materials': 'Lighting & Materials',
+            'grid-composition': 'Grid & Composition',
+            'shape-controls': 'Shape Controls',
+            'morphing-transitions': 'Morphing & Transitions'
         };
         return displayNames[presetName] || presetName;
     }
@@ -2515,7 +2615,13 @@ History: ${summary.historySize} entries`;
         });
         
         // Subscribe to state changes
-        this.state.subscribe('audioListening', () => this.updateAudioStatus());
+        this.state.subscribe('audioListening', () => {
+            this.updateAudioStatus();
+            // Update drawer connection status if a mapping drawer is open
+            if (this.currentDrawer) {
+                this.checkDrawerConnectionStatus(this.currentDrawer);
+            }
+        });
         this.state.subscribe('audioAvailable', () => this.updateAudioStatus());
         
         // Update audio analysis display for both audio interface and audio mapping drawers
