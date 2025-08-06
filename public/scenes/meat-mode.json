@@ -7,6 +7,9 @@
     "globalBPM": 120,
     "enableShapeCycling": false,
     "enableSizeAnimation": true,
+    "enableMovementAnimation": true,
+    "enableRotationAnimation": false,
+    "enableScaleAnimation": true,
     "movementAmplitude": 0.01,
     "movementDivision": "8th",
     "rotationAmplitude": 0.5,
@@ -81,7 +84,7 @@
     "centerScalingCurve": 0,
     "centerScalingRadius": 1.0,
     "centerScalingDirection": 0,
-    "centerScalingAnimation": true,
+    "centerScalingAnimation": false,
     "centerScalingDivision": "quarter",
     "centerScalingAnimationType": 0
   }
