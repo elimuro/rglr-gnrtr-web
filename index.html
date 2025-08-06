@@ -22,11 +22,17 @@
                 
                 <div id="midi-status" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
                     <div class="w-1.5 h-1.5 rounded-full bg-red-500 transition-all duration-300"></div>
-                    <span class="text-xs font-medium text-white hidden sm:inline">Disconnected</span>
+                    <span class="text-xs font-medium text-white hidden sm:inline">No MIDI Device</span>
                 </div>
 
-                <!-- MIDI Activity Monitor - Always visible in top bar -->
-                <div id="midi-activity-top" class="flex items-center gap-1 md:gap-2 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
+                <!-- Audio Status Indicator -->
+                <div id="audio-status-top" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
+                    <div class="w-1.5 h-1.5 rounded-full bg-red-500 transition-all duration-300"></div>
+                    <span class="text-xs font-medium text-white hidden sm:inline">No Audio Device</span>
+                </div>
+
+                <!-- MIDI Activity Monitor - Converted to button -->
+                <button id="drawer-midi-activity" class="flex items-center gap-1 md:gap-2 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600 text-white transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
                     <div class="flex justify-center gap-0.5">
                         <div class="w-0.5 h-3 bg-gray-600 rounded transition-all duration-200"></div>
                         <div class="w-0.5 h-3 bg-gray-600 rounded transition-all duration-200"></div>
@@ -34,8 +40,8 @@
                         <div class="w-0.5 h-3 bg-gray-600 rounded transition-all duration-200"></div>
                         <div class="w-0.5 h-3 bg-gray-600 rounded transition-all duration-200"></div>
                     </div>
-                    <div id="midi-last-message-top" class="text-xs text-gray-400 font-mono hidden md:inline">No MIDI activity</div>
-                </div>
+                    <div id="midi-activity-status-top" class="text-xs text-gray-400 font-mono hidden md:inline">MIDI Activity</div>
+                </button>
             </div>
             
             <!-- Right side - Drawer buttons -->
@@ -447,6 +453,104 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- MIDI Activity Drawer -->
+        <div id="drawer-midi-activity-content" class="drawer-content p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="flex items-center gap-1 text-white font-semibold text-sm">
+                    <svg class="w-3 h-3 text-midi-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/>
+                    </svg>
+                    MIDI Activity Monitor
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button id="midi-activity-clear" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Clear</button>
+                    <button id="midi-activity-pause" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Pause</button>
+                </div>
+            </div>
+
+            <!-- MIDI Activity Controls -->
+            <div class="flex items-center gap-4 mb-3">
+                <div class="flex items-center gap-1">
+                    <label class="text-xs text-gray-300">Max Messages:</label>
+                    <select id="midi-activity-max" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs">
+                        <option value="50">50</option>
+                        <option value="100" selected>100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-1">
+                    <label class="text-xs text-gray-300">Auto-scroll:</label>
+                    <input type="checkbox" id="midi-activity-autoscroll" class="w-3 h-3" checked>
+                </div>
+                <div class="flex items-center gap-1">
+                    <label class="text-xs text-gray-300">Filter Clock:</label>
+                    <input type="checkbox" id="midi-activity-filter-clock" class="w-3 h-3" checked>
+                </div>
+            </div>
+
+            <!-- MIDI Activity Stream -->
+            <div class="mb-3">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-xs font-medium text-gray-300">MIDI Message Stream</div>
+                    <div class="text-xs text-gray-400">
+                        <span id="midi-activity-count">0</span> messages
+                    </div>
+                </div>
+                <div id="midi-activity-stream" class="h-64 bg-black bg-opacity-20 border border-gray-700 rounded p-2 overflow-y-auto font-mono text-xs">
+                    <div class="text-gray-500 text-center py-8">No MIDI activity detected</div>
+                </div>
+            </div>
+
+            <!-- MIDI Statistics -->
+            <div class="grid grid-cols-2 gap-4 mb-3">
+                <div class="p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                    <div class="text-xs font-medium text-gray-300 mb-1">Message Types</div>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">CC Messages:</span>
+                            <span id="midi-cc-count" class="text-midi-green">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Note Messages:</span>
+                            <span id="midi-note-count" class="text-midi-green">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Pitch Bend:</span>
+                            <span id="midi-pitch-count" class="text-midi-green">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">System Messages:</span>
+                            <span id="midi-system-count" class="text-midi-green">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                    <div class="text-xs font-medium text-gray-300 mb-1">Connection Status</div>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Status:</span>
+                            <span id="midi-activity-status" class="text-red-400">Disconnected</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Device:</span>
+                            <span id="midi-activity-device" class="text-gray-400">None</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Messages/sec:</span>
+                            <span id="midi-activity-rate" class="text-midi-green">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Last Activity:</span>
+                            <span id="midi-activity-last" class="text-gray-400">Never</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
     

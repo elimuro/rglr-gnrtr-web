@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Status Test</title>
+    <link rel="stylesheet" href="tailwind.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="p-4">
+        <h1 class="text-2xl mb-4">Audio Status Indicator Test</h1>
+        
+        <!-- Top Bar with Status Indicators -->
+        <div class="flex items-center gap-4 mb-8 p-4 bg-gray-800 rounded">
+            <!-- MIDI Status -->
+            <div id="midi-status" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
+                <div class="w-1.5 h-1.5 rounded-full bg-red-500 transition-all duration-300"></div>
+                <span class="text-xs font-medium text-white">No MIDI Device</span>
+            </div>
+
+            <!-- Audio Status Indicator -->
+            <div id="audio-status-top" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
+                <div class="w-1.5 h-1.5 rounded-full bg-red-500 transition-all duration-300"></div>
+                <span class="text-xs font-medium text-white">No Audio Device</span>
+            </div>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="space-y-4">
+            <h2 class="text-xl">Test Controls</h2>
+            
+            <div class="flex gap-4">
+                <button id="test-midi-connect" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                    Simulate MIDI Connect
+                </button>
+                <button id="test-midi-disconnect" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                    Simulate MIDI Disconnect
+                </button>
+            </div>
+            
+            <div class="flex gap-4">
+                <button id="test-audio-connect" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                    Simulate Audio Connect
+                </button>
+                <button id="test-audio-disconnect" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                    Simulate Audio Disconnect
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test functions to simulate status updates
+        function updateMIDIStatus(message, connected) {
+            const statusElement = document.getElementById('midi-status');
+            if (statusElement) {
+                const statusDot = statusElement.querySelector('div.rounded-full');
+                const statusText = statusElement.querySelector('.text-xs.font-medium.text-white');
+                
+                if (statusDot) {
+                    statusDot.classList.remove('bg-red-500', 'bg-green-500', 'transition-all', 'duration-300');
+                    if (connected) {
+                        statusDot.classList.add('bg-green-500', 'transition-all', 'duration-300');
+                    } else {
+                        statusDot.classList.add('bg-red-500', 'transition-all', 'duration-300');
+                    }
+                }
+                
+                if (statusText) {
+                    statusText.textContent = message;
+                }
+            }
+        }
+
+        function updateAudioStatus(message, connected) {
+            const statusElement = document.getElementById('audio-status-top');
+            if (statusElement) {
+                const statusDot = statusElement.querySelector('div.rounded-full');
+                const statusText = statusElement.querySelector('.text-xs.font-medium.text-white');
+                
+                if (statusDot) {
+                    statusDot.classList.remove('bg-red-500', 'bg-green-500', 'transition-all', 'duration-300');
+                    if (connected) {
+                        statusDot.classList.add('bg-green-500', 'transition-all', 'duration-300');
+                    } else {
+                        statusDot.classList.add('bg-red-500', 'transition-all', 'duration-300');
+                    }
+                }
+                
+                if (statusText) {
+                    statusText.textContent = message;
+                }
+            }
+        }
+
+        // Event listeners
+        document.getElementById('test-midi-connect').addEventListener('click', () => {
+            updateMIDIStatus('Arturia KeyLab 49', true);
+        });
+
+        document.getElementById('test-midi-disconnect').addEventListener('click', () => {
+            updateMIDIStatus('No MIDI Device', false);
+        });
+
+        document.getElementById('test-audio-connect').addEventListener('click', () => {
+            updateAudioStatus('Focusrite Scarlett 2i2', true);
+        });
+
+        document.getElementById('test-audio-disconnect').addEventListener('click', () => {
+            updateAudioStatus('No Audio Device', false);
+        });
+    </script>
+</body>
+</html> 

@@ -79,6 +79,9 @@ export class AudioManager {
             // Discover available audio interfaces
             await this.discoverAudioInterfaces();
             
+            // Initialize status indicator
+            this.updateAudioStatus('No Audio Device', false);
+            
         } catch (error) {
             console.error('Failed to initialize AudioManager:', error);
             this.state.set('audioAvailable', false);
@@ -241,6 +244,9 @@ export class AudioManager {
             this.isListening = true;
             this.state.set('audioListening', true);
             
+            // Update status indicator
+            this.updateAudioStatus(this.getCurrentDeviceName(), true);
+            
             // Start analysis loop
             this.analyzeAudio();
             
@@ -274,12 +280,16 @@ export class AudioManager {
                 this.isListening = true;
                 this.state.set('audioListening', true);
                 
+                // Update status indicator
+                this.updateAudioStatus(this.getCurrentDeviceName(), true);
+                
                 // Start analysis loop
                 this.analyzeAudio();
                 
             } catch (fallbackError) {
                 console.error('Failed to start audio capture with fallback:', fallbackError);
                 this.state.set('audioListening', false);
+                this.updateAudioStatus('No Audio Device', false);
             }
         }
     }
@@ -289,6 +299,9 @@ export class AudioManager {
         
         this.isListening = false;
         this.state.set('audioListening', false);
+        
+        // Update status indicator
+        this.updateAudioStatus('No Audio Device', false);
         
         if (this.mediaStream) {
             this.mediaStream.getTracks().forEach(track => track.stop());
@@ -402,6 +415,14 @@ export class AudioManager {
         return [...this.selectedChannels];
     }
 
+    // Get current audio device name for display
+    getCurrentDeviceName() {
+        if (this.isListening && this.selectedInterface) {
+            return this.selectedInterface.label;
+        }
+        return 'No Audio Device';
+    }
+
     // Refresh interface list
     async refreshInterfaces() {
         await this.discoverAudioInterfaces();
@@ -414,6 +435,31 @@ export class AudioManager {
             sampleRate: this.audioContext?.sampleRate,
             fftSize: this.fftSize
         };
+    }
+
+    // Update audio status indicator in top bar
+    updateAudioStatus(deviceName, connected) {
+        const statusElement = document.getElementById('audio-status-top');
+        if (statusElement) {
+            // Find the status dot (first div with rounded-full class)
+            const statusDot = statusElement.querySelector('div.rounded-full');
+            const statusText = statusElement.querySelector('.text-xs.font-medium.text-white');
+            
+            if (statusDot) {
+                // Remove existing color classes
+                statusDot.classList.remove('bg-red-500', 'bg-green-500', 'transition-all', 'duration-300');
+                // Add appropriate color based on connection status
+                if (connected) {
+                    statusDot.classList.add('bg-green-500', 'transition-all', 'duration-300');
+                } else {
+                    statusDot.classList.add('bg-red-500', 'transition-all', 'duration-300');
+                }
+            }
+            
+            if (statusText) {
+                statusText.textContent = deviceName;
+            }
+        }
     }
 
     // Cleanup

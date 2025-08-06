@@ -252,6 +252,7 @@ export class MIDIManager {
         this.showMIDIActivity();
 
         let messageType = '';
+        let messageCategory = '';
 
         // Check if this is a system real-time message (0xF8-0xFF)
         // These don't need status masking
@@ -260,25 +261,30 @@ export class MIDIManager {
                 case 0xF8: // MIDI Clock (24 pulses per quarter note)
                     this.app.onMIDIClock();
                     messageType = 'MIDI Clock';
+                    messageCategory = 'system';
                     break;
 
                 case 0xFA: // MIDI Start
                     this.app.onMIDIStart();
                     messageType = 'MIDI Start';
+                    messageCategory = 'system';
                     break;
 
                 case 0xFB: // MIDI Continue
                     this.app.onMIDIContinue();
                     messageType = 'MIDI Continue';
+                    messageCategory = 'system';
                     break;
 
                 case 0xFC: // MIDI Stop
                     this.app.onMIDIStop();
                     messageType = 'MIDI Stop';
+                    messageCategory = 'system';
                     break;
 
                 case 0xFF: // System Reset
                     messageType = 'System Reset';
+                    messageCategory = 'system';
                     break;
 
                 default:
@@ -291,27 +297,33 @@ export class MIDIManager {
             switch (rawStatus) {
                 case 0xF0: // System Exclusive Start
                     messageType = 'SysEx Start';
+                    messageCategory = 'system';
                     break;
 
                 case 0xF1: // MIDI Time Code Quarter Frame
                     messageType = 'MTC Quarter Frame';
+                    messageCategory = 'system';
                     break;
 
                 case 0xF2: // Song Position Pointer
                     const songPosition = ((data[2] << 7) | data[1]) * 6; // Convert to MIDI clock pulses
                     messageType = `Song Position: ${songPosition}`;
+                    messageCategory = 'system';
                     break;
 
                 case 0xF3: // Song Select
                     messageType = `Song Select: ${data[1]}`;
+                    messageCategory = 'system';
                     break;
 
                 case 0xF6: // Tune Request
                     messageType = 'Tune Request';
+                    messageCategory = 'system';
                     break;
 
                 case 0xF7: // System Exclusive End
                     messageType = 'SysEx End';
+                    messageCategory = 'system';
                     break;
 
                 default:
@@ -333,7 +345,8 @@ export class MIDIManager {
                             this._learnNoteListeners.forEach(cb => cb(note, velocity, false, channel));
                         }
                         this.app.onMIDINote(note, velocity, false, channel);
-                        messageType = `Note Off: ${note}`;
+                        messageType = `Note Off: ${note} (Ch:${channel + 1})`;
+                        messageCategory = 'note';
                     }
                     break;
 
@@ -347,7 +360,8 @@ export class MIDIManager {
                             this._learnNoteListeners.forEach(cb => cb(note, velocity, isNoteOn, channel));
                         }
                         this.app.onMIDINote(note, velocity, isNoteOn, channel);
-                        messageType = `Note On: ${note} (${velocity})`;
+                        messageType = `Note On: ${note} (${velocity}) (Ch:${channel + 1})`;
+                        messageCategory = 'note';
                     }
                     break;
 
@@ -360,7 +374,8 @@ export class MIDIManager {
                             this._learnCCListeners.forEach(cb => cb(controller, value, channel));
                         }
                         this.app.onMIDICC(controller, value, channel);
-                        messageType = `CC: ${controller} = ${value} (Ch:${channel})`;
+                        messageType = `CC: ${controller} = ${value} (Ch:${channel + 1})`;
+                        messageCategory = 'cc';
                     }
                     break;
 
@@ -369,6 +384,7 @@ export class MIDIManager {
                         const pitchBendValue = ((data[2] << 7) | data[1]) / 16384; // Normalize to 0-1
                         this.app.onMIDIPitchBend(pitchBendValue);
                         messageType = `Pitch Bend: ${pitchBendValue.toFixed(2)}`;
+                        messageCategory = 'pitch';
                     }
                     break;
 
@@ -376,6 +392,7 @@ export class MIDIManager {
                     {
                         this.app.onMIDIAftertouch(data[1] / 127);
                         messageType = `Aftertouch: ${data[1]}`;
+                        messageCategory = 'note';
                     }
                     break;
 
@@ -383,6 +400,7 @@ export class MIDIManager {
                     {
                         this.app.onMIDIAftertouch(data[2] / 127);
                         messageType = `Poly Pressure: ${data[2]}`;
+                        messageCategory = 'note';
                     }
                     break;
 
@@ -393,11 +411,16 @@ export class MIDIManager {
             }
         }
 
+        // Send activity message to App for tracking
+        if (messageType && this.app.addMIDIActivityMessage) {
+            this.app.addMIDIActivityMessage(messageType, messageCategory);
+        }
+
         this.updateLastMessage(messageType);
     }
 
     showMIDIActivity() {
-        const activityIndicator = document.getElementById('midi-activity-top');
+        const activityIndicator = document.getElementById('drawer-midi-activity');
         if (activityIndicator) {
             // Find all activity bars (divs with bg-gray-600 class)
             const bars = activityIndicator.querySelectorAll('div.bg-gray-600.rounded');
@@ -424,10 +447,8 @@ export class MIDIManager {
     }
 
     updateLastMessage(message) {
-        const lastMessageElement = document.getElementById('midi-last-message-top');
-        if (lastMessageElement) {
-            lastMessageElement.textContent = message;
-        }
+        // The text stays static now, only the activity bars indicate status
+        // No need to update the text since it's always "MIDI Activity"
     }
 
     updateStatus(message, connected) {
@@ -559,8 +580,9 @@ export class MIDIManager {
     updateDeviceStatus() {
         if (this.isConnected) {
             const deviceInfo = this.getCurrentDeviceInfo();
-            const statusText = `Connected to: ${deviceInfo.input}`;
-            this.updateStatus(statusText, true);
+            this.updateStatus(deviceInfo.input, true);
+        } else {
+            this.updateStatus('No MIDI Device', false);
         }
     }
 } 

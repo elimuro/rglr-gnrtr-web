@@ -57,6 +57,9 @@ export class App {
             // Initialize audio manager
             await this.audioManager.initialize();
             
+            // Initialize audio status indicator
+            this.audioManager.updateAudioStatus('No Audio Device', false);
+            
             // Verify state is properly initialized
             if (!this.state.isInitialized()) {
                 throw new Error('StateManager failed to initialize properly');
@@ -261,6 +264,9 @@ export class App {
             return;
         }
         
+        // Initialize MIDI activity tracking
+        this.setupMIDIActivityTracking();
+        
         // Ensure drawer is hidden initially
         this.hideDrawerContainer();
         
@@ -268,7 +274,8 @@ export class App {
         const drawerButtons = [
             'drawer-connect',
             'drawer-mapping',
-            'drawer-scene-management'
+            'drawer-scene-management',
+            'drawer-midi-activity'
         ];
         
         drawerButtons.forEach(buttonId => {
@@ -322,6 +329,232 @@ export class App {
         
         // Set up connect drawer tabs
         this.setupConnectTabs();
+    }
+
+    setupMIDIActivityTracking() {
+        // MIDI activity tracking state
+        this.midiActivityState = {
+            messages: [],
+            maxMessages: 100,
+            isPaused: false,
+            filterClock: true, // Default to filtering clock messages
+            messageCounts: {
+                cc: 0,
+                note: 0,
+                pitch: 0,
+                system: 0
+            },
+            lastActivity: null,
+            messageRate: 0,
+            rateTimer: null
+        };
+
+        // Set up MIDI activity drawer controls
+        this.setupMIDIActivityControls();
+        
+        // Start periodic updates for MIDI activity rate
+        setInterval(() => {
+            this.updateMIDIActivityRate();
+            this.updateMIDIActivityStats();
+        }, 1000);
+    }
+
+    setupMIDIActivityControls() {
+        // Clear button
+        const clearButton = document.getElementById('midi-activity-clear');
+        if (clearButton) {
+            clearButton.addEventListener('click', () => {
+                this.clearMIDIActivity();
+            });
+        }
+
+        // Pause button
+        const pauseButton = document.getElementById('midi-activity-pause');
+        if (pauseButton) {
+            pauseButton.addEventListener('click', () => {
+                this.toggleMIDIActivityPause();
+            });
+        }
+
+        // Max messages selector
+        const maxMessagesSelect = document.getElementById('midi-activity-max');
+        if (maxMessagesSelect) {
+            maxMessagesSelect.addEventListener('change', (e) => {
+                this.midiActivityState.maxMessages = parseInt(e.target.value);
+                this.trimMIDIActivityMessages();
+            });
+        }
+
+        // Auto-scroll checkbox
+        const autoscrollCheckbox = document.getElementById('midi-activity-autoscroll');
+        if (autoscrollCheckbox) {
+            autoscrollCheckbox.addEventListener('change', (e) => {
+                this.midiActivityState.autoScroll = e.target.checked;
+            });
+        }
+
+        // Filter clock checkbox
+        const filterClockCheckbox = document.getElementById('midi-activity-filter-clock');
+        if (filterClockCheckbox) {
+            filterClockCheckbox.checked = this.midiActivityState.filterClock;
+            filterClockCheckbox.addEventListener('change', (e) => {
+                this.midiActivityState.filterClock = e.target.checked;
+            });
+        }
+    }
+
+    addMIDIActivityMessage(message, category) {
+        if (this.midiActivityState.isPaused) return;
+
+        // Filter out clock messages if filter is enabled
+        if (this.midiActivityState.filterClock && message.includes('MIDI Clock')) {
+            return;
+        }
+
+        const timestamp = new Date();
+        const messageEntry = {
+            timestamp,
+            message,
+            category,
+            id: Date.now() + Math.random()
+        };
+
+        this.midiActivityState.messages.push(messageEntry);
+        
+        // Update message counts
+        if (category && this.midiActivityState.messageCounts[category] !== undefined) {
+            this.midiActivityState.messageCounts[category]++;
+        }
+        
+        this.midiActivityState.lastActivity = timestamp;
+        this.trimMIDIActivityMessages();
+        this.updateMIDIActivityDisplay();
+        this.updateMIDIActivityStats();
+        this.updateMIDIActivityRate();
+        
+        // Update the activity status in the button
+        this.updateMIDIActivityButtonStatus();
+    }
+
+    trimMIDIActivityMessages() {
+        while (this.midiActivityState.messages.length > this.midiActivityState.maxMessages) {
+            this.midiActivityState.messages.shift();
+        }
+    }
+
+    updateMIDIActivityDisplay() {
+        const streamContainer = document.getElementById('midi-activity-stream');
+        if (!streamContainer) return;
+
+        if (this.midiActivityState.messages.length === 0) {
+            streamContainer.innerHTML = '<div class="text-gray-500 text-center py-8">No MIDI activity detected</div>';
+            return;
+        }
+
+        const messagesHTML = this.midiActivityState.messages.map(entry => {
+            const time = entry.timestamp.toLocaleTimeString();
+            return `<div class="py-1 border-b border-gray-700 last:border-b-0">
+                <div class="flex justify-between items-start">
+                    <span class="text-gray-400 text-xs">${time}</span>
+                    <span class="text-midi-green font-mono text-xs">${entry.message}</span>
+                </div>
+            </div>`;
+        }).join('');
+
+        streamContainer.innerHTML = messagesHTML;
+
+        // Auto-scroll to bottom
+        if (this.midiActivityState.autoScroll !== false) {
+            streamContainer.scrollTop = streamContainer.scrollHeight;
+        }
+    }
+
+    updateMIDIActivityStats() {
+        // Update message count
+        const countElement = document.getElementById('midi-activity-count');
+        if (countElement) {
+            countElement.textContent = this.midiActivityState.messages.length;
+        }
+
+        // Update message type counts
+        const ccCount = document.getElementById('midi-cc-count');
+        const noteCount = document.getElementById('midi-note-count');
+        const pitchCount = document.getElementById('midi-pitch-count');
+        const systemCount = document.getElementById('midi-system-count');
+
+        if (ccCount) ccCount.textContent = this.midiActivityState.messageCounts.cc;
+        if (noteCount) noteCount.textContent = this.midiActivityState.messageCounts.note;
+        if (pitchCount) pitchCount.textContent = this.midiActivityState.messageCounts.pitch;
+        if (systemCount) systemCount.textContent = this.midiActivityState.messageCounts.system;
+
+        // Update connection status
+        this.updateMIDIActivityConnectionStatus();
+    }
+
+    updateMIDIActivityConnectionStatus() {
+        const statusElement = document.getElementById('midi-activity-status');
+        const deviceElement = document.getElementById('midi-activity-device');
+        const rateElement = document.getElementById('midi-activity-rate');
+        const lastElement = document.getElementById('midi-activity-last');
+
+        if (statusElement) {
+            const isConnected = this.midiManager && this.midiManager.isConnected;
+            statusElement.textContent = isConnected ? 'Connected' : 'Disconnected';
+            statusElement.className = isConnected ? 'text-green-400' : 'text-red-400';
+        }
+
+        if (deviceElement) {
+            const deviceInfo = this.midiManager ? this.midiManager.getCurrentDeviceInfo() : null;
+            deviceElement.textContent = deviceInfo ? deviceInfo.name : 'None';
+        }
+
+        if (rateElement) {
+            rateElement.textContent = this.midiActivityState.messageRate.toFixed(1);
+        }
+
+        if (lastElement) {
+            if (this.midiActivityState.lastActivity) {
+                const timeDiff = Date.now() - this.midiActivityState.lastActivity.getTime();
+                if (timeDiff < 60000) { // Less than 1 minute
+                    lastElement.textContent = `${Math.floor(timeDiff / 1000)}s ago`;
+                } else {
+                    lastElement.textContent = this.midiActivityState.lastActivity.toLocaleTimeString();
+                }
+            } else {
+                lastElement.textContent = 'Never';
+            }
+        }
+    }
+
+    clearMIDIActivity() {
+        this.midiActivityState.messages = [];
+        this.midiActivityState.messageCounts = { cc: 0, note: 0, pitch: 0, system: 0 };
+        this.midiActivityState.lastActivity = null;
+        this.midiActivityState.messageRate = 0;
+        this.updateMIDIActivityDisplay();
+        this.updateMIDIActivityStats();
+    }
+
+    toggleMIDIActivityPause() {
+        this.midiActivityState.isPaused = !this.midiActivityState.isPaused;
+        const pauseButton = document.getElementById('midi-activity-pause');
+        if (pauseButton) {
+            pauseButton.textContent = this.midiActivityState.isPaused ? 'Resume' : 'Pause';
+        }
+    }
+
+    updateMIDIActivityRate() {
+        // Calculate messages per second over the last 5 seconds
+        const now = Date.now();
+        const recentMessages = this.midiActivityState.messages.filter(
+            msg => now - msg.timestamp.getTime() < 5000
+        );
+        this.midiActivityState.messageRate = recentMessages.length / 5;
+    }
+
+    updateMIDIActivityButtonStatus() {
+        // The text stays static now, only the activity bars indicate status
+        // No need to update the text since it's always "MIDI Activity"
     }
     
     setupConnectTabs() {
@@ -474,16 +707,18 @@ export class App {
             this.drawerContainer.classList.remove('-translate-y-full');
             this.drawerContainer.classList.add('open');
             
-            // Add specific class for connect drawer positioning
+            // Add specific class for drawer positioning
             if (drawerName === 'connect') {
                 this.drawerContainer.classList.add('connect-drawer');
-                this.drawerContainer.classList.remove('audio-interface-drawer');
+                this.drawerContainer.classList.remove('audio-interface-drawer', 'midi-activity-drawer');
             } else if (drawerName === 'audio-interface') {
                 this.drawerContainer.classList.add('audio-interface-drawer');
-                this.drawerContainer.classList.remove('connect-drawer');
+                this.drawerContainer.classList.remove('connect-drawer', 'midi-activity-drawer');
+            } else if (drawerName === 'midi-activity') {
+                this.drawerContainer.classList.add('midi-activity-drawer');
+                this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer');
             } else {
-                this.drawerContainer.classList.remove('connect-drawer');
-                this.drawerContainer.classList.remove('audio-interface-drawer');
+                this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer', 'midi-activity-drawer');
             }
         }
         
@@ -513,8 +748,7 @@ export class App {
             this.currentDrawer = null;
             
             // Remove drawer-specific classes
-            this.drawerContainer.classList.remove('connect-drawer');
-            this.drawerContainer.classList.remove('audio-interface-drawer');
+            this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer', 'midi-activity-drawer');
             
             // Reset all button states
             this.updateDrawerButtonStates(null);
@@ -614,7 +848,8 @@ export class App {
         const drawerButtons = [
             'drawer-connect',
             'drawer-mapping',
-            'drawer-scene-management'
+            'drawer-scene-management',
+            'drawer-midi-activity'
         ];
         
         drawerButtons.forEach(buttonId => {
@@ -2746,12 +2981,18 @@ History: ${summary.historySize} entries`;
             if (isListening) {
                 statusIndicator.className = 'w-2 h-2 rounded-full bg-green-500 transition-all duration-300';
                 statusText.textContent = 'Connected';
+                // Update top bar status with device name
+                this.audioManager.updateAudioStatus(this.audioManager.getCurrentDeviceName(), true);
             } else if (isAvailable) {
                 statusIndicator.className = 'w-2 h-2 rounded-full bg-yellow-500 transition-all duration-300';
                 statusText.textContent = 'Available';
+                // Update top bar status
+                this.audioManager.updateAudioStatus('No Audio Device', false);
             } else {
                 statusIndicator.className = 'w-2 h-2 rounded-full bg-red-500 transition-all duration-300';
                 statusText.textContent = 'Unavailable';
+                // Update top bar status
+                this.audioManager.updateAudioStatus('No Audio Device', false);
             }
         };
         
