@@ -12,21 +12,12 @@
         <div class="flex flex-col md:flex-row md:items-center md:justify-between h-full px-4 py-1 md:py-0">
             <!-- Left side - Status and main controls -->
             <div class="flex items-center justify-center md:justify-start gap-2 md:gap-4 mb-1 md:mb-0">
-                <button id="drawer-connection" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                <button id="drawer-connect" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14"/>
                         <path d="M12 5v14"/>
                     </svg>
-                    <span>Midi</span>
-                </button>
-                
-                <button id="drawer-audio-interface" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18V5l12-2v13"/>
-                        <circle cx="6" cy="18" r="3"/>
-                        <circle cx="18" cy="16" r="3"/>
-                    </svg>
-                    <span>Audio</span>
+                    <span>Connect</span>
                 </button>
                 
                 <div id="midi-status" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
@@ -50,46 +41,11 @@
             <!-- Right side - Drawer buttons -->
             <div class="flex items-center justify-center md:justify-end gap-1 md:gap-2">
                 
-                <!-- MIDI Preset Selector -->
-                <div class="flex items-center gap-1">
-                    <label class="text-xs text-gray-300 hidden sm:inline">Preset:</label>
-                    <select id="midi-preset-select" class="px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
-                        <option value="">Custom</option>
-                        <option value="sample-multi-channel">Sample Multi-Channel</option>
-                        <option value="essential-controls">Essential Controls</option>
-                        <option value="animation-movement">Animation & Movement</option>
-                        <option value="visual-effects">Visual Effects</option>
-                        <option value="lighting-materials">Lighting & Materials</option>
-                        <option value="grid-composition">Grid & Composition</option>
-                        <option value="shape-controls">Shape Controls</option>
-                        <option value="morphing-transitions">Morphing & Transitions</option>
-                    </select>
-                </div>
-                
-                <button id="drawer-cc-mapping" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                <button id="drawer-mapping" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
                     </svg>
-                    <span>CC</span>
-                </button>
-                
-                <button id="drawer-note-controls" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18V5l12-2v13"/>
-                        <circle cx="6" cy="18" r="3"/>
-                        <circle cx="18" cy="16" r="3"/>
-                    </svg>
-                    <span>Notes</span>
-                </button>
-                
-                <button id="drawer-audio-mapping" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18V5l12-2v13"/>
-                        <circle cx="6" cy="18" r="3"/>
-                        <circle cx="18" cy="16" r="3"/>
-                        <path d="M12 2v20"/>
-                    </svg>
-                    <span>Audio Map</span>
+                    <span>Mapping</span>
                 </button>
                 
                 <button id="drawer-scene-management" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
@@ -105,162 +61,149 @@
 
     <!-- Drawer Container -->
     <div id="midi-drawer-container" class="fixed top-12 md:top-12 left-0 right-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white font-mono z-40 shadow-2xl backdrop-blur-md border-b border-gray-700 transform -translate-y-full transition-transform duration-300">
-        <!-- Connection Drawer -->
-        <div id="drawer-connection-content" class="drawer-content p-4">
+        <!-- Unified Connect Drawer -->
+        <div id="drawer-connect-content" class="drawer-content p-4">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="flex items-center gap-1 text-white font-semibold text-sm">
                     <svg class="w-3 h-3 text-midi-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14"/>
                         <path d="M12 5v14"/>
                     </svg>
-                    Connection
+                    Connect
                 </h3>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-                <button id="midi-connect" class="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
-                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14"/>
-                        <path d="M12 5v14"/>
-                    </svg>
-                    Connect MIDI
-                </button>
-                <button id="midi-disconnect" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6L6 18"/>
-                        <path d="M6 6l12 12"/>
-                    </svg>
-                    Disconnect
-                </button>
-                <button id="midi-refresh" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                        <path d="M21 3v5h-5"/>
-                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                        <path d="M3 21v-5h5"/>
-                    </svg>
-                    Refresh
-                </button>
 
-            </div>
-            
-            <!-- MIDI Stop Animation Option -->
-            <div class="mt-3 p-2 bg-black bg-opacity-20 rounded border border-gray-600">
-                <div class="flex items-center justify-between">
-                    <label for="midi-stop-animation" class="text-xs font-medium text-gray-300">MIDI Stop Stops Animation:</label>
-                    <input type="checkbox" id="midi-stop-animation" data-drawer-interactive class="w-4 h-4 text-midi-green bg-black bg-opacity-30 border border-gray-600 rounded focus:ring-midi-green focus:ring-2 focus:ring-offset-0">
-                </div>
-                <div class="text-xs text-gray-400 mt-1">When enabled, receiving a MIDI stop message will pause the animation loop</div>
-            </div>
-        </div>
-
-
-
-        <!-- CC Mapping Drawer -->
-        <div id="drawer-cc-mapping-content" class="drawer-content p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="flex items-center gap-1 text-white font-semibold text-sm">
-                    <svg class="w-3 h-3 text-midi-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-                    </svg>
-                    CC Mapping
-                </h3>
-                <div class="flex gap-1">
-                    <button id="test-cc-button" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Test</button>
-                    <button id="save-preset-button" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Save</button>
-                    <button id="load-preset-button" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load</button>
-                </div>
-            </div>
-
-            <!-- CC Mapping Description -->
+            <!-- Connect Description -->
             <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
                 <div class="text-xs text-gray-300">
-                    <p class="mb-1"><strong>CC Mapping:</strong> Control visual parameters with MIDI CC messages. Use "Learn" mode to assign controls, adjust sensitivity, and save presets.</p>
+                    <p class="mb-1"><strong>Connect:</strong> Manage MIDI and Audio device connections. Connect to MIDI devices for control mapping and audio interfaces for real-time analysis.</p>
+                </div>
+            </div>
+            
+            <!-- Connect Tabs -->
+            <div class="tab-container">
+                <button id="tab-connect-midi" class="tab-button active" data-tab="connect-midi">MIDI</button>
+                <button id="tab-connect-audio" class="tab-button" data-tab="connect-audio">Audio</button>
+            </div>
+
+            <!-- MIDI Connection Section -->
+            <div id="connect-midi-section">
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="midi-connect" class="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14"/>
+                            <path d="M12 5v14"/>
+                        </svg>
+                        Connect MIDI
+                    </button>
+                    <button id="midi-disconnect" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18"/>
+                            <path d="M6 6l12 12"/>
+                        </svg>
+                        Disconnect
+                    </button>
+                    <button id="midi-refresh" class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/>
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                            <path d="M3 21v-5h5"/>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+                
+                <!-- MIDI Stop Animation Option -->
+                <div class="mt-3 p-2 bg-black bg-opacity-20 rounded border border-gray-600">
+                    <div class="flex items-center justify-between">
+                        <label for="midi-stop-animation" class="text-xs font-medium text-gray-300">MIDI Stop Stops Animation:</label>
+                        <input type="checkbox" id="midi-stop-animation" data-drawer-interactive class="w-4 h-4 text-midi-green bg-black bg-opacity-30 border border-gray-600 rounded focus:ring-midi-green focus:ring-2 focus:ring-offset-0">
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">When enabled, receiving a MIDI stop message will pause the animation loop</div>
                 </div>
             </div>
 
-            <!-- MIDI Connection Status -->
-            <div id="cc-midi-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
-                <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2v20"/>
-                        <path d="M2 12h20"/>
-                    </svg>
-                    <div>
-                        <div class="text-sm font-medium text-red-400">MIDI Device Required</div>
-                        <div class="text-xs text-red-300">Please connect a MIDI device to use CC mapping controls</div>
+            <!-- Audio Connection Section -->
+            <div id="connect-audio-section" class="hidden">
+                <div class="mb-3">
+                    <label for="audio-interface-select" class="block text-xs font-medium text-gray-300 mb-1">Audio Interface:</label>
+                    <select id="audio-interface-select" data-drawer-interactive class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
+                        <option value="">No interfaces available</option>
+                    </select>
+                </div>
+                
+                <!-- Channel Selection -->
+                <div class="mb-3">
+                    <label class="block text-xs font-medium text-gray-300 mb-1">Audio Channels:</label>
+                    <div id="audio-channels-container" data-drawer-interactive class="space-y-1">
+                        <!-- Channel checkboxes will be dynamically generated here -->
                     </div>
                 </div>
-                <button id="cc-connect-midi" class="mt-2 px-3 py-1 bg-red-600 bg-opacity-30 text-red-300 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400">
-                    Connect MIDI Device
-                </button>
-            </div>
-            
-            <div id="cc-controls-container" class="mb-3">
-                <!-- CC Controls will be dynamically generated here -->
-            </div>
-            
-            <div class="mt-2">
-                <button id="add-cc-control" data-drawer-interactive class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14"/>
-                        <path d="M5 12h14"/>
-                    </svg>
-                    Add CC Control
-                </button>
+                
+                <!-- Connection Controls -->
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <button id="audio-connect" data-drawer-interactive class="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14"/>
+                            <path d="M12 5v14"/>
+                        </svg>
+                        Connect Audio
+                    </button>
+                    <button id="audio-disconnect" data-drawer-interactive class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18"/>
+                            <path d="M6 6l12 12"/>
+                        </svg>
+                        Disconnect
+                    </button>
+                    <button id="audio-refresh-interfaces" data-drawer-interactive class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/>
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                            <path d="M3 21v-5h5"/>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+                
+                <!-- Audio Status -->
+                <div class="mb-3">
+                    <div class="flex items-center gap-2 px-2 py-1 bg-black bg-opacity-30 rounded border border-gray-600">
+                        <div id="audio-status-indicator" class="w-2 h-2 rounded-full bg-red-500 transition-all duration-300"></div>
+                        <span id="audio-status-text" class="text-xs text-gray-300">Disconnected</span>
+                    </div>
+                </div>
+                
+                <!-- Audio Analysis Display -->
+                <div class="space-y-2">
+                    <div class="text-xs font-medium text-gray-300">Audio Analysis:</div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Overall:</span>
+                            <span id="audio-overall-value" class="text-midi-green">0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">RMS:</span>
+                            <span id="audio-rms-value" class="text-midi-green">0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Peak:</span>
+                            <span id="audio-peak-value" class="text-midi-green">0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Freq:</span>
+                            <span id="audio-frequency-value" class="text-midi-green">0</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Note Controls Drawer -->
-        <div id="drawer-note-controls-content" class="drawer-content p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="flex items-center gap-1 text-white font-semibold text-sm">
-                    <svg class="w-3 h-3 text-midi-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18V5l12-2v13"/>
-                        <circle cx="6" cy="18" r="3"/>
-                        <circle cx="18" cy="16" r="3"/>
-                    </svg>
-                    Note Controls
-                </h3>
-            </div>
 
-            <!-- Note Controls Description -->
-            <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
-                <div class="text-xs text-gray-300">
-                    <p class="mb-1"><strong>Note Controls:</strong> Trigger visual effects with MIDI notes. Set note ranges, choose trigger actions, and control velocity sensitivity and duration.</p>
-                </div>
-            </div>
-            
-            <!-- MIDI Connection Status -->
-            <div id="note-midi-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
-                <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2v20"/>
-                        <path d="M2 12h20"/>
-                    </svg>
-                    <div>
-                        <div class="text-sm font-medium text-red-400">MIDI Device Required</div>
-                        <div class="text-xs text-red-300">Please connect a MIDI device to use note controls</div>
-                    </div>
-                </div>
-                <button id="note-connect-midi" class="mt-2 px-3 py-1 bg-red-600 bg-opacity-30 text-red-300 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400">
-                    Connect MIDI Device
-                </button>
-            </div>
-            
-            <div id="note-controls-container" class="mb-3">
-                <!-- Note Controls will be dynamically generated here -->
-            </div>
-            
-            <div class="mt-2">
-                <button id="add-note-control" data-drawer-interactive class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14"/>
-                        <path d="M5 12h14"/>
-                    </svg>
-                    Add Note Control
-                </button>
-            </div>
-        </div>
+
+
 
         <!-- Scene Management Drawer -->
         <div id="drawer-scene-management-content" class="drawer-content p-4">
@@ -327,122 +270,134 @@
             </div>
         </div>
 
-        <!-- Audio Interface Drawer -->
-        <div id="drawer-audio-interface-content" class="drawer-content p-4">
+
+
+        <!-- Unified Mapping Drawer -->
+        <div id="drawer-mapping-content" class="drawer-content p-4">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="flex items-center gap-1 text-white font-semibold text-sm">
                     <svg class="w-3 h-3 text-midi-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18V5l12-2v13"/>
-                        <circle cx="6" cy="18" r="3"/>
-                        <circle cx="18" cy="16" r="3"/>
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
                     </svg>
-                    Audio Interface
+                    Mapping
                 </h3>
-                <div class="flex gap-1">
-                    <button id="audio-refresh-interfaces" data-drawer-interactive class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Refresh</button>
+                <div class="flex items-center gap-2">
+                    <!-- Preset Selector -->
+                    <div class="flex items-center gap-1">
+                        <label class="text-xs text-gray-300">Preset:</label>
+                        <select id="midi-preset-select" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
+                            <option value="">Custom</option>
+                            <option value="sample-multi-channel">Sample Multi-Channel</option>
+                            <option value="essential-controls">Essential Controls</option>
+                            <option value="animation-movement">Animation & Movement</option>
+                            <option value="visual-effects">Visual Effects</option>
+                            <option value="lighting-materials">Lighting & Materials</option>
+                            <option value="grid-composition">Grid & Composition</option>
+                            <option value="shape-controls">Shape Controls</option>
+                            <option value="morphing-transitions">Morphing & Transitions</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-1">
+                        <button id="mapping-test" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Test</button>
+                        <button id="mapping-save" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Save Preset</button>
+                        <button id="mapping-load" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load Preset</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Audio Interface Description -->
+            <!-- Mapping Description -->
             <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
                 <div class="text-xs text-gray-300">
-                    <p class="mb-1"><strong>Audio Interface:</strong> Connect audio input devices for real-time analysis. Select interface, channels, and monitor audio levels and frequency.</p>
+                    <p class="mb-1"><strong>Mapping:</strong> Control visual parameters with MIDI CC messages, MIDI notes, and real-time audio analysis. Set frequency ranges, choose targets, adjust sensitivity, and save/load control presets (MIDI + Audio).</p>
                 </div>
             </div>
             
-            <!-- Interface Selection -->
-            <div class="mb-3">
-                <label for="audio-interface-select" class="block text-xs font-medium text-gray-300 mb-1">Audio Interface:</label>
-                <select id="audio-interface-select" data-drawer-interactive class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none">
-                    <option value="">No interfaces available</option>
-                </select>
+            <!-- Mapping Tabs -->
+            <div class="tab-container">
+                <button id="tab-cc" class="tab-button active" data-tab="cc">CC Mapping</button>
+                <button id="tab-note" class="tab-button" data-tab="note">Note Controls</button>
+                <button id="tab-audio" class="tab-button" data-tab="audio">Audio Mapping</button>
             </div>
-            
-            <!-- Channel Selection -->
-            <div class="mb-3">
-                <label class="block text-xs font-medium text-gray-300 mb-1">Audio Channels:</label>
-                <div id="audio-channels-container" data-drawer-interactive class="space-y-1">
-                    <!-- Channel checkboxes will be dynamically generated here -->
-                </div>
-            </div>
-            
-            <!-- Connection Controls -->
-            <div class="grid grid-cols-2 gap-2 mb-3">
-                <button id="audio-connect" data-drawer-interactive class="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
-                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14"/>
-                        <path d="M12 5v14"/>
-                    </svg>
-                    Connect Audio
-                </button>
-                <button id="audio-disconnect" data-drawer-interactive class="flex items-center gap-1 px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
-                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6L6 18"/>
-                        <path d="M6 6l12 12"/>
-                    </svg>
-                    Disconnect
-                </button>
-            </div>
-            
-            <!-- Audio Status -->
-            <div class="mb-3">
-                <div class="flex items-center gap-2 px-2 py-1 bg-black bg-opacity-30 rounded border border-gray-600">
-                    <div id="audio-status-indicator" class="w-2 h-2 rounded-full bg-red-500 transition-all duration-300"></div>
-                    <span id="audio-status-text" class="text-xs text-gray-300">Disconnected</span>
-                </div>
-            </div>
-            
-            <!-- Audio Analysis Display -->
-            <div class="space-y-2">
-                <div class="text-xs font-medium text-gray-300">Audio Analysis:</div>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="flex justify-between">
-                        <span class="text-gray-400">Overall:</span>
-                        <span id="audio-overall-value" class="text-midi-green">0.00</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-400">RMS:</span>
-                        <span id="audio-rms-value" class="text-midi-green">0.00</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-400">Peak:</span>
-                        <span id="audio-peak-value" class="text-midi-green">0.00</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-400">Freq:</span>
-                        <span id="audio-frequency-value" class="text-midi-green">0</span>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Audio Mapping Drawer -->
-        <div id="drawer-audio-mapping-content" class="drawer-content p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="flex items-center gap-1 text-white font-semibold text-sm">
-                    <svg class="w-3 h-3 text-midi-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18V5l12-2v13"/>
-                        <circle cx="6" cy="18" r="3"/>
-                        <circle cx="18" cy="16" r="3"/>
-                        <path d="M12 2v20"/>
-                    </svg>
-                    Audio Mapping
-                </h3>
-                <div class="flex gap-1">
-                    <button id="audio-mapping-test" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Test</button>
-                    <button id="audio-mapping-save" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Save</button>
-                    <button id="audio-mapping-load" class="px-2 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Load</button>
+            <!-- CC Mapping Section -->
+            <div id="cc-mapping-section" class="hidden">
+                <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                    <div class="text-xs text-gray-300">
+                        <p class="mb-1"><strong>CC Mapping:</strong> Control visual parameters with MIDI CC messages. Use "Learn" mode to assign controls, adjust sensitivity, and save presets.</p>
+                    </div>
+                </div>
+                <div id="cc-midi-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20"/>
+                            <path d="M2 12h20"/>
+                        </svg>
+                        <div>
+                            <div class="text-sm font-medium text-red-400">MIDI Device Required</div>
+                            <div class="text-xs text-red-300">Please connect a MIDI device to use CC mapping controls</div>
+                        </div>
+                    </div>
+                    <button id="cc-connect-midi" class="mt-2 px-3 py-1 bg-red-600 bg-opacity-30 text-red-300 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400">
+                        Connect MIDI Device
+                    </button>
+                </div>
+                <div id="cc-controls-container" class="mb-3">
+                    <!-- CC Controls will be dynamically generated here -->
+                </div>
+                <div class="mt-2">
+                    <button id="add-cc-control" data-drawer-interactive class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14"/>
+                            <path d="M5 12h14"/>
+                        </svg>
+                        Add CC Control
+                    </button>
                 </div>
             </div>
 
-            <!-- Audio Mapping Description -->
-            <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
-                <div class="text-xs text-gray-300">
-                    <p class="mb-1"><strong>Audio Mapping:</strong> Control visual parameters with real-time audio analysis. Set frequency ranges, choose targets, adjust sensitivity, and save presets.</p>
+            <!-- Note Controls Section -->
+            <div id="note-mapping-section" class="hidden">
+                <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                    <div class="text-xs text-gray-300">
+                        <p class="mb-1"><strong>Note Controls:</strong> Trigger visual effects with MIDI notes. Set note ranges, choose trigger actions, and control velocity sensitivity and duration.</p>
+                    </div>
+                </div>
+                <div id="note-midi-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20"/>
+                            <path d="M2 12h20"/>
+                        </svg>
+                        <div>
+                            <div class="text-sm font-medium text-red-400">MIDI Device Required</div>
+                            <div class="text-xs text-red-300">Please connect a MIDI device to use note controls</div>
+                        </div>
+                    </div>
+                    <button id="note-connect-midi" class="mt-2 px-3 py-1 bg-red-600 bg-opacity-30 text-red-300 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400">
+                        Connect MIDI Device
+                    </button>
+                </div>
+                <div id="note-controls-container" class="mb-3">
+                    <!-- Note Controls will be dynamically generated here -->
+                </div>
+                <div class="mt-2">
+                    <button id="add-note-control" data-drawer-interactive class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14"/>
+                            <path d="M5 12h14"/>
+                        </svg>
+                        Add Note Control
+                    </button>
                 </div>
             </div>
-            
-            <!-- Audio Connection Status -->
+
+            <!-- Audio Mapping Section -->
+            <div id="audio-mapping-section" class="hidden">
+                <div class="mb-3 p-2 bg-black bg-opacity-20 border border-gray-700 rounded">
+                    <div class="text-xs text-gray-300">
+                        <p class="mb-1"><strong>Audio Mapping:</strong> Control visual parameters with real-time audio analysis. Set frequency ranges, choose targets, adjust sensitivity, and save/load control presets (MIDI + Audio).</p>
+                    </div>
+                </div>
             <div id="audio-mapping-connection-status" class="hidden mb-3 p-3 bg-red-900 bg-opacity-20 border border-red-600 rounded">
                 <div class="flex items-center gap-2">
                     <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -458,12 +413,9 @@
                     Connect Audio Device
                 </button>
             </div>
-            
-            <!-- Audio Mapping Controls Container -->
             <div id="audio-mapping-controls-container" class="mb-3">
                 <!-- Audio mapping controls will be dynamically generated here -->
             </div>
-            
             <div class="mt-2">
                 <button id="add-audio-mapping-control" data-drawer-interactive class="flex items-center gap-1 w-full px-2 py-1.5 bg-midi-green bg-opacity-10 text-midi-green border-2 border-dashed border-midi-green border-opacity-30 rounded font-medium text-xs transition-all duration-300 hover:bg-opacity-20 hover:border-opacity-50 hover:-translate-y-0.5">
                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -473,8 +425,6 @@
                     Add Audio Mapping
                 </button>
             </div>
-            
-            <!-- Audio Analysis Display -->
             <div class="mt-4 space-y-2">
                 <div class="text-xs font-medium text-gray-300">Audio Analysis:</div>
                 <div class="grid grid-cols-2 gap-2 text-xs">
@@ -493,6 +443,7 @@
                     <div class="flex justify-between">
                         <span class="text-gray-400">Freq:</span>
                         <span id="audio-mapping-frequency-value" class="text-midi-green">0</span>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -130,11 +130,6 @@ export class App {
 
 
         
-        // Test CC values button
-        document.getElementById('test-cc-button').addEventListener('click', () => {
-            this.testCCValues();
-        });
-        
         // Preset selector
         document.getElementById('midi-preset-select').addEventListener('change', (e) => {
             this.applyCCPreset(e.target.value);
@@ -143,16 +138,6 @@ export class App {
         // Scene preset selector
         document.getElementById('scene-preset-select').addEventListener('change', (e) => {
             this.applyScenePreset(e.target.value);
-        });
-        
-        // Save preset button
-        document.getElementById('save-preset-button').addEventListener('click', () => {
-            this.savePreset();
-        });
-        
-        // Load preset button
-        document.getElementById('load-preset-button').addEventListener('click', () => {
-            document.getElementById('preset-file-input').click();
         });
         
         // File input for loading presets and scenes
@@ -194,9 +179,24 @@ export class App {
             this.addAudioMappingControl();
         });
         
-        // Audio mapping test button
-        document.getElementById('audio-mapping-test').addEventListener('click', () => {
+        // Mapping test button
+        document.getElementById('mapping-test').addEventListener('click', () => {
             this.testAudioMapping();
+        });
+        
+        // Mapping save button
+        document.getElementById('mapping-save').addEventListener('click', () => {
+            this.savePreset();
+        });
+        
+        // Mapping load button
+        document.getElementById('mapping-load').addEventListener('click', () => {
+            document.getElementById('preset-file-input').click();
+        });
+        
+        // Test button for CC mapping
+        document.getElementById('mapping-test').addEventListener('click', () => {
+            this.testCCValues();
         });
         
         // MIDI stop animation checkbox
@@ -266,12 +266,9 @@ export class App {
         
         // Set up drawer button event listeners
         const drawerButtons = [
-            'drawer-connection',
-            'drawer-audio-interface',
-            'drawer-cc-mapping',
-            'drawer-note-controls',
-            'drawer-scene-management',
-            'drawer-audio-mapping'
+            'drawer-connect',
+            'drawer-mapping',
+            'drawer-scene-management'
         ];
         
         drawerButtons.forEach(buttonId => {
@@ -319,6 +316,94 @@ export class App {
 
         // Set up connection button event handlers
         this.setupConnectionButtonHandlers();
+        
+        // Set up mapping drawer tabs
+        this.setupMappingTabs();
+        
+        // Set up connect drawer tabs
+        this.setupConnectTabs();
+    }
+    
+    setupConnectTabs() {
+        const tabs = ['connect-midi', 'connect-audio'];
+        const sections = ['connect-midi-section', 'connect-audio-section'];
+        
+        tabs.forEach((tab, index) => {
+            const tabButton = document.getElementById(`tab-${tab}`);
+            const section = document.getElementById(sections[index]);
+            
+            if (tabButton && section) {
+                tabButton.addEventListener('click', () => {
+                    this.switchConnectTab(tab);
+                });
+            }
+        });
+        
+        // Start with MIDI tab active
+        this.switchConnectTab('connect-midi');
+    }
+    
+    switchConnectTab(activeTab) {
+        const tabs = ['connect-midi', 'connect-audio'];
+        const sections = ['connect-midi-section', 'connect-audio-section'];
+        
+        tabs.forEach((tab, index) => {
+            const tabButton = document.getElementById(`tab-${tab}`);
+            const section = document.getElementById(sections[index]);
+            
+            if (tabButton && section) {
+                if (tab === activeTab) {
+                    tabButton.classList.add('active');
+                    section.classList.add('active');
+                    section.classList.remove('hidden');
+                } else {
+                    tabButton.classList.remove('active');
+                    section.classList.remove('active');
+                    section.classList.add('hidden');
+                }
+            }
+        });
+    }
+    
+    setupMappingTabs() {
+        const tabs = ['cc', 'note', 'audio'];
+        const sections = ['cc-mapping-section', 'note-mapping-section', 'audio-mapping-section'];
+        
+        tabs.forEach((tab, index) => {
+            const tabButton = document.getElementById(`tab-${tab}`);
+            const section = document.getElementById(sections[index]);
+            
+            if (tabButton && section) {
+                tabButton.addEventListener('click', () => {
+                    this.switchMappingTab(tab);
+                });
+            }
+        });
+        
+        // Start with CC tab active
+        this.switchMappingTab('cc');
+    }
+    
+    switchMappingTab(activeTab) {
+        const tabs = ['cc', 'note', 'audio'];
+        const sections = ['cc-mapping-section', 'note-mapping-section', 'audio-mapping-section'];
+        
+        tabs.forEach((tab, index) => {
+            const tabButton = document.getElementById(`tab-${tab}`);
+            const section = document.getElementById(sections[index]);
+            
+            if (tabButton && section) {
+                if (tab === activeTab) {
+                    tabButton.classList.add('active');
+                    section.classList.add('active');
+                    section.classList.remove('hidden');
+                } else {
+                    tabButton.classList.remove('active');
+                    section.classList.remove('active');
+                    section.classList.add('hidden');
+                }
+            }
+        });
     }
 
     setupConnectionButtonHandlers() {
@@ -328,15 +413,15 @@ export class App {
         
         if (ccConnectButton) {
             ccConnectButton.addEventListener('click', () => {
-                // Open the connection drawer to help user connect MIDI
-                this.toggleDrawer('connection');
+                // Open the connect drawer to help user connect MIDI
+                this.toggleDrawer('connect');
             });
         }
         
         if (noteConnectButton) {
             noteConnectButton.addEventListener('click', () => {
-                // Open the connection drawer to help user connect MIDI
-                this.toggleDrawer('connection');
+                // Open the connect drawer to help user connect MIDI
+                this.toggleDrawer('connect');
             });
         }
         
@@ -345,8 +430,8 @@ export class App {
         
         if (audioConnectButton) {
             audioConnectButton.addEventListener('click', () => {
-                // Open the audio interface drawer to help user connect
-                this.toggleDrawer('audio-interface');
+                // Open the connect drawer to help user connect audio
+                this.toggleDrawer('connect');
             });
         }
     }
@@ -389,15 +474,15 @@ export class App {
             this.drawerContainer.classList.remove('-translate-y-full');
             this.drawerContainer.classList.add('open');
             
-            // Add specific class for connection drawer positioning
-            if (drawerName === 'connection') {
-                this.drawerContainer.classList.add('connection-drawer');
+            // Add specific class for connect drawer positioning
+            if (drawerName === 'connect') {
+                this.drawerContainer.classList.add('connect-drawer');
                 this.drawerContainer.classList.remove('audio-interface-drawer');
             } else if (drawerName === 'audio-interface') {
                 this.drawerContainer.classList.add('audio-interface-drawer');
-                this.drawerContainer.classList.remove('connection-drawer');
+                this.drawerContainer.classList.remove('connect-drawer');
             } else {
-                this.drawerContainer.classList.remove('connection-drawer');
+                this.drawerContainer.classList.remove('connect-drawer');
                 this.drawerContainer.classList.remove('audio-interface-drawer');
             }
         }
@@ -428,7 +513,7 @@ export class App {
             this.currentDrawer = null;
             
             // Remove drawer-specific classes
-            this.drawerContainer.classList.remove('connection-drawer');
+            this.drawerContainer.classList.remove('connect-drawer');
             this.drawerContainer.classList.remove('audio-interface-drawer');
             
             // Reset all button states
@@ -460,6 +545,15 @@ export class App {
 
     checkDrawerConnectionStatus(drawerName) {
         switch (drawerName) {
+            case 'connect':
+                // Connect drawer doesn't need connection status checking
+                break;
+            case 'mapping':
+                // Check all mapping tab connection statuses
+                this.checkMIDIConnectionStatus('cc-midi-connection-status', 'cc-controls-container');
+                this.checkMIDIConnectionStatus('note-midi-connection-status', 'note-controls-container');
+                this.checkAudioConnectionStatus('audio-mapping-connection-status', 'audio-mapping-controls-container');
+                break;
             case 'cc-mapping':
                 this.checkMIDIConnectionStatus('cc-midi-connection-status', 'cc-controls-container');
                 break;
@@ -518,12 +612,9 @@ export class App {
 
     updateDrawerButtonStates(activeDrawer) {
         const drawerButtons = [
-            'drawer-connection',
-            'drawer-audio-interface',
-            'drawer-cc-mapping',
-            'drawer-note-controls',
-            'drawer-scene-management',
-            'drawer-audio-mapping'
+            'drawer-connect',
+            'drawer-mapping',
+            'drawer-scene-management'
         ];
         
         drawerButtons.forEach(buttonId => {
@@ -1080,17 +1171,19 @@ export class App {
             this.onMIDICC(mapping.cc, 64, mapping.channel);
         });
         
-        const testButton = document.getElementById('test-cc-button');
-        const originalText = testButton.textContent;
-        testButton.textContent = 'Testing...';
-        testButton.style.background = '#0f0';
-        testButton.style.color = '#000';
-        
-        setTimeout(() => {
-            testButton.textContent = originalText;
-            testButton.style.background = '#444';
-            testButton.style.color = '#fff';
-        }, 1000);
+        const testButton = document.getElementById('mapping-test');
+        if (testButton) {
+            const originalText = testButton.textContent;
+            testButton.textContent = 'Testing...';
+            testButton.style.background = '#0f0';
+            testButton.style.color = '#000';
+            
+            setTimeout(() => {
+                testButton.textContent = originalText;
+                testButton.style.background = '#444';
+                testButton.style.color = '#fff';
+            }, 1000);
+        }
     }
 
     async loadAvailablePresets() {
@@ -1436,12 +1529,14 @@ export class App {
     savePreset() {
         const ccMappings = this.state.get('midiCCMappings') || {};
         const noteMappings = this.state.get('midiNoteMappings') || {};
+        const audioMappings = this.state.get('audioMappings') || {};
         
         const preset = {
             version: '1.0',
             timestamp: Date.now(),
             midiCCMappings: ccMappings,
-            midiNoteMappings: noteMappings
+            midiNoteMappings: noteMappings,
+            audioMappings: audioMappings
         };
         
         const dataStr = JSON.stringify(preset, null, 2);
@@ -1450,7 +1545,7 @@ export class App {
         
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
-        link.download = `rglr-midi-preset-${Date.now()}.json`;
+        link.download = `rglr-control-preset-${Date.now()}.json`;
         link.click();
         
         // Clean up the URL object
@@ -1468,12 +1563,20 @@ export class App {
                     // Old format - convert to new format
                     const newPreset = {
                         midiCCMappings: preset.mappings,
-                        midiNoteMappings: preset.noteMappings
+                        midiNoteMappings: preset.noteMappings,
+                        audioMappings: {}
                     };
                     this.applyPreset(newPreset);
                 } else if (this.validatePreset(preset)) {
                     // New format (current state format)
                     this.applyPreset(preset);
+                } else if (preset.midiCCMappings && preset.midiNoteMappings) {
+                    // Format without audio mappings - add empty audio mappings
+                    const newPreset = {
+                        ...preset,
+                        audioMappings: preset.audioMappings || {}
+                    };
+                    this.applyPreset(newPreset);
                 } else {
                     console.error('Invalid preset format:', preset);
                     alert('Invalid preset file format. Please check the file structure.');
@@ -1497,7 +1600,8 @@ export class App {
                preset.midiCCMappings &&
                preset.midiNoteMappings &&
                (typeof preset.midiCCMappings === 'object') &&
-               (typeof preset.midiNoteMappings === 'object');
+               (typeof preset.midiNoteMappings === 'object') &&
+               (preset.audioMappings === undefined || typeof preset.audioMappings === 'object');
     }
 
     applyPreset(preset) {
@@ -1506,6 +1610,9 @@ export class App {
         }
         if (preset.midiNoteMappings) {
             this.state.set('midiNoteMappings', preset.midiNoteMappings);
+        }
+        if (preset.audioMappings) {
+            this.state.set('audioMappings', preset.audioMappings);
         }
         
         // Pass the preset data directly to recreateControlsFromPreset
@@ -1582,9 +1689,44 @@ export class App {
             });
         }
         
+        // Recreate Audio Mapping controls
+        const audioMappings = preset ? preset.audioMappings : this.state.get('audioMappings');
+        console.log('Audio mappings to recreate:', audioMappings);
+        if (audioMappings && typeof audioMappings === 'object') {
+            // Clear existing audio mapping controls
+            if (this.audioMappingManager) {
+                this.audioMappingManager.clearAllControls();
+            }
+            
+            Object.keys(audioMappings).forEach((controlId, index) => {
+                const mapping = audioMappings[controlId];
+                console.log('Creating Audio control:', controlId, 'with mapping:', mapping);
+                
+                // Extract the index from the control ID (e.g., "audio1" -> 1)
+                const indexMatch = controlId.match(/audio(\d+)/);
+                const controlIndex = indexMatch ? parseInt(indexMatch[1]) : index + 1;
+                console.log('Creating audio control with index:', controlIndex);
+                
+                if (this.audioMappingManager) {
+                    const control = this.audioMappingManager.addControl('frequency', controlIndex);
+                    if (control) {
+                        console.log('Audio control created successfully, updating mapping...');
+                        
+                        // Update the control's mapping
+                        control.setMapping(mapping);
+                        
+                        console.log('Audio mapping updated for control:', control.controlId);
+                    } else {
+                        console.error('Failed to create audio control for:', controlId);
+                    }
+                }
+            });
+        }
+        
         console.log('Finished recreating controls');
         console.log('Final CC mappings in state:', this.state.get('midiCCMappings'));
         console.log('Final Note mappings in state:', this.state.get('midiNoteMappings'));
+        console.log('Final Audio mappings in state:', this.state.get('audioMappings'));
     }
     
     // Simple scene management methods

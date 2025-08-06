@@ -111,7 +111,7 @@ export class MIDIManager {
         selectionContainer.innerHTML = html;
         
         // Insert the selection UI into the connection drawer
-        const connectionDrawer = document.getElementById('drawer-connection-content');
+        const connectionDrawer = document.getElementById('drawer-connect-content');
         
         if (connectionDrawer) {
             // Add device selection below existing connection controls

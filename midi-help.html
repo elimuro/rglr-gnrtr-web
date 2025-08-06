@@ -733,9 +733,9 @@
                 <!-- Preset Management Section -->
                 <div id="preset-management" class="help-section">
                     <h2 class="help-h2">Preset Management</h2>
-                    <p>You can save and load custom MIDI mapping presets:</p>
+                    <p>You can save and load custom control mapping presets (MIDI + Audio):</p>
                     <ul>
-                        <li><strong>Save Preset:</strong> Exports your current MIDI mappings to a JSON file</li>
+                        <li><strong>Save Preset:</strong> Exports your current MIDI and audio mappings to a JSON file</li>
                         <li><strong>Load Preset:</strong> Imports a previously saved preset file</li>
                         <li><strong>Built-in Presets:</strong> Quick access to common mapping configurations</li>
                     </ul>
@@ -759,6 +759,26 @@
   "midiNoteMappings": {
     "note1": { "channel": 0, "note": 60, "target": "shapeCycling" },
     "note2": { "channel": 0, "note": 61, "target": "sizeAnimation" }
+  },
+  "audioMappings": {
+    "audio1": { 
+      "minFrequency": 250, 
+      "maxFrequency": 2000, 
+      "target": "movementAmplitude", 
+      "minValue": 0, 
+      "maxValue": 1, 
+      "curve": "linear", 
+      "sensitivity": 1.0 
+    },
+    "audio2": { 
+      "minFrequency": 2000, 
+      "maxFrequency": 8000, 
+      "target": "rotationAmplitude", 
+      "minValue": 0, 
+      "maxValue": 1, 
+      "curve": "exponential", 
+      "sensitivity": 1.5 
+    }
   }
 }</pre>
                     </div>
