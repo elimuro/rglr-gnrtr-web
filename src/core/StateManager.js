@@ -529,8 +529,12 @@ export class StateManager {
                 centerScalingCurve: this.state.centerScalingCurve,
                 centerScalingRadius: this.state.centerScalingRadius,
                 centerScalingDirection: this.state.centerScalingDirection,
+                centerScalingAnimation: this.state.centerScalingAnimation,
                 centerScalingAnimationSpeed: this.state.centerScalingAnimationSpeed,
-                centerScalingAnimationType: this.state.centerScalingAnimationType
+                centerScalingAnimationType: this.state.centerScalingAnimationType,
+
+                // Additional animation parameters
+                enableSizeAnimation: this.state.enableSizeAnimation
             }
         };
         
@@ -631,7 +635,15 @@ export class StateManager {
             addInterpolation('movementAmplitude', settings.movementAmplitude, currentState.movementAmplitude);
             addInterpolation('rotationAmplitude', settings.rotationAmplitude, currentState.rotationAmplitude);
             addInterpolation('scaleAmplitude', settings.scaleAmplitude, currentState.scaleAmplitude);
-            
+
+            // Division parameters
+            addInterpolation('movementDivision', settings.movementDivision, currentState.movementDivision);
+            addInterpolation('rotationDivision', settings.rotationDivision, currentState.rotationDivision);
+            addInterpolation('scaleDivision', settings.scaleDivision, currentState.scaleDivision);
+            addInterpolation('shapeCyclingDivision', settings.shapeCyclingDivision, currentState.shapeCyclingDivision);
+            addInterpolation('morphingDivision', settings.morphingDivision, currentState.morphingDivision);
+            addInterpolation('centerScalingDivision', settings.centerScalingDivision, currentState.centerScalingDivision);
+
             // Shape cycling parameters
             addInterpolation('shapeCyclingSpeed', settings.shapeCyclingSpeed, currentState.shapeCyclingSpeed);
             addInterpolation('shapeCyclingPattern', settings.shapeCyclingPattern, currentState.shapeCyclingPattern);
@@ -723,9 +735,13 @@ export class StateManager {
             addInterpolation('centerScalingCurve', settings.centerScalingCurve, currentState.centerScalingCurve);
             addInterpolation('centerScalingRadius', settings.centerScalingRadius, currentState.centerScalingRadius);
             addInterpolation('centerScalingDirection', settings.centerScalingDirection, currentState.centerScalingDirection);
+            addInterpolation('centerScalingAnimation', settings.centerScalingAnimation, currentState.centerScalingAnimation);
             addInterpolation('centerScalingAnimationSpeed', settings.centerScalingAnimationSpeed, currentState.centerScalingAnimationSpeed);
             addInterpolation('centerScalingAnimationType', settings.centerScalingAnimationType, currentState.centerScalingAnimationType);
-            
+
+            // Additional animation parameters
+            addInterpolation('enableSizeAnimation', settings.enableSizeAnimation, currentState.enableSizeAnimation);
+
             // Sphere distortion parameter
             addInterpolation('sphereDistortionStrength', settings.sphereDistortionStrength, currentState.sphereDistortionStrength);
             
