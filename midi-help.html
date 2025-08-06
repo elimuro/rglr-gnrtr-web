@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MIDI Interface Help - RGLR GNRTR</title>
+    <title>Help Guide</title>
     <link rel="stylesheet" href="tailwind.css">
     <style>
         /* Help page specific styles that complement the main CSS */
@@ -53,6 +53,36 @@
             margin-bottom: var(--spacing-md);
             padding-bottom: var(--spacing-sm);
             border-bottom: 1px solid var(--color-primary);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .nav-section-title:hover {
+            color: var(--color-primary);
+            opacity: 0.8;
+        }
+
+        .nav-section-toggle {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+            color: var(--color-primary);
+        }
+
+        .nav-section-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .nav-section-content {
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+            overflow: hidden;
+        }
+
+        .nav-section-content.collapsed {
+            max-height: 0;
+            opacity: 0;
         }
 
         .nav-item {
@@ -98,84 +128,151 @@
                 <h3 class="nav-section-title">Table of Contents</h3>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">Getting Started</h4>
-                    <a href="#getting-started" class="nav-item">Getting Started</a>
-                    <a href="#connection" class="nav-item">Connection</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        Getting Started
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#getting-started" class="nav-item">Getting Started</a>
+                        <a href="#connection" class="nav-item">Connection</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">MIDI Controls</h4>
-                    <a href="#cc-mappings" class="nav-item">CC Mappings</a>
-                    <a href="#note-controls" class="nav-item">Note Controls</a>
-                    <a href="#midi-learn" class="nav-item">MIDI Learn</a>
-                    <a href="#special-controls" class="nav-item">Special Controls</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        MIDI Controls
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#cc-mappings" class="nav-item">CC Mappings</a>
+                        <a href="#note-controls" class="nav-item">Note Controls</a>
+                        <a href="#midi-learn" class="nav-item">MIDI Learn</a>
+                        <a href="#special-controls" class="nav-item">Special Controls</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">NEW: BPM Timing System</h4>
-                    <a href="#bpm-timing-system" class="nav-item">BPM-Based Timing</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        NEW: BPM Timing System
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#bpm-timing-system" class="nav-item">BPM-Based Timing</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">NEW: MIDI Clock</h4>
-                    <a href="#midi-clock" class="nav-item">MIDI Clock Sync</a>
-                    <a href="#transport-controls" class="nav-item">Transport Controls</a>
-                    <a href="#tempo-divisions" class="nav-item">Tempo Divisions</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        NEW: MIDI Clock
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#midi-clock" class="nav-item">MIDI Clock Sync</a>
+                        <a href="#transport-controls" class="nav-item">Transport Controls</a>
+                        <a href="#tempo-divisions" class="nav-item">Tempo Divisions</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">NEW: Audio Mapping</h4>
-                    <a href="#audio-mapping" class="nav-item">Audio Frequency Mapping</a>
-                    <a href="#sensitivity-controls" class="nav-item">Sensitivity Controls</a>
-                    <a href="#frequency-ranges" class="nav-item">Frequency Ranges</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        NEW: Audio Mapping
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#audio-mapping" class="nav-item">Audio Frequency Mapping</a>
+                        <a href="#sensitivity-controls" class="nav-item">Sensitivity Controls</a>
+                        <a href="#frequency-ranges" class="nav-item">Frequency Ranges</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">Parameters</h4>
-                    <a href="#parameter-reference" class="nav-item">Parameter Reference</a>
-                    <a href="#animation-params" class="nav-item">Animation Parameters</a>
-                    <a href="#center-scaling-params" class="nav-item">3D Center Scaling</a>
-                    <a href="#grid-params" class="nav-item">Grid Parameters</a>
-                    <a href="#material-params" class="nav-item">Material Parameters</a>
-                    <a href="#post-processing-params" class="nav-item">Post-Processing</a>
-                    <a href="#color-params" class="nav-item">Color Parameters</a>
-                    <a href="#lighting-params" class="nav-item">Lighting Parameters</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        NEW: Shape Morphing
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#shape-morphing" class="nav-item">Shape Morphing System</a>
+                        <a href="#morphing-controls" class="nav-item">Morphing Controls</a>
+                        <a href="#morphing-triggers" class="nav-item">MIDI Morphing Triggers</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">NEW: Video Recording</h4>
-                    <a href="#video-recording" class="nav-item">Video Recording</a>
-                    <a href="#recording-settings" class="nav-item">Recording Settings</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        Parameters
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#parameter-reference" class="nav-item">Parameter Reference</a>
+                        <a href="#animation-params" class="nav-item">Animation Parameters</a>
+                        <a href="#center-scaling-params" class="nav-item">3D Center Scaling</a>
+                        <a href="#grid-params" class="nav-item">Grid Parameters</a>
+                        <a href="#material-params" class="nav-item">Material Parameters</a>
+                        <a href="#post-processing-params" class="nav-item">Post-Processing</a>
+                        <a href="#color-params" class="nav-item">Color Parameters</a>
+                        <a href="#lighting-params" class="nav-item">Lighting Parameters</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">Presets</h4>
-                    <a href="#preset-management" class="nav-item">Preset Management</a>
-                    <a href="#built-in-presets" class="nav-item">Built-in Presets</a>
-                    <a href="#custom-presets" class="nav-item">Creating Custom Presets</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        NEW: Video Recording
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#video-recording" class="nav-item">Video Recording</a>
+                        <a href="#recording-settings" class="nav-item">Recording Settings</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">Effects</h4>
-                    <a href="#post-processing-effects" class="nav-item">Post-Processing Effects</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        Presets
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#preset-management" class="nav-item">Preset Management</a>
+                        <a href="#built-in-presets" class="nav-item">Built-in Presets</a>
+                        <a href="#custom-presets" class="nav-item">Creating Custom Presets</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">NEW: GUI Improvements</h4>
-                    <a href="#improved-dropdowns" class="nav-item">Improved Dropdown Controls</a>
-                    <a href="#animation-type-fix" class="nav-item">Animation Type Labels</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        Effects
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#post-processing-effects" class="nav-item">Post-Processing Effects</a>
+                    </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title">Help</h4>
-                    <a href="#performance-tips" class="nav-item">Performance Tips</a>
-                    <a href="#troubleshooting" class="nav-item">Troubleshooting</a>
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        NEW: GUI Improvements
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#improved-dropdowns" class="nav-item">Improved Dropdown Controls</a>
+                        <a href="#animation-type-fix" class="nav-item">Animation Type Labels</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <h4 class="nav-section-title" onclick="toggleSection(this)">
+                        Help
+                        <span class="nav-section-toggle">▼</span>
+                    </h4>
+                    <div class="nav-section-content">
+                        <a href="#performance-tips" class="nav-item">Performance Tips</a>
+                        <a href="#troubleshooting" class="nav-item">Troubleshooting</a>
+                    </div>
                 </div>
             </div>
 
             <!-- Main Content -->
             <div class="help-main-content">
-                <h1 class="help-h1">MIDI Interface Guide</h1>
+                <h1 class="help-h1">Help Guide</h1>
 
                 <!-- Getting Started Section -->
                 <div id="getting-started" class="help-section">
@@ -191,6 +288,10 @@
                     
                     <div class="help-note">
                         <strong>NEW:</strong> The application now uses a BPM-based timing system where all animations sync to musical time. See the "BPM-Based Timing System" section for details on the new musical timing features.
+                    </div>
+                    
+                    <div class="help-note">
+                        <strong>NEW:</strong> The application now includes advanced shape morphing with MIDI control, audio frequency mapping for reactive visuals, and video recording capabilities. See the respective sections for details on these new features.
                     </div>
                 </div>
 
@@ -275,6 +376,16 @@
                             <li><strong>Toggle Film Grain:</strong> Toggle film grain noise effect on/off</li>
                             <li><strong>Toggle Color Grading:</strong> Toggle color grading effects on/off</li>
                             <li><strong>Toggle Post Processing:</strong> Toggle all post-processing effects on/off</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Morphing Triggers</h3>
+                        <ul>
+                            <li><strong>Random Morph:</strong> Triggers random shape morphing</li>
+                            <li><strong>Morph All Shapes:</strong> Triggers morphing of all shapes with stagger</li>
+                            <li><strong>Morph All to Same:</strong> Triggers synchronized morphing to same type</li>
+                            <li><strong>Morph All Simultaneously:</strong> Triggers simultaneous morphing</li>
                         </ul>
                     </div>
 
@@ -516,6 +627,115 @@
                     </div>
                 </div>
 
+                <!-- NEW: Shape Morphing Section -->
+                <div id="shape-morphing" class="help-section">
+                    <h2 class="help-h2">NEW: Shape Morphing System</h2>
+                    <p>The application now includes an advanced shape morphing system that allows smooth transitions between different shape types with MIDI control:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Morphing Features</h3>
+                        <ul>
+                            <li><strong>Real-time Morphing:</strong> Smooth transitions between shape types</li>
+                            <li><strong>MIDI Trigger Control:</strong> Use MIDI notes to trigger morphing actions</li>
+                            <li><strong>Multiple Morph Types:</strong> Random, all shapes, synchronized, and more</li>
+                            <li><strong>Musical Timing:</strong> Morphing can sync to BPM and musical divisions</li>
+                            <li><strong>Easing Control:</strong> Customizable easing functions for smooth animations</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Supported Shape Types</h3>
+                        <ul>
+                            <li><strong>Basic Shapes:</strong> Circles, squares, triangles</li>
+                            <li><strong>Complex Shapes:</strong> Ellipses, rectangles, refractive spheres</li>
+                            <li><strong>3D Shapes:</strong> Spheres with advanced materials</li>
+                            <li><strong>Custom Shapes:</strong> User-defined geometric forms</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Performance:</strong> The morphing system uses GSAP for smooth animations and includes 
+                        object pooling for optimal performance during complex morphing sequences.
+                    </div>
+                </div>
+
+                <div id="morphing-controls" class="help-section">
+                    <h2 class="help-h2">Morphing Controls</h2>
+                    <p>The morphing system provides several control options for different morphing behaviors:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Manual Morphing Controls</h3>
+                        <ul>
+                            <li><strong>Random Morph:</strong> Morphs one random shape to a different type</li>
+                            <li><strong>Morph All Shapes:</strong> Morphs all shapes with staggered timing</li>
+                            <li><strong>Morph All to Same:</strong> Morphs all shapes to the same target type</li>
+                            <li><strong>Morph All Simultaneously:</strong> Morphs all shapes at the same time</li>
+                            <li><strong>Morph All to Same Simultaneously:</strong> Morphs all shapes to the same type at once</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Morphing Parameters</h3>
+                        <ul>
+                            <li><strong>Morphing Speed:</strong> Controls the duration of morphing animations (0.5-5.0 seconds)</li>
+                            <li><strong>Morphing Easing:</strong> Selects the easing function for smooth transitions</li>
+                            <li><strong>Morphing Division:</strong> Musical timing division for synchronized morphing</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Available Easing Functions</h3>
+                        <ul>
+                            <li><strong>Power Functions:</strong> Power 2/3 In/Out/InOut for smooth acceleration</li>
+                            <li><strong>Back Functions:</strong> Back In/Out/InOut for overshoot effects</li>
+                            <li><strong>Elastic Functions:</strong> Elastic In/Out/InOut for bouncy effects</li>
+                            <li><strong>Bounce Functions:</strong> Bounce In/Out/InOut for bouncing effects</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="morphing-triggers" class="help-section">
+                    <h2 class="help-h2">MIDI Morphing Triggers</h2>
+                    <p>Use MIDI notes to trigger morphing actions in real-time:</p>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Available MIDI Triggers</h3>
+                        <ul>
+                            <li><strong>Random Morph:</strong> Triggers random shape morphing</li>
+                            <li><strong>Morph All Shapes:</strong> Triggers morphing of all shapes</li>
+                            <li><strong>Morph All to Same:</strong> Triggers synchronized morphing to same type</li>
+                            <li><strong>Morph All Simultaneously:</strong> Triggers simultaneous morphing</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Setting Up MIDI Morphing</h3>
+                        <ol>
+                            <li>Open the "Notes" drawer in the MIDI interface</li>
+                            <li>Click "Add Note Control" to create new note controls</li>
+                            <li>Select a morphing target from the dropdown (e.g., "Random Morph")</li>
+                            <li>Set the MIDI note number and channel</li>
+                            <li>Use the "Learn" button to automatically capture MIDI input</li>
+                            <li>Press the assigned MIDI note to trigger the morphing action</li>
+                        </ol>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Default Mapping:</strong> New note controls automatically cycle through the four morphing 
+                        trigger types, making it easy to set up a complete morphing control system.
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-h3">Example MIDI Setup</h3>
+                        <ul>
+                            <li><strong>Note 36:</strong> Random Morph</li>
+                            <li><strong>Note 37:</strong> Morph All Shapes</li>
+                            <li><strong>Note 38:</strong> Morph All to Same</li>
+                            <li><strong>Note 39:</strong> Morph All Simultaneously</li>
+                        </ul>
+                    </div>
+                </div>
+
                 <!-- Parameter Reference Section -->
                 <div id="parameter-reference" class="help-section">
                     <h2 class="help-h2">Parameter Reference</h2>
@@ -573,6 +793,31 @@
                                 <li><code>centerScalingAnimationSpeed</code> → <code>centerScalingDivision</code></li>
                             </ul>
                             Old scene files will automatically migrate to use the new parameters with sensible defaults.
+                        </div>
+                    </div>
+
+                    <div id="morphing-params" class="help-section">
+                        <h3 class="help-h3">Morphing Parameters</h3>
+                        <ul>
+                            <li><strong>morphingDivision:</strong> Controls the musical timing division for morphing animations (same divisions as movement)</li>
+                            <li><strong>morphingEasing:</strong> Controls the easing function for morphing animations:
+                                <ul>
+                                    <li><strong>Power Functions:</strong> Power 2/3 In/Out/InOut for smooth acceleration</li>
+                                    <li><strong>Back Functions:</strong> Back In/Out/InOut for overshoot effects</li>
+                                    <li><strong>Elastic Functions:</strong> Elastic In/Out/InOut for bouncy effects</li>
+                                    <li><strong>Bounce Functions:</strong> Bounce In/Out/InOut for bouncing effects</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        
+                        <div class="help-note">
+                            <strong>Morphing Triggers:</strong> Morphing can be triggered via MIDI notes using the following targets:
+                            <ul>
+                                <li><code>randomMorph</code> - Triggers random shape morphing</li>
+                                <li><code>morphAllShapes</code> - Triggers morphing of all shapes</li>
+                                <li><code>morphAllToSame</code> - Triggers synchronized morphing to same type</li>
+                                <li><code>morphAllSimultaneously</code> - Triggers simultaneous morphing</li>
+                            </ul>
                         </div>
                     </div>
 
@@ -828,6 +1073,17 @@
                             <li>All controls on channel 0</li>
                         </ul>
                     </div>
+
+                    <div class="help-section">
+                        <h4 class="help-h3">Morphing & Transitions</h4>
+                        <p>Advanced morphing and transition controls for dynamic shape transformations with musical timing.</p>
+                        <ul>
+                            <li>Includes morphing division controls for musical timing</li>
+                            <li>Maps morphing triggers to MIDI notes</li>
+                            <li>Optimized for live performance and composition</li>
+                            <li>All controls on channel 0</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Creating Custom Presets Section -->
@@ -944,6 +1200,9 @@
                         <li><strong>NEW:</strong> Audio mapping can be CPU intensive - use sensitivity controls to optimize performance</li>
                         <li><strong>NEW:</strong> Video recording requires significant resources - close other applications during recording</li>
                         <li><strong>NEW:</strong> MIDI clock sync works best with stable external clock sources</li>
+                        <li><strong>NEW:</strong> Shape morphing uses object pooling for optimal performance during complex sequences</li>
+                        <li><strong>NEW:</strong> Use musical timing divisions to create rhythmic patterns that sync with your music</li>
+                        <li><strong>NEW:</strong> Morphing triggers work best with stable BPM settings for predictable timing</li>
                     </ul>
                 </div>
 
@@ -1001,6 +1260,27 @@
                             <li>Ensure stable BPM from your external clock source</li>
                         </ul>
                     </div>
+
+                    <div class="help-warning">
+                        <strong>NEW: Shape morphing not working?</strong>
+                        <ul>
+                            <li>Check that morphing is enabled in the GUI</li>
+                            <li>Verify MIDI note mappings for morphing triggers</li>
+                            <li>Ensure morphing speed and easing settings are appropriate</li>
+                            <li>Check that shapes are visible and not disabled</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-warning">
+                        <strong>NEW: Audio mapping not responding?</strong>
+                        <ul>
+                            <li>Check microphone permissions in your browser</li>
+                            <li>Ensure your microphone is properly connected and working</li>
+                            <li>Try refreshing the page to reinitialize audio analysis</li>
+                            <li>Check that your browser supports Web Audio API</li>
+                            <li>Adjust sensitivity controls if audio input is too weak or strong</li>
+                        </ul>
+                    </div>
                 </div>
 
                 
@@ -1009,6 +1289,21 @@
     </div>
 
     <script>
+        // Toggle section functionality
+        function toggleSection(titleElement) {
+            const section = titleElement.parentElement;
+            const content = section.querySelector('.nav-section-content');
+            const toggle = titleElement.querySelector('.nav-section-toggle');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                toggle.classList.remove('collapsed');
+            } else {
+                content.classList.add('collapsed');
+                toggle.classList.add('collapsed');
+            }
+        }
+
         // Smooth scrolling for navigation links
         document.querySelectorAll('.nav-item').forEach(link => {
             link.addEventListener('click', (e) => {

@@ -1,0 +1,20 @@
+{
+    "name": "Regular Reality",
+    "short_name": "Regular Reality",
+    "description": "Real-time visual generator with MIDI and audio control",
+    "icons": [
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#00ff00",
+    "background_color": "#1a1a1a",
+    "display": "standalone"
+} 
