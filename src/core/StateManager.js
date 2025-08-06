@@ -106,11 +106,8 @@ export class StateManager {
             "enableShapeCycling": false,
             "enableSizeAnimation": true,
             "movementAmplitude": 0.08,
-            "movementFrequency": 0.7000000000000001,
             "rotationAmplitude": 0.5,
-            "rotationFrequency": 0.3,
             "scaleAmplitude": 0.2,
-            "scaleFrequency": 0.4,
             "shapeCyclingSpeed": 0.4,
             "shapeCyclingPattern": 0,
             "shapeCyclingDirection": 0,
@@ -180,6 +177,7 @@ export class StateManager {
             "pointLight2Intensity": 3,
             "rimLightIntensity": 3,
             "accentLightIntensity": 2.97,
+            "lightColour": "#ffffff",
             "enableFrustumCulling": true,
             "centerScalingEnabled": false,
             "centerScalingIntensity": 0.5,
@@ -441,11 +439,8 @@ export class StateManager {
                 enableShapeCycling: this.state.enableShapeCycling,
                 enableSizeAnimation: this.state.enableSizeAnimation,
                 movementAmplitude: this.state.movementAmplitude,
-                movementFrequency: this.state.movementFrequency,
                 rotationAmplitude: this.state.rotationAmplitude,
-                rotationFrequency: this.state.rotationFrequency,
                 scaleAmplitude: this.state.scaleAmplitude,
-                scaleFrequency: this.state.scaleFrequency,
                 
                 // Division parameters
                 movementDivision: this.state.movementDivision,
@@ -528,6 +523,7 @@ export class StateManager {
                 fxaaEnabled: this.state.fxaaEnabled,
                 
                 // Lighting parameters
+                lightColour: this.state.lightColour,
                 ambientLightIntensity: this.state.ambientLightIntensity,
                 directionalLightIntensity: this.state.directionalLightIntensity,
                 pointLight1Intensity: this.state.pointLight1Intensity,
@@ -643,11 +639,8 @@ export class StateManager {
             addInterpolation('enableShapeCycling', settings.enableShapeCycling, currentState.enableShapeCycling);
             addInterpolation('enableSizeAnimation', settings.enableSizeAnimation, currentState.enableSizeAnimation);
             addInterpolation('movementAmplitude', settings.movementAmplitude, currentState.movementAmplitude);
-            addInterpolation('movementFrequency', settings.movementFrequency, currentState.movementFrequency);
             addInterpolation('rotationAmplitude', settings.rotationAmplitude, currentState.rotationAmplitude);
-            addInterpolation('rotationFrequency', settings.rotationFrequency, currentState.rotationFrequency);
             addInterpolation('scaleAmplitude', settings.scaleAmplitude, currentState.scaleAmplitude);
-            addInterpolation('scaleFrequency', settings.scaleFrequency, currentState.scaleFrequency);
             
             // Shape cycling parameters
             addInterpolation('shapeCyclingSpeed', settings.shapeCyclingSpeed, currentState.shapeCyclingSpeed);
@@ -732,6 +725,7 @@ export class StateManager {
             addInterpolation('fxaaEnabled', settings.fxaaEnabled, currentState.fxaaEnabled);
             
             // Lighting parameters
+            addInterpolation('lightColour', settings.lightColour, currentState.lightColour);
             addInterpolation('ambientLightIntensity', settings.ambientLightIntensity, currentState.ambientLightIntensity);
             addInterpolation('directionalLightIntensity', settings.directionalLightIntensity, currentState.directionalLightIntensity);
             addInterpolation('pointLight1Intensity', settings.pointLight1Intensity, currentState.pointLight1Intensity);

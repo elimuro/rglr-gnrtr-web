@@ -529,7 +529,12 @@ export class App {
                     return;
                 }
                 
-                this.handleCCMapping(mapping.target, normalizedValue);
+                // For division parameters, pass the raw MIDI value (0-127)
+                // For other parameters, pass the normalized value (0-1)
+                const isDivisionParameter = mapping.target.includes('Division');
+                const valueToPass = isDivisionParameter ? value : normalizedValue;
+                
+                this.handleCCMapping(mapping.target, valueToPass);
             }
         });
     }
@@ -596,9 +601,6 @@ export class App {
 
     handleCCMapping(target, normalizedValue) {
         switch (target) {
-            case 'animationSpeed':
-                this.state.set('animationSpeed', 0.01 + normalizedValue * 2);
-                break;
             case 'movementAmplitude':
                 this.state.set('movementAmplitude', normalizedValue * 0.5);
                 break;
@@ -896,6 +898,37 @@ export class App {
             case 'postProcessingEnabled':
                 this.state.set('postProcessingEnabled', !this.state.get('postProcessingEnabled'));
                 break;
+            case 'fxaaEnabled':
+                this.state.set('fxaaEnabled', !this.state.get('fxaaEnabled'));
+                this.scene.updatePostProcessing();
+                break;
+            case 'enableFrustumCulling':
+                this.state.set('enableFrustumCulling', !this.state.get('enableFrustumCulling'));
+                break;
+            case 'sphereWaterDistortion':
+                this.state.set('sphereWaterDistortion', !this.state.get('sphereWaterDistortion'));
+                this.scene.updateSphereMaterials();
+                break;
+            case 'centerScalingEnabled':
+                this.state.set('centerScalingEnabled', !this.state.get('centerScalingEnabled'));
+                this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingAnimation':
+                this.state.set('centerScalingAnimation', !this.state.get('centerScalingAnimation'));
+                this.scene.updateCenterScaling();
+                break;
+            case 'morphingEnabled':
+                this.state.set('morphingEnabled', !this.state.get('morphingEnabled'));
+                break;
+            case 'autoMorphing':
+                this.state.set('autoMorphing', !this.state.get('autoMorphing'));
+                break;
+            case 'crossCategoryMorphing':
+                this.state.set('crossCategoryMorphing', !this.state.get('crossCategoryMorphing'));
+                break;
+            case 'randomMorphing':
+                this.state.set('randomMorphing', !this.state.get('randomMorphing'));
+                break;
             // Morphing triggers
             case 'randomMorph':
                 this.triggerRandomMorph();
@@ -914,12 +947,7 @@ export class App {
 
     handleKeyDown(event) {
         switch (event.key) {
-            case '1':
-                this.state.set('animationSpeed', Math.min(2, this.state.get('animationSpeed') + 0.1));
-                break;
-            case '2':
-                this.state.set('animationSpeed', Math.max(0.01, this.state.get('animationSpeed') - 0.1));
-                break;
+
             case '3':
                 this.state.set('movementAmplitude', Math.min(0.5, this.state.get('movementAmplitude') + 0.05));
                 break;
@@ -1674,7 +1702,7 @@ export class App {
             ccMappings[control.controlId] = {
                 channel: 0,
                 cc: nextIndex,
-                target: 'animationSpeed'
+                target: 'movementAmplitude'
             };
             this.state.set('midiCCMappings', ccMappings);
         }
@@ -1712,7 +1740,7 @@ export class App {
             audioMappings[control.controlId] = {
                 minFrequency: 250,
                 maxFrequency: 2000,
-                target: 'animationSpeed',
+                target: 'movementAmplitude',
                 minValue: 0,
                 maxValue: 1,
                 curve: 'linear',
@@ -1760,9 +1788,6 @@ export class App {
     updateAnimationParameter(target, value) {
         // Use the same logic as handleCCMapping for consistent parameter updates
         switch (target) {
-            case 'animationSpeed':
-                this.state.set('animationSpeed', 0.01 + value * 2);
-                break;
             case 'movementAmplitude':
                 this.state.set('movementAmplitude', value * 0.5);
                 break;
@@ -1857,6 +1882,14 @@ export class App {
                 break;
             case 'sphereDistortionStrength':
                 this.state.set('sphereDistortionStrength', value);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereHighPerformanceMode':
+                this.state.set('sphereHighPerformanceMode', value > 0.5);
+                if (this.scene) this.scene.updateSphereMaterials();
+                break;
+            case 'sphereWaterDistortion':
+                this.state.set('sphereWaterDistortion', value > 0.5);
                 if (this.scene) this.scene.updateSphereMaterials();
                 break;
             case 'sphereHighPerformanceMode':
@@ -1975,6 +2008,69 @@ export class App {
                 this.state.set('centerScalingAnimationType', Math.floor(value * 4));
                 if (this.scene) this.scene.updateCenterScaling();
                 break;
+            case 'movementDivision':
+                this.state.set('movementDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'rotationDivision':
+                this.state.set('rotationDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'scaleDivision':
+                this.state.set('scaleDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'shapeCyclingDivision':
+                this.state.set('shapeCyclingDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'morphingDivision':
+                this.state.set('morphingDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'centerScalingDivision':
+                this.state.set('centerScalingDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'shapeCyclingSpeed':
+                this.state.set('shapeCyclingSpeed', 0.1 + value * 1.9);
+                break;
+            case 'shapeCyclingPattern':
+                this.state.set('shapeCyclingPattern', Math.floor(value * 5));
+                break;
+            case 'shapeCyclingDirection':
+                this.state.set('shapeCyclingDirection', Math.floor(value * 4));
+                break;
+            case 'shapeCyclingSync':
+                this.state.set('shapeCyclingSync', Math.floor(value * 4));
+                break;
+            case 'shapeCyclingIntensity':
+                this.state.set('shapeCyclingIntensity', 0.1 + value * 0.9);
+                break;
+            case 'shapeCyclingTrigger':
+                this.state.set('shapeCyclingTrigger', Math.floor(value * 4));
+                break;
+            case 'morphingSpeed':
+                this.state.set('morphingSpeed', 0.1 + value * 4.9);
+                break;
+            case 'morphingAggressiveness':
+                this.state.set('morphingAggressiveness', value * 2);
+                break;
+            case 'currentMorphProgress':
+                this.state.set('currentMorphProgress', value);
+                break;
+            case 'movementDivision':
+                this.state.set('movementDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'rotationDivision':
+                this.state.set('rotationDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'scaleDivision':
+                this.state.set('scaleDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'shapeCyclingDivision':
+                this.state.set('shapeCyclingDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'morphingDivision':
+                this.state.set('morphingDivision', this.getDivisionFromIndex(value));
+                break;
+            case 'centerScalingDivision':
+                this.state.set('centerScalingDivision', this.getDivisionFromIndex(value));
+                break;
             default:
                 // For any other parameters, just set the value directly
                 this.state.set(target, value);
@@ -2015,6 +2111,35 @@ export class App {
             '8bars': 32        // 8 bars = 32 beats
         };
         return divisionMap[division] || 1;
+    }
+
+    getDivisionFromIndex(index) {
+        // Map the full 0-127 range to musical divisions with more granular control
+        // INVERTED: Higher MIDI values = faster divisions (more intuitive)
+        const divisions = [
+            '8bars',   // 0-12: 8 bars (slowest)
+            '4bars',   // 13-25: 4 bars
+            '2bars',   // 26-38: 2 bars
+            '1bar',    // 39-51: 1 bar
+            'whole',   // 52-64: whole notes
+            'half',    // 65-77: half notes
+            'quarter', // 78-90: quarter notes
+            '8th',     // 91-103: 8th notes
+            '16th',    // 104-116: 16th notes
+            '32nd'     // 117-127: 32nd notes (fastest)
+        ];
+        
+        // Map index to division with inverted distribution
+        if (index <= 12) return '8bars';
+        if (index <= 25) return '4bars';
+        if (index <= 38) return '2bars';
+        if (index <= 51) return '1bar';
+        if (index <= 64) return 'whole';
+        if (index <= 77) return 'half';
+        if (index <= 90) return 'quarter';
+        if (index <= 103) return '8th';
+        if (index <= 116) return '16th';
+        return '32nd';
     }
 
     triggerRandomMorph() {
