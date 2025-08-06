@@ -114,15 +114,9 @@ export class StateManager {
             "shapeCyclingSync": 0,
             "shapeCyclingIntensity": 1,
             "shapeCyclingTrigger": 0,
-            "morphingEnabled": false,
-            "morphingSpeed": 0.5,
+
             "morphingEasing": "power2.inOut",
-            "autoMorphing": true,
-            "crossCategoryMorphing": true,
-            "morphingAggressiveness": 1,
-            "currentMorphProgress": 0.72,
             "morphingPreset": "geometric_evolution",
-            "randomMorphing": true,
             "morphingTargetShape": null,
             "gridWidth": 19,
             "gridHeight": 6,
@@ -459,15 +453,8 @@ export class StateManager {
                 shapeCyclingTrigger: this.state.shapeCyclingTrigger,
                 
                 // Morphing parameters
-                morphingEnabled: this.state.morphingEnabled,
-                morphingSpeed: this.state.morphingSpeed,
                 morphingEasing: this.state.morphingEasing,
-                autoMorphing: this.state.autoMorphing,
-                crossCategoryMorphing: this.state.crossCategoryMorphing,
-                morphingAggressiveness: this.state.morphingAggressiveness,
-                currentMorphProgress: this.state.currentMorphProgress,
                 morphingPreset: this.state.morphingPreset,
-                randomMorphing: this.state.randomMorphing,
                 morphingTargetShape: this.state.morphingTargetShape,
                 
                 // Grid parameters
@@ -651,15 +638,8 @@ export class StateManager {
             addInterpolation('shapeCyclingTrigger', settings.shapeCyclingTrigger, currentState.shapeCyclingTrigger);
             
             // Morphing parameters
-            addInterpolation('morphingEnabled', settings.morphingEnabled, currentState.morphingEnabled);
-            addInterpolation('morphingSpeed', settings.morphingSpeed, currentState.morphingSpeed);
             addInterpolation('morphingEasing', settings.morphingEasing, currentState.morphingEasing);
-            addInterpolation('autoMorphing', settings.autoMorphing, currentState.autoMorphing);
-            addInterpolation('crossCategoryMorphing', settings.crossCategoryMorphing, currentState.crossCategoryMorphing);
-            addInterpolation('morphingAggressiveness', settings.morphingAggressiveness, currentState.morphingAggressiveness);
-            addInterpolation('currentMorphProgress', settings.currentMorphProgress, currentState.currentMorphProgress);
             addInterpolation('morphingPreset', settings.morphingPreset, currentState.morphingPreset);
-            addInterpolation('randomMorphing', settings.randomMorphing, currentState.randomMorphing);
             addInterpolation('morphingTargetShape', settings.morphingTargetShape, currentState.morphingTargetShape);
             
             // Grid parameters

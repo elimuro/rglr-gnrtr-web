@@ -413,10 +413,7 @@ export class GUIManager {
                 this.state.set('morphingDivision', division);
             });
         
-        // Morphing speed (keeping for backward compatibility)
-        this.addController(morphingFolder, 'morphingSpeed', 0.5, 5.0, 0.1, 'Morphing Speed', () => {
-            this.state.set('morphingSpeed', this.state.get('morphingSpeed'));
-        });
+
         
         // Morphing easing
         const easingOptions = {
@@ -463,11 +460,16 @@ export class GUIManager {
             this.app.triggerMorphAllSimultaneously();
         }};
         
+        const morphAllToSameSimultaneouslyButton = { execute: () => {
+            this.app.triggerMorphAllToSameSimultaneously();
+        }};
+        
         // Add individual morph buttons
         morphingFolder.add(randomMorphButton, 'execute').name('Random Morph');
         morphingFolder.add(morphAllButton, 'execute').name('Morph All Shapes');
         morphingFolder.add(morphAllToSameButton, 'execute').name('Morph All to Same');
         morphingFolder.add(morphAllSimultaneouslyButton, 'execute').name('Morph All Simultaneously');
+        morphingFolder.add(morphAllToSameSimultaneouslyButton, 'execute').name('Morph All to Same Simultaneously');
     }
 
     setupPerformanceControls() {

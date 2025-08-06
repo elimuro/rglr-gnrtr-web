@@ -162,8 +162,8 @@ export class MIDIClockManager {
         }
         
         // Sync morphing to bars
-        if (this.clockPulses % 96 === 0 && state.get('morphingEnabled')) {
-            // Trigger morphing
+        if (this.clockPulses % 96 === 0) {
+            // Trigger morphing (placeholder for future implementation)
         }
     }
 

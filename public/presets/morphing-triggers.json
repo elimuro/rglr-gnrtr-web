@@ -18,16 +18,17 @@
     "note2": { "channel": 0, "note": 37, "target": "morphAllShapes" },
     "note3": { "channel": 0, "note": 38, "target": "morphAllToSame" },
     "note4": { "channel": 0, "note": 39, "target": "morphAllSimultaneously" },
-    "note5": { "channel": 0, "note": 40, "target": "shapeCycling" },
-    "note6": { "channel": 0, "note": 41, "target": "sizeAnimation" },
-    "note7": { "channel": 0, "note": 42, "target": "showGrid" },
-    "note8": { "channel": 0, "note": 43, "target": "resetAnimation" },
-    "note9": { "channel": 0, "note": 44, "target": "toggleBasicShapes" },
-    "note10": { "channel": 0, "note": 45, "target": "toggleTriangles" },
-    "note11": { "channel": 0, "note": 46, "target": "toggleRectangles" },
-    "note12": { "channel": 0, "note": 47, "target": "toggleEllipses" },
-    "note13": { "channel": 0, "note": 48, "target": "toggleRefractiveSpheres" },
-    "note14": { "channel": 0, "note": 49, "target": "bloomEnabled" },
-    "note15": { "channel": 0, "note": 50, "target": "postProcessingEnabled" }
+    "note5": { "channel": 0, "note": 40, "target": "morphAllToSameSimultaneously" },
+    "note6": { "channel": 0, "note": 41, "target": "shapeCycling" },
+    "note7": { "channel": 0, "note": 42, "target": "sizeAnimation" },
+    "note8": { "channel": 0, "note": 43, "target": "showGrid" },
+    "note9": { "channel": 0, "note": 44, "target": "resetAnimation" },
+    "note10": { "channel": 0, "note": 45, "target": "toggleBasicShapes" },
+    "note11": { "channel": 0, "note": 46, "target": "toggleTriangles" },
+    "note12": { "channel": 0, "note": 47, "target": "toggleRectangles" },
+    "note13": { "channel": 0, "note": 48, "target": "toggleEllipses" },
+    "note14": { "channel": 0, "note": 49, "target": "toggleRefractiveSpheres" },
+    "note15": { "channel": 0, "note": 50, "target": "bloomEnabled" },
+    "note16": { "channel": 0, "note": 51, "target": "postProcessingEnabled" }
   }
 } 

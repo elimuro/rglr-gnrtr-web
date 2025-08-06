@@ -917,18 +917,6 @@ export class App {
                 this.state.set('centerScalingAnimation', !this.state.get('centerScalingAnimation'));
                 this.scene.updateCenterScaling();
                 break;
-            case 'morphingEnabled':
-                this.state.set('morphingEnabled', !this.state.get('morphingEnabled'));
-                break;
-            case 'autoMorphing':
-                this.state.set('autoMorphing', !this.state.get('autoMorphing'));
-                break;
-            case 'crossCategoryMorphing':
-                this.state.set('crossCategoryMorphing', !this.state.get('crossCategoryMorphing'));
-                break;
-            case 'randomMorphing':
-                this.state.set('randomMorphing', !this.state.get('randomMorphing'));
-                break;
             // Morphing triggers
             case 'randomMorph':
                 this.triggerRandomMorph();
@@ -941,6 +929,9 @@ export class App {
                 break;
             case 'morphAllSimultaneously':
                 this.triggerMorphAllSimultaneously();
+                break;
+            case 'morphAllToSameSimultaneously':
+                this.triggerMorphAllToSameSimultaneously();
                 break;
         }
     }
@@ -1715,9 +1706,10 @@ export class App {
         const control = this.controlManager.addControl('note', nextIndex);
         
         if (control) {
-            // Add to state with the first target from CONTROL_CONFIGS as default
+            // Add to state with morphing targets as defaults
             const noteMappings = this.state.get('midiNoteMappings');
-            const defaultTarget = 'shapeCycling'; // Use the first target from CONTROL_CONFIGS.note.targets
+            const morphingTargets = ['randomMorph', 'morphAllShapes', 'morphAllToSame', 'morphAllSimultaneously', 'morphAllToSameSimultaneously'];
+            const defaultTarget = morphingTargets[nextIndex % morphingTargets.length];
             
             noteMappings[control.controlId] = {
                 channel: 0,
@@ -2044,15 +2036,8 @@ export class App {
             case 'shapeCyclingTrigger':
                 this.state.set('shapeCyclingTrigger', Math.floor(value * 4));
                 break;
-            case 'morphingSpeed':
-                this.state.set('morphingSpeed', 0.1 + value * 4.9);
-                break;
-            case 'morphingAggressiveness':
-                this.state.set('morphingAggressiveness', value * 2);
-                break;
-            case 'currentMorphProgress':
-                this.state.set('currentMorphProgress', value);
-                break;
+
+
             case 'movementDivision':
                 this.state.set('movementDivision', this.getDivisionFromIndex(value));
                 break;
@@ -2192,8 +2177,30 @@ export class App {
             
             morphableShapes.forEach((shape, index) => {
                 setTimeout(() => {
-                    this.scene.shapeGenerator.startShapeMorph(shape, 'triangle_UP', targetShape, this.getMorphingDuration());
+                    // Get the current shape name from the mesh
+                    const currentShapeName = shape.userData.shapeName || 'triangle_UP';
+                    this.scene.shapeGenerator.startShapeMorph(shape, currentShapeName, targetShape, this.getMorphingDuration());
                 }, index * 50);
+            });
+        }
+    }
+
+    triggerMorphAllToSameSimultaneously() {
+        if (this.scene && this.scene.shapes.length > 0) {
+            const morphableShapes = this.scene.shapes.filter(shape => {
+                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
+            });
+            
+            if (morphableShapes.length === 0) return;
+            
+            const shapeGenerators = this.scene.shapeGenerator.getShapeGenerators();
+            const availableShapes = Object.keys(shapeGenerators).filter(name => !name.startsWith('sphere_'));
+            const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
+            
+            // Morph all shapes to the same target simultaneously (no staggered timing)
+            morphableShapes.forEach(shape => {
+                const currentShapeName = shape.userData.shapeName || 'triangle_UP';
+                this.scene.shapeGenerator.startShapeMorph(shape, currentShapeName, targetShape, this.getMorphingDuration());
             });
         }
     }

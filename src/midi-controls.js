@@ -69,9 +69,8 @@ const CONTROL_CONFIGS = {
             { value: 'shapeCyclingSync', label: 'Shape Cycling Sync' },
             { value: 'shapeCyclingIntensity', label: 'Shape Cycling Intensity' },
             { value: 'shapeCyclingTrigger', label: 'Shape Cycling Trigger' },
-            { value: 'morphingSpeed', label: 'Morphing Speed' },
-            { value: 'morphingAggressiveness', label: 'Morphing Aggressiveness' },
-            { value: 'currentMorphProgress', label: 'Morph Progress' },
+
+
             { value: 'movementDivision', label: 'Movement Division' },
             { value: 'rotationDivision', label: 'Rotation Division' },
             { value: 'scaleDivision', label: 'Scale Division' },
@@ -106,17 +105,12 @@ const CONTROL_CONFIGS = {
             { value: 'sphereWaterDistortion', label: 'Toggle Sphere Water Distortion' },
             { value: 'centerScalingEnabled', label: 'Toggle Center Scaling' },
             { value: 'centerScalingAnimation', label: 'Toggle Center Scaling Animation' },
-            { value: 'enableShapeCycling', label: 'Toggle Shape Cycling Enable' },
-            { value: 'enableSizeAnimation', label: 'Toggle Size Animation Enable' },
-            { value: 'morphingEnabled', label: 'Toggle Morphing' },
-            { value: 'autoMorphing', label: 'Toggle Auto Morphing' },
-            { value: 'crossCategoryMorphing', label: 'Toggle Cross-Category Morphing' },
-            { value: 'randomMorphing', label: 'Toggle Random Morphing' },
             // Morphing triggers
             { value: 'randomMorph', label: 'Random Morph' },
             { value: 'morphAllShapes', label: 'Morph All Shapes' },
             { value: 'morphAllToSame', label: 'Morph All to Same' },
-            { value: 'morphAllSimultaneously', label: 'Morph All Simultaneously' }
+            { value: 'morphAllSimultaneously', label: 'Morph All Simultaneously' },
+            { value: 'morphAllToSameSimultaneously', label: 'Morph All to Same Simultaneously' }
         ]
     }
 };
@@ -331,9 +325,8 @@ export class MIDIControl {
             shapeCyclingSync: { min: 0, max: 3 },
             shapeCyclingIntensity: { min: 0.1, max: 1 },
             shapeCyclingTrigger: { min: 0, max: 3 },
-            morphingSpeed: { min: 0.1, max: 5 },
-            morphingAggressiveness: { min: 0, max: 2 },
-            currentMorphProgress: { min: 0, max: 1 },
+
+
             // Division parameters (these will be handled specially)
             movementDivision: { min: 0, max: 127 },
             rotationDivision: { min: 0, max: 127 },
