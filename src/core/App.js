@@ -20,6 +20,543 @@ import { AudioManager } from '../modules/AudioManager.js';
 import { MIDIClockManager } from '../modules/MIDIClockManager.js';
 
 export class App {
+    // Unified parameter handler configuration to eliminate code duplication
+    static PARAMETER_HANDLERS = new Map([
+        ['movementAmplitude', { 
+            setter: (state, value) => state.set('movementAmplitude', value * 0.5),
+            requiresScene: false 
+        }],
+        ['rotationAmplitude', { 
+            setter: (state, value) => state.set('rotationAmplitude', value * 2),
+            requiresScene: false 
+        }],
+        ['scaleAmplitude', { 
+            setter: (state, value) => state.set('scaleAmplitude', value),
+            requiresScene: false 
+        }],
+        ['randomness', { 
+            setter: (state, value) => state.set('randomness', value),
+            requiresScene: false 
+        }],
+        ['cellSize', { 
+            setter: (state, value, scene) => {
+                state.set('cellSize', 0.5 + value * 1.5);
+                scene?.updateCellSize();
+            },
+            requiresScene: true 
+        }],
+        ['movementFrequency', { 
+            setter: (state, value) => state.set('movementFrequency', 0.1 + value * 2),
+            requiresScene: false 
+        }],
+        ['rotationFrequency', { 
+            setter: (state, value) => state.set('rotationFrequency', 0.1 + value * 2),
+            requiresScene: false 
+        }],
+        ['scaleFrequency', { 
+            setter: (state, value) => state.set('scaleFrequency', 0.1 + value * 2),
+            requiresScene: false 
+        }],
+        ['gridWidth', { 
+            setter: (state, value, scene) => {
+                const newWidth = Math.floor(1 + value * 29);
+                if (state.get('gridWidth') !== newWidth) {
+                    state.set('gridWidth', newWidth);
+                    scene?.createGrid();
+                }
+            },
+            requiresScene: true 
+        }],
+        ['gridHeight', { 
+            setter: (state, value, scene) => {
+                const newHeight = Math.floor(1 + value * 29);
+                if (state.get('gridHeight') !== newHeight) {
+                    state.set('gridHeight', newHeight);
+                    scene?.createGrid();
+                }
+            },
+            requiresScene: true 
+        }],
+        ['compositionWidth', { 
+            setter: (state, value, scene) => {
+                const newCompWidth = Math.floor(1 + value * 29);
+                if (state.get('compositionWidth') !== newCompWidth) {
+                    state.set('compositionWidth', newCompWidth);
+                    scene?.createGrid();
+                }
+            },
+            requiresScene: true 
+        }],
+        ['compositionHeight', { 
+            setter: (state, value, scene) => {
+                const newCompHeight = Math.floor(1 + value * 29);
+                if (state.get('compositionHeight') !== newCompHeight) {
+                    state.set('compositionHeight', newCompHeight);
+                    scene?.createGrid();
+                }
+            },
+            requiresScene: true 
+        }],
+        ['animationType', { 
+            setter: (state, value) => state.set('animationType', Math.floor(value * 4)),
+            requiresScene: false 
+        }],
+        ['sphereRefraction', { 
+            setter: (state, value, scene) => {
+                state.set('sphereRefraction', value * 2);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereTransparency', { 
+            setter: (state, value, scene) => {
+                state.set('sphereTransparency', value);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereTransmission', { 
+            setter: (state, value, scene) => {
+                state.set('sphereTransmission', value);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereRoughness', { 
+            setter: (state, value, scene) => {
+                state.set('sphereRoughness', value);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereMetalness', { 
+            setter: (state, value, scene) => {
+                state.set('sphereMetalness', value);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereScale', { 
+            setter: (state, value, scene) => {
+                state.set('sphereScale', 0.5 + value * 2.5);
+                scene?.updateSphereScales();
+            },
+            requiresScene: true 
+        }],
+        ['sphereClearcoat', { 
+            setter: (state, value, scene) => {
+                state.set('sphereClearcoat', value);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereClearcoatRoughness', { 
+            setter: (state, value, scene) => {
+                state.set('sphereClearcoatRoughness', value);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereEnvMapIntensity', { 
+            setter: (state, value, scene) => {
+                state.set('sphereEnvMapIntensity', value * 3);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereDistortionStrength', { 
+            setter: (state, value, scene) => {
+                state.set('sphereDistortionStrength', value);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereHighPerformanceMode', { 
+            setter: (state, value, scene) => {
+                state.set('sphereHighPerformanceMode', value > 0.5);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['sphereWaterDistortion', { 
+            setter: (state, value, scene) => {
+                state.set('sphereWaterDistortion', value > 0.5);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true 
+        }],
+        ['bloomStrength', { 
+            setter: (state, value, scene) => {
+                state.set('bloomStrength', value * 2);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['bloomRadius', { 
+            setter: (state, value, scene) => {
+                state.set('bloomRadius', value * 1.5);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['bloomThreshold', { 
+            setter: (state, value, scene) => {
+                state.set('bloomThreshold', value);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['chromaticIntensity', { 
+            setter: (state, value, scene) => {
+                state.set('chromaticIntensity', value);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['vignetteIntensity', { 
+            setter: (state, value, scene) => {
+                state.set('vignetteIntensity', value);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['vignetteRadius', { 
+            setter: (state, value, scene) => {
+                state.set('vignetteRadius', 0.3 + value * 0.7);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['vignetteSoftness', { 
+            setter: (state, value, scene) => {
+                state.set('vignetteSoftness', value);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['grainIntensity', { 
+            setter: (state, value, scene) => {
+                state.set('grainIntensity', value * 0.3);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['colorHue', { 
+            setter: (state, value, scene) => {
+                state.set('colorHue', value);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['colorSaturation', { 
+            setter: (state, value, scene) => {
+                state.set('colorSaturation', 0.1 + value * 2);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['colorBrightness', { 
+            setter: (state, value, scene) => {
+                state.set('colorBrightness', 0.5 + value);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['colorContrast', { 
+            setter: (state, value, scene) => {
+                state.set('colorContrast', 0.5 + value * 1.5);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['ambientLightIntensity', { 
+            setter: (state, value, scene) => {
+                state.set('ambientLightIntensity', value * 2);
+                scene?.updateLighting();
+            },
+            requiresScene: true 
+        }],
+        ['directionalLightIntensity', { 
+            setter: (state, value, scene) => {
+                state.set('directionalLightIntensity', value * 2);
+                scene?.updateLighting();
+            },
+            requiresScene: true 
+        }],
+        ['pointLight1Intensity', { 
+            setter: (state, value, scene) => {
+                state.set('pointLight1Intensity', value * 3);
+                scene?.updateLighting();
+            },
+            requiresScene: true 
+        }],
+        ['pointLight2Intensity', { 
+            setter: (state, value, scene) => {
+                state.set('pointLight2Intensity', value * 3);
+                scene?.updateLighting();
+            },
+            requiresScene: true 
+        }],
+        ['rimLightIntensity', { 
+            setter: (state, value, scene) => {
+                state.set('rimLightIntensity', value * 2);
+                scene?.updateLighting();
+            },
+            requiresScene: true 
+        }],
+        ['accentLightIntensity', { 
+            setter: (state, value, scene) => {
+                state.set('accentLightIntensity', value * 2);
+                scene?.updateLighting();
+            },
+            requiresScene: true 
+        }],
+        ['lightColour', { 
+            setter: (state, value, scene, app) => {
+                const hue = Math.floor(value * 360);
+                const color = app.hsvToHex(hue, 100, 100);
+                state.set('lightColour', color);
+                scene?.updateLighting();
+            },
+            requiresScene: true,
+            requiresApp: true
+        }],
+        ['shapeCyclingSpeed', { 
+            setter: (state, value) => state.set('shapeCyclingSpeed', 0.1 + value * 5),
+            requiresScene: false 
+        }],
+        ['shapeCyclingPattern', { 
+            setter: (state, value) => state.set('shapeCyclingPattern', Math.floor(value * 5)),
+            requiresScene: false 
+        }],
+        ['shapeCyclingDirection', { 
+            setter: (state, value) => state.set('shapeCyclingDirection', Math.floor(value * 4)),
+            requiresScene: false 
+        }],
+        ['shapeCyclingSync', { 
+            setter: (state, value) => state.set('shapeCyclingSync', Math.floor(value * 4)),
+            requiresScene: false 
+        }],
+        ['shapeCyclingIntensity', { 
+            setter: (state, value) => state.set('shapeCyclingIntensity', value),
+            requiresScene: false 
+        }],
+        ['shapeCyclingTrigger', { 
+            setter: (state, value) => state.set('shapeCyclingTrigger', Math.floor(value * 4)),
+            requiresScene: false 
+        }],
+        // Additional parameters from updateAnimationParameter
+        ['globalBPM', { 
+            setter: (state, value) => state.set('globalBPM', 60 + Math.floor(value * 240)),
+            requiresScene: false 
+        }],
+        ['enableShapeCycling', { 
+            setter: (state, value) => state.set('enableShapeCycling', value > 0.5),
+            requiresScene: false 
+        }],
+        ['showGrid', { 
+            setter: (state, value, scene) => {
+                state.set('showGrid', value > 0.5);
+                scene?.updateGridLines();
+            },
+            requiresScene: true 
+        }],
+        ['shapeColor', { 
+            setter: (state, value, scene, app) => {
+                const shapeHue = Math.floor(value * 360);
+                const shapeColor = app.hsvToHex(shapeHue, 100, 100);
+                state.set('shapeColor', shapeColor);
+                scene?.updateShapeColors();
+            },
+            requiresScene: true,
+            requiresApp: true
+        }],
+        ['backgroundColor', { 
+            setter: (state, value, scene, app) => {
+                const bgHue = Math.floor(value * 360);
+                const bgColor = app.hsvToHex(bgHue, 100, 100);
+                state.set('backgroundColor', bgColor);
+                scene?.updateBackgroundColor();
+            },
+            requiresScene: true,
+            requiresApp: true
+        }],
+        ['bloomEnabled', { 
+            setter: (state, value, scene) => {
+                state.set('bloomEnabled', value > 0.5);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['chromaticAberrationEnabled', { 
+            setter: (state, value, scene) => {
+                state.set('chromaticAberrationEnabled', value > 0.5);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['vignetteEnabled', { 
+            setter: (state, value, scene) => {
+                state.set('vignetteEnabled', value > 0.5);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['grainEnabled', { 
+            setter: (state, value, scene) => {
+                state.set('grainEnabled', value > 0.5);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['colorGradingEnabled', { 
+            setter: (state, value, scene) => {
+                state.set('colorGradingEnabled', value > 0.5);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['postProcessingEnabled', { 
+            setter: (state, value, scene) => {
+                state.set('postProcessingEnabled', value > 0.5);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['fxaaEnabled', { 
+            setter: (state, value, scene) => {
+                state.set('fxaaEnabled', value > 0.5);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true 
+        }],
+        ['enableFrustumCulling', { 
+            setter: (state, value) => state.set('enableFrustumCulling', value > 0.5),
+            requiresScene: false 
+        }],
+        ['morphingEasing', { 
+            setter: (state, value) => {
+                const easingOptions = ['power2.inOut', 'power2.in', 'power2.out', 'power3.inOut', 'power3.in', 'power3.out'];
+                const easingIndex = Math.floor(value * easingOptions.length);
+                state.set('morphingEasing', easingOptions[easingIndex]);
+            },
+            requiresScene: false 
+        }],
+        ['gridColor', { 
+            setter: (state, value, scene, app) => {
+                const gridHue = Math.floor(value * 360);
+                const gridColor = app.hsvToHex(gridHue, 100, 100);
+                state.set('gridColor', gridColor);
+                scene?.updateGridLines();
+            },
+            requiresScene: true,
+            requiresApp: true
+        }],
+        ['centerScalingEnabled', { 
+            setter: (state, value, scene) => {
+                state.set('centerScalingEnabled', value > 0.5);
+                scene?.updateCenterScaling();
+            },
+            requiresScene: true 
+        }],
+        ['centerScalingIntensity', { 
+            setter: (state, value, scene) => {
+                state.set('centerScalingIntensity', value * 2);
+                scene?.updateCenterScaling();
+            },
+            requiresScene: true 
+        }],
+        ['centerScalingCurve', { 
+            setter: (state, value, scene) => {
+                state.set('centerScalingCurve', Math.floor(value * 4));
+                scene?.updateCenterScaling();
+            },
+            requiresScene: true 
+        }],
+        ['centerScalingRadius', { 
+            setter: (state, value, scene) => {
+                state.set('centerScalingRadius', 0.1 + value * 5);
+                scene?.updateCenterScaling();
+            },
+            requiresScene: true 
+        }],
+        ['centerScalingDirection', { 
+            setter: (state, value, scene) => {
+                state.set('centerScalingDirection', Math.floor(value * 2));
+                scene?.updateCenterScaling();
+            },
+            requiresScene: true 
+        }],
+        ['centerScalingAnimationSpeed', { 
+            setter: (state, value, scene) => {
+                state.set('centerScalingAnimationSpeed', 0.1 + value * 3);
+                scene?.updateCenterScaling();
+            },
+            requiresScene: true 
+        }],
+        ['centerScalingAnimationType', { 
+            setter: (state, value, scene) => {
+                state.set('centerScalingAnimationType', Math.floor(value * 4));
+                scene?.updateCenterScaling();
+            },
+            requiresScene: true 
+        }],
+        ['movementDivision', { 
+            setter: (state, value, scene, app) => {
+                state.set('movementDivision', app.getDivisionFromIndex(value));
+            },
+            requiresScene: false,
+            requiresApp: true
+        }],
+        ['rotationDivision', { 
+            setter: (state, value, scene, app) => {
+                state.set('rotationDivision', app.getDivisionFromIndex(value));
+            },
+            requiresScene: false,
+            requiresApp: true
+        }],
+        ['scaleDivision', { 
+            setter: (state, value, scene, app) => {
+                state.set('scaleDivision', app.getDivisionFromIndex(value));
+            },
+            requiresScene: false,
+            requiresApp: true
+        }],
+        ['shapeCyclingDivision', { 
+            setter: (state, value, scene, app) => {
+                state.set('shapeCyclingDivision', app.getDivisionFromIndex(value));
+            },
+            requiresScene: false,
+            requiresApp: true
+        }],
+        ['morphingDivision', { 
+            setter: (state, value, scene, app) => {
+                state.set('morphingDivision', app.getDivisionFromIndex(value));
+            },
+            requiresScene: false,
+            requiresApp: true
+        }],
+        ['centerScalingDivision', { 
+            setter: (state, value, scene, app) => {
+                state.set('centerScalingDivision', app.getDivisionFromIndex(value));
+            },
+            requiresScene: false,
+            requiresApp: true
+        }],
+        ['enableMovementAnimation', { 
+            setter: (state, value) => state.set('enableMovementAnimation', value > 0.5),
+            requiresScene: false 
+        }],
+        ['enableRotationAnimation', { 
+            setter: (state, value) => state.set('enableRotationAnimation', value > 0.5),
+            requiresScene: false 
+        }],
+        ['enableScaleAnimation', { 
+            setter: (state, value) => state.set('enableScaleAnimation', value > 0.5),
+            requiresScene: false 
+        }]
+    ]);
+
     constructor() {
         this.state = new StateManager();
         this.scene = new Scene(this.state);
@@ -43,7 +580,173 @@ export class App {
         // Initialize audio manager
         this.audioManager = new AudioManager(this.state);
         
-        this.init();
+        // Performance optimization: DOM element caching
+        this.domCache = new Map();
+        this.domCacheInitialized = false;
+        
+        // Performance optimization: Async operation cancellation
+        this.abortControllers = new Map();
+        
+                    // Performance optimization: Event listener tracking
+            this.eventListeners = [];
+
+            // Phase 2.1: Morphing state cache
+            this.morphingStateCache = null;
+
+            this.init();
+    }
+
+    // Performance optimization: Unified parameter handler
+    handleParameterUpdate(target, value, source = 'midi') {
+        const handler = App.PARAMETER_HANDLERS.get(target);
+        if (handler) {
+            if (handler.requiresApp) {
+                handler.setter(this.state, value, this.scene, this);
+            } else if (handler.requiresScene) {
+                handler.setter(this.state, value, this.scene);
+            } else {
+                handler.setter(this.state, value);
+            }
+        } else {
+            // For any other parameters, just set the value directly
+            this.state.set(target, value);
+        }
+    }
+
+    // Performance optimization: DOM element caching
+    initializeDOMCache() {
+        if (this.domCacheInitialized) return;
+        
+        const elementsToCache = [
+            'midi-drawer-container',
+            'audio-interface-select',
+            'audio-channels-container',
+            'audio-connect',
+            'audio-disconnect',
+            'audio-refresh-interfaces',
+            'audio-status-indicator',
+            'audio-status-text',
+            'audio-overall-value',
+            'audio-rms-value',
+            'audio-peak-value',
+            'audio-frequency-value',
+            'audio-mapping-overall-value',
+            'audio-mapping-rms-value',
+            'audio-mapping-peak-value',
+            'audio-mapping-frequency-value',
+            'midi-connect',
+            'midi-disconnect',
+            'midi-refresh',
+            'midi-preset-select',
+            'scene-preset-select',
+            'preset-file-input',
+            'add-cc-control',
+            'add-note-control',
+            'add-audio-mapping-control',
+            'mapping-test',
+            'mapping-save',
+            'mapping-load',
+            'save-scene-button',
+            'load-scene-button',
+            'interpolation-duration',
+            'interpolation-duration-value',
+            'interpolation-easing',
+            'debug-interpolation',
+            'midi-activity-clear',
+            'midi-activity-pause',
+            'midi-activity-max',
+            'midi-activity-autoscroll',
+            'midi-activity-filter-clock',
+            'midi-activity-stream',
+            'midi-activity-count',
+            'midi-cc-count',
+            'midi-note-count',
+            'midi-pitch-count',
+            'midi-system-count',
+            'midi-activity-status',
+            'midi-activity-device',
+            'midi-activity-rate',
+            'midi-activity-last',
+            'cc-connect-midi',
+            'note-connect-midi',
+            'audio-mapping-connect-audio',
+            'cc-controls-container',
+            'note-controls-container',
+            'audio-mapping-controls-container'
+        ];
+        
+        elementsToCache.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                this.domCache.set(id, element);
+            }
+        });
+        
+        this.domCacheInitialized = true;
+    }
+
+    getCachedElement(id) {
+        if (!this.domCache.has(id)) {
+            const element = document.getElementById(id);
+            if (element) {
+                this.domCache.set(id, element);
+            }
+            return element;
+        }
+        return this.domCache.get(id);
+    }
+
+    // Performance optimization: Debounced function utility
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Performance optimization: Event listener tracking
+    addTrackedEventListener(element, event, handler) {
+        if (element) {
+            element.addEventListener(event, handler);
+            this.eventListeners.push({ element, event, handler });
+        }
+    }
+
+    removeAllEventListeners() {
+        this.eventListeners.forEach(({ element, event, handler }) => {
+            element?.removeEventListener(event, handler);
+        });
+        this.eventListeners = [];
+    }
+
+    // Performance optimization: Cleanup method
+    cleanup() {
+        // Abort all pending requests
+        this.abortControllers.forEach(controller => controller.abort());
+        this.abortControllers.clear();
+        
+        // Remove event listeners
+        this.removeAllEventListeners();
+        
+        // Stop managers
+        this.animationLoop?.stop();
+        this.audioManager?.stopAudioCapture();
+        this.midiManager?.disconnect();
+        
+        // Clear caches
+        this.domCache.clear();
+        this.domCacheInitialized = false;
+        if (this.morphingStateCache) {
+            this.morphingStateCache.cacheValid = false;
+        }
+        
+        // Phase 4.1: Clear color lookup cache
+        this.constructor.HEX_LOOKUP.clear();
     }
 
     async init() {
@@ -97,6 +800,9 @@ export class App {
             // Start animation loop
             this.animationLoop.start();
             
+            // Performance optimization: Initialize DOM cache
+            this.initializeDOMCache();
+            
             // Set up window resize handler
             window.addEventListener('resize', () => this.onWindowResize());
             
@@ -112,39 +818,37 @@ export class App {
         // Set up drawer functionality
         this.setupDrawers();
         
-        // Set up MIDI UI event listeners
-        document.getElementById('midi-connect').addEventListener('click', () => {
+        // Set up MIDI UI event listeners using cached DOM elements
+        this.addTrackedEventListener(this.getCachedElement('midi-connect'), 'click', () => {
             this.midiManager.connect();
         });
         
-        document.getElementById('midi-disconnect').addEventListener('click', () => {
+        this.addTrackedEventListener(this.getCachedElement('midi-disconnect'), 'click', () => {
             this.midiManager.disconnect();
         });
         
         // Set up audio interface UI event listeners
         this.setupAudioInterfaceUI();
 
-        const refreshButton = document.getElementById('midi-refresh');
+        const refreshButton = this.getCachedElement('midi-refresh');
         if (refreshButton) {
-            refreshButton.addEventListener('click', () => {
+            this.addTrackedEventListener(refreshButton, 'click', () => {
                 this.midiManager.refreshDevices();
             });
         }
 
-
-        
         // Preset selector
-        document.getElementById('midi-preset-select').addEventListener('change', (e) => {
+        this.addTrackedEventListener(this.getCachedElement('midi-preset-select'), 'change', (e) => {
             this.applyCCPreset(e.target.value);
         });
         
         // Scene preset selector
-        document.getElementById('scene-preset-select').addEventListener('change', (e) => {
+        this.addTrackedEventListener(this.getCachedElement('scene-preset-select'), 'change', (e) => {
             this.applyScenePreset(e.target.value);
         });
         
         // File input for loading presets and scenes
-        document.getElementById('preset-file-input').addEventListener('change', (e) => {
+        this.addTrackedEventListener(this.getCachedElement('preset-file-input'), 'change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 // Check if it's a scene file or MIDI preset by reading the content
@@ -170,35 +874,35 @@ export class App {
         });
         
         // Add control buttons
-        document.getElementById('add-cc-control').addEventListener('click', () => {
+        this.addTrackedEventListener(this.getCachedElement('add-cc-control'), 'click', () => {
             this.addCCControl();
         });
         
-        document.getElementById('add-note-control').addEventListener('click', () => {
+        this.addTrackedEventListener(this.getCachedElement('add-note-control'), 'click', () => {
             this.addNoteControl();
         });
         
-        document.getElementById('add-audio-mapping-control').addEventListener('click', () => {
+        this.addTrackedEventListener(this.getCachedElement('add-audio-mapping-control'), 'click', () => {
             this.addAudioMappingControl();
         });
         
         // Mapping test button
-        document.getElementById('mapping-test').addEventListener('click', () => {
+        this.addTrackedEventListener(this.getCachedElement('mapping-test'), 'click', () => {
             this.testAudioMapping();
         });
         
         // Mapping save button
-        document.getElementById('mapping-save').addEventListener('click', () => {
+        this.addTrackedEventListener(this.getCachedElement('mapping-save'), 'click', () => {
             this.savePreset();
         });
         
         // Mapping load button
-        document.getElementById('mapping-load').addEventListener('click', () => {
-            document.getElementById('preset-file-input').click();
+        this.addTrackedEventListener(this.getCachedElement('mapping-load'), 'click', () => {
+            this.getCachedElement('preset-file-input').click();
         });
         
         // Test button for CC mapping
-        document.getElementById('mapping-test').addEventListener('click', () => {
+        this.addTrackedEventListener(this.getCachedElement('mapping-test'), 'click', () => {
             this.testCCValues();
         });
         
@@ -209,28 +913,26 @@ export class App {
             midiStopAnimationCheckbox.checked = this.state.get('midiStopStopsAnimation') || false;
             
             // Add event listener
-            midiStopAnimationCheckbox.addEventListener('change', (e) => {
+            this.addTrackedEventListener(midiStopAnimationCheckbox, 'change', (e) => {
                 this.state.set('midiStopStopsAnimation', e.target.checked);
             });
         }
         
         // Scene management buttons
-        document.getElementById('save-scene-button').addEventListener('click', () => {
+        this.addTrackedEventListener(this.getCachedElement('save-scene-button'), 'click', () => {
             this.saveScene();
         });
         
-        document.getElementById('load-scene-button').addEventListener('click', () => {
-            document.getElementById('preset-file-input').click();
+        this.addTrackedEventListener(this.getCachedElement('load-scene-button'), 'click', () => {
+            this.getCachedElement('preset-file-input').click();
         });
         
-
-        
         // Interpolation duration slider
-        const interpolationDurationInput = document.getElementById('interpolation-duration');
-        const interpolationDurationValue = document.getElementById('interpolation-duration-value');
+        const interpolationDurationInput = this.getCachedElement('interpolation-duration');
+        const interpolationDurationValue = this.getCachedElement('interpolation-duration-value');
         
         if (interpolationDurationInput && interpolationDurationValue) {
-            interpolationDurationInput.addEventListener('input', (e) => {
+            this.addTrackedEventListener(interpolationDurationInput, 'input', (e) => {
                 const value = parseFloat(e.target.value);
                 interpolationDurationValue.textContent = `${value.toFixed(1)}s`;
                 this.state.set('interpolationDuration', value);
@@ -238,17 +940,17 @@ export class App {
         }
         
         // Interpolation easing selector
-        const interpolationEasingSelect = document.getElementById('interpolation-easing');
+        const interpolationEasingSelect = this.getCachedElement('interpolation-easing');
         if (interpolationEasingSelect) {
-            interpolationEasingSelect.addEventListener('change', (e) => {
+            this.addTrackedEventListener(interpolationEasingSelect, 'change', (e) => {
                 this.state.set('interpolationEasing', e.target.value);
             });
         }
         
         // Debug interpolation button
-        const debugInterpolationButton = document.getElementById('debug-interpolation');
+        const debugInterpolationButton = this.getCachedElement('debug-interpolation');
         if (debugInterpolationButton) {
-            debugInterpolationButton.addEventListener('click', () => {
+            this.addTrackedEventListener(debugInterpolationButton, 'click', () => {
                 this.debugInterpolation();
             });
         }
@@ -982,7 +1684,19 @@ export class App {
 
 
 
-    hsvToHex(h, s, v) {
+    // Phase 4.1: String Operation Optimization - Color lookup cache
+    static HEX_LOOKUP = new Map();
+
+    static getHexLookup(h, s, v) {
+        const key = `${Math.round(h)}_${Math.round(s)}_${Math.round(v)}`;
+        if (!this.HEX_LOOKUP.has(key)) {
+            const color = this.calculateHSVToHex(h, s, v);
+            this.HEX_LOOKUP.set(key, color);
+        }
+        return this.HEX_LOOKUP.get(key);
+    }
+
+    static calculateHSVToHex(h, s, v) {
         // Convert HSV to RGB, then to hex
         const c = v * s / 100;
         const x = c * (1 - Math.abs((h / 60) % 2 - 1));
@@ -1010,210 +1724,14 @@ export class App {
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
 
-    handleCCMapping(target, normalizedValue) {
-        switch (target) {
-            case 'movementAmplitude':
-                this.state.set('movementAmplitude', normalizedValue * 0.5);
-                break;
-            case 'rotationAmplitude':
-                this.state.set('rotationAmplitude', normalizedValue * 2);
-                break;
-            case 'scaleAmplitude':
-                this.state.set('scaleAmplitude', normalizedValue);
-                break;
-            case 'randomness':
-                this.state.set('randomness', normalizedValue);
-                break;
-            case 'cellSize':
-                this.state.set('cellSize', 0.5 + normalizedValue * 1.5);
-                this.scene.updateCellSize();
-                break;
-            case 'movementFrequency':
-                this.state.set('movementFrequency', 0.1 + normalizedValue * 2);
-                break;
-            case 'rotationFrequency':
-                this.state.set('rotationFrequency', 0.1 + normalizedValue * 2);
-                break;
-            case 'scaleFrequency':
-                this.state.set('scaleFrequency', 0.1 + normalizedValue * 2);
-                break;
-            case 'gridWidth':
-                const newWidth = Math.floor(1 + normalizedValue * 29);
-                if (this.state.get('gridWidth') !== newWidth) {
-                    this.state.set('gridWidth', newWidth);
-                    this.scene.createGrid();
-                }
-                break;
-            case 'gridHeight':
-                const newHeight = Math.floor(1 + normalizedValue * 29);
-                if (this.state.get('gridHeight') !== newHeight) {
-                    this.state.set('gridHeight', newHeight);
-                    this.scene.createGrid();
-                }
-                break;
-            case 'compositionWidth':
-                const newCompWidth = Math.floor(1 + normalizedValue * 29);
-                if (this.state.get('compositionWidth') !== newCompWidth) {
-                    this.state.set('compositionWidth', newCompWidth);
-                    this.scene.createGrid();
-                }
-                break;
-            case 'compositionHeight':
-                const newCompHeight = Math.floor(1 + normalizedValue * 29);
-                if (this.state.get('compositionHeight') !== newCompHeight) {
-                    this.state.set('compositionHeight', newCompHeight);
-                    this.scene.createGrid();
-                }
-                break;
-            case 'animationType':
-                this.state.set('animationType', Math.floor(normalizedValue * 4));
-                break;
-            case 'sphereRefraction':
-                this.state.set('sphereRefraction', normalizedValue * 2);
-                this.scene.updateSphereMaterials();
-                break;
-            case 'sphereTransparency':
-                this.state.set('sphereTransparency', normalizedValue);
-                this.scene.updateSphereMaterials();
-                break;
-            case 'sphereTransmission':
-                this.state.set('sphereTransmission', normalizedValue);
-                this.scene.updateSphereMaterials();
-                break;
-            case 'sphereRoughness':
-                this.state.set('sphereRoughness', normalizedValue);
-                this.scene.updateSphereMaterials();
-                break;
-            case 'sphereMetalness':
-                this.state.set('sphereMetalness', normalizedValue);
-                this.scene.updateSphereMaterials();
-                break;
-            case 'sphereScale':
-                this.state.set('sphereScale', 0.5 + normalizedValue * 2.5);
-                this.scene.updateSphereScales();
-                break;
-            case 'sphereClearcoat':
-                this.state.set('sphereClearcoat', normalizedValue);
-                this.scene.updateSphereMaterials();
-                break;
-            case 'sphereClearcoatRoughness':
-                this.state.set('sphereClearcoatRoughness', normalizedValue);
-                this.scene.updateSphereMaterials();
-                break;
-            case 'sphereEnvMapIntensity':
-                this.state.set('sphereEnvMapIntensity', normalizedValue * 3);
-                this.scene.updateSphereMaterials();
-                break;
-            case 'sphereDistortionStrength':
-                this.state.set('sphereDistortionStrength', normalizedValue);
-                this.scene.updateSphereMaterials();
-                break;
-            case 'sphereHighPerformanceMode':
-                this.state.set('sphereHighPerformanceMode', normalizedValue > 0.5);
-                this.scene.updateSphereMaterials();
-                break;
+    hsvToHex(h, s, v) {
+        // Use cached color lookup for better performance
+        return this.constructor.getHexLookup(h, s, v);
+    }
 
-            // Post-processing parameters
-            case 'bloomStrength':
-                this.state.set('bloomStrength', normalizedValue * 2);
-                this.scene.updatePostProcessing();
-                break;
-            case 'bloomRadius':
-                this.state.set('bloomRadius', normalizedValue * 1.5);
-                this.scene.updatePostProcessing();
-                break;
-            case 'bloomThreshold':
-                this.state.set('bloomThreshold', normalizedValue);
-                this.scene.updatePostProcessing();
-                break;
-            case 'chromaticIntensity':
-                this.state.set('chromaticIntensity', normalizedValue);
-                this.scene.updatePostProcessing();
-                break;
-            case 'vignetteIntensity':
-                this.state.set('vignetteIntensity', normalizedValue);
-                this.scene.updatePostProcessing();
-                break;
-            case 'vignetteRadius':
-                this.state.set('vignetteRadius', 0.3 + normalizedValue * 0.7);
-                this.scene.updatePostProcessing();
-                break;
-            case 'vignetteSoftness':
-                this.state.set('vignetteSoftness', normalizedValue);
-                this.scene.updatePostProcessing();
-                break;
-            case 'grainIntensity':
-                this.state.set('grainIntensity', normalizedValue * 0.3);
-                this.scene.updatePostProcessing();
-                break;
-            case 'colorHue':
-                this.state.set('colorHue', normalizedValue);
-                this.scene.updatePostProcessing();
-                break;
-            case 'colorSaturation':
-                this.state.set('colorSaturation', 0.1 + normalizedValue * 2);
-                this.scene.updatePostProcessing();
-                break;
-            case 'colorBrightness':
-                this.state.set('colorBrightness', 0.5 + normalizedValue);
-                this.scene.updatePostProcessing();
-                break;
-            case 'colorContrast':
-                this.state.set('colorContrast', 0.5 + normalizedValue * 1.5);
-                this.scene.updatePostProcessing();
-                break;
-            // Lighting parameters
-            case 'ambientLightIntensity':
-                this.state.set('ambientLightIntensity', normalizedValue * 2);
-                this.scene.updateLighting();
-                break;
-            case 'directionalLightIntensity':
-                this.state.set('directionalLightIntensity', normalizedValue * 2);
-                this.scene.updateLighting();
-                break;
-            case 'pointLight1Intensity':
-                this.state.set('pointLight1Intensity', normalizedValue * 3);
-                this.scene.updateLighting();
-                break;
-            case 'pointLight2Intensity':
-                this.state.set('pointLight2Intensity', normalizedValue * 3);
-                this.scene.updateLighting();
-                break;
-            case 'rimLightIntensity':
-                this.state.set('rimLightIntensity', normalizedValue * 2);
-                this.scene.updateLighting();
-                break;
-            case 'accentLightIntensity':
-                this.state.set('accentLightIntensity', normalizedValue * 2);
-                this.scene.updateLighting();
-                break;
-            case 'lightColour':
-                // Map normalized value to hue (0-360 degrees)
-                const hue = Math.floor(normalizedValue * 360);
-                const color = this.hsvToHex(hue, 100, 100);
-                this.state.set('lightColour', color);
-                this.scene.updateLighting();
-                break;
-            // Shape cycling parameters
-            case 'shapeCyclingSpeed':
-                this.state.set('shapeCyclingSpeed', 0.1 + normalizedValue * 5);
-                break;
-            case 'shapeCyclingPattern':
-                this.state.set('shapeCyclingPattern', Math.floor(normalizedValue * 5));
-                break;
-            case 'shapeCyclingDirection':
-                this.state.set('shapeCyclingDirection', Math.floor(normalizedValue * 4));
-                break;
-            case 'shapeCyclingSync':
-                this.state.set('shapeCyclingSync', Math.floor(normalizedValue * 4));
-                break;
-            case 'shapeCyclingIntensity':
-                this.state.set('shapeCyclingIntensity', normalizedValue);
-                break;
-            case 'shapeCyclingTrigger':
-                this.state.set('shapeCyclingTrigger', Math.floor(normalizedValue * 4));
-                break;
-        }
+    handleCCMapping(target, normalizedValue) {
+        // Use unified parameter handler to eliminate code duplication
+        this.handleParameterUpdate(target, normalizedValue, 'midi');
     }
 
     handleNoteMapping(target) {
@@ -1416,9 +1934,19 @@ export class App {
         // Wait a bit for DOM to be ready
         await new Promise(resolve => setTimeout(resolve, 100));
         
+        // Cancel previous request
+        if (this.abortControllers.has('presets')) {
+            this.abortControllers.get('presets').abort();
+        }
+        
+        const controller = new AbortController();
+        this.abortControllers.set('presets', controller);
+        
         try {
             // Try to load a list of available presets
-            const response = await fetch('/presets/');
+            const response = await fetch('/presets/', { 
+                signal: controller.signal 
+            });
             if (response.ok) {
                 const text = await response.text();
                 // Parse the directory listing to find .json files
@@ -1434,6 +1962,9 @@ export class App {
                 }
             }
         } catch (error) {
+            if (error.name === 'AbortError') {
+                return; // Cancelled
+            }
             // Could not load preset list, trying individual preset discovery
         }
         
@@ -1454,7 +1985,9 @@ export class App {
         // Try to load each preset to see if it exists
         for (const preset of knownPresets) {
             try {
-                const response = await fetch(`/presets/${preset}.json`);
+                const response = await fetch(`/presets/${preset}.json`, { 
+                    signal: controller.signal 
+                });
                 if (response.ok) {
                     const presetData = await response.json();
                     if (this.validatePreset(presetData)) {
@@ -1462,11 +1995,17 @@ export class App {
                     }
                 }
             } catch (error) {
+                if (error.name === 'AbortError') {
+                    return; // Cancelled
+                }
                 // Preset not found or invalid
             }
         }
         
         this.updatePresetDropdown(availablePresets);
+        
+        // Cleanup abort controller
+        this.abortControllers.delete('presets');
     }
 
     async loadAvailableScenePresets() {
@@ -1478,9 +2017,19 @@ export class App {
     }
 
     async discoverScenePresets() {
-        // First, try to load the index file which contains all available scenes
+        // Cancel previous request
+        if (this.abortControllers.has('scene-discovery')) {
+            this.abortControllers.get('scene-discovery').abort();
+        }
+        
+        const controller = new AbortController();
+        this.abortControllers.set('scene-discovery', controller);
+        
         try {
-            const indexResponse = await fetch('/scenes/index.json');
+            // First, try to load the index file which contains all available scenes
+            const indexResponse = await fetch('/scenes/index.json', {
+                signal: controller.signal
+            });
             
             if (indexResponse.ok) {
                 const indexData = await indexResponse.json();
@@ -1491,12 +2040,17 @@ export class App {
                 }
             }
         } catch (error) {
+            if (error.name === 'AbortError') {
+                return; // Cancelled
+            }
             // Scene index not available, trying directory listing
         }
         
         // Try to get a proper directory listing
         try {
-            const response = await fetch('/scenes/');
+            const response = await fetch('/scenes/', {
+                signal: controller.signal
+            });
             if (response.ok) {
                 const text = await response.text();
                 
@@ -1551,64 +2105,35 @@ export class App {
         
         // Fallback: try a systematic approach to find any .json files
         await this.systematicSceneDiscovery();
+        
+        // Cleanup abort controller
+        this.abortControllers.delete('scene-discovery');
     }
 
     async systematicSceneDiscovery() {
-        // This is a more intelligent approach that tries to discover files
-        // by attempting common patterns and learning from successful finds
-        
-        const foundPresets = [];
-        const triedNames = new Set();
-        
-        // First, try the known existing files
-        const knownFiles = ['ambient-dream', 'cyberpunk-night', 'minimalist-zen', 'mirage', 'meat'];
-        for (const name of knownFiles) {
-            triedNames.add(name);
-            try {
-                const response = await fetch(`/scenes/${name}.json`);
-                if (response.ok) {
-                    const sceneData = await response.json();
-                    if (this.validateScenePreset(sceneData)) {
-                        foundPresets.push(name);
-                    }
-                }
-            } catch (error) {
-                // Silently continue
-            }
+        // Cancel previous request
+        if (this.abortControllers.has('systematic-discovery')) {
+            this.abortControllers.get('systematic-discovery').abort();
         }
         
-        // Try single letters (a-z)
-        for (let i = 0; i < 26; i++) {
-            const letter = String.fromCharCode(97 + i);
-            triedNames.add(letter);
-            try {
-                const response = await fetch(`/scenes/${letter}.json`);
-                if (response.ok) {
-                    const sceneData = await response.json();
-                    if (this.validateScenePreset(sceneData)) {
-                        foundPresets.push(letter);
-                    }
-                }
-            } catch (error) {
-                // Silently continue
-            }
-        }
+        const controller = new AbortController();
+        this.abortControllers.set('systematic-discovery', controller);
         
-        // Try common short names
-        const shortNames = [
-            'test', 'demo', 'new', 'old', 'temp', 'backup', 'copy', 'final', 'draft',
-            'work', 'play', 'fun', 'run', 'walk', 'jump', 'fly', 'swim', 'dance',
-            'red', 'blue', 'green', 'fire', 'water', 'earth', 'air', 'light', 'dark',
-            'sun', 'moon', 'star', 'tree', 'rock', 'bird', 'fish', 'cat', 'dog',
-            'car', 'bus', 'train', 'plane', 'boat', 'bike', 'road', 'path', 'door',
-            'book', 'page', 'word', 'line', 'dot', 'spot', 'mark', 'sign', 'note'
-        ];
-        
-        for (const name of shortNames) {
-            if (!triedNames.has(name)) {
+        try {
+            // This is a more intelligent approach that tries to discover files
+            // by attempting common patterns and learning from successful finds
+            
+            const foundPresets = [];
+            const triedNames = new Set();
+            
+            // First, try the known existing files
+            const knownFiles = ['ambient-dream', 'cyberpunk-night', 'minimalist-zen', 'mirage', 'meat'];
+            for (const name of knownFiles) {
                 triedNames.add(name);
                 try {
-                    const response = await fetch(`/scenes/${name}.json`);
+                    const response = await fetch(`/scenes/${name}.json`, {
+                        signal: controller.signal
+                    });
                     if (response.ok) {
                         const sceneData = await response.json();
                         if (this.validateScenePreset(sceneData)) {
@@ -1616,34 +2141,122 @@ export class App {
                         }
                     }
                 } catch (error) {
+                    if (error.name === 'AbortError') {
+                        return; // Cancelled
+                    }
                     // Silently continue
                 }
             }
+            
+            // Try single letters (a-z)
+            for (let i = 0; i < 26; i++) {
+                const letter = String.fromCharCode(97 + i);
+                triedNames.add(letter);
+                try {
+                    const response = await fetch(`/scenes/${letter}.json`, {
+                        signal: controller.signal
+                    });
+                    if (response.ok) {
+                        const sceneData = await response.json();
+                        if (this.validateScenePreset(sceneData)) {
+                            foundPresets.push(letter);
+                        }
+                    }
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        return; // Cancelled
+                    }
+                    // Silently continue
+                }
+            }
+            
+            // Try common short names
+            const shortNames = [
+                'test', 'demo', 'new', 'old', 'temp', 'backup', 'copy', 'final', 'draft',
+                'work', 'play', 'fun', 'run', 'walk', 'jump', 'fly', 'swim', 'dance',
+                'red', 'blue', 'green', 'fire', 'water', 'earth', 'air', 'light', 'dark',
+                'sun', 'moon', 'star', 'tree', 'rock', 'bird', 'fish', 'cat', 'dog',
+                'car', 'bus', 'train', 'plane', 'boat', 'bike', 'road', 'path', 'door',
+                'book', 'page', 'word', 'line', 'dot', 'spot', 'mark', 'sign', 'note'
+            ];
+            
+            for (const name of shortNames) {
+                if (!triedNames.has(name)) {
+                    triedNames.add(name);
+                    try {
+                        const response = await fetch(`/scenes/${name}.json`, {
+                            signal: controller.signal
+                        });
+                        if (response.ok) {
+                            const sceneData = await response.json();
+                            if (this.validateScenePreset(sceneData)) {
+                                foundPresets.push(name);
+                            }
+                        }
+                    } catch (error) {
+                        if (error.name === 'AbortError') {
+                            return; // Cancelled
+                        }
+                        // Silently continue
+                    }
+                }
+            }
+            
+            this.updateScenePresetDropdown(foundPresets);
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                return; // Cancelled
+            }
+            console.error('Systematic scene discovery failed:', error);
+        } finally {
+            // Cleanup abort controller
+            this.abortControllers.delete('systematic-discovery');
         }
-        
-        this.updateScenePresetDropdown(foundPresets);
     }
 
     async validateAndUpdateScenePresets(sceneNames) {
-        const validScenePresets = [];
-        
-        for (const sceneName of sceneNames) {
-            try {
-                const response = await fetch(`/scenes/${sceneName}.json`);
-                
-                if (response.ok) {
-                    const sceneData = await response.json();
-                    
-                    if (this.validateScenePreset(sceneData)) {
-                        validScenePresets.push(sceneName);
-                    }
-                }
-            } catch (error) {
-                // Error validating scene preset
-            }
+        // Cancel previous request
+        if (this.abortControllers.has('scene-validation')) {
+            this.abortControllers.get('scene-validation').abort();
         }
         
-        this.updateScenePresetDropdown(validScenePresets);
+        const controller = new AbortController();
+        this.abortControllers.set('scene-validation', controller);
+        
+        try {
+            const validScenePresets = [];
+            
+            for (const sceneName of sceneNames) {
+                try {
+                    const response = await fetch(`/scenes/${sceneName}.json`, {
+                        signal: controller.signal
+                    });
+                    
+                    if (response.ok) {
+                        const sceneData = await response.json();
+                        
+                        if (this.validateScenePreset(sceneData)) {
+                            validScenePresets.push(sceneName);
+                        }
+                    }
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        return; // Cancelled
+                    }
+                    // Error validating scene preset
+                }
+            }
+            
+            this.updateScenePresetDropdown(validScenePresets);
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                return; // Cancelled
+            }
+            console.error('Scene validation failed:', error);
+        } finally {
+            // Cleanup abort controller
+            this.abortControllers.delete('scene-validation');
+        }
     }
 
     updatePresetDropdown(availablePresets) {
@@ -1657,13 +2270,14 @@ export class App {
             select.appendChild(customOption);
         }
         
+        // Phase 4.2: Array Operation Optimization - Replace forEach with for...of
         // Add available presets
-        availablePresets.forEach(preset => {
+        for (const preset of availablePresets) {
             const option = document.createElement('option');
             option.value = preset;
             option.textContent = this.getPresetDisplayName(preset);
             select.appendChild(option);
-        });
+        }
     }
 
     async updateScenePresetDropdown(availableScenePresets) {
@@ -1731,9 +2345,19 @@ export class App {
             return;
         }
 
+        // Cancel previous request
+        if (this.abortControllers.has('preset-load')) {
+            this.abortControllers.get('preset-load').abort();
+        }
+        
+        const controller = new AbortController();
+        this.abortControllers.set('preset-load', controller);
+
         try {
             // Load the preset file from the presets folder
-            const response = await fetch(`/presets/${presetName}.json`);
+            const response = await fetch(`/presets/${presetName}.json`, {
+                signal: controller.signal
+            });
             if (!response.ok) {
                 throw new Error(`Failed to load preset: ${response.statusText}`);
             }
@@ -1747,8 +2371,14 @@ export class App {
                 alert('Invalid preset file format. Please check the file structure.');
             }
         } catch (error) {
+            if (error.name === 'AbortError') {
+                return; // Cancelled
+            }
             console.error('Failed to load preset:', error);
             alert(`Failed to load preset "${presetName}". Please check if the preset file exists.`);
+        } finally {
+            // Cleanup abort controller
+            this.abortControllers.delete('preset-load');
         }
     }
 
@@ -1853,17 +2483,17 @@ export class App {
         // Clear existing controls
         this.controlManager.clearAllControls();
         
+        // Phase 4.2: Array Operation Optimization - Replace forEach with for...of
         // Recreate CC controls
         const ccMappings = preset ? preset.midiCCMappings : this.state.get('midiCCMappings');
         console.log('CC mappings to recreate:', ccMappings);
         if (ccMappings && typeof ccMappings === 'object') {
-            Object.keys(ccMappings).forEach((controlId, index) => {
-                const mapping = ccMappings[controlId];
+            for (const [controlId, mapping] of Object.entries(ccMappings)) {
                 console.log('Creating CC control:', controlId, 'with mapping:', mapping);
                 
                 // Extract the index from the control ID (e.g., "cc1" -> 1)
                 const indexMatch = controlId.match(/cc(\d+)/);
-                const controlIndex = indexMatch ? parseInt(indexMatch[1]) : index + 1;
+                const controlIndex = indexMatch ? parseInt(indexMatch[1]) : 1;
                 console.log('Creating control with index:', controlIndex);
                 
                 const control = this.controlManager.addControl('cc', controlIndex);
@@ -1881,20 +2511,19 @@ export class App {
                 } else {
                     console.error('Failed to create control for:', controlId);
                 }
-            });
+            }
         }
         
         // Recreate Note controls
         const noteMappings = preset ? preset.midiNoteMappings : this.state.get('midiNoteMappings');
         console.log('Note mappings to recreate:', noteMappings);
         if (noteMappings && typeof noteMappings === 'object') {
-            Object.keys(noteMappings).forEach((controlId, index) => {
-                const mapping = noteMappings[controlId];
+            for (const [controlId, mapping] of Object.entries(noteMappings)) {
                 console.log('Creating Note control:', controlId, 'with mapping:', mapping);
                 
                 // Extract the index from the control ID (e.g., "note1" -> 1)
                 const indexMatch = controlId.match(/note(\d+)/);
-                const controlIndex = indexMatch ? parseInt(indexMatch[1]) : index + 1;
+                const controlIndex = indexMatch ? parseInt(indexMatch[1]) : 1;
                 console.log('Creating note control with index:', controlIndex);
                 
                 const control = this.controlManager.addControl('note', controlIndex);
@@ -1912,7 +2541,7 @@ export class App {
                 } else {
                     console.error('Failed to create note control for:', controlId);
                 }
-            });
+            }
         }
         
         // Recreate Audio Mapping controls
@@ -1924,13 +2553,12 @@ export class App {
                 this.audioMappingManager.clearAllControls();
             }
             
-            Object.keys(audioMappings).forEach((controlId, index) => {
-                const mapping = audioMappings[controlId];
+            for (const [controlId, mapping] of Object.entries(audioMappings)) {
                 console.log('Creating Audio control:', controlId, 'with mapping:', mapping);
                 
                 // Extract the index from the control ID (e.g., "audio1" -> 1)
                 const indexMatch = controlId.match(/audio(\d+)/);
-                const controlIndex = indexMatch ? parseInt(indexMatch[1]) : index + 1;
+                const controlIndex = indexMatch ? parseInt(indexMatch[1]) : 1;
                 console.log('Creating audio control with index:', controlIndex);
                 
                 if (this.audioMappingManager) {
@@ -1946,7 +2574,7 @@ export class App {
                         console.error('Failed to create audio control for:', controlId);
                     }
                 }
-            });
+            }
         }
         
         console.log('Finished recreating controls');
@@ -2012,9 +2640,19 @@ export class App {
             return;
         }
 
+        // Cancel previous request
+        if (this.abortControllers.has('scene-preset-load')) {
+            this.abortControllers.get('scene-preset-load').abort();
+        }
+        
+        const controller = new AbortController();
+        this.abortControllers.set('scene-preset-load', controller);
+
         try {
             // Try to load the scene preset
-            const response = await fetch(`/scenes/${presetName}.json`);
+            const response = await fetch(`/scenes/${presetName}.json`, {
+                signal: controller.signal
+            });
             if (!response.ok) {
                 throw new Error(`Failed to load scene preset: ${response.statusText}`);
             }
@@ -2044,8 +2682,14 @@ export class App {
             }
             
         } catch (error) {
+            if (error.name === 'AbortError') {
+                return; // Cancelled
+            }
             console.error('Error applying scene preset:', error);
             alert(`Error loading scene preset: ${error.message}`);
+        } finally {
+            // Cleanup abort controller
+            this.abortControllers.delete('scene-preset-load');
         }
     }
 
@@ -2101,8 +2745,18 @@ export class App {
     }
 
     async getScenePresetDisplayNameFromFile(presetName) {
+        // Cancel previous request
+        if (this.abortControllers.has('display-name-load')) {
+            this.abortControllers.get('display-name-load').abort();
+        }
+        
+        const controller = new AbortController();
+        this.abortControllers.set('display-name-load', controller);
+        
         try {
-            const response = await fetch(`/scenes/${presetName}.json`);
+            const response = await fetch(`/scenes/${presetName}.json`, {
+                signal: controller.signal
+            });
             if (response.ok) {
                 const sceneData = await response.json();
                 if (sceneData.name) {
@@ -2110,7 +2764,13 @@ export class App {
                 }
             }
         } catch (error) {
+            if (error.name === 'AbortError') {
+                return this.formatScenePresetName(presetName); // Return fallback on cancel
+            }
             // Fall back to formatting the filename
+        } finally {
+            // Cleanup abort controller
+            this.abortControllers.delete('display-name-load');
         }
         
         return this.formatScenePresetName(presetName);
@@ -2235,362 +2895,8 @@ export class App {
     }
 
     updateAnimationParameter(target, value) {
-        // Use the same logic as handleCCMapping for consistent parameter updates
-        switch (target) {
-            case 'movementAmplitude':
-                this.state.set('movementAmplitude', value * 0.5);
-                break;
-            case 'rotationAmplitude':
-                this.state.set('rotationAmplitude', value * 2);
-                break;
-            case 'scaleAmplitude':
-                this.state.set('scaleAmplitude', value);
-                break;
-            case 'randomness':
-                this.state.set('randomness', value);
-                break;
-            case 'cellSize':
-                this.state.set('cellSize', 0.5 + value * 1.5);
-                if (this.scene) this.scene.updateCellSize();
-                break;
-            case 'movementFrequency':
-                this.state.set('movementFrequency', 0.1 + value * 2);
-                break;
-            case 'rotationFrequency':
-                this.state.set('rotationFrequency', 0.1 + value * 2);
-                break;
-            case 'scaleFrequency':
-                this.state.set('scaleFrequency', 0.1 + value * 2);
-                break;
-            case 'gridWidth':
-                const newWidth = Math.floor(1 + value * 29);
-                if (this.state.get('gridWidth') !== newWidth) {
-                    this.state.set('gridWidth', newWidth);
-                    if (this.scene) this.scene.createGrid();
-                }
-                break;
-            case 'gridHeight':
-                const newHeight = Math.floor(1 + value * 29);
-                if (this.state.get('gridHeight') !== newHeight) {
-                    this.state.set('gridHeight', newHeight);
-                    if (this.scene) this.scene.createGrid();
-                }
-                break;
-            case 'compositionWidth':
-                const newCompWidth = Math.floor(1 + value * 29);
-                if (this.state.get('compositionWidth') !== newCompWidth) {
-                    this.state.set('compositionWidth', newCompWidth);
-                    if (this.scene) this.scene.createGrid();
-                }
-                break;
-            case 'compositionHeight':
-                const newCompHeight = Math.floor(1 + value * 29);
-                if (this.state.get('compositionHeight') !== newCompHeight) {
-                    this.state.set('compositionHeight', newCompHeight);
-                    if (this.scene) this.scene.createGrid();
-                }
-                break;
-            case 'animationType':
-                this.state.set('animationType', Math.floor(value * 4));
-                break;
-            case 'sphereRefraction':
-                this.state.set('sphereRefraction', value * 2);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereTransparency':
-                this.state.set('sphereTransparency', value);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereTransmission':
-                this.state.set('sphereTransmission', value);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereRoughness':
-                this.state.set('sphereRoughness', value);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereMetalness':
-                this.state.set('sphereMetalness', value);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereScale':
-                this.state.set('sphereScale', 0.5 + value * 2.5);
-                if (this.scene) this.scene.updateSphereScales();
-                break;
-            case 'sphereClearcoat':
-                this.state.set('sphereClearcoat', value);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereClearcoatRoughness':
-                this.state.set('sphereClearcoatRoughness', value);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereEnvMapIntensity':
-                this.state.set('sphereEnvMapIntensity', value * 3);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereDistortionStrength':
-                this.state.set('sphereDistortionStrength', value);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereHighPerformanceMode':
-                this.state.set('sphereHighPerformanceMode', value > 0.5);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-            case 'sphereWaterDistortion':
-                this.state.set('sphereWaterDistortion', value > 0.5);
-                if (this.scene) this.scene.updateSphereMaterials();
-                break;
-
-            case 'bloomStrength':
-                this.state.set('bloomStrength', value * 2);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'bloomRadius':
-                this.state.set('bloomRadius', value * 2);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'bloomThreshold':
-                this.state.set('bloomThreshold', value);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'chromaticIntensity':
-                this.state.set('chromaticIntensity', value);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'vignetteIntensity':
-                this.state.set('vignetteIntensity', value);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'vignetteRadius':
-                this.state.set('vignetteRadius', value);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'vignetteSoftness':
-                this.state.set('vignetteSoftness', value);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'grainIntensity':
-                this.state.set('grainIntensity', value * 0.5);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'colorHue':
-                this.state.set('colorHue', (value - 0.5) * 2);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'colorSaturation':
-                this.state.set('colorSaturation', value * 3);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'colorBrightness':
-                this.state.set('colorBrightness', value * 2);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'colorContrast':
-                this.state.set('colorContrast', value * 2);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'ambientLightIntensity':
-                this.state.set('ambientLightIntensity', value * 2);
-                if (this.scene) this.scene.updateLighting();
-                break;
-            case 'directionalLightIntensity':
-                this.state.set('directionalLightIntensity', value * 3);
-                if (this.scene) this.scene.updateLighting();
-                break;
-            case 'pointLight1Intensity':
-                this.state.set('pointLight1Intensity', value * 3);
-                if (this.scene) this.scene.updateLighting();
-                break;
-            case 'pointLight2Intensity':
-                this.state.set('pointLight2Intensity', value * 3);
-                if (this.scene) this.scene.updateLighting();
-                break;
-            case 'rimLightIntensity':
-                this.state.set('rimLightIntensity', value * 3);
-                if (this.scene) this.scene.updateLighting();
-                break;
-            case 'accentLightIntensity':
-                this.state.set('accentLightIntensity', value * 3);
-                if (this.scene) this.scene.updateLighting();
-                break;
-            case 'lightColour':
-                // Map value to hue (0-360 degrees)
-                const hue = Math.floor(value * 360);
-                const color = this.hsvToHex(hue, 100, 100);
-                this.state.set('lightColour', color);
-                if (this.scene) this.scene.updateLighting();
-                break;
-            
-            // New parameters from reorganized GUI
-            case 'globalBPM':
-                this.state.set('globalBPM', 60 + Math.floor(value * 240));
-                break;
-            case 'enableShapeCycling':
-                this.state.set('enableShapeCycling', value > 0.5);
-                break;
-            case 'showGrid':
-                this.state.set('showGrid', value > 0.5);
-                if (this.scene) this.scene.updateGridLines();
-                break;
-            case 'shapeColor':
-                // Map value to hue (0-360 degrees)
-                const shapeHue = Math.floor(value * 360);
-                const shapeColor = this.hsvToHex(shapeHue, 100, 100);
-                this.state.set('shapeColor', shapeColor);
-                if (this.scene) this.scene.updateShapeColors();
-                break;
-            case 'backgroundColor':
-                // Map value to hue (0-360 degrees)
-                const bgHue = Math.floor(value * 360);
-                const bgColor = this.hsvToHex(bgHue, 100, 100);
-                this.state.set('backgroundColor', bgColor);
-                if (this.scene) this.scene.updateBackgroundColor();
-                break;
-            case 'bloomEnabled':
-                this.state.set('bloomEnabled', value > 0.5);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'chromaticAberrationEnabled':
-                this.state.set('chromaticAberrationEnabled', value > 0.5);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'vignetteEnabled':
-                this.state.set('vignetteEnabled', value > 0.5);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'grainEnabled':
-                this.state.set('grainEnabled', value > 0.5);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'colorGradingEnabled':
-                this.state.set('colorGradingEnabled', value > 0.5);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'postProcessingEnabled':
-                this.state.set('postProcessingEnabled', value > 0.5);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'fxaaEnabled':
-                this.state.set('fxaaEnabled', value > 0.5);
-                if (this.scene) this.scene.updatePostProcessing();
-                break;
-            case 'enableFrustumCulling':
-                this.state.set('enableFrustumCulling', value > 0.5);
-                break;
-            case 'morphingEasing':
-                // Map to easing options (simplified mapping)
-                const easingOptions = ['power2.inOut', 'power2.in', 'power2.out', 'power3.inOut', 'power3.in', 'power3.out'];
-                const easingIndex = Math.floor(value * easingOptions.length);
-                this.state.set('morphingEasing', easingOptions[easingIndex]);
-                break;
-            case 'gridColor':
-                // Map value to hue (0-360 degrees)
-                const gridHue = Math.floor(value * 360);
-                const gridColor = this.hsvToHex(gridHue, 100, 100);
-                this.state.set('gridColor', gridColor);
-                if (this.scene) this.scene.updateGridLines();
-                break;
-            case 'centerScalingEnabled':
-                this.state.set('centerScalingEnabled', value > 0.5);
-                if (this.scene) this.scene.updateCenterScaling();
-                break;
-            case 'centerScalingIntensity':
-                this.state.set('centerScalingIntensity', value * 2);
-                if (this.scene) this.scene.updateCenterScaling();
-                break;
-            case 'centerScalingCurve':
-                this.state.set('centerScalingCurve', Math.floor(value * 4));
-                if (this.scene) this.scene.updateCenterScaling();
-                break;
-            case 'centerScalingRadius':
-                this.state.set('centerScalingRadius', 0.1 + value * 5);
-                if (this.scene) this.scene.updateCenterScaling();
-                break;
-            case 'centerScalingDirection':
-                this.state.set('centerScalingDirection', Math.floor(value * 2));
-                if (this.scene) this.scene.updateCenterScaling();
-                break;
-
-            case 'centerScalingAnimationSpeed':
-                this.state.set('centerScalingAnimationSpeed', 0.1 + value * 3);
-                if (this.scene) this.scene.updateCenterScaling();
-                break;
-            case 'centerScalingAnimationType':
-                this.state.set('centerScalingAnimationType', Math.floor(value * 4));
-                if (this.scene) this.scene.updateCenterScaling();
-                break;
-            case 'movementDivision':
-                this.state.set('movementDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'rotationDivision':
-                this.state.set('rotationDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'scaleDivision':
-                this.state.set('scaleDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'shapeCyclingDivision':
-                this.state.set('shapeCyclingDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'morphingDivision':
-                this.state.set('morphingDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'centerScalingDivision':
-                this.state.set('centerScalingDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'shapeCyclingSpeed':
-                this.state.set('shapeCyclingSpeed', 0.1 + value * 1.9);
-                break;
-            case 'shapeCyclingPattern':
-                this.state.set('shapeCyclingPattern', Math.floor(value * 5));
-                break;
-            case 'shapeCyclingDirection':
-                this.state.set('shapeCyclingDirection', Math.floor(value * 4));
-                break;
-            case 'shapeCyclingSync':
-                this.state.set('shapeCyclingSync', Math.floor(value * 4));
-                break;
-            case 'shapeCyclingIntensity':
-                this.state.set('shapeCyclingIntensity', 0.1 + value * 0.9);
-                break;
-            case 'shapeCyclingTrigger':
-                this.state.set('shapeCyclingTrigger', Math.floor(value * 4));
-                break;
-
-
-            case 'movementDivision':
-                this.state.set('movementDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'rotationDivision':
-                this.state.set('rotationDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'scaleDivision':
-                this.state.set('scaleDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'shapeCyclingDivision':
-                this.state.set('shapeCyclingDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'morphingDivision':
-                this.state.set('morphingDivision', this.getDivisionFromIndex(value));
-                break;
-            case 'centerScalingDivision':
-                this.state.set('centerScalingDivision', this.getDivisionFromIndex(value));
-                break;
-
-            case 'enableMovementAnimation':
-                this.state.set('enableMovementAnimation', value > 0.5);
-                break;
-            case 'enableRotationAnimation':
-                this.state.set('enableRotationAnimation', value > 0.5);
-                break;
-            case 'enableScaleAnimation':
-                this.state.set('enableScaleAnimation', value > 0.5);
-                break;
-            default:
-                // For any other parameters, just set the value directly
-                this.state.set(target, value);
-                break;
-        }
+        // Use unified parameter handler to eliminate code duplication
+        this.handleParameterUpdate(target, value, 'animation');
     }
 
     triggerNoteAction(target) {
@@ -2657,183 +2963,157 @@ export class App {
         return '32nd';
     }
 
-    triggerRandomMorph() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            // Filter morphable pairs to only include enabled shapes
-            const allMorphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
-            const filteredPairs = {};
-            
-            Object.entries(allMorphablePairs).forEach(([pairName, [shape1, shape2]]) => {
-                if (availableShapes.includes(shape1) && availableShapes.includes(shape2)) {
-                    filteredPairs[pairName] = [shape1, shape2];
-                }
-            });
-            
-            const pairNames = Object.keys(filteredPairs);
-            
-            if (pairNames.length === 0) return;
-            
-            const randomShape = morphableShapes[Math.floor(Math.random() * morphableShapes.length)];
-            const randomPair = filteredPairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-            this.scene.shapeGenerator.startShapeMorph(randomShape, randomPair[0], randomPair[1], this.getMorphingDuration());
+    // Phase 2.1: Consolidated morphing logic with caching
+    getMorphingState() {
+        const now = Date.now();
+        
+        // Return cached state if valid (cache for 1 second)
+        if (this.morphingStateCache?.cacheValid && 
+            now - this.morphingStateCache.lastUpdate < 1000) {
+            return this.morphingStateCache;
         }
+        
+        if (!this.scene || this.scene.shapes.length === 0) {
+            return null;
+        }
+        
+        // Get morphable shapes (shapes with ShapeGeometry)
+        const morphableShapes = this.scene.shapes.filter(shape => 
+            shape.geometry && shape.geometry.type === 'ShapeGeometry'
+        );
+        
+        if (morphableShapes.length === 0) {
+            return null;
+        }
+        
+        // Get enabled shapes from state
+        const enabledShapes = this.state.get('enabledShapes');
+        const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
+        
+        if (availableShapes.length === 0) {
+            return null;
+        }
+        
+        // Filter morphable pairs to only include enabled shapes
+        const allMorphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
+        const filteredPairs = {};
+        
+        // Use for...of for better performance with large arrays
+        for (const [pairName, [shape1, shape2]] of Object.entries(allMorphablePairs)) {
+            if (availableShapes.includes(shape1) && availableShapes.includes(shape2)) {
+                filteredPairs[pairName] = [shape1, shape2];
+            }
+        }
+        
+        const pairNames = Object.keys(filteredPairs);
+        
+        if (pairNames.length === 0) {
+            return null;
+        }
+        
+        // Cache the results
+        this.morphingStateCache = {
+            morphableShapes,
+            availableShapes,
+            filteredPairs,
+            pairNames,
+            lastUpdate: now,
+            cacheValid: true
+        };
+        
+        return this.morphingStateCache;
+    }
+
+    triggerRandomMorph() {
+        const morphingState = this.getMorphingState();
+        if (!morphingState) return;
+        
+        const { morphableShapes, filteredPairs, pairNames } = morphingState;
+        const randomShape = morphableShapes[Math.floor(Math.random() * morphableShapes.length)];
+        const randomPair = filteredPairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
+        
+        this.scene.shapeGenerator.startShapeMorph(randomShape, randomPair[0], randomPair[1], this.getMorphingDuration());
     }
 
     triggerMorphAllShapes() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            // Filter morphable pairs to only include enabled shapes
-            const allMorphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
-            const filteredPairs = {};
-            
-            Object.entries(allMorphablePairs).forEach(([pairName, [shape1, shape2]]) => {
-                if (availableShapes.includes(shape1) && availableShapes.includes(shape2)) {
-                    filteredPairs[pairName] = [shape1, shape2];
-                }
-            });
-            
-            const pairNames = Object.keys(filteredPairs);
-            
-            if (pairNames.length === 0) return;
-            
-            // Get morphing division timing for the entire sequence
-            const morphingDivision = this.state.get('morphingDivision') || 'quarter';
-            const globalBPM = this.state.get('globalBPM') || 120;
-            const divisionBeats = this.getDivisionBeats(morphingDivision);
-            const secondsPerBeat = 60 / globalBPM;
-            const totalSequenceTime = divisionBeats * secondsPerBeat;
-            
-            // Calculate delay per shape to distribute evenly across the musical division
-            const delayPerShape = (totalSequenceTime * 1000) / Math.max(morphableShapes.length - 1, 1); // Convert to milliseconds
-            
-            console.log(`Morph All Shapes: Using ${morphingDivision} division (${totalSequenceTime.toFixed(2)}s total, ${delayPerShape.toFixed(1)}ms delay per shape for ${morphableShapes.length} shapes)`);
-            
-            morphableShapes.forEach((shape, index) => {
-                setTimeout(() => {
-                    const randomPair = filteredPairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                    this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.getMorphingDuration());
-                }, index * delayPerShape);
-            });
+        const morphingState = this.getMorphingState();
+        if (!morphingState) return;
+        
+        const { morphableShapes, filteredPairs, pairNames } = morphingState;
+        
+        // Get morphing division timing for the entire sequence
+        const morphingDivision = this.state.get('morphingDivision') || 'quarter';
+        const globalBPM = this.state.get('globalBPM') || 120;
+        const divisionBeats = this.getDivisionBeats(morphingDivision);
+        const secondsPerBeat = 60 / globalBPM;
+        const totalSequenceTime = divisionBeats * secondsPerBeat;
+        
+        // Calculate delay per shape to distribute evenly across the musical division
+        const delayPerShape = (totalSequenceTime * 1000) / Math.max(morphableShapes.length - 1, 1);
+        
+        console.log(`Morph All Shapes: Using ${morphingDivision} division (${totalSequenceTime.toFixed(2)}s total, ${delayPerShape.toFixed(1)}ms delay per shape for ${morphableShapes.length} shapes)`);
+        
+        // Use for...of for better performance
+        for (let i = 0; i < morphableShapes.length; i++) {
+            setTimeout(() => {
+                const randomPair = filteredPairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
+                this.scene.shapeGenerator.startShapeMorph(morphableShapes[i], randomPair[0], randomPair[1], this.getMorphingDuration());
+            }, i * delayPerShape);
         }
     }
 
     triggerMorphAllToSame() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
-            
-            // Get morphing division timing for the entire sequence
-            const morphingDivision = this.state.get('morphingDivision') || 'quarter';
-            const globalBPM = this.state.get('globalBPM') || 120;
-            const divisionBeats = this.getDivisionBeats(morphingDivision);
-            const secondsPerBeat = 60 / globalBPM;
-            const totalSequenceTime = divisionBeats * secondsPerBeat;
-            
-            // Calculate delay per shape to distribute evenly across the musical division
-            const delayPerShape = (totalSequenceTime * 1000) / Math.max(morphableShapes.length - 1, 1); // Convert to milliseconds
-            
-            console.log(`Morph All to Same: Using ${morphingDivision} division (${totalSequenceTime.toFixed(2)}s total, ${delayPerShape.toFixed(1)}ms delay per shape for ${morphableShapes.length} shapes)`);
-            
-            morphableShapes.forEach((shape, index) => {
-                setTimeout(() => {
-                    // Get the current shape name from the mesh
-                    const currentShapeName = shape.userData.shapeName || 'triangle_UP';
-                    this.scene.shapeGenerator.startShapeMorph(shape, currentShapeName, targetShape, this.getMorphingDuration());
-                }, index * delayPerShape);
-            });
+        const morphingState = this.getMorphingState();
+        if (!morphingState) return;
+        
+        const { morphableShapes, availableShapes } = morphingState;
+        const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
+        
+        // Get morphing division timing for the entire sequence
+        const morphingDivision = this.state.get('morphingDivision') || 'quarter';
+        const globalBPM = this.state.get('globalBPM') || 120;
+        const divisionBeats = this.getDivisionBeats(morphingDivision);
+        const secondsPerBeat = 60 / globalBPM;
+        const totalSequenceTime = divisionBeats * secondsPerBeat;
+        
+        // Calculate delay per shape to distribute evenly across the musical division
+        const delayPerShape = (totalSequenceTime * 1000) / Math.max(morphableShapes.length - 1, 1);
+        
+        console.log(`Morph All to Same: Using ${morphingDivision} division (${totalSequenceTime.toFixed(2)}s total, ${delayPerShape.toFixed(1)}ms delay per shape for ${morphableShapes.length} shapes)`);
+        
+        // Use for...of for better performance
+        for (let i = 0; i < morphableShapes.length; i++) {
+            setTimeout(() => {
+                const currentShapeName = morphableShapes[i].userData.shapeName || 'triangle_UP';
+                this.scene.shapeGenerator.startShapeMorph(morphableShapes[i], currentShapeName, targetShape, this.getMorphingDuration());
+            }, i * delayPerShape);
         }
     }
 
     triggerMorphAllToSameSimultaneously() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
-            
-            // Morph all shapes to the same target simultaneously (no staggered timing)
-            morphableShapes.forEach(shape => {
-                const currentShapeName = shape.userData.shapeName || 'triangle_UP';
-                this.scene.shapeGenerator.startShapeMorph(shape, currentShapeName, targetShape, this.getMorphingDuration());
-            });
+        const morphingState = this.getMorphingState();
+        if (!morphingState) return;
+        
+        const { morphableShapes, availableShapes } = morphingState;
+        const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
+        
+        // Morph all shapes to the same target simultaneously (no staggered timing)
+        for (const shape of morphableShapes) {
+            const currentShapeName = shape.userData.shapeName || 'triangle_UP';
+            this.scene.shapeGenerator.startShapeMorph(shape, currentShapeName, targetShape, this.getMorphingDuration());
         }
     }
 
     triggerMorphAllSimultaneously() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            // Filter morphable pairs to only include enabled shapes
-            const allMorphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
-            const filteredPairs = {};
-            
-            Object.entries(allMorphablePairs).forEach(([pairName, [shape1, shape2]]) => {
-                if (availableShapes.includes(shape1) && availableShapes.includes(shape2)) {
-                    filteredPairs[pairName] = [shape1, shape2];
-                }
-            });
-            
-            const pairNames = Object.keys(filteredPairs);
-            
-            if (pairNames.length === 0) return;
-            
-            morphableShapes.forEach(shape => {
-                const randomPair = filteredPairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.getMorphingDuration());
-            });
+        const morphingState = this.getMorphingState();
+        if (!morphingState) return;
+        
+        const { morphableShapes, filteredPairs, pairNames } = morphingState;
+        
+        // Morph all shapes simultaneously with random pairs
+        for (const shape of morphableShapes) {
+            const randomPair = filteredPairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
+            this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.getMorphingDuration());
         }
     }
     
@@ -3050,7 +3330,23 @@ History: ${summary.historySize} entries`;
             this.updateAudioChannelsDisplay();
         });
         
-        // Subscribe to state changes
+        // Phase 2.2: Optimized state subscriptions with debouncing
+        // Single debounced update for all audio values
+        this.debouncedAudioUpdate = this.debounce(() => {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
+                this.updateAudioAnalysisDisplay();
+            }
+        }, 16); // ~60fps
+        
+        // Single subscription for all audio values
+        const audioValues = ['audioOverall', 'audioRMS', 'audioPeak', 'audioFrequency'];
+        audioValues.forEach(key => {
+            this.state.subscribe(key, () => {
+                this.debouncedAudioUpdate();
+            });
+        });
+        
+        // Optimized status subscriptions
         this.state.subscribe('audioListening', () => {
             this.updateAudioStatus();
             // Update drawer connection status if a mapping drawer is open
@@ -3059,43 +3355,6 @@ History: ${summary.historySize} entries`;
             }
         });
         this.state.subscribe('audioAvailable', () => this.updateAudioStatus());
-        
-        // Update audio analysis display for both audio interface and audio mapping drawers
-        this.state.subscribe('audioOverall', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioRMS', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioPeak', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioFrequency', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioRMS', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioPeak', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioFrequency', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
         
         // Initial setup
         this.updateAudioInterfaceDropdown();
