@@ -379,30 +379,7 @@ export class MIDIManager {
                     }
                     break;
 
-                case 0xE0: // Pitch Bend
-                    {
-                        const pitchBendValue = ((data[2] << 7) | data[1]) / 16384; // Normalize to 0-1
-                        this.app.onMIDIPitchBend(pitchBendValue);
-                        messageType = `Pitch Bend: ${pitchBendValue.toFixed(2)}`;
-                        messageCategory = 'pitch';
-                    }
-                    break;
 
-                case 0xD0: // Channel Pressure (Aftertouch)
-                    {
-                        this.app.onMIDIAftertouch(data[1] / 127);
-                        messageType = `Aftertouch: ${data[1]}`;
-                        messageCategory = 'note';
-                    }
-                    break;
-
-                case 0xA0: // Polyphonic Key Pressure
-                    {
-                        this.app.onMIDIAftertouch(data[2] / 127);
-                        messageType = `Poly Pressure: ${data[2]}`;
-                        messageCategory = 'note';
-                    }
-                    break;
 
                 default:
                     // Log unhandled MIDI messages for debugging
@@ -495,11 +472,7 @@ export class MIDIManager {
         this.sendMIDI([0xB0 + channel, controller, value]);
     }
 
-    sendPitchBend(value, channel = 0) {
-        const msb = Math.floor(value * 127);
-        const lsb = Math.floor((value * 127 - msb) * 127);
-        this.sendMIDI([0xE0 + channel, lsb, msb]);
-    }
+
 
     // Get available MIDI inputs
     getAvailableInputs() {

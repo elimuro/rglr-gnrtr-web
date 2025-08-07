@@ -980,16 +980,7 @@ export class App {
         }
     }
 
-    onMIDIPitchBend(value) {
-        const animationType = Math.floor(value * 4);
-        this.state.set('animationType', animationType);
-    }
 
-    onMIDIAftertouch(value) {
-        const intensity = Math.floor(value * 255);
-        const color = `#${intensity.toString(16).padStart(2, '0')}${intensity.toString(16).padStart(2, '0')}${intensity.toString(16).padStart(2, '0')}`;
-        this.state.set('shapeColor', color);
-    }
 
     hsvToHex(h, s, v) {
         // Convert HSV to RGB, then to hex

@@ -28,9 +28,11 @@
             padding: var(--spacing-xl);
             backdrop-filter: blur(10px);
             border: 1px solid var(--color-border-primary);
-            height: fit-content;
+            height: 100vh;
             position: sticky;
             top: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .help-main-content {
@@ -147,7 +149,7 @@
                         <a href="#cc-mappings" class="nav-item">CC Mappings</a>
                         <a href="#note-controls" class="nav-item">Note Controls</a>
                         <a href="#midi-learn" class="nav-item">MIDI Learn</a>
-                        <a href="#special-controls" class="nav-item">Special Controls</a>
+    
                     </div>
                 </div>
 
@@ -277,121 +279,139 @@
                 <!-- Getting Started Section -->
                 <div id="getting-started" class="help-section">
                     <h2 class="help-h2">Getting Started</h2>
-                    <p>This application supports Web MIDI API for real-time control of visual parameters. You can
-                        connect any MIDI device (keyboard, controller, etc.) to control the animation and visual
-                        effects.</p>
+                    <p>Welcome to the visual generator! This app lets you create dynamic, animated visuals that respond to your MIDI controller, audio input, and musical timing. Here's how to get started:</p>
+
+                    <h3 class="help-h3">What You Can Do</h3>
+                    <ul>
+                        <li><strong>Control Visuals with MIDI:</strong> Use any MIDI controller to manipulate colors, shapes, animations, and effects in real-time</li>
+                        <li><strong>Sync to Music:</strong> All animations can sync to musical timing (BPM) for rhythmic, synchronized visuals</li>
+                        <li><strong>Audio Reactivity:</strong> Make visuals respond to your microphone input or audio playback</li>
+                        <li><strong>Shape Morphing:</strong> Create smooth transitions between different shape types</li>
+                        <li><strong>Record Videos:</strong> Capture your compositions as video files for sharing</li>
+                    </ul>
 
                     <div class="help-note">
-                        <strong>Note:</strong> Web MIDI API requires HTTPS in most browsers. Make sure you're running
-                        the application over HTTPS or localhost.
-                    </div>
-                    
-                    <div class="help-note">
-                        <strong>NEW:</strong> The application now uses a BPM-based timing system where all animations sync to musical time. See the "BPM-Based Timing System" section for details on the new musical timing features.
-                    </div>
-                    
-                    <div class="help-note">
-                        <strong>NEW:</strong> The application now includes advanced shape morphing with MIDI control, audio frequency mapping for reactive visuals, and video recording capabilities. See the respective sections for details on these new features.
+                        <strong>Browser Requirements:</strong> This app works best in Chrome, Edge, or Firefox. Make sure you're running over HTTPS or localhost for MIDI support.
                     </div>
                 </div>
 
                 <div id="connection" class="help-section">
-                    <h2 class="help-h2">Connection</h2>
+                    <h2 class="help-h2">Connecting Your Devices</h2>
+                    
+                    <h3 class="help-h3">Connecting MIDI Controllers</h3>
                     <ol>
-                        <li>Connect your MIDI device to your computer</li>
+                        <li>Connect your MIDI controller to your computer via USB</li>
                         <li>Click the "Connect MIDI" button in the MIDI interface panel</li>
                         <li>Allow MIDI access when prompted by your browser</li>
-                        <li>The status should change to "Connected" with a green indicator</li>
+                        <li>You'll see a green "Connected" status when successful</li>
                     </ol>
+
+                    <h3 class="help-h3">Setting Up Audio Input</h3>
+                    <ol>
+                        <li>Connect your microphone or audio interface</li>
+                        <li>Click "Connect Audio" in the audio mapping panel</li>
+                        <li>Allow microphone access when prompted</li>
+                        <li>You'll see real-time audio levels when connected</li>
+                    </ol>
+
+                    <div class="help-note">
+                        <strong>Supported Devices:</strong> Any MIDI controller (keyboards, drum machines, control surfaces) and any microphone or audio interface will work.
+                    </div>
                 </div>
 
                 <!-- CC Mappings Section -->
                 <div id="cc-mappings" class="help-section">
-                    <h2 class="help-h2">Control Change (CC) Mappings</h2>
-                    <p>These controls use continuous values (0-127) for smooth parameter control. Each parameter can be
-                        assigned to any MIDI channel (1-16) and CC number (0-127).</p>
+                    <h2 class="help-h2">Mapping Parameters to MIDI Controls</h2>
+                    <p>This section explains how to map visual parameters to your MIDI controller knobs and sliders for real-time control.</p>
+
+                    <h3 class="help-h3">How CC Mappings Work</h3>
+                    <p>CC (Control Change) mappings let you use knobs, sliders, and other continuous controllers on your MIDI device to control visual parameters smoothly. Each knob can control one parameter, like color, animation speed, or effect intensity.</p>
+
+                    <h3 class="help-h3">Setting Up Your First Mapping</h3>
+                    <ol>
+                        <li>Click "+ Add New CC Control" to create a new mapping</li>
+                        <li>Select what you want to control from the dropdown (like "Color Hue" or "Animation Speed")</li>
+                        <li>Move a knob or slider on your MIDI controller</li>
+                        <li>Click the "Learn" button to automatically capture that control</li>
+                        <li>Your mapping is now active - move the knob to control the parameter!</li>
+                    </ol>
+
+                    <h3 class="help-h3">What You Can Control</h3>
+                    <ul>
+                        <li><strong>Colors:</strong> Hue, saturation, brightness, contrast</li>
+                        <li><strong>Animations:</strong> Speed, intensity, timing divisions</li>
+                        <li><strong>Shapes:</strong> Size, rotation, movement</li>
+                        <li><strong>Effects:</strong> Bloom, chromatic aberration, vignette, grain</li>
+                        <li><strong>Lighting:</strong> Ambient, directional, and point light intensities</li>
+                        <li><strong>Timing:</strong> Global BPM and musical divisions</li>
+                    </ul>
 
                     <div class="help-note">
-                        <strong>Note:</strong> MIDI channels are numbered 1-16 in the interface to match standard MIDI
-                        hardware conventions, but internally the system uses channels 0-15.
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Dynamic Controls:</strong> You can add new CC controls using the "+ Add New CC Control"
-                        button. Each new control will be automatically numbered and can be removed using the × button.
-                    </div>
-
-                    <div class="help-note">
-                        <strong>No Default Mappings:</strong> This application does not include any pre-configured MIDI
-                        mappings. All mappings must be created manually by the user through the MIDI interface.
+                        <strong>Pro Tip:</strong> Start with just a few mappings and add more as you get comfortable. Most users find 4-8 controls to be the sweet spot for live performance.
                     </div>
                 </div>
 
                 <!-- Note Controls Section -->
                 <div id="note-controls" class="help-section">
-                    <h2 class="help-h2">Note Controls</h2>
-                    <p>These controls use MIDI notes as toggle switches:</p>
+                    <h2 class="help-h2">Using MIDI Notes as Triggers</h2>
+                    <p>MIDI notes work like buttons - press a key to trigger an action. Perfect for toggling effects on/off or triggering special actions.</p>
 
-                    <div class="help-note">
-                        <strong>Dynamic Controls:</strong> You can add new Note controls using the "+ Add New Note
-                        Control" button. Each new control will be automatically numbered and can be removed using the ×
-                        button.
-                    </div>
+                    <h3 class="help-h3">Setting Up Note Controls</h3>
+                    <ol>
+                        <li>Click "+ Add New Note Control" to create a new trigger</li>
+                        <li>Select what you want to trigger from the dropdown</li>
+                        <li>Press a key on your MIDI controller</li>
+                        <li>Click the "Learn" button to capture that key</li>
+                        <li>Now pressing that key will trigger the action!</li>
+                    </ol>
 
-                    <div class="help-note">
-                        <strong>No Default Note Mappings:</strong> This application does not include any pre-configured
-                        MIDI note mappings. All note mappings must be created manually by the user through the MIDI
-                        interface.
-                    </div>
-
+                    <h3 class="help-h3">What You Can Trigger</h3>
+                    
                     <div class="help-section">
-                        <h3 class="help-h3">Animation Toggles</h3>
+                        <h4 class="help-h4">Animation Controls</h4>
                         <ul>
-                            <li><strong>Toggle Shape Cycling:</strong> Toggle shape cycling animation on/off</li>
-                            <li><strong>Toggle Size Animation:</strong> Toggle size/movement/rotation animations on/off
-                            </li>
-                            <li><strong>Reset Animation:</strong> Reset all animations to default values</li>
+                            <li><strong>Toggle Shape Cycling:</strong> Turn shape changes on/off</li>
+                            <li><strong>Toggle Size Animation:</strong> Turn size/movement/rotation animations on/off</li>
+                            <li><strong>Reset Animation:</strong> Reset all animations to starting values</li>
                         </ul>
                     </div>
 
                     <div class="help-section">
-                        <h3 class="help-h3">Display Toggles</h3>
+                        <h4 class="help-h4">Shape Visibility</h4>
                         <ul>
-                            <li><strong>Toggle Grid:</strong> Toggle grid line visibility on/off</li>
-                            <li><strong>Toggle Basic Shapes:</strong> Toggle basic shape visibility on/off</li>
-                            <li><strong>Toggle Triangles:</strong> Toggle triangle shape visibility on/off</li>
-                            <li><strong>Toggle Rectangles:</strong> Toggle rectangle shape visibility on/off</li>
-                            <li><strong>Toggle Ellipses:</strong> Toggle ellipse shape visibility on/off</li>
-                            <li><strong>Toggle Refractive Spheres:</strong> Toggle refractive sphere visibility on/off
-                            </li>
+                            <li><strong>Toggle Grid:</strong> Show/hide the background grid</li>
+                            <li><strong>Toggle Basic Shapes:</strong> Show/hide simple shapes (circles, squares)</li>
+                            <li><strong>Toggle Triangles:</strong> Show/hide triangle shapes</li>
+                            <li><strong>Toggle Rectangles:</strong> Show/hide rectangle shapes</li>
+                            <li><strong>Toggle Ellipses:</strong> Show/hide ellipse shapes</li>
+                            <li><strong>Toggle Refractive Spheres:</strong> Show/hide 3D sphere effects</li>
                         </ul>
                     </div>
 
                     <div class="help-section">
-                        <h3 class="help-h3">Post-Processing Toggles</h3>
+                        <h4 class="help-h4">Visual Effects</h4>
                         <ul>
-                            <li><strong>Toggle Bloom:</strong> Toggle bloom glow effect on/off</li>
-                            <li><strong>Toggle Chromatic Aberration:</strong> Toggle color separation effect on/off</li>
-                            <li><strong>Toggle Vignette:</strong> Toggle edge darkening effect on/off</li>
-                            <li><strong>Toggle Film Grain:</strong> Toggle film grain noise effect on/off</li>
-                            <li><strong>Toggle Color Grading:</strong> Toggle color grading effects on/off</li>
-                            <li><strong>Toggle Post Processing:</strong> Toggle all post-processing effects on/off</li>
+                            <li><strong>Toggle Bloom:</strong> Turn the glow effect on/off</li>
+                            <li><strong>Toggle Chromatic Aberration:</strong> Turn the color separation effect on/off</li>
+                            <li><strong>Toggle Vignette:</strong> Turn the edge darkening on/off</li>
+                            <li><strong>Toggle Film Grain:</strong> Turn the film grain noise on/off</li>
+                            <li><strong>Toggle Color Grading:</strong> Turn color adjustments on/off</li>
+                            <li><strong>Toggle Post Processing:</strong> Turn all effects on/off at once</li>
                         </ul>
                     </div>
 
                     <div class="help-section">
-                        <h3 class="help-h3">Morphing Triggers</h3>
+                        <h4 class="help-h4">Shape Morphing</h4>
                         <ul>
-                            <li><strong>Random Morph:</strong> Triggers random shape morphing</li>
-                            <li><strong>Morph All Shapes:</strong> Triggers morphing of all shapes with stagger</li>
-                            <li><strong>Morph All to Same:</strong> Triggers synchronized morphing to same type</li>
-                            <li><strong>Morph All Simultaneously:</strong> Triggers simultaneous morphing</li>
+                            <li><strong>Random Morph:</strong> Change one random shape to a different type</li>
+                            <li><strong>Morph All Shapes:</strong> Change all shapes with staggered timing</li>
+                            <li><strong>Morph All to Same:</strong> Change all shapes to the same type at once</li>
+                            <li><strong>Morph All Simultaneously:</strong> Change all shapes at the same time</li>
                         </ul>
                     </div>
 
                     <div class="help-note">
-                        <strong>Note:</strong> Any other MIDI note will control cell size based on velocity (how hard
-                        you press the key).
+                        <strong>Note:</strong> MIDI notes work as simple on/off triggers. The velocity (how hard you press) only determines if the note is active, not the intensity of the action.
                     </div>
                 </div>
 
@@ -463,16 +483,7 @@
                     </div>
                 </div>
 
-                <!-- Special Controls Section -->
-                <div id="special-controls" class="help-section">
-                    <h2 class="help-h2">Special Controls</h2>
-                    <ul>
-                        <li><strong>Pitch Bend:</strong> Controls animation type (0-3: Movement, Rotation, Scale,
-                            Combined)</li>
-                        <li><strong>Aftertouch/Channel Pressure:</strong> Controls shape color intensity (grayscale)
-                        </li>
-                    </ul>
-                </div>
+
 
                 <!-- NEW: MIDI Clock Section -->
                 <div id="midi-clock" class="help-section">
@@ -738,61 +749,47 @@
 
                 <!-- Parameter Reference Section -->
                 <div id="parameter-reference" class="help-section">
-                    <h2 class="help-h2">Parameter Reference</h2>
-                    <p>This section provides a comprehensive reference for all available parameters that can be mapped
-                        to MIDI controls:</p>
+                    <h2 class="help-h2">What Each Parameter Does</h2>
+                    <p>This section explains what each visual parameter controls and how it affects your composition. Use this as a guide when mapping your MIDI controller.</p>
 
                     <div id="animation-params" class="help-section">
-                        <h3 class="help-h3">Animation Parameters</h3>
+                        <h3 class="help-h3">Animation Controls</h3>
+                        <p>These parameters control how your shapes move, rotate, and change over time:</p>
                         <ul>
-                            <li><strong>globalBPM:</strong> Controls the global BPM (60-300) - the master tempo for all animations</li>
-                            <li><strong>movementAmplitude:</strong> Controls the amplitude of movement</li>
-                            <li><strong>rotationAmplitude:</strong> Controls the amplitude of rotation</li>
-                            <li><strong>scaleAmplitude:</strong> Controls the amplitude of scaling</li>
-                            <li><strong>randomness:</strong> Controls the randomness of animations</li>
-                            <li><strong>cellSize:</strong> Controls the size of individual cells</li>
+                            <li><strong>Global BPM:</strong> Sets the master tempo (60-300 BPM) - all animations sync to this speed</li>
+                            <li><strong>Movement Amplitude:</strong> How far shapes move from their center position</li>
+                            <li><strong>Rotation Amplitude:</strong> How much shapes rotate around their center</li>
+                            <li><strong>Scale Amplitude:</strong> How much shapes grow and shrink</li>
+                            <li><strong>Randomness:</strong> Adds unpredictable variation to animations</li>
+                            <li><strong>Cell Size:</strong> Controls the size of individual shapes</li>
                         </ul>
                         
-                        <h4 class="help-h4">Musical Timing Divisions</h4>
-                        <p>All animations now use musical timing divisions instead of arbitrary frequencies. These divisions sync with the global BPM:</p>
+                        <h4 class="help-h4">Musical Timing</h4>
+                        <p>All animations sync to musical time instead of arbitrary speeds. These controls let you set how often each animation happens relative to the beat:</p>
                         <ul>
-                            <li><strong>movementDivision:</strong> Controls the timing of movement animations:
+                            <li><strong>Movement Division:</strong> How often shapes move:
                                 <ul>
-                                    <li><strong>32nd:</strong> Very fast (1/8 beat)</li>
-                                    <li><strong>16th:</strong> Fast (1/4 beat)</li>
-                                    <li><strong>8th:</strong> Medium-fast (1/2 beat)</li>
-                                    <li><strong>Quarter:</strong> Medium (1 beat)</li>
-                                    <li><strong>Half:</strong> Slow (2 beats)</li>
-                                    <li><strong>Whole:</strong> Very slow (4 beats)</li>
+                                    <li><strong>32nd Note:</strong> Very fast (1/8 beat)</li>
+                                    <li><strong>16th Note:</strong> Fast (1/4 beat)</li>
+                                    <li><strong>8th Note:</strong> Medium-fast (1/2 beat)</li>
+                                    <li><strong>Quarter Note:</strong> Medium (1 beat)</li>
+                                    <li><strong>Half Note:</strong> Slow (2 beats)</li>
+                                    <li><strong>Whole Note:</strong> Very slow (4 beats)</li>
                                     <li><strong>1 Bar:</strong> Very slow (4 beats)</li>
                                     <li><strong>2 Bars:</strong> Extremely slow (8 beats)</li>
                                     <li><strong>4 Bars:</strong> Very long (16 beats)</li>
                                     <li><strong>8 Bars:</strong> Longest (32 beats)</li>
                                 </ul>
                             </li>
-                            <li><strong>rotationDivision:</strong> Controls the timing of rotation animations (same divisions as movement)</li>
-                            <li><strong>scaleDivision:</strong> Controls the timing of scaling animations (same divisions as movement)</li>
-                            <li><strong>shapeCyclingDivision:</strong> Controls the timing of shape cycling animations (same divisions as movement)</li>
-                            <li><strong>morphingDivision:</strong> Controls the timing of morphing animations (same divisions as movement)</li>
-                            <li><strong>centerScalingDivision:</strong> Controls the timing of center scaling animations (same divisions as movement)</li>
+                            <li><strong>Rotation Division:</strong> How often shapes rotate (same timing options)</li>
+                            <li><strong>Scale Division:</strong> How often shapes grow/shrink (same timing options)</li>
+                            <li><strong>Shape Cycling Division:</strong> How often shapes change type (same timing options)</li>
+                            <li><strong>Morphing Division:</strong> How often morphing happens (same timing options)</li>
+                            <li><strong>Center Scaling Division:</strong> How often 3D depth effects pulse (same timing options)</li>
                         </ul>
                         
                         <div class="help-note">
-                            <strong>Musical Timing:</strong> All animations now sync to musical time instead of arbitrary speeds. The global BPM serves as the master tempo, and each animation type can be set to different musical divisions for complex rhythmic patterns.
-                        </div>
-                        
-                        <div class="help-note">
-                            <strong>Deprecated Parameters:</strong> The following old parameters have been replaced with the new musical timing system:
-                            <ul>
-                                <li><code>animationSpeed</code> → <code>globalBPM</code></li>
-                                <li><code>movementFrequency</code> → <code>movementDivision</code></li>
-                                <li><code>rotationFrequency</code> → <code>rotationDivision</code></li>
-                                <li><code>scaleFrequency</code> → <code>scaleDivision</code></li>
-                                <li><code>shapeCyclingSpeed</code> → <code>shapeCyclingDivision</code></li>
-                                <li><code>morphingSpeed</code> → <code>morphingDivision</code> (deprecated, now uses musical timing)</li>
-                                <li><code>centerScalingAnimationSpeed</code> → <code>centerScalingDivision</code></li>
-                            </ul>
-                            Old scene files will automatically migrate to use the new parameters with sensible defaults.
+                            <strong>Pro Tip:</strong> Try setting different divisions for different animations to create complex, layered rhythms. For example, set movement to quarter notes and rotation to 16th notes for interesting patterns.
                         </div>
                     </div>
 
@@ -878,26 +875,28 @@
                     </div>
 
                     <div id="post-processing-params" class="help-section">
-                        <h3 class="help-h3">Post-Processing Parameters</h3>
+                        <h3 class="help-h3">Visual Effects</h3>
+                        <p>These parameters add cinematic and artistic effects to your composition:</p>
                         <ul>
-                            <li><strong>bloomStrength:</strong> Controls bloom strength</li>
-                            <li><strong>bloomRadius:</strong> Controls bloom radius</li>
-                            <li><strong>bloomThreshold:</strong> Controls bloom threshold</li>
-                            <li><strong>chromaticIntensity:</strong> Controls chromatic aberration intensity</li>
-                            <li><strong>vignetteIntensity:</strong> Controls vignette intensity</li>
-                            <li><strong>vignetteRadius:</strong> Controls vignette radius</li>
-                            <li><strong>vignetteSoftness:</strong> Controls vignette softness</li>
-                            <li><strong>grainIntensity:</strong> Controls film grain intensity</li>
+                            <li><strong>Bloom Strength:</strong> Controls the glow effect around bright areas</li>
+                            <li><strong>Bloom Radius:</strong> How far the glow effect spreads</li>
+                            <li><strong>Bloom Threshold:</strong> How bright an area needs to be to glow</li>
+                            <li><strong>Chromatic Intensity:</strong> Creates color separation effects (like old film)</li>
+                            <li><strong>Vignette Intensity:</strong> Darkens the edges of the frame</li>
+                            <li><strong>Vignette Radius:</strong> How far from the center the darkening starts</li>
+                            <li><strong>Vignette Softness:</strong> How gradual the edge darkening is</li>
+                            <li><strong>Grain Intensity:</strong> Adds film grain texture for a vintage look</li>
                         </ul>
                     </div>
 
                     <div id="color-params" class="help-section">
-                        <h3 class="help-h3">Color Parameters</h3>
+                        <h3 class="help-h3">Color Controls</h3>
+                        <p>These parameters control the overall color and appearance of your composition:</p>
                         <ul>
-                            <li><strong>colorHue:</strong> Controls color hue</li>
-                            <li><strong>colorSaturation:</strong> Controls color saturation</li>
-                            <li><strong>colorBrightness:</strong> Controls color brightness</li>
-                            <li><strong>colorContrast:</strong> Controls color contrast</li>
+                            <li><strong>Color Hue:</strong> Changes the base color (red, blue, green, etc.)</li>
+                            <li><strong>Color Saturation:</strong> Controls how vivid or muted the colors are</li>
+                            <li><strong>Color Brightness:</strong> Makes everything brighter or darker</li>
+                            <li><strong>Color Contrast:</strong> Increases or decreases the difference between light and dark areas</li>
                         </ul>
                     </div>
 
@@ -1142,144 +1141,118 @@
                     </ul>
                 </div>
 
-                <!-- NEW: GUI Improvements Section -->
-                <div id="improved-dropdowns" class="help-section">
-                    <h2 class="help-h2">NEW: Improved Dropdown Controls</h2>
-                    <p>The GUI has been significantly improved with proper dropdown controls that show meaningful labels instead of confusing numeric values:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Fixed Dropdown Controls</h3>
-                        <ul>
-                            <li><strong>Animation Type:</strong> Now shows "Movement", "Rotation", "Scale", "Combined" instead of numbers</li>
-                            <li><strong>Scaling Curve:</strong> Now shows "Linear", "Exponential", "Logarithmic", "Sine Wave"</li>
-                            <li><strong>Scaling Direction:</strong> Now shows "Convex (Center Larger)", "Concave (Center Smaller)"</li>
-                            <li><strong>Center Scaling Animation Type:</strong> Now shows "Complex Wave", "Radial Pulse", "Spiral Effect", "Chaos Pattern"</li>
-                            <li><strong>Shape Cycling Pattern:</strong> Now shows "Sequential", "Random", "Wave", "Pulse", "Staggered"</li>
-                            <li><strong>Shape Cycling Direction:</strong> Now shows "Forward", "Reverse", "Ping-Pong", "Random"</li>
-                            <li><strong>Shape Cycling Synchronization:</strong> Now shows "Independent", "Synchronized", "Wave", "Cluster"</li>
-                            <li><strong>Shape Cycling Trigger:</strong> Now shows "Time-based", "Movement-triggered", "Rotation-triggered", "Manual"</li>
-                            <li><strong>Morphing Easing:</strong> Now shows proper easing function names like "Power 2 InOut", "Elastic Out", etc.</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>User Experience:</strong> All dropdowns now display proper default values and meaningful labels, making the interface much more intuitive and user-friendly.
-                    </div>
-                </div>
-
-                <div id="animation-type-fix" class="help-section">
-                    <h2 class="help-h2">Animation Type Label Correction</h2>
-                    <p>The animation type dropdown has been corrected to show accurate labels that match what each option actually does:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Corrected Animation Types</h3>
-                        <ul>
-                            <li><strong>Movement:</strong> Animates the position of shapes using sine/cosine waves</li>
-                            <li><strong>Rotation:</strong> Animates the rotation of shapes around their Z-axis</li>
-                            <li><strong>Scale:</strong> Animates the size/scale of shapes (grow and shrink)</li>
-                            <li><strong>Combined:</strong> Combines all three effects (movement, rotation, and scale) simultaneously</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Previous Issue:</strong> The labels were incorrectly showing "None", "Wave", "Pulse", "Random" which didn't match the actual functionality. Now the labels accurately describe what each animation type does.
-                    </div>
-                </div>
+                
+              
 
                 <!-- Performance Tips Section -->
                 <div id="performance-tips" class="help-section">
-                    <h2 class="help-h2">Tips for Performance</h2>
+                    <h2 class="help-h2">Tips for Best Results</h2>
+                    
+                    <h3 class="help-h3">Getting Started</h3>
                     <ul>
-                        <li>Use a MIDI controller with knobs/sliders for smooth CC control</li>
-                        <li>Map frequently used parameters to easily accessible controls</li>
-                        <li>Use velocity-sensitive keys for dynamic cell size control</li>
-                        <li>Experiment with different CC mappings to find your preferred setup</li>
-                        <li>Post-processing effects can be CPU intensive - disable unused effects for better performance
-                        </li>
-                        <li>Use FXAA for smoother visuals without significant performance impact</li>
-                        <li><strong>NEW:</strong> Audio mapping can be CPU intensive - use sensitivity controls to optimize performance</li>
-                        <li><strong>NEW:</strong> Video recording requires significant resources - close other applications during recording</li>
-                        <li><strong>NEW:</strong> MIDI clock sync works best with stable external clock sources</li>
-                        <li><strong>NEW:</strong> Shape morphing uses object pooling for optimal performance during complex sequences</li>
-                        <li><strong>NEW:</strong> Use musical timing divisions to create rhythmic patterns that sync with your music</li>
-                        <li><strong>NEW:</strong> Morphing triggers work best with stable BPM settings for predictable timing</li>
+                        <li>Start with just a few MIDI mappings (4-8 controls) and add more as you get comfortable</li>
+                        <li>Use knobs and sliders for smooth control of colors, speeds, and effects</li>
+                        <li>Use buttons and keys for triggering effects and toggling features on/off</li>
+                        <li>Experiment with different parameter combinations to find your style</li>
+                    </ul>
+
+                    <h3 class="help-h3">Live Performance</h3>
+                    <ul>
+                        <li>Map your most-used parameters to easily accessible controls</li>
+                        <li>Use different keys for different effects - each key can trigger a different action</li>
+                        <li>Set up a few different presets for different songs or sections</li>
+                        <li>Practice your mappings before a performance</li>
+                    </ul>
+
+                    <h3 class="help-h3">Optimizing Performance</h3>
+                    <ul>
+                        <li>Turn off unused visual effects to improve speed</li>
+                        <li>Use lower audio sensitivity if your computer is struggling</li>
+                        <li>Close other applications when recording video</li>
+                        <li>Use stable BPM settings for predictable morphing and timing</li>
+                    </ul>
+
+                    <h3 class="help-h3">Creative Tips</h3>
+                    <ul>
+                        <li>Try different musical timing divisions for layered rhythms</li>
+                        <li>Use audio mapping to make visuals respond to your music</li>
+                        <li>Combine MIDI control with audio reactivity for complex effects</li>
+                        <li>Record your best compositions to share or use later</li>
                     </ul>
                 </div>
 
                 <!-- Troubleshooting Section -->
                 <div id="troubleshooting" class="help-section">
-                    <h2 class="help-h2">Troubleshooting</h2>
+                    <h2 class="help-h2">Common Issues & Solutions</h2>
+                    
                     <div class="help-warning">
-                        <strong>MIDI not connecting?</strong>
+                        <strong>My MIDI controller isn't working</strong>
                         <ul>
-                            <li>Make sure your MIDI device is properly connected and recognized by your OS</li>
-                            <li>Try refreshing the page and reconnecting</li>
-                            <li>Check that your browser supports Web MIDI API (Chrome, Edge, Firefox)</li>
-                            <li>Ensure you're running over HTTPS or localhost</li>
+                            <li>Make sure your controller is connected via USB and turned on</li>
+                            <li>Try refreshing the page and clicking "Connect MIDI" again</li>
+                            <li>Check that you're using Chrome, Edge, or Firefox</li>
+                            <li>Make sure you're on HTTPS or localhost (not HTTP)</li>
+                            <li>Try a different USB port if available</li>
                         </ul>
                     </div>
 
                     <div class="help-warning">
-                        <strong>Performance issues?</strong>
+                        <strong>The app is running slowly</strong>
                         <ul>
-                            <li>Disable post-processing effects if experiencing lag</li>
-                            <li>Reduce the number of active shapes or grid size</li>
-                            <li>Lower animation frequencies for smoother performance</li>
-                            <li>Close other browser tabs to free up resources</li>
-                            <li><strong>NEW:</strong> Reduce audio mapping sensitivity if experiencing audio-related lag</li>
-                            <li><strong>NEW:</strong> Use lower quality settings for video recording if experiencing issues</li>
+                            <li>Turn off some visual effects (bloom, grain, etc.) in the GUI</li>
+                            <li>Reduce the number of shapes or make the grid smaller</li>
+                            <li>Close other browser tabs and applications</li>
+                            <li>Lower the audio mapping sensitivity if using microphone input</li>
+                            <li>Use lower quality settings for video recording</li>
                         </ul>
                     </div>
 
                     <div class="help-warning">
-                        <strong>NEW: Audio mapping not working?</strong>
+                        <strong>Audio input isn't working</strong>
                         <ul>
-                            <li>Check microphone permissions in your browser</li>
-                            <li>Ensure your microphone is properly connected and working</li>
-                            <li>Try refreshing the page to reinitialize audio analysis</li>
-                            <li>Check that your browser supports Web Audio API</li>
+                            <li>Check that your microphone is connected and not muted</li>
+                            <li>Allow microphone access when your browser asks for permission</li>
+                            <li>Try refreshing the page and clicking "Connect Audio" again</li>
+                            <li>Check your system's microphone settings</li>
+                            <li>Try adjusting the sensitivity controls</li>
                         </ul>
                     </div>
 
                     <div class="help-warning">
-                        <strong>NEW: Video recording issues?</strong>
+                        <strong>Video recording isn't working</strong>
                         <ul>
-                            <li>Try different format settings (WebM vs MP4)</li>
-                            <li>Reduce quality settings for better compatibility</li>
-                            <li>Ensure sufficient disk space for recording</li>
-                            <li>Check browser support for MediaRecorder API</li>
+                            <li>Try switching between WebM and MP4 formats</li>
+                            <li>Use lower quality settings (Medium instead of High)</li>
+                            <li>Make sure you have enough free disk space</li>
+                            <li>Try a shorter recording duration first</li>
+                            <li>Check that your browser supports video recording</li>
                         </ul>
                     </div>
 
                     <div class="help-warning">
-                        <strong>NEW: MIDI clock not syncing?</strong>
+                        <strong>MIDI clock sync isn't working</strong>
                         <ul>
-                            <li>Check that your MIDI device is sending clock messages</li>
-                            <li>Verify the clock source indicator in the transport bar</li>
-                            <li>Try different sync modes (Auto/Manual/Off)</li>
-                            <li>Ensure stable BPM from your external clock source</li>
+                            <li>Make sure your MIDI device is sending clock messages</li>
+                            <li>Check the clock indicator in the bottom transport bar</li>
+                            <li>Try switching between Auto, Manual, and Off sync modes</li>
+                            <li>Make sure your external device has a stable tempo</li>
+                            <li>Try using the internal clock instead</li>
                         </ul>
                     </div>
 
                     <div class="help-warning">
-                        <strong>NEW: Shape morphing not working?</strong>
+                        <strong>Shape morphing isn't working</strong>
                         <ul>
-                            <li>Check that morphing is enabled in the GUI</li>
-                            <li>Verify MIDI note mappings for morphing triggers</li>
-                            <li>Ensure morphing speed and easing settings are appropriate</li>
-                            <li>Check that shapes are visible and not disabled</li>
+                            <li>Make sure morphing is turned on in the GUI</li>
+                            <li>Check that you've mapped MIDI notes to morphing triggers</li>
+                            <li>Try adjusting the morphing speed and easing settings</li>
+                            <li>Make sure some shapes are visible (not all toggled off)</li>
+                            <li>Try the manual morphing buttons first</li>
                         </ul>
                     </div>
 
-                    <div class="help-warning">
-                        <strong>NEW: Audio mapping not responding?</strong>
-                        <ul>
-                            <li>Check microphone permissions in your browser</li>
-                            <li>Ensure your microphone is properly connected and working</li>
-                            <li>Try refreshing the page to reinitialize audio analysis</li>
-                            <li>Check that your browser supports Web Audio API</li>
-                            <li>Adjust sensitivity controls if audio input is too weak or strong</li>
-                        </ul>
+                    <div class="help-note">
+                        <strong>Still having issues?</strong> Try refreshing the page completely, or restart your browser. Most issues can be resolved by reconnecting your devices.
                     </div>
                 </div>
 
