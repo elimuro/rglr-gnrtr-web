@@ -80,4 +80,31 @@ Removed the following parameters that were not recognized or implemented:
 - **Note Controls**: Only boolean toggles and trigger actions
 - Division parameters use the existing `getDivisionFromIndex` method for mapping
 - Color parameters use HSV mapping for intuitive control across the full color spectrum
-- All parameters maintain compatibility with existing scene files 
+- All parameters maintain compatibility with existing scene files
+
+## MIDI Mapping While Animation is Paused
+
+The system now supports showing MIDI mapping effects even when the animation loop is paused. This allows users to:
+
+1. **Set up mappings without animation running** - Perfect for initial configuration
+2. **See immediate visual feedback** - Parameter changes are rendered immediately
+3. **Test mappings in a controlled environment** - No animation interference
+4. **Fine-tune parameters** - Precise control without timing distractions
+
+### How It Works
+
+- **Parameter updates** trigger immediate scene updates regardless of animation state
+- **Scene rendering** is forced when animation is paused to show changes
+- **All parameter types** work: colors, sizes, materials, lighting, post-processing
+- **Real-time feedback** for both MIDI controls and audio mapping
+
+### Supported Parameters While Paused
+
+- **Visual parameters**: Colors, sizes, grid dimensions, cell sizes
+- **Material properties**: Refraction, transparency, roughness, metalness
+- **Lighting**: All light intensities and colors
+- **Post-processing**: Bloom, chromatic aberration, vignette, grain, color grading
+- **Shape properties**: Sphere scales, material updates
+- **Grid properties**: Width, height, composition dimensions
+
+This feature makes the application much more user-friendly for setting up MIDI mappings and testing parameter ranges without the distraction of running animations. 

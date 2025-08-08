@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI Mapping While Paused - Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .test-button {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: inherit;
+        }
+        .test-button:hover {
+            background: #7c3aed;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #065f46;
+            color: #d1fae5;
+        }
+        .status.info {
+            background: #1e40af;
+            color: #dbeafe;
+        }
+        .status.warning {
+            background: #92400e;
+            color: #fef3c7;
+        }
+        .parameter-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .parameter-value {
+            font-family: monospace;
+            color: #8b5cf6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>MIDI Mapping While Animation Paused - Test</h1>
+        
+        <div class="test-section">
+            <h2>Animation Control</h2>
+            <button class="test-button" onclick="toggleAnimation()">Toggle Animation</button>
+            <button class="test-button" onclick="pauseAnimation()">Pause Animation</button>
+            <button class="test-button" onclick="startAnimation()">Start Animation</button>
+            <div id="animation-status" class="status info">Animation Status: Unknown</div>
+        </div>
+
+        <div class="test-section">
+            <h2>Parameter Testing (Works While Paused)</h2>
+            <p>These parameters will show immediate visual effects even when animation is paused:</p>
+            
+            <div>
+                <label>Cell Size: <span id="cellSize-value" class="parameter-value">1.0</span></label>
+                <input type="range" min="0.5" max="2" step="0.1" value="1.0" 
+                       class="parameter-slider" id="cellSize-slider"
+                       oninput="updateParameter('cellSize', this.value)">
+            </div>
+            
+            <div>
+                <label>Sphere Scale: <span id="sphereScale-value" class="parameter-value">1.5</span></label>
+                <input type="range" min="0.5" max="3" step="0.1" value="1.5" 
+                       class="parameter-slider" id="sphereScale-slider"
+                       oninput="updateParameter('sphereScale', this.value)">
+            </div>
+            
+            <div>
+                <label>Bloom Strength: <span id="bloomStrength-value" class="parameter-value">0.5</span></label>
+                <input type="range" min="0" max="2" step="0.1" value="0.5" 
+                       class="parameter-slider" id="bloomStrength-slider"
+                       oninput="updateParameter('bloomStrength', this.value)">
+            </div>
+            
+            <div>
+                <label>Ambient Light: <span id="ambientLightIntensity-value" class="parameter-value">0.3</span></label>
+                <input type="range" min="0" max="1" step="0.1" value="0.3" 
+                       class="parameter-slider" id="ambientLightIntensity-slider"
+                       oninput="updateParameter('ambientLightIntensity', this.value)">
+            </div>
+            
+            <div>
+                <label>Grid Width: <span id="gridWidth-value" class="parameter-value">8</span></label>
+                <input type="range" min="1" max="20" step="1" value="8" 
+                       class="parameter-slider" id="gridWidth-slider"
+                       oninput="updateParameter('gridWidth', this.value)">
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Instructions</h2>
+            <ol>
+                <li>Pause the animation using the "Pause Animation" button</li>
+                <li>Move the sliders above to see immediate visual changes</li>
+                <li>Notice that parameter changes are visible even without animation running</li>
+                <li>This demonstrates how MIDI mappings work while paused</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>MIDI Mapping Test</h2>
+            <p>If you have MIDI devices connected, you can also test MIDI mappings while animation is paused:</p>
+            <ul>
+                <li>Pause the animation first</li>
+                <li>Move MIDI controllers to see immediate visual feedback</li>
+                <li>All parameter changes will be visible without animation interference</li>
+                <li>Perfect for setting up mappings in a controlled environment</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let app = null;
+
+        // Initialize the app when the main page loads
+        window.addEventListener('load', async () => {
+            try {
+                // Import the main app
+                const { App } = await import('./src/core/App.js');
+                app = new App();
+                await app.init();
+                
+                updateAnimationStatus();
+                console.log('App initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize app:', error);
+                document.getElementById('animation-status').textContent = 'Error: ' + error.message;
+                document.getElementById('animation-status').className = 'status warning';
+            }
+        });
+
+        function updateAnimationStatus() {
+            if (!app) return;
+            
+            const isRunning = app.animationLoop.getRunningState();
+            const status = document.getElementById('animation-status');
+            status.textContent = `Animation Status: ${isRunning ? 'Running' : 'Paused'}`;
+            status.className = isRunning ? 'status success' : 'status warning';
+        }
+
+        function toggleAnimation() {
+            if (!app) return;
+            
+            if (app.animationLoop.getRunningState()) {
+                app.animationLoop.stop();
+            } else {
+                app.animationLoop.start();
+            }
+            updateAnimationStatus();
+        }
+
+        function pauseAnimation() {
+            if (!app) return;
+            app.animationLoop.stop();
+            updateAnimationStatus();
+        }
+
+        function startAnimation() {
+            if (!app) return;
+            app.animationLoop.start();
+            updateAnimationStatus();
+        }
+
+        function updateParameter(target, value) {
+            if (!app) return;
+            
+            // Update the display value
+            const valueElement = document.getElementById(`${target}-value`);
+            if (valueElement) {
+                valueElement.textContent = value;
+            }
+            
+            // Update the app parameter
+            app.updateAnimationParameter(target, parseFloat(value));
+            
+            // Force render if animation is paused
+            if (app.isAnimationPaused()) {
+                app.forceRenderWhenPaused();
+            }
+        }
+    </script>
+</body>
+</html>

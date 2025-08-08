@@ -1180,6 +1180,11 @@ export class App {
                 this.state.set('shapeCyclingTrigger', Math.floor(value));
                 break;
         }
+        
+        // Ensure changes are visible even when animation is paused
+        if (this.scene && !this.animationLoop.getRunningState()) {
+            this.scene.render();
+        }
     }
 
     handleNoteMapping(target) {
@@ -2745,5 +2750,15 @@ History: ${summary.historySize} entries`;
     // MIDI Tap Tempo Handler
     onMIDITempoTap() {
         this.midiClockManager.onMIDITempoTap();
+    }
+
+    isAnimationPaused() {
+        return !this.animationLoop.getRunningState();
+    }
+
+    forceRenderWhenPaused() {
+        if (this.scene && this.isAnimationPaused()) {
+            this.scene.render();
+        }
     }
 } 

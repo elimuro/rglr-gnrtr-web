@@ -128,7 +128,7 @@ export class AudioMappingControl {
         this.mapping = {
             minFrequency: 250,
             maxFrequency: 2000,
-            target: 'movementAmplitude',
+            target: '', // Changed from 'movementAmplitude' to empty string
             minValue: 0,
             maxValue: 1,
             curve: 'linear',
@@ -178,9 +178,10 @@ export class AudioMappingControl {
     }
     
     generateTargetOptions(targets) {
-        return targets.map(target => 
-            `<option value="${target.value}">${target.label}</option>`
-        ).join('');
+        return `<option value="">Select a target</option>` + 
+            targets.map(target => 
+                `<option value="${target.value}">${target.label}</option>`
+            ).join('');
     }
     
     createElement(html) {
@@ -239,7 +240,7 @@ export class AudioMappingControl {
         // Target selection
         const targetSelect = this.element.querySelector('.target-select');
         if (targetSelect) {
-            targetSelect.value = this.mapping.target;
+            targetSelect.value = this.mapping.target || ''; // Handle empty target
             targetSelect.addEventListener('change', (e) => {
                 this.mapping.target = e.target.value;
                 this.updateMapping();
@@ -380,6 +381,11 @@ export class AudioMappingControl {
         
         const normalizedValue = this.normalizeValue(audioValue, this.mapping.target);
         this.app.updateAnimationParameter(this.mapping.target, normalizedValue);
+        
+        // Ensure changes are visible even when animation is paused
+        if (this.app.scene && !this.app.animationLoop.getRunningState()) {
+            this.app.scene.render();
+        }
     }
     
     normalizeValue(audioValue, target) {
@@ -453,7 +459,7 @@ export class AudioMappingControl {
         // Update UI elements
         if (this.element) {
             const targetSelect = this.element.querySelector('.target-select');
-            if (targetSelect) targetSelect.value = this.mapping.target;
+            if (targetSelect) targetSelect.value = this.mapping.target || ''; // Handle empty target
             
             // Update frequency slider if it exists
             if (this.frequencySlider) {

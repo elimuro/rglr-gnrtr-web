@@ -238,4 +238,14 @@ export class AnimationLoop {
         }
         return null;
     }
+
+    getRunningState() {
+        return this.isRunning;
+    }
+
+    forceRender() {
+        if (this.scene && !this.isRunning) {
+            this.scene.render();
+        }
+    }
 } 

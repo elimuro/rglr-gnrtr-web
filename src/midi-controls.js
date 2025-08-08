@@ -242,9 +242,10 @@ export class MIDIControl {
     }
     
     interpolateTemplate(template) {
-        const targetOptions = this.config.targets
-            .map(target => `<option value="${target.value}">${target.label}</option>`)
-            .join('');
+        const targetOptions = `<option value="">Select a target</option>` + 
+            this.config.targets
+                .map(target => `<option value="${target.value}">${target.label}</option>`)
+                .join('');
         
         return template
             .replace(/{controlId}/g, this.controlId)
@@ -278,7 +279,7 @@ export class MIDIControl {
         const mapping = this.getMapping();
         channelInput.value = mapping.channel + 1;
         valueInput.value = mapping.value;
-        targetSelect.value = mapping.target;
+        targetSelect.value = mapping.target || ''; // Handle empty target
         
         // Event listeners
         channelInput.addEventListener('change', (e) => {
@@ -555,7 +556,7 @@ export class MIDIControl {
         const defaultMapping = {
             channel: 0,
             value: this.config.defaultValue,
-            target: this.config.targets[0].value
+            target: '' // Changed to empty string
         };
         return mappings[this.controlId] || defaultMapping;
     }
@@ -597,7 +598,7 @@ export class MIDIControl {
             
             if (channelInput) channelInput.value = data.config.channel + 1;
             if (valueInput) valueInput.value = data.config.value;
-            if (targetSelect) targetSelect.value = data.config.target;
+            if (targetSelect) targetSelect.value = data.config.target || ''; // Handle empty target
         }
     }
     
