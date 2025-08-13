@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scene Management Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        pre {
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scene Management Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Actions</h2>
+        <button onclick="runTests()">Run All Tests</button>
+        <button onclick="testExport()">Test Export</button>
+        <button onclick="testImport()">Test Import</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Scene Data</h2>
+        <pre id="sceneData"></pre>
+    </div>
+
+    <script type="module">
+        // Import the StateManager to test scene management
+        import { StateManager } from './src/core/StateManager.js';
+
+        let stateManager;
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(div);
+            console.log(message);
+        }
+
+        function addResult(test, passed, details = '') {
+            testResults.push({ test, passed, details });
+            const status = passed ? 'PASS' : 'FAIL';
+            const color = passed ? 'success' : 'error';
+            log(`${status}: ${test} ${details}`, color);
+        }
+
+        async function initializeStateManager() {
+            try {
+                stateManager = new StateManager();
+                stateManager.initialize();
+                log('StateManager initialized successfully', 'success');
+                return true;
+            } catch (error) {
+                log(`Failed to initialize StateManager: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function testExport() {
+            log('Testing scene export...');
+            
+            if (!stateManager) {
+                log('StateManager not initialized', 'error');
+                return;
+            }
+
+            try {
+                // Set some test values
+                stateManager.set('centerScalingAnimation', true);
+                stateManager.set('enableSizeAnimation', false);
+                stateManager.set('movementDivision', '16th');
+                stateManager.set('rotationDivision', '8th');
+                stateManager.set('scaleDivision', 'quarter');
+                stateManager.set('shapeCyclingDivision', 'half');
+                stateManager.set('morphingDivision', 'whole');
+                stateManager.set('centerScalingDivision', '2 Bars');
+
+                const sceneData = stateManager.exportScene();
+                
+                // Check if all required parameters are present
+                const requiredParams = [
+                    'centerScalingAnimation',
+                    'enableSizeAnimation',
+                    'movementDivision',
+                    'rotationDivision',
+                    'scaleDivision',
+                    'shapeCyclingDivision',
+                    'morphingDivision',
+                    'centerScalingDivision'
+                ];
+
+                let allPresent = true;
+                const missingParams = [];
+
+                requiredParams.forEach(param => {
+                    if (!(param in sceneData.settings)) {
+                        allPresent = false;
+                        missingParams.push(param);
+                    }
+                });
+
+                if (allPresent) {
+                    addResult('Export Test', true, 'All required parameters present');
+                    document.getElementById('sceneData').textContent = JSON.stringify(sceneData, null, 2);
+                } else {
+                    addResult('Export Test', false, `Missing parameters: ${missingParams.join(', ')}`);
+                }
+
+            } catch (error) {
+                addResult('Export Test', false, `Error: ${error.message}`);
+            }
+        }
+
+        function testImport() {
+            log('Testing scene import...');
+            
+            if (!stateManager) {
+                log('StateManager not initialized', 'error');
+                return;
+            }
+
+            try {
+                // Create test scene data
+                const testScene = {
+                    settings: {
+                        centerScalingAnimation: true,
+                        enableSizeAnimation: false,
+                        movementDivision: '16th',
+                        rotationDivision: '8th',
+                        scaleDivision: 'quarter',
+                        shapeCyclingDivision: 'half',
+                        morphingDivision: 'whole',
+                        centerScalingDivision: '2 Bars',
+                        // Add some other parameters to make it realistic
+                        gridWidth: 10,
+                        gridHeight: 10,
+                        shapeColor: '#ff0000',
+                        backgroundColor: '#000000'
+                    }
+                };
+
+                // Test import
+                const success = stateManager.importScene(testScene);
+                
+                if (success) {
+                    // Verify the values were set correctly
+                    const centerScalingAnimation = stateManager.get('centerScalingAnimation');
+                    const enableSizeAnimation = stateManager.get('enableSizeAnimation');
+                    const movementDivision = stateManager.get('movementDivision');
+                    
+                    if (centerScalingAnimation === true && 
+                        enableSizeAnimation === false && 
+                        movementDivision === '16th') {
+                        addResult('Import Test', true, 'All parameters imported correctly');
+                    } else {
+                        addResult('Import Test', false, 'Parameters not set correctly after import');
+                    }
+                } else {
+                    addResult('Import Test', false, 'Import returned false');
+                }
+
+            } catch (error) {
+                addResult('Import Test', false, `Error: ${error.message}`);
+            }
+        }
+
+        async function runTests() {
+            log('Starting scene management tests...');
+            testResults = [];
+            document.getElementById('results').innerHTML = '';
+
+            // Initialize StateManager
+            const initialized = await initializeStateManager();
+            if (!initialized) {
+                log('Cannot run tests without StateManager', 'error');
+                return;
+            }
+
+            // Run tests
+            testExport();
+            testImport();
+
+            // Summary
+            const passed = testResults.filter(r => r.passed).length;
+            const total = testResults.length;
+            log(`Tests completed: ${passed}/${total} passed`, passed === total ? 'success' : 'warning');
+        }
+
+        // Make functions available globally
+        window.runTests = runTests;
+        window.testExport = testExport;
+        window.testImport = testImport;
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            log('Page loaded, ready to run tests');
+        });
+    </script>
+</body>
+</html>

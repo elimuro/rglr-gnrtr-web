@@ -18,11 +18,15 @@ import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
 // import { VideoRecorder } from '../modules/VideoRecorder.js';
 import { AudioManager } from '../modules/AudioManager.js';
 import { MIDIClockManager } from '../modules/MIDIClockManager.js';
+import { DOMCache } from '../modules/DOMCache.js';
 
 export class App {
     constructor() {
         this.state = new StateManager();
         this.scene = new Scene(this.state);
+        
+        // Initialize DOM cache for performance optimization
+        this.domCache = new DOMCache();
         
         // Initialize MIDI clock manager first
         this.midiClockManager = new MIDIClockManager(this);
@@ -76,6 +80,9 @@ export class App {
             this.guiManager = new GUIManager(this.state, this);
             this.guiManager.init();
             
+            // Initialize DOM cache after GUI is ready
+            this.domCache.initializeCache();
+            
             // Initialize MIDI
             this.setupMIDI();
             
@@ -112,19 +119,19 @@ export class App {
         // Set up drawer functionality
         this.setupDrawers();
         
-        // Set up MIDI UI event listeners
-        document.getElementById('midi-connect').addEventListener('click', () => {
+        // Set up MIDI UI event listeners using cached DOM elements
+        this.domCache.getElement('midi-connect').addEventListener('click', () => {
             this.midiManager.connect();
         });
         
-        document.getElementById('midi-disconnect').addEventListener('click', () => {
+        this.domCache.getElement('midi-disconnect').addEventListener('click', () => {
             this.midiManager.disconnect();
         });
         
         // Set up audio interface UI event listeners
         this.setupAudioInterfaceUI();
 
-        const refreshButton = document.getElementById('midi-refresh');
+        const refreshButton = this.domCache.getElement('midi-refresh');
         if (refreshButton) {
             refreshButton.addEventListener('click', () => {
                 this.midiManager.refreshDevices();
@@ -134,17 +141,17 @@ export class App {
 
         
         // Preset selector
-        document.getElementById('midi-preset-select').addEventListener('change', (e) => {
+        this.domCache.getElement('midi-preset-select').addEventListener('change', (e) => {
             this.applyCCPreset(e.target.value);
         });
         
         // Scene preset selector
-        document.getElementById('scene-preset-select').addEventListener('change', (e) => {
+        this.domCache.getElement('scene-preset-select').addEventListener('change', (e) => {
             this.applyScenePreset(e.target.value);
         });
         
         // File input for loading presets and scenes
-        document.getElementById('preset-file-input').addEventListener('change', (e) => {
+        this.domCache.getElement('preset-file-input').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 // Check if it's a scene file or MIDI preset by reading the content
@@ -170,35 +177,35 @@ export class App {
         });
         
         // Add control buttons
-        document.getElementById('add-cc-control').addEventListener('click', () => {
+        this.domCache.getElement('add-cc-control').addEventListener('click', () => {
             this.addCCControl();
         });
         
-        document.getElementById('add-note-control').addEventListener('click', () => {
+        this.domCache.getElement('add-note-control').addEventListener('click', () => {
             this.addNoteControl();
         });
         
-        document.getElementById('add-audio-mapping-control').addEventListener('click', () => {
+        this.domCache.getElement('add-audio-mapping-control').addEventListener('click', () => {
             this.addAudioMappingControl();
         });
         
         // Mapping test button
-        document.getElementById('mapping-test').addEventListener('click', () => {
+        this.domCache.getElement('mapping-test').addEventListener('click', () => {
             this.testAudioMapping();
         });
         
         // Mapping save button
-        document.getElementById('mapping-save').addEventListener('click', () => {
+        this.domCache.getElement('mapping-save').addEventListener('click', () => {
             this.savePreset();
         });
         
         // Mapping load button
-        document.getElementById('mapping-load').addEventListener('click', () => {
-            document.getElementById('preset-file-input').click();
+        this.domCache.getElement('mapping-load').addEventListener('click', () => {
+            this.domCache.getElement('preset-file-input').click();
         });
         
         // Test button for CC mapping
-        document.getElementById('mapping-test').addEventListener('click', () => {
+        this.domCache.getElement('mapping-test').addEventListener('click', () => {
             this.testCCValues();
         });
         
@@ -257,7 +264,7 @@ export class App {
     setupDrawers() {
         // Drawer state management
         this.currentDrawer = null;
-        this.drawerContainer = document.getElementById('midi-drawer-container');
+        this.drawerContainer = this.domCache.getElement('midi-drawer-container');
         
         if (!this.drawerContainer) {
             console.error('Drawer container not found');
@@ -279,7 +286,7 @@ export class App {
         ];
         
         drawerButtons.forEach(buttonId => {
-            const button = document.getElementById(buttonId);
+            const button = this.domCache.getElement(buttonId);
             if (button) {
                 button.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -361,7 +368,7 @@ export class App {
 
     setupMIDIActivityControls() {
         // Clear button
-        const clearButton = document.getElementById('midi-activity-clear');
+        const clearButton = this.domCache.getElement('midi-activity-clear');
         if (clearButton) {
             clearButton.addEventListener('click', () => {
                 this.clearMIDIActivity();
@@ -369,7 +376,7 @@ export class App {
         }
 
         // Pause button
-        const pauseButton = document.getElementById('midi-activity-pause');
+        const pauseButton = this.domCache.getElement('midi-activity-pause');
         if (pauseButton) {
             pauseButton.addEventListener('click', () => {
                 this.toggleMIDIActivityPause();
@@ -377,7 +384,7 @@ export class App {
         }
 
         // Max messages selector
-        const maxMessagesSelect = document.getElementById('midi-activity-max');
+        const maxMessagesSelect = this.domCache.getElement('midi-activity-max');
         if (maxMessagesSelect) {
             maxMessagesSelect.addEventListener('change', (e) => {
                 this.midiActivityState.maxMessages = parseInt(e.target.value);
@@ -386,7 +393,7 @@ export class App {
         }
 
         // Auto-scroll checkbox
-        const autoscrollCheckbox = document.getElementById('midi-activity-autoscroll');
+        const autoscrollCheckbox = this.domCache.getElement('midi-activity-autoscroll');
         if (autoscrollCheckbox) {
             autoscrollCheckbox.addEventListener('change', (e) => {
                 this.midiActivityState.autoScroll = e.target.checked;
@@ -394,7 +401,7 @@ export class App {
         }
 
         // Filter clock checkbox
-        const filterClockCheckbox = document.getElementById('midi-activity-filter-clock');
+        const filterClockCheckbox = this.domCache.getElement('midi-activity-filter-clock');
         if (filterClockCheckbox) {
             filterClockCheckbox.checked = this.midiActivityState.filterClock;
             filterClockCheckbox.addEventListener('change', (e) => {
@@ -443,7 +450,7 @@ export class App {
     }
 
     updateMIDIActivityDisplay() {
-        const streamContainer = document.getElementById('midi-activity-stream');
+        const streamContainer = this.domCache.getElement('midi-activity-stream');
         if (!streamContainer) return;
 
         if (this.midiActivityState.messages.length === 0) {
@@ -471,16 +478,16 @@ export class App {
 
     updateMIDIActivityStats() {
         // Update message count
-        const countElement = document.getElementById('midi-activity-count');
+        const countElement = this.domCache.getElement('midi-activity-count');
         if (countElement) {
             countElement.textContent = this.midiActivityState.messages.length;
         }
 
         // Update message type counts
-        const ccCount = document.getElementById('midi-cc-count');
-        const noteCount = document.getElementById('midi-note-count');
-        const pitchCount = document.getElementById('midi-pitch-count');
-        const systemCount = document.getElementById('midi-system-count');
+        const ccCount = this.domCache.getElement('midi-cc-count');
+        const noteCount = this.domCache.getElement('midi-note-count');
+        const pitchCount = this.domCache.getElement('midi-pitch-count');
+        const systemCount = this.domCache.getElement('midi-system-count');
 
         if (ccCount) ccCount.textContent = this.midiActivityState.messageCounts.cc;
         if (noteCount) noteCount.textContent = this.midiActivityState.messageCounts.note;
@@ -492,10 +499,10 @@ export class App {
     }
 
     updateMIDIActivityConnectionStatus() {
-        const statusElement = document.getElementById('midi-activity-status');
-        const deviceElement = document.getElementById('midi-activity-device');
-        const rateElement = document.getElementById('midi-activity-rate');
-        const lastElement = document.getElementById('midi-activity-last');
+        const statusElement = this.domCache.getElement('midi-activity-status');
+        const deviceElement = this.domCache.getElement('midi-activity-device');
+        const rateElement = this.domCache.getElement('midi-activity-rate');
+        const lastElement = this.domCache.getElement('midi-activity-last');
 
         if (statusElement) {
             const isConnected = this.midiManager && this.midiManager.isConnected;
@@ -537,7 +544,7 @@ export class App {
 
     toggleMIDIActivityPause() {
         this.midiActivityState.isPaused = !this.midiActivityState.isPaused;
-        const pauseButton = document.getElementById('midi-activity-pause');
+        const pauseButton = this.domCache.getElement('midi-activity-pause');
         if (pauseButton) {
             pauseButton.textContent = this.midiActivityState.isPaused ? 'Resume' : 'Pause';
         }
@@ -562,8 +569,8 @@ export class App {
         const sections = ['connect-midi-section', 'connect-audio-section'];
         
         tabs.forEach((tab, index) => {
-            const tabButton = document.getElementById(`tab-${tab}`);
-            const section = document.getElementById(sections[index]);
+            const tabButton = this.domCache.getElement(`tab-${tab}`);
+            const section = this.domCache.getElement(sections[index]);
             
             if (tabButton && section) {
                 tabButton.addEventListener('click', () => {
@@ -975,6 +982,11 @@ export class App {
     }
 
     updateAnimationParameter(target, value) {
+        // Debug logging for center scaling parameters
+        if (target && target.startsWith('centerScaling')) {
+            console.log(`🎛️ updateAnimationParameter ${target}:`, value);
+        }
+        
         // Values from the new MIDI system are already properly normalized to their target ranges
         // No additional scaling needed
         switch (target) {
@@ -1178,6 +1190,30 @@ export class App {
                 break;
             case 'shapeCyclingTrigger':
                 this.state.set('shapeCyclingTrigger', Math.floor(value));
+                break;
+            
+            // Center Scaling parameters
+            case 'centerScalingIntensity':
+                this.state.set('centerScalingIntensity', value);
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingCurve':
+                this.state.set('centerScalingCurve', Math.floor(value));
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingRadius':
+                this.state.set('centerScalingRadius', value);
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingDirection':
+                this.state.set('centerScalingDirection', Math.floor(value));
+                if (this.scene) this.scene.updateCenterScaling();
+                break;
+            case 'centerScalingAnimationSpeed':
+                this.state.set('centerScalingAnimationSpeed', value);
+                break;
+            case 'centerScalingAnimationType':
+                this.state.set('centerScalingAnimationType', Math.floor(value));
                 break;
         }
         
@@ -2483,13 +2519,13 @@ History: ${summary.historySize} entries`;
     setupAudioInterfaceUI() {
         
         // Audio interface selection
-        const interfaceSelect = document.getElementById('audio-interface-select');
-        const channelsContainer = document.getElementById('audio-channels-container');
-        const connectButton = document.getElementById('audio-connect');
-        const disconnectButton = document.getElementById('audio-disconnect');
-        const refreshButton = document.getElementById('audio-refresh-interfaces');
-        const statusIndicator = document.getElementById('audio-status-indicator');
-        const statusText = document.getElementById('audio-status-text');
+        const interfaceSelect = this.domCache.getElement('audio-interface-select');
+        const channelsContainer = this.domCache.getElement('audio-channels-container');
+        const connectButton = this.domCache.getElement('audio-connect');
+        const disconnectButton = this.domCache.getElement('audio-disconnect');
+        const refreshButton = this.domCache.getElement('audio-refresh-interfaces');
+        const statusIndicator = this.domCache.getElement('audio-status-indicator');
+        const statusText = this.domCache.getElement('audio-status-text');
         
         // Update interface dropdown
         this.updateAudioInterfaceDropdown = () => {
@@ -2760,5 +2796,32 @@ History: ${summary.historySize} entries`;
         if (this.scene && this.isAnimationPaused()) {
             this.scene.render();
         }
+    }
+
+    /**
+     * Cleanup method to properly dispose of resources
+     */
+    cleanup() {
+        // Clear DOM cache
+        if (this.domCache) {
+            this.domCache.clearCache();
+        }
+        
+        // Stop animation loop
+        if (this.animationLoop) {
+            this.animationLoop.stop();
+        }
+        
+        // Disconnect MIDI
+        if (this.midiManager) {
+            this.midiManager.disconnect();
+        }
+        
+        // Stop audio manager
+        if (this.audioManager) {
+            this.audioManager.stopAudioCapture();
+        }
+        
+        console.log('App cleanup completed');
     }
 } 

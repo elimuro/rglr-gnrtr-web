@@ -243,6 +243,16 @@ export class AudioMappingControl {
             targetSelect.value = this.mapping.target || ''; // Handle empty target
             targetSelect.addEventListener('change', (e) => {
                 this.mapping.target = e.target.value;
+                
+                // Update min/max values based on the selected target
+                if (this.mapping.target) {
+                    const config = this.getParameterConfig(this.mapping.target);
+                    if (config) {
+                        this.mapping.minValue = config.min;
+                        this.mapping.maxValue = config.max;
+                    }
+                }
+                
                 this.updateMapping();
             });
         }
@@ -380,6 +390,18 @@ export class AudioMappingControl {
         if (!this.app || !this.app.state) return;
         
         const normalizedValue = this.normalizeValue(audioValue, this.mapping.target);
+        
+        // Debug logging for center scaling parameters
+        if (this.mapping.target && this.mapping.target.startsWith('centerScaling')) {
+            console.log(`🎵 Audio mapping ${this.mapping.target}:`, {
+                rawAudioValue: audioValue,
+                normalizedValue: normalizedValue,
+                minValue: this.mapping.minValue,
+                maxValue: this.mapping.maxValue,
+                sensitivity: this.mapping.sensitivity
+            });
+        }
+        
         this.app.updateAnimationParameter(this.mapping.target, normalizedValue);
         
         // Ensure changes are visible even when animation is paused
@@ -426,6 +448,13 @@ export class AudioMappingControl {
             scaleAmplitude: { min: 0.01, max: 1, step: 0.01 },
             randomness: { min: 0, max: 1, step: 0.01 },
             cellSize: { min: 0.5, max: 2, step: 0.01 },
+            // Center Scaling Parameters
+            centerScalingIntensity: { min: 0, max: 2, step: 0.01 },
+            centerScalingCurve: { min: 0, max: 3, step: 1 },
+            centerScalingRadius: { min: 0.1, max: 5, step: 0.1 },
+            centerScalingDirection: { min: 0, max: 1, step: 1 },
+            centerScalingAnimationSpeed: { min: 0.1, max: 3, step: 0.1 },
+            centerScalingAnimationType: { min: 0, max: 3, step: 1 },
             // Add more parameter configurations as needed
         };
         
@@ -454,6 +483,16 @@ export class AudioMappingControl {
     
     setMapping(mapping) {
         this.mapping = { ...this.mapping, ...mapping };
+        
+        // Update min/max values based on the target if not already set
+        if (this.mapping.target && (!this.mapping.minValue || !this.mapping.maxValue)) {
+            const config = this.getParameterConfig(this.mapping.target);
+            if (config) {
+                this.mapping.minValue = config.min;
+                this.mapping.maxValue = config.max;
+            }
+        }
+        
         this.updateMapping();
         
         // Update UI elements
