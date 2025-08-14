@@ -233,7 +233,7 @@ export class App {
         });
         
         // MIDI stop animation checkbox
-        const midiStopAnimationCheckbox = document.getElementById('midi-stop-animation');
+        const midiStopAnimationCheckbox = this.domCache.getElement('midi-stop-animation');
         if (midiStopAnimationCheckbox) {
             // Set initial state
             midiStopAnimationCheckbox.checked = this.state.get('midiStopStopsAnimation') || false;
@@ -245,19 +245,19 @@ export class App {
         }
         
         // Scene management buttons
-        document.getElementById('save-scene-button').addEventListener('click', () => {
+        this.domCache.getElement('save-scene-button').addEventListener('click', () => {
             this.saveScene();
         });
         
-        document.getElementById('load-scene-button').addEventListener('click', () => {
-            document.getElementById('preset-file-input').click();
+        this.domCache.getElement('load-scene-button').addEventListener('click', () => {
+            this.domCache.getElement('preset-file-input').click();
         });
         
 
         
         // Interpolation duration slider
-        const interpolationDurationInput = document.getElementById('interpolation-duration');
-        const interpolationDurationValue = document.getElementById('interpolation-duration-value');
+        const interpolationDurationInput = this.domCache.getElement('interpolation-duration');
+        const interpolationDurationValue = this.domCache.getElement('interpolation-duration-value');
         
         if (interpolationDurationInput && interpolationDurationValue) {
             interpolationDurationInput.addEventListener('input', (e) => {
@@ -268,7 +268,7 @@ export class App {
         }
         
         // Interpolation easing selector
-        const interpolationEasingSelect = document.getElementById('interpolation-easing');
+        const interpolationEasingSelect = this.domCache.getElement('interpolation-easing');
         if (interpolationEasingSelect) {
             interpolationEasingSelect.addEventListener('change', (e) => {
                 this.state.set('interpolationEasing', e.target.value);
@@ -276,7 +276,7 @@ export class App {
         }
         
         // Debug interpolation button
-        const debugInterpolationButton = document.getElementById('debug-interpolation');
+        const debugInterpolationButton = this.domCache.getElement('debug-interpolation');
         if (debugInterpolationButton) {
             debugInterpolationButton.addEventListener('click', () => {
                 this.debugInterpolation();
@@ -671,8 +671,8 @@ export class App {
 
     setupConnectionButtonHandlers() {
         // MIDI connection buttons
-        const ccConnectButton = document.getElementById('cc-connect-midi');
-        const noteConnectButton = document.getElementById('note-connect-midi');
+        const ccConnectButton = this.domCache.getElement('cc-connect-midi');
+        const noteConnectButton = this.domCache.getElement('note-connect-midi');
         
         if (ccConnectButton) {
             ccConnectButton.addEventListener('click', () => {
@@ -689,7 +689,7 @@ export class App {
         }
         
         // Audio connection button
-        const audioConnectButton = document.getElementById('audio-mapping-connect-audio');
+        const audioConnectButton = this.domCache.getElement('audio-mapping-connect-audio');
         
         if (audioConnectButton) {
             audioConnectButton.addEventListener('click', () => {
@@ -907,8 +907,8 @@ export class App {
         // Removed setupCollapsibleSections() - new design uses cards instead
 
     initializeControlManager() {
-        const ccContainer = document.getElementById('cc-controls-container');
-        const noteContainer = document.getElementById('note-controls-container');
+        const ccContainer = this.domCache.getElement('cc-controls-container');
+        const noteContainer = this.domCache.getElement('note-controls-container');
         
         if (!ccContainer || !noteContainer) {
             console.error('Could not find MIDI control containers');
@@ -922,7 +922,7 @@ export class App {
     }
     
     initializeAudioMappingManager() {
-        const audioMappingContainer = document.getElementById('audio-mapping-controls-container');
+        const audioMappingContainer = this.domCache.getElement('audio-mapping-controls-container');
         
         if (!audioMappingContainer) {
             console.error('Could not find audio mapping controls container');
@@ -1053,7 +1053,7 @@ export class App {
         // Delegate to the new MIDIEventHandler
         this.midiEventHandler.testCCValues();
         
-        const testButton = document.getElementById('mapping-test');
+        const testButton = this.domCache.getElement('mapping-test');
         if (testButton) {
             const originalText = testButton.textContent;
             testButton.textContent = 'Testing...';
@@ -1321,7 +1321,7 @@ export class App {
     }
 
     updatePresetDropdown(availablePresets) {
-        const select = document.getElementById('midi-preset-select');
+        const select = this.domCache.getElement('midi-preset-select');
         if (!select) return;
         
         // Keep the "Custom" option
@@ -1341,7 +1341,7 @@ export class App {
     }
 
     async updateScenePresetDropdown(availableScenePresets) {
-        const select = document.getElementById('scene-preset-select');
+        const select = this.domCache.getElement('scene-preset-select');
         if (!select) return;
         
         // Keep the "Custom" option
@@ -1657,17 +1657,17 @@ export class App {
     
     loadScene() {
         // Trigger file input for loading scene file
-        document.getElementById('preset-file-input').click();
+        this.domCache.getElement('preset-file-input').click();
     }
     
     loadSceneFile(sceneData) {
         try {
             // Get interpolation duration from UI
-            const interpolationDurationInput = document.getElementById('interpolation-duration');
+            const interpolationDurationInput = this.domCache.getElement('interpolation-duration');
             const duration = interpolationDurationInput ? parseFloat(interpolationDurationInput.value) : 2.0;
             
             // Get interpolation easing from UI
-            const interpolationEasingSelect = document.getElementById('interpolation-easing');
+            const interpolationEasingSelect = this.domCache.getElement('interpolation-easing');
             const easing = interpolationEasingSelect ? interpolationEasingSelect.value : 'power2.inOut';
             
             const success = this.state.importSceneWithInterpolation(sceneData, duration, easing);
@@ -1701,11 +1701,11 @@ export class App {
             }
             
             // Get interpolation duration from UI
-            const interpolationDurationInput = document.getElementById('interpolation-duration');
+            const interpolationDurationInput = this.domCache.getElement('interpolation-duration');
             const duration = interpolationDurationInput ? parseFloat(interpolationDurationInput.value) : 2.0;
             
             // Get interpolation easing from UI
-            const interpolationEasingSelect = document.getElementById('interpolation-easing');
+            const interpolationEasingSelect = this.domCache.getElement('interpolation-easing');
             const easing = interpolationEasingSelect ? interpolationEasingSelect.value : 'power2.inOut';
             
             // Apply the scene preset with interpolation
