@@ -12,6 +12,7 @@ import { MaterialManager } from '../modules/MaterialManager.js';
 import { ObjectPool } from '../modules/ObjectPool.js';
 import { AnimationSystem } from '../modules/AnimationSystem.js';
 import { ShapeAnimationManager } from '../modules/ShapeAnimationManager.js';
+import { GridManager } from '../modules/GridManager.js';
 import { PostProcessingManager } from '../modules/PostProcessingManager.js';
 
 export class Scene {
@@ -20,6 +21,8 @@ export class Scene {
         this.scene = new THREE.Scene();
         this.camera = null;
         this.renderer = null;
+        // Grid-related arrays are now managed by GridManager
+        // Keep references for backward compatibility
         this.shapes = [];
         this.gridLines = [];
         this.composition = [];
@@ -32,6 +35,14 @@ export class Scene {
         this.shapeAnimationManager.setUpdateMeshShapeCallback((mesh, shapeName) => {
             this.updateMeshShape(mesh, shapeName);
         });
+        
+        // Initialize grid manager
+        this.gridManager = new GridManager(state, this.shapeGenerator, this.materialManager, this.objectPool, this.shapeAnimationManager);
+        this.gridManager.setScene(this.scene);
+        this.gridManager.setUpdateMeshShapeCallback((mesh, shapeName) => {
+            this.updateMeshShape(mesh, shapeName);
+        });
+        
         this.postProcessingManager = null;
         
         // Frustum culling optimization
@@ -271,6 +282,17 @@ export class Scene {
     }
 
     createGrid() {
+        // Delegate to grid manager
+        this.gridManager.createGrid();
+        
+        // Update local references for backward compatibility
+        this.shapes = this.gridManager.getAllShapes();
+        this.gridLines = this.gridManager.getAllGridLines();
+        this.composition = this.gridManager.getComposition();
+    }
+
+    // Legacy method - kept for backward compatibility
+    createGridLegacy() {
         // Return old shapes to pool
         for (const mesh of this.shapes) {
             if (mesh && mesh.userData && mesh.userData.shapeName) {
@@ -388,6 +410,15 @@ export class Scene {
     }
 
     updateGridLines() {
+        // Delegate to grid manager
+        this.gridManager.updateGridLines();
+        
+        // Update local reference for backward compatibility
+        this.gridLines = this.gridManager.getAllGridLines();
+    }
+
+    // Legacy method - kept for backward compatibility
+    updateGridLinesLegacy() {
         // Remove old grid lines
         if (this.gridLines) {
             for (const line of this.gridLines) {
@@ -434,6 +465,16 @@ export class Scene {
     }
 
     updateCellSize() {
+        // Delegate to grid manager
+        this.gridManager.updateCellSize();
+        
+        // Update local references for backward compatibility
+        this.shapes = this.gridManager.getAllShapes();
+        this.gridLines = this.gridManager.getAllGridLines();
+    }
+
+    // Legacy method - kept for backward compatibility
+    updateCellSizeLegacy() {
         const gridWidth = this.state.get('gridWidth');
         const gridHeight = this.state.get('gridHeight');
         const cellSize = this.state.get('cellSize');
