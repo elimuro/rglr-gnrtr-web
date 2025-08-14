@@ -11,6 +11,7 @@ import { ShapeGenerator } from '../modules/ShapeGenerator.js';
 import { MaterialManager } from '../modules/MaterialManager.js';
 import { ObjectPool } from '../modules/ObjectPool.js';
 import { AnimationSystem } from '../modules/AnimationSystem.js';
+import { ShapeAnimationManager } from '../modules/ShapeAnimationManager.js';
 import { PostProcessingManager } from '../modules/PostProcessingManager.js';
 
 export class Scene {
@@ -26,6 +27,11 @@ export class Scene {
         this.materialManager = new MaterialManager();
         this.objectPool = new ObjectPool();
         this.animationSystem = new AnimationSystem();
+        this.shapeAnimationManager = new ShapeAnimationManager(state, this.shapeGenerator, this.materialManager);
+        this.shapeAnimationManager.setObjectPool(this.objectPool);
+        this.shapeAnimationManager.setUpdateMeshShapeCallback((mesh, shapeName) => {
+            this.updateMeshShape(mesh, shapeName);
+        });
         this.postProcessingManager = null;
         
         // Frustum culling optimization
@@ -909,8 +915,38 @@ export class Scene {
         return Math.max(0.1, scalingFactor); // Ensure minimum scale
     }
 
-    // Animation helpers
+    // Animation helpers - delegated to ShapeAnimationManager
     animateShapes(animationTime, globalBPM) {
+        // Delegate to the shape animation manager
+        this.shapeAnimationManager.animateShapes(this.shapes, this.visibleShapes, animationTime, globalBPM);
+        
+        // Update our performance metrics from the animation manager
+        this.lastPerformanceMetrics = this.shapeAnimationManager.getPerformanceMetrics();
+    }
+
+    // Delegation methods for backward compatibility
+    cycleShapeInCell(mesh, x, y, availableShapes, animationTime, globalBPM) {
+        return this.shapeAnimationManager.cycleShapeInCell(mesh, x, y, availableShapes, animationTime, globalBPM);
+    }
+
+    animateShapeTransformations(mesh, x, y, animationTime, globalBPM) {
+        return this.shapeAnimationManager.animateShapeTransformations(mesh, x, y, animationTime, globalBPM);
+    }
+
+    calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize, animationTime = null, globalBPM = null) {
+        return this.shapeAnimationManager.calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize, animationTime, globalBPM);
+    }
+
+    getDivisionBeats(division) {
+        return this.shapeAnimationManager.getDivisionBeats(division);
+    }
+
+    animateShapeWithGSAP(mesh, x, y, cellSize) {
+        return this.shapeAnimationManager.animateShapeWithGSAP(mesh, x, y, cellSize);
+    }
+
+    // Legacy method - kept for backward compatibility
+    animateShapesLegacy(animationTime, globalBPM) {
         const gridWidth = this.state.get('gridWidth');
         const gridHeight = this.state.get('gridHeight');
         const cellSize = this.state.get('cellSize');

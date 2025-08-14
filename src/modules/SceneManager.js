@@ -475,12 +475,17 @@ export class SceneManager {
         const select = this.domCache.getElement('scene-preset-select');
         if (!select) return;
         
-        // Keep the "Custom" option
-        const customOption = select.querySelector('option[value=""]');
+        // Store current selection to restore after update
+        const currentValue = select.value;
+        
+        // Clear all options
         select.innerHTML = '';
-        if (customOption) {
-            select.appendChild(customOption);
-        }
+        
+        // Add the default "Custom" option first
+        const customOption = document.createElement('option');
+        customOption.value = '';
+        customOption.textContent = 'Custom';
+        select.appendChild(customOption);
         
         // Add available scene presets with async display name resolution
         for (const scenePreset of availableScenePresets) {
@@ -496,6 +501,11 @@ export class SceneManager {
             }
             
             select.appendChild(option);
+        }
+        
+        // Restore the previous selection if it still exists
+        if (currentValue && [...select.options].some(option => option.value === currentValue)) {
+            select.value = currentValue;
         }
     }
 
