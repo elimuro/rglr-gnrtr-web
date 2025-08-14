@@ -229,18 +229,30 @@ export class MIDIManager {
     }
 
     // --- LEARN MODE LISTENER REGISTRATION ---
-    onCC(callback) {
-        this._learnCCListeners.add(callback);
+        onCC(callback) {
+        // Delegate to the app's MIDIEventHandler
+        if (this.app && this.app.midiEventHandler) {
+            this.app.midiEventHandler.addLearnCCListener(callback);
+        }
     }
     offCC(callback) {
-        this._learnCCListeners.delete(callback);
+        // Delegate to the app's MIDIEventHandler
+        if (this.app && this.app.midiEventHandler) {
+            this.app.midiEventHandler.removeLearnCCListener(callback);
+        }
     }
     onNote(callback) {
-        this._learnNoteListeners.add(callback);
+        // Delegate to the app's MIDIEventHandler
+        if (this.app && this.app.midiEventHandler) {
+            this.app.midiEventHandler.addLearnNoteListener(callback);
+        }
     }
     offNote(callback) {
-        this._learnNoteListeners.delete(callback);
+        // Delegate to the app's MIDIEventHandler
+        if (this.app && this.app.midiEventHandler) {
+            this.app.midiEventHandler.removeLearnNoteListener(callback);
         }
+    }
 
     // --- MODIFIED handleMIDIMessage TO SUPPORT LEARN MODE ---
     handleMIDIMessage(event) {
@@ -340,10 +352,7 @@ export class MIDIManager {
                     {
                         const note = data[1];
                         const velocity = data[2];
-                        // Call learn listeners for notes
-                        if (this._learnNoteListeners.size > 0) {
-                            this._learnNoteListeners.forEach(cb => cb(note, velocity, false, channel));
-                        }
+                        // Learn listeners are now handled by MIDIEventHandler
                         this.app.onMIDINote(note, velocity, false, channel);
                         messageType = `Note Off: ${note} (Ch:${channel + 1})`;
                         messageCategory = 'note';
@@ -355,10 +364,7 @@ export class MIDIManager {
                         const note = data[1];
                         const velocity = data[2];
                         const isNoteOn = (velocity > 0);
-                        // Call learn listeners for notes
-                        if (this._learnNoteListeners.size > 0) {
-                            this._learnNoteListeners.forEach(cb => cb(note, velocity, isNoteOn, channel));
-                        }
+                        // Learn listeners are now handled by MIDIEventHandler
                         this.app.onMIDINote(note, velocity, isNoteOn, channel);
                         messageType = `Note On: ${note} (${velocity}) (Ch:${channel + 1})`;
                         messageCategory = 'note';
@@ -369,10 +375,7 @@ export class MIDIManager {
                     {
                         const controller = data[1];
                         const value = data[2];
-                        // Call learn listeners for CC
-                        if (this._learnCCListeners.size > 0) {
-                            this._learnCCListeners.forEach(cb => cb(controller, value, channel));
-                        }
+                        // Learn listeners are now handled by MIDIEventHandler
                         this.app.onMIDICC(controller, value, channel);
                         messageType = `CC: ${controller} = ${value} (Ch:${channel + 1})`;
                         messageCategory = 'cc';

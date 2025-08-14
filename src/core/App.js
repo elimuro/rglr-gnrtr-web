@@ -20,6 +20,7 @@ import { AudioManager } from '../modules/AudioManager.js';
 import { MIDIClockManager } from '../modules/MIDIClockManager.js';
 import { DOMCache } from '../modules/DOMCache.js';
 import { ParameterMapper } from '../modules/ParameterMapper.js';
+import { MIDIEventHandler } from '../modules/MIDIEventHandler.js';
 
 export class App {
     constructor() {
@@ -65,6 +66,9 @@ export class App {
         
         // Initialize audio manager
         this.audioManager = new AudioManager(this.state);
+        
+        // Initialize MIDI event handler
+        this.midiEventHandler = new MIDIEventHandler(this);
         
         this.init();
     }
@@ -963,13 +967,13 @@ export class App {
     }
 
     onMIDICC(controller, value, channel) {
-        // Old MIDI system removed - now handled by the new modular system in midi-controls.js
-        // This method is kept for compatibility but does nothing
+        // Delegate to the new MIDIEventHandler
+        this.midiEventHandler.onMIDICC(controller, value, channel);
     }
 
     onMIDINote(note, velocity, isNoteOn, channel) {
-        // Old MIDI system removed - now handled by the new modular system in midi-controls.js
-        // This method is kept for compatibility but does nothing
+        // Delegate to the new MIDIEventHandler
+        this.midiEventHandler.onMIDINote(note, velocity, isNoteOn, channel);
     }
 
 
@@ -985,8 +989,13 @@ export class App {
     }
 
     handleNoteMapping(target) {
-        // Old MIDI system removed - now handled by the new modular system in midi-controls.js
-        // This method is kept for compatibility but does nothing
+        // Delegate to the new MIDIEventHandler
+        this.midiEventHandler.triggerNoteAction(target, 127); // Default velocity
+    }
+
+    triggerNoteAction(target) {
+        // Delegate to the new MIDIEventHandler
+        this.midiEventHandler.triggerNoteAction(target, 127); // Default velocity
     }
 
     handleKeyDown(event) {
@@ -1041,11 +1050,8 @@ export class App {
     }
 
     testCCValues() {
-        const ccMappings = this.state.get('midiCCMappings');
-        Object.keys(ccMappings).forEach(param => {
-            const mapping = ccMappings[param];
-            this.onMIDICC(mapping.cc, 64, mapping.channel);
-        });
+        // Delegate to the new MIDIEventHandler
+        this.midiEventHandler.testCCValues();
         
         const testButton = document.getElementById('mapping-test');
         if (testButton) {
@@ -1813,12 +1819,12 @@ export class App {
         const control = this.controlManager.addControl('cc', nextIndex);
         
         if (control) {
-            // Add to state
+            // Add to state with empty target - user must select manually
             const ccMappings = this.state.get('midiCCMappings');
             ccMappings[control.controlId] = {
                 channel: 0,
                 cc: nextIndex,
-                target: 'movementAmplitude'
+                target: '' // Empty target - user must select manually
             };
             this.state.set('midiCCMappings', ccMappings);
         }
@@ -1831,15 +1837,13 @@ export class App {
         const control = this.controlManager.addControl('note', nextIndex);
         
         if (control) {
-            // Add to state with morphing targets as defaults
+            // Add to state with empty target - user must select manually
             const noteMappings = this.state.get('midiNoteMappings');
-            const morphingTargets = ['randomMorph', 'morphAllShapes', 'morphAllToSame', 'morphAllSimultaneously', 'morphAllToSameSimultaneously'];
-            const defaultTarget = morphingTargets[nextIndex % morphingTargets.length];
             
             noteMappings[control.controlId] = {
                 channel: 0,
                 note: 60 + nextIndex,
-                target: defaultTarget
+                target: '' // Empty target - user must select manually
             };
             this.state.set('midiNoteMappings', noteMappings);
         }

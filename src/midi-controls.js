@@ -314,14 +314,20 @@ export class MIDIControl {
                     this.updateParameter(value);
                 }
             };
-            this.app.midiManager.onCC(this.midiHandler);
+            // Use the new MIDIEventHandler instead of midiManager directly
+            if (this.app.midiEventHandler) {
+                this.app.midiEventHandler.onCC(this.getMapping().value, this.midiHandler);
+            }
         } else if (this.type === 'note') {
             this.midiHandler = (note, velocity, isNoteOn, channel) => {
                 if (this.matchesControl(note, channel)) {
                     this.triggerAction(isNoteOn);
                 }
             };
-            this.app.midiManager.onNote(this.midiHandler);
+            // Use the new MIDIEventHandler instead of midiManager directly
+            if (this.app.midiEventHandler) {
+                this.app.midiEventHandler.onNote(this.getMapping().value, this.midiHandler);
+            }
         }
     }
     
@@ -335,6 +341,11 @@ export class MIDIControl {
         
         this.updateTimeout = setTimeout(() => {
             const target = this.getMapping().target;
+            // Check if target is empty before updating parameter
+            if (!target || target.trim() === '') {
+                return; // No target specified
+            }
+            
             const normalizedValue = this.normalizeValue(midiValue, target);
             this.app.updateAnimationParameter(target, normalizedValue);
         }, 16); // ~60fps debouncing
@@ -354,6 +365,11 @@ export class MIDIControl {
         if (!isNoteOn) return; // Only trigger on note on
         
         const target = this.getMapping().target;
+        // Check if target is empty before triggering action
+        if (!target || target.trim() === '') {
+            return; // No target specified
+        }
+        
         this.app.triggerNoteAction(target);
     }
     
@@ -393,12 +409,17 @@ export class MIDIControl {
                 }, 1500);
                 
                 // Remove the temporary listener
-                this.app.midiManager.offCC(onMIDI);
+                if (this.app.midiEventHandler) {
+                    this.app.midiEventHandler.removeLearnCCListener(onMIDI);
+                }
             };
             
             // Store the temporary handler for potential cancellation
             this.tempMIDIHandler = onMIDI;
-            this.app.midiManager.onCC(onMIDI);
+            // Use the new MIDIEventHandler for learning
+            if (this.app.midiEventHandler) {
+                this.app.midiEventHandler.addLearnCCListener(onMIDI);
+            }
         } else {
             // For notes, the callback signature is (note, velocity, isNoteOn, channel)
             const onMIDI = (note, velocity, isNoteOn, channel) => {
@@ -424,12 +445,17 @@ export class MIDIControl {
                 }, 1500);
                 
                 // Remove the temporary listener
-                this.app.midiManager.offNote(onMIDI);
+                if (this.app.midiEventHandler) {
+                    this.app.midiEventHandler.removeLearnNoteListener(onMIDI);
+                }
             };
             
             // Store the temporary handler for potential cancellation
             this.tempMIDIHandler = onMIDI;
-            this.app.midiManager.onNote(onMIDI);
+            // Use the new MIDIEventHandler for learning
+            if (this.app.midiEventHandler) {
+                this.app.midiEventHandler.addLearnNoteListener(onMIDI);
+            }
         }
     }
     
@@ -442,9 +468,13 @@ export class MIDIControl {
         // Remove any temporary MIDI listeners
         if (this.tempMIDIHandler) {
             if (this.type === 'cc') {
-                this.app.midiManager.offCC(this.tempMIDIHandler);
+                if (this.app.midiEventHandler) {
+                    this.app.midiEventHandler.removeLearnCCListener(this.tempMIDIHandler);
+                }
             } else {
-                this.app.midiManager.offNote(this.tempMIDIHandler);
+                if (this.app.midiEventHandler) {
+                    this.app.midiEventHandler.removeLearnNoteListener(this.tempMIDIHandler);
+                }
             }
             this.tempMIDIHandler = null;
         }
@@ -455,9 +485,19 @@ export class MIDIControl {
         const defaultMapping = {
             channel: 0,
             value: this.config.defaultValue,
-            target: '' // Changed to empty string
+            target: '' // Always start with empty target
         };
-        return mappings[this.controlId] || defaultMapping;
+        
+        // If there's an existing mapping, use it but ensure target is empty if not explicitly set
+        const existingMapping = mappings[this.controlId];
+        if (existingMapping) {
+            return {
+                ...existingMapping,
+                target: existingMapping.target || '' // Ensure target is empty if not set
+            };
+        }
+        
+        return defaultMapping;
     }
     
     updateMapping(updates) {
@@ -505,9 +545,13 @@ export class MIDIControl {
         // Clean up MIDI handlers
         if (this.midiHandler) {
             if (this.type === 'cc') {
-                this.app.midiManager.offCC(this.midiHandler);
+                if (this.app.midiEventHandler) {
+                    this.app.midiEventHandler.offCC(this.getMapping().value);
+                }
             } else {
-                this.app.midiManager.offNote(this.midiHandler);
+                if (this.app.midiEventHandler) {
+                    this.app.midiEventHandler.offNote(this.getMapping().value);
+                }
             }
         }
         
@@ -588,9 +632,13 @@ export class MIDIControlManager {
             // Just clean up the DOM and MIDI handlers
             if (control.midiHandler) {
                 if (control.type === 'cc') {
-                    control.app.midiManager.offCC(control.midiHandler);
+                    if (control.app.midiEventHandler) {
+                        control.app.midiEventHandler.offCC(control.getMapping().value);
+                    }
                 } else {
-                    control.app.midiManager.offNote(control.midiHandler);
+                    if (control.app.midiEventHandler) {
+                        control.app.midiEventHandler.offNote(control.getMapping().value);
+                    }
                 }
             }
             
