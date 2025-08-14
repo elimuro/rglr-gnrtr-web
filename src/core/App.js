@@ -22,6 +22,7 @@ import { DOMCache } from '../modules/DOMCache.js';
 import { ParameterMapper } from '../modules/ParameterMapper.js';
 import { MIDIEventHandler } from '../modules/MIDIEventHandler.js';
 import { DrawerManager } from '../modules/DrawerManager.js';
+import { PresetManager } from '../modules/PresetManager.js';
 
 export class App {
     constructor() {
@@ -74,6 +75,9 @@ export class App {
         // Initialize drawer manager
         this.drawerManager = new DrawerManager(this);
         
+        // Initialize preset manager
+        this.presetManager = new PresetManager(this);
+        
         this.init();
     }
 
@@ -118,13 +122,13 @@ export class App {
                 document.addEventListener('DOMContentLoaded', () => {
                     this.initializeControlManager();
                     this.initializeAudioMappingManager();
-                    this.loadAvailablePresets();
+                    this.presetManager.loadAvailablePresets();
                     this.loadAvailableScenePresets();
                 });
             } else {
                 this.initializeControlManager();
                 this.initializeAudioMappingManager();
-                this.loadAvailablePresets();
+                this.presetManager.loadAvailablePresets();
                 this.loadAvailableScenePresets();
             }
             
@@ -145,6 +149,9 @@ export class App {
     setupMIDI() {
         // Set up drawer functionality
         this.drawerManager.setupDrawers();
+        
+        // Set up preset management
+        this.presetManager.setupPresetManagement();
         
         // Set up MIDI UI event listeners using cached DOM elements
         this.domCache.getElement('midi-connect').addEventListener('click', () => {
@@ -167,40 +174,9 @@ export class App {
 
 
         
-        // Preset selector
-        this.domCache.getElement('midi-preset-select').addEventListener('change', (e) => {
-            this.applyCCPreset(e.target.value);
-        });
-        
-        // Scene preset selector
+        // Scene preset selector (still handled by App.js for now)
         this.domCache.getElement('scene-preset-select').addEventListener('change', (e) => {
             this.applyScenePreset(e.target.value);
-        });
-        
-        // File input for loading presets and scenes
-        this.domCache.getElement('preset-file-input').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                // Check if it's a scene file or MIDI preset by reading the content
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        // Check if it's a scene file (has settings property)
-                        if (data.settings) {
-                            this.loadSceneFile(data);
-                        } else {
-                            // Assume it's a MIDI preset
-                            this.loadPreset(file);
-                        }
-                    } catch (error) {
-                        console.error('Error parsing file:', error);
-                        alert('Invalid file format');
-                    }
-                };
-                reader.readAsText(file);
-            }
         });
         
         // Add control buttons
@@ -223,7 +199,7 @@ export class App {
         
         // Mapping save button
         this.domCache.getElement('mapping-save').addEventListener('click', () => {
-            this.savePreset();
+            this.presetManager.savePreset();
         });
         
         // Mapping load button
@@ -316,7 +292,7 @@ export class App {
         this.controlManager = new MIDIControlManager(ccContainer, this);
         this.controlManager.noteContainer = noteContainer;
         
-        this.recreateControlsFromPreset();
+        this.presetManager.recreateControlsFromPreset();
     }
     
     initializeAudioMappingManager() {
@@ -403,6 +379,19 @@ export class App {
         }
     }
 
+    // Preset delegation methods for backward compatibility
+    validatePreset(preset) {
+        return this.presetManager.validatePreset(preset);
+    }
+
+    applyPreset(preset) {
+        this.presetManager.applyPreset(preset);
+    }
+
+    recreateControlsFromPreset(preset = null) {
+        this.presetManager.recreateControlsFromPreset(preset);
+    }
+
     handleKeyDown(event) {
         switch (event.key) {
 
@@ -473,80 +462,7 @@ export class App {
         }
     }
 
-    async loadAvailablePresets() {
-        // Wait a bit for DOM to be ready
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Create abort controller for this operation
-        const controller = this.createAbortController('presets');
-        
-        try {
-            // Try to load a list of available presets
-            const response = await fetch('/presets/', { 
-                signal: controller.signal 
-            });
-            if (response.ok) {
-                const text = await response.text();
-                // Parse the directory listing to find .json files
-                const presetFiles = text.match(/href="([^"]+\.json)"/g);
-                if (presetFiles) {
-                    const presets = presetFiles.map(file => {
-                        const match = file.match(/href="([^"]+\.json)"/);
-                        return match ? match[1].replace('.json', '') : null;
-                    }).filter(Boolean);
-                    
-                    this.updatePresetDropdown(presets);
-                    return;
-                }
-            }
-            
-            // Fallback: Try to discover presets by attempting to load them
-            const knownPresets = [
-                'sample-multi-channel',
-                'essential-controls',
-                'animation-movement',
-                'visual-effects',
-                'lighting-materials',
-                'grid-composition',
-                'shape-controls',
-                'morphing-transitions'
-            ];
-            
-            const availablePresets = [];
-            
-            // Try to load each preset to see if it exists
-            for (const preset of knownPresets) {
-                try {
-                    const response = await fetch(`/presets/${preset}.json`, { 
-                        signal: controller.signal 
-                    });
-                    if (response.ok) {
-                        const presetData = await response.json();
-                        if (this.validatePreset(presetData)) {
-                            availablePresets.push(preset);
-                        }
-                    }
-                } catch (error) {
-                    if (error.name === 'AbortError') {
-                        console.log('Preset discovery was cancelled');
-                        return;
-                    }
-                    // Preset not found or invalid
-                }
-            }
-            
-            this.updatePresetDropdown(availablePresets);
-        } catch (error) {
-            if (error.name === 'AbortError') {
-                console.log('Preset loading was cancelled');
-                return;
-            }
-            console.error('Error loading presets:', error);
-        } finally {
-            // Clean up the abort controller
-            this.cleanupAbortController('presets');
-        }
-    }
+    // Preset loading is now handled by PresetManager
 
     async loadAvailableScenePresets() {
         // Wait a bit for DOM to be ready
@@ -725,25 +641,7 @@ export class App {
         this.updateScenePresetDropdown(validScenePresets);
     }
 
-    updatePresetDropdown(availablePresets) {
-        const select = this.domCache.getElement('midi-preset-select');
-        if (!select) return;
-        
-        // Keep the "Custom" option
-        const customOption = select.querySelector('option[value=""]');
-        select.innerHTML = '';
-        if (customOption) {
-            select.appendChild(customOption);
-        }
-        
-        // Add available presets
-        availablePresets.forEach(preset => {
-            const option = document.createElement('option');
-            option.value = preset;
-            option.textContent = this.getPresetDisplayName(preset);
-            select.appendChild(option);
-        });
-    }
+    // Preset dropdown updates are now handled by PresetManager
 
     async updateScenePresetDropdown(availableScenePresets) {
         const select = this.domCache.getElement('scene-preset-select');
@@ -773,19 +671,7 @@ export class App {
         }
     }
 
-    getPresetDisplayName(presetName) {
-        const displayNames = {
-            'sample-multi-channel': 'Sample Multi-Channel',
-            'essential-controls': 'Essential Controls',
-            'animation-movement': 'Animation & Movement',
-            'visual-effects': 'Visual Effects',
-            'lighting-materials': 'Lighting & Materials',
-            'grid-composition': 'Grid & Composition',
-            'shape-controls': 'Shape Controls',
-            'morphing-transitions': 'Morphing & Transitions'
-        };
-        return displayNames[presetName] || presetName;
-    }
+    // Preset display names are now handled by PresetManager
 
     updateControlUI(control, mapping) {
         // Update the control's UI elements directly
@@ -801,61 +687,9 @@ export class App {
         control.updateMapping(mapping);
     }
 
-    async applyCCPreset(presetName) {
-        if (!presetName) {
-            // Clear mappings for "Custom" option
-            this.state.set('midiCCMappings', {});
-            this.state.set('midiNoteMappings', {});
-            this.recreateControlsFromPreset();
-            return;
-        }
+    // Preset application is now handled by PresetManager
 
-        try {
-            // Load the preset file from the presets folder
-            const response = await fetch(`/presets/${presetName}.json`);
-            if (!response.ok) {
-                throw new Error(`Failed to load preset: ${response.statusText}`);
-            }
-            
-            const preset = await response.json();
-            
-            if (this.validatePreset(preset)) {
-                this.applyPreset(preset);
-            } else {
-                console.error('Invalid preset format:', preset);
-                alert('Invalid preset file format. Please check the file structure.');
-            }
-        } catch (error) {
-            console.error('Failed to load preset:', error);
-            alert(`Failed to load preset "${presetName}". Please check if the preset file exists.`);
-        }
-    }
-
-    savePreset() {
-        const ccMappings = this.state.get('midiCCMappings') || {};
-        const noteMappings = this.state.get('midiNoteMappings') || {};
-        const audioMappings = this.state.get('audioMappings') || {};
-        
-        const preset = {
-            version: '1.0',
-            timestamp: Date.now(),
-            midiCCMappings: ccMappings,
-            midiNoteMappings: noteMappings,
-            audioMappings: audioMappings
-        };
-        
-        const dataStr = JSON.stringify(preset, null, 2);
-        
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = `rglr-control-preset-${Date.now()}.json`;
-        link.click();
-        
-        // Clean up the URL object
-        setTimeout(() => URL.revokeObjectURL(link.href), 100);
-    }
+    // savePreset is now handled by PresetManager
 
     loadPreset(file) {
         const reader = new FileReader();
