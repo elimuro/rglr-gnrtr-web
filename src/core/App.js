@@ -21,6 +21,7 @@ import { MIDIClockManager } from '../modules/MIDIClockManager.js';
 import { DOMCache } from '../modules/DOMCache.js';
 import { ParameterMapper } from '../modules/ParameterMapper.js';
 import { MIDIEventHandler } from '../modules/MIDIEventHandler.js';
+import { DrawerManager } from '../modules/DrawerManager.js';
 
 export class App {
     constructor() {
@@ -69,6 +70,9 @@ export class App {
         
         // Initialize MIDI event handler
         this.midiEventHandler = new MIDIEventHandler(this);
+        
+        // Initialize drawer manager
+        this.drawerManager = new DrawerManager(this);
         
         this.init();
     }
@@ -140,7 +144,7 @@ export class App {
 
     setupMIDI() {
         // Set up drawer functionality
-        this.setupDrawers();
+        this.drawerManager.setupDrawers();
         
         // Set up MIDI UI event listeners using cached DOM elements
         this.domCache.getElement('midi-connect').addEventListener('click', () => {
@@ -284,625 +288,19 @@ export class App {
         }
     }
 
-    setupDrawers() {
-        // Drawer state management
-        this.currentDrawer = null;
-        this.drawerContainer = this.domCache.getElement('midi-drawer-container');
-        
-        if (!this.drawerContainer) {
-            console.error('Drawer container not found');
-            return;
-        }
-        
-        // Initialize MIDI activity tracking
-        this.setupMIDIActivityTracking();
-        
-        // Ensure drawer is hidden initially
-        this.hideDrawerContainer();
-        
-        // Set up drawer button event listeners
-        const drawerButtons = [
-            'drawer-connect',
-            'drawer-mapping',
-            'drawer-scene-management',
-            'drawer-midi-activity'
-        ];
-        
-        drawerButtons.forEach(buttonId => {
-            const button = this.domCache.getElement(buttonId);
-            if (button) {
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.toggleDrawer(buttonId.replace('drawer-', ''));
-                });
-            } else {
-                console.warn(`Drawer button not found: ${buttonId}`);
-            }
-        });
-        
-        // Close drawer when clicking outside
-        document.addEventListener('click', (e) => {
-            if (this.currentDrawer) {
-                // Check if the click is within the drawer container or on drawer-related elements
-                const isWithinDrawer = this.drawerContainer.contains(e.target);
-                const clickedDrawerButton = e.target.closest('[id^="drawer-"]');
-                const clickedInteractiveElement = e.target.closest('[data-drawer-interactive]');
-                
-                // Only close drawer if clicking outside AND not on any interactive drawer elements
-                if (!isWithinDrawer && !clickedDrawerButton && !clickedInteractiveElement) {
-                    this.closeDrawer();
-                }
-            }
-        });
-        
-        // Close drawer on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.currentDrawer) {
-                this.closeDrawer();
-            }
-        });
-        
-        // Handle window resize for drawer positioning
-        window.addEventListener('resize', () => {
-            if (this.currentDrawer) {
-                // Re-apply the current drawer positioning based on new screen size
-                this.toggleDrawer(this.currentDrawer);
-            }
-        });
+    // Drawer management is now handled by DrawerManager
 
-        // Set up connection button event handlers
-        this.setupConnectionButtonHandlers();
-        
-        // Set up mapping drawer tabs
-        this.setupMappingTabs();
-        
-        // Set up connect drawer tabs
-        this.setupConnectTabs();
-    }
+    // All MIDI activity tracking methods are now handled by DrawerManager
 
-    setupMIDIActivityTracking() {
-        // MIDI activity tracking state
-        this.midiActivityState = {
-            messages: [],
-            maxMessages: 100,
-            isPaused: false,
-            filterClock: true, // Default to filtering clock messages
-            messageCounts: {
-                cc: 0,
-                note: 0,
-                pitch: 0,
-                system: 0
-            },
-            lastActivity: null,
-            messageRate: 0,
-            rateTimer: null
-        };
-
-        // Set up MIDI activity drawer controls
-        this.setupMIDIActivityControls();
-        
-        // Start periodic updates for MIDI activity rate
-        setInterval(() => {
-            this.updateMIDIActivityRate();
-            this.updateMIDIActivityStats();
-        }, 1000);
-    }
-
-    setupMIDIActivityControls() {
-        // Clear button
-        const clearButton = this.domCache.getElement('midi-activity-clear');
-        if (clearButton) {
-            clearButton.addEventListener('click', () => {
-                this.clearMIDIActivity();
-            });
-        }
-
-        // Pause button
-        const pauseButton = this.domCache.getElement('midi-activity-pause');
-        if (pauseButton) {
-            pauseButton.addEventListener('click', () => {
-                this.toggleMIDIActivityPause();
-            });
-        }
-
-        // Max messages selector
-        const maxMessagesSelect = this.domCache.getElement('midi-activity-max');
-        if (maxMessagesSelect) {
-            maxMessagesSelect.addEventListener('change', (e) => {
-                this.midiActivityState.maxMessages = parseInt(e.target.value);
-                this.trimMIDIActivityMessages();
-            });
-        }
-
-        // Auto-scroll checkbox
-        const autoscrollCheckbox = this.domCache.getElement('midi-activity-autoscroll');
-        if (autoscrollCheckbox) {
-            autoscrollCheckbox.addEventListener('change', (e) => {
-                this.midiActivityState.autoScroll = e.target.checked;
-            });
-        }
-
-        // Filter clock checkbox
-        const filterClockCheckbox = this.domCache.getElement('midi-activity-filter-clock');
-        if (filterClockCheckbox) {
-            filterClockCheckbox.checked = this.midiActivityState.filterClock;
-            filterClockCheckbox.addEventListener('change', (e) => {
-                this.midiActivityState.filterClock = e.target.checked;
-            });
-        }
-    }
-
-    addMIDIActivityMessage(message, category) {
-        if (this.midiActivityState.isPaused) return;
-
-        // Filter out clock messages if filter is enabled
-        if (this.midiActivityState.filterClock && message.includes('MIDI Clock')) {
-            return;
-        }
-
-        const timestamp = new Date();
-        const messageEntry = {
-            timestamp,
-            message,
-            category,
-            id: Date.now() + Math.random()
-        };
-
-        this.midiActivityState.messages.push(messageEntry);
-        
-        // Update message counts
-        if (category && this.midiActivityState.messageCounts[category] !== undefined) {
-            this.midiActivityState.messageCounts[category]++;
-        }
-        
-        this.midiActivityState.lastActivity = timestamp;
-        this.trimMIDIActivityMessages();
-        this.updateMIDIActivityDisplay();
-        this.updateMIDIActivityStats();
-        this.updateMIDIActivityRate();
-        
-        // Update the activity status in the button
-        this.updateMIDIActivityButtonStatus();
-    }
-
-    trimMIDIActivityMessages() {
-        while (this.midiActivityState.messages.length > this.midiActivityState.maxMessages) {
-            this.midiActivityState.messages.shift();
-        }
-    }
-
-    updateMIDIActivityDisplay() {
-        const streamContainer = this.domCache.getElement('midi-activity-stream');
-        if (!streamContainer) return;
-
-        if (this.midiActivityState.messages.length === 0) {
-            streamContainer.innerHTML = '<div class="text-gray-500 text-center py-8">No MIDI activity detected</div>';
-            return;
-        }
-
-        const messagesHTML = this.midiActivityState.messages.map(entry => {
-            const time = entry.timestamp.toLocaleTimeString();
-            return `<div class="py-1 border-b border-gray-700 last:border-b-0">
-                <div class="flex justify-between items-start">
-                    <span class="text-gray-400 text-xs">${time}</span>
-                    <span class="text-midi-green font-mono text-xs">${entry.message}</span>
-                </div>
-            </div>`;
-        }).join('');
-
-        streamContainer.innerHTML = messagesHTML;
-
-        // Auto-scroll to bottom
-        if (this.midiActivityState.autoScroll !== false) {
-            streamContainer.scrollTop = streamContainer.scrollHeight;
-        }
-    }
-
-    updateMIDIActivityStats() {
-        // Update message count
-        const countElement = this.domCache.getElement('midi-activity-count');
-        if (countElement) {
-            countElement.textContent = this.midiActivityState.messages.length;
-        }
-
-        // Update message type counts
-        const ccCount = this.domCache.getElement('midi-cc-count');
-        const noteCount = this.domCache.getElement('midi-note-count');
-        const pitchCount = this.domCache.getElement('midi-pitch-count');
-        const systemCount = this.domCache.getElement('midi-system-count');
-
-        if (ccCount) ccCount.textContent = this.midiActivityState.messageCounts.cc;
-        if (noteCount) noteCount.textContent = this.midiActivityState.messageCounts.note;
-        if (pitchCount) pitchCount.textContent = this.midiActivityState.messageCounts.pitch;
-        if (systemCount) systemCount.textContent = this.midiActivityState.messageCounts.system;
-
-        // Update connection status
-        this.updateMIDIActivityConnectionStatus();
-    }
-
-    updateMIDIActivityConnectionStatus() {
-        const statusElement = this.domCache.getElement('midi-activity-status');
-        const deviceElement = this.domCache.getElement('midi-activity-device');
-        const rateElement = this.domCache.getElement('midi-activity-rate');
-        const lastElement = this.domCache.getElement('midi-activity-last');
-
-        if (statusElement) {
-            const isConnected = this.midiManager && this.midiManager.isConnected;
-            statusElement.textContent = isConnected ? 'Connected' : 'Disconnected';
-            statusElement.className = isConnected ? 'text-green-400' : 'text-red-400';
-        }
-
-        if (deviceElement) {
-            const deviceInfo = this.midiManager ? this.midiManager.getCurrentDeviceInfo() : null;
-            deviceElement.textContent = deviceInfo ? deviceInfo.name : 'None';
-        }
-
-        if (rateElement) {
-            rateElement.textContent = this.midiActivityState.messageRate.toFixed(1);
-        }
-
-        if (lastElement) {
-            if (this.midiActivityState.lastActivity) {
-                const timeDiff = Date.now() - this.midiActivityState.lastActivity.getTime();
-                if (timeDiff < 60000) { // Less than 1 minute
-                    lastElement.textContent = `${Math.floor(timeDiff / 1000)}s ago`;
-                } else {
-                    lastElement.textContent = this.midiActivityState.lastActivity.toLocaleTimeString();
-                }
-            } else {
-                lastElement.textContent = 'Never';
-            }
-        }
-    }
-
-    clearMIDIActivity() {
-        this.midiActivityState.messages = [];
-        this.midiActivityState.messageCounts = { cc: 0, note: 0, pitch: 0, system: 0 };
-        this.midiActivityState.lastActivity = null;
-        this.midiActivityState.messageRate = 0;
-        this.updateMIDIActivityDisplay();
-        this.updateMIDIActivityStats();
-    }
-
-    toggleMIDIActivityPause() {
-        this.midiActivityState.isPaused = !this.midiActivityState.isPaused;
-        const pauseButton = this.domCache.getElement('midi-activity-pause');
-        if (pauseButton) {
-            pauseButton.textContent = this.midiActivityState.isPaused ? 'Resume' : 'Pause';
-        }
-    }
-
-    updateMIDIActivityRate() {
-        // Calculate messages per second over the last 5 seconds
-        const now = Date.now();
-        const recentMessages = this.midiActivityState.messages.filter(
-            msg => now - msg.timestamp.getTime() < 5000
-        );
-        this.midiActivityState.messageRate = recentMessages.length / 5;
-    }
-
-    updateMIDIActivityButtonStatus() {
-        // The text stays static now, only the activity bars indicate status
-        // No need to update the text since it's always "MIDI Activity"
-    }
+    // All remaining MIDI activity methods are now handled by DrawerManager
     
-    setupConnectTabs() {
-        const tabs = ['connect-midi', 'connect-audio'];
-        const sections = ['connect-midi-section', 'connect-audio-section'];
-        
-        tabs.forEach((tab, index) => {
-            const tabButton = this.domCache.getElement(`tab-${tab}`);
-            const section = this.domCache.getElement(sections[index]);
-            
-            if (tabButton && section) {
-                tabButton.addEventListener('click', () => {
-                    this.switchConnectTab(tab);
-                });
-            }
-        });
-        
-        // Start with MIDI tab active
-        this.switchConnectTab('connect-midi');
-    }
-    
-    switchConnectTab(activeTab) {
-        const tabs = ['connect-midi', 'connect-audio'];
-        const sections = ['connect-midi-section', 'connect-audio-section'];
-        
-        tabs.forEach((tab, index) => {
-            const tabButton = document.getElementById(`tab-${tab}`);
-            const section = document.getElementById(sections[index]);
-            
-            if (tabButton && section) {
-                if (tab === activeTab) {
-                    tabButton.classList.add('active');
-                    section.classList.add('active');
-                    section.classList.remove('hidden');
-                } else {
-                    tabButton.classList.remove('active');
-                    section.classList.remove('active');
-                    section.classList.add('hidden');
-                }
-            }
-        });
-    }
-    
-    setupMappingTabs() {
-        const tabs = ['cc', 'note', 'audio'];
-        const sections = ['cc-mapping-section', 'note-mapping-section', 'audio-mapping-section'];
-        
-        tabs.forEach((tab, index) => {
-            const tabButton = document.getElementById(`tab-${tab}`);
-            const section = document.getElementById(sections[index]);
-            
-            if (tabButton && section) {
-                tabButton.addEventListener('click', () => {
-                    this.switchMappingTab(tab);
-                });
-            }
-        });
-        
-        // Start with CC tab active
-        this.switchMappingTab('cc');
-    }
-    
-    switchMappingTab(activeTab) {
-        const tabs = ['cc', 'note', 'audio'];
-        const sections = ['cc-mapping-section', 'note-mapping-section', 'audio-mapping-section'];
-        
-        tabs.forEach((tab, index) => {
-            const tabButton = document.getElementById(`tab-${tab}`);
-            const section = document.getElementById(sections[index]);
-            
-            if (tabButton && section) {
-                if (tab === activeTab) {
-                    tabButton.classList.add('active');
-                    section.classList.add('active');
-                    section.classList.remove('hidden');
-                } else {
-                    tabButton.classList.remove('active');
-                    section.classList.remove('active');
-                    section.classList.add('hidden');
-                }
-            }
-        });
-    }
+    // All drawer-related methods are now handled by DrawerManager
 
-    setupConnectionButtonHandlers() {
-        // MIDI connection buttons
-        const ccConnectButton = this.domCache.getElement('cc-connect-midi');
-        const noteConnectButton = this.domCache.getElement('note-connect-midi');
-        
-        if (ccConnectButton) {
-            ccConnectButton.addEventListener('click', () => {
-                // Open the connect drawer to help user connect MIDI
-                this.toggleDrawer('connect');
-            });
-        }
-        
-        if (noteConnectButton) {
-            noteConnectButton.addEventListener('click', () => {
-                // Open the connect drawer to help user connect MIDI
-                this.toggleDrawer('connect');
-            });
-        }
-        
-        // Audio connection button
-        const audioConnectButton = this.domCache.getElement('audio-mapping-connect-audio');
-        
-        if (audioConnectButton) {
-            audioConnectButton.addEventListener('click', () => {
-                // Open the connect drawer to help user connect audio
-                this.toggleDrawer('connect');
-            });
-        }
-    }
+    // Drawer toggling is now handled by DrawerManager
 
-    toggleDrawer(drawerName) {
-        const contentId = `drawer-${drawerName}-content`;
-        const content = document.getElementById(contentId);
-        
-        if (!content) {
-            console.error(`Drawer content not found: ${contentId}`);
-            return;
-        }
-        
-        // If clicking the same drawer, close it
-        if (this.currentDrawer === drawerName) {
-            this.closeDrawer();
-            return;
-        }
-        
-        // Close any open drawer first
-        this.closeDrawer();
-        
-        // Show the new drawer
-        this.currentDrawer = drawerName;
-        content.classList.add('active');
-        
-        // Handle mobile vs desktop positioning
-        if (window.innerWidth <= 768) {
-            // On mobile, position the drawer to slide up from the bottom
-            this.drawerContainer.style.position = 'fixed';
-            this.drawerContainer.style.bottom = '0';
-            this.drawerContainer.style.left = '0';
-            this.drawerContainer.style.right = '0';
-            this.drawerContainer.style.top = 'auto';
-            this.drawerContainer.style.zIndex = '45';
-            this.drawerContainer.classList.remove('translate-y-full');
-            this.drawerContainer.classList.add('open');
-        } else {
-            // On desktop, let CSS handle the positioning
-            this.drawerContainer.classList.remove('-translate-y-full');
-            this.drawerContainer.classList.add('open');
-            
-            // Add specific class for drawer positioning
-            if (drawerName === 'connect') {
-                this.drawerContainer.classList.add('connect-drawer');
-                this.drawerContainer.classList.remove('audio-interface-drawer', 'midi-activity-drawer');
-            } else if (drawerName === 'audio-interface') {
-                this.drawerContainer.classList.add('audio-interface-drawer');
-                this.drawerContainer.classList.remove('connect-drawer', 'midi-activity-drawer');
-            } else if (drawerName === 'midi-activity') {
-                this.drawerContainer.classList.add('midi-activity-drawer');
-                this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer');
-            } else {
-                this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer', 'midi-activity-drawer');
-            }
-        }
-        
-        // Remove hidden class when opening drawer
-        this.drawerContainer.classList.remove('drawer-hidden');
-        
-        // Add staggered animation delays to drawer content elements
-        this.addStaggeredAnimations(content);
-        
-        // Update button states
-        this.updateDrawerButtonStates(drawerName);
-        
-        // Check connection status for mapping drawers
-        this.checkDrawerConnectionStatus(drawerName);
-    }
+    // Drawer closing is now handled by DrawerManager
 
-    closeDrawer() {
-        if (this.currentDrawer) {
-            const contentId = `drawer-${this.currentDrawer}-content`;
-            const content = document.getElementById(contentId);
-            
-            if (content) {
-                content.classList.remove('active');
-            }
-            
-            this.hideDrawerContainer();
-            this.currentDrawer = null;
-            
-            // Remove drawer-specific classes
-            this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer', 'midi-activity-drawer');
-            
-            // Reset all button states
-            this.updateDrawerButtonStates(null);
-        }
-    }
-
-    hideDrawerContainer() {
-        // Handle mobile vs desktop positioning
-        if (window.innerWidth <= 768) {
-            // On mobile, reset the positioning and hide
-            this.drawerContainer.style.position = '';
-            this.drawerContainer.style.top = '';
-            this.drawerContainer.style.bottom = '';
-            this.drawerContainer.style.left = '';
-            this.drawerContainer.style.right = '';
-            this.drawerContainer.style.zIndex = '';
-            this.drawerContainer.classList.add('translate-y-full');
-            this.drawerContainer.classList.remove('open');
-        } else {
-            // On desktop, let CSS handle the positioning
-            this.drawerContainer.classList.add('-translate-y-full');
-            this.drawerContainer.classList.remove('open');
-        }
-        
-        // Add a hidden class to completely remove it from layout when not active
-        this.drawerContainer.classList.add('drawer-hidden');
-    }
-
-    checkDrawerConnectionStatus(drawerName) {
-        switch (drawerName) {
-            case 'connect':
-                // Connect drawer doesn't need connection status checking
-                break;
-            case 'mapping':
-                // Check all mapping tab connection statuses
-                this.checkMIDIConnectionStatus('cc-midi-connection-status', 'cc-controls-container');
-                this.checkMIDIConnectionStatus('note-midi-connection-status', 'note-controls-container');
-                this.checkAudioConnectionStatus('audio-mapping-connection-status', 'audio-mapping-controls-container');
-                break;
-            case 'cc-mapping':
-                this.checkMIDIConnectionStatus('cc-midi-connection-status', 'cc-controls-container');
-                break;
-            case 'note-controls':
-                this.checkMIDIConnectionStatus('note-midi-connection-status', 'note-controls-container');
-                break;
-            case 'audio-mapping':
-                this.checkAudioConnectionStatus('audio-mapping-connection-status', 'audio-mapping-controls-container');
-                break;
-        }
-    }
-
-    checkMIDIConnectionStatus(statusElementId, controlsContainerId) {
-        const statusElement = document.getElementById(statusElementId);
-        const controlsContainer = document.getElementById(controlsContainerId);
-        
-        if (!statusElement || !controlsContainer) return;
-        
-        const isMIDIConnected = this.midiManager && this.midiManager.isConnected;
-        
-        if (!isMIDIConnected) {
-            statusElement.classList.remove('hidden');
-            controlsContainer.classList.add('opacity-50');
-        } else {
-            statusElement.classList.add('hidden');
-            controlsContainer.classList.remove('opacity-50');
-        }
-    }
-
-    checkAudioConnectionStatus(statusElementId, controlsContainerId) {
-        const statusElement = document.getElementById(statusElementId);
-        const controlsContainer = document.getElementById(controlsContainerId);
-        
-        if (!statusElement || !controlsContainer) return;
-        
-        const isAudioConnected = this.audioManager && this.audioManager.isListening;
-        
-        if (!isAudioConnected) {
-            statusElement.classList.remove('hidden');
-            controlsContainer.classList.add('opacity-50');
-        } else {
-            statusElement.classList.add('hidden');
-            controlsContainer.classList.remove('opacity-50');
-        }
-    }
-
-    addStaggeredAnimations(content) {
-        // Get all animatable elements in the drawer content
-        const animatableElements = content.querySelectorAll('button, input, select, .midi-control, label, h3');
-        
-        animatableElements.forEach((element, index) => {
-            // Set CSS custom property for animation delay
-            element.style.setProperty('--animation-order', index);
-        });
-    }
-
-    updateDrawerButtonStates(activeDrawer) {
-        const drawerButtons = [
-            'drawer-connect',
-            'drawer-mapping',
-            'drawer-scene-management',
-            'drawer-midi-activity'
-        ];
-        
-        drawerButtons.forEach(buttonId => {
-            const button = document.getElementById(buttonId);
-            if (button) {
-                const drawerName = buttonId.replace('drawer-', '');
-                const isActive = drawerName === activeDrawer;
-                
-                // Remove all state classes
-                button.classList.remove(
-                    'bg-midi-green', 'bg-opacity-20', 'text-midi-green', 'border-midi-green',
-                    'bg-black', 'bg-opacity-30', 'text-white', 'border-gray-600'
-                );
-                
-                // Add appropriate classes
-                if (isActive) {
-                    button.classList.add('bg-midi-green', 'bg-opacity-20', 'text-midi-green', 'border-midi-green');
-                } else {
-                    button.classList.add('bg-black', 'bg-opacity-30', 'text-white', 'border-gray-600');
-                }
-            }
-        });
-    }
+    // All drawer management methods are now handled by DrawerManager
         
         // Removed setupCollapsibleSections() - new design uses cards instead
 
@@ -952,8 +350,8 @@ export class App {
         this.midiManager.updateDeviceStatus();
         
         // Update drawer connection status if a mapping drawer is open
-        if (this.currentDrawer) {
-            this.checkDrawerConnectionStatus(this.currentDrawer);
+        if (this.drawerManager && this.drawerManager.isAnyDrawerOpen()) {
+            this.drawerManager.checkDrawerConnectionStatus(this.drawerManager.getCurrentDrawer());
         }
     }
 
@@ -961,8 +359,8 @@ export class App {
         this.state.set('midiEnabled', false);
         
         // Update drawer connection status if a mapping drawer is open
-        if (this.currentDrawer) {
-            this.checkDrawerConnectionStatus(this.currentDrawer);
+        if (this.drawerManager && this.drawerManager.isAnyDrawerOpen()) {
+            this.drawerManager.checkDrawerConnectionStatus(this.drawerManager.getCurrentDrawer());
         }
     }
 
@@ -996,6 +394,13 @@ export class App {
     triggerNoteAction(target) {
         // Delegate to the new MIDIEventHandler
         this.midiEventHandler.triggerNoteAction(target, 127); // Default velocity
+    }
+
+    addMIDIActivityMessage(message, category) {
+        // Delegate to the drawer manager
+        if (this.drawerManager) {
+            this.drawerManager.addMIDIActivityMessage(message, category);
+        }
     }
 
     handleKeyDown(event) {
@@ -2545,8 +1950,8 @@ History: ${summary.historySize} entries`;
         this.state.subscribe('audioListening', () => {
             this.updateAudioStatus();
             // Update drawer connection status if a mapping drawer is open
-            if (this.currentDrawer) {
-                this.checkDrawerConnectionStatus(this.currentDrawer);
+            if (this.drawerManager && this.drawerManager.isAnyDrawerOpen()) {
+                this.drawerManager.checkDrawerConnectionStatus(this.drawerManager.getCurrentDrawer());
             }
         });
         this.state.subscribe('audioAvailable', () => this.updateAudioStatus());
