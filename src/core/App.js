@@ -54,6 +54,12 @@ export class App {
         // Initialize debounced audio update for performance optimization
         this.debouncedAudioUpdate = null;
         
+        // Initialize abort controllers for async operation cancellation
+        this.abortControllers = new Map();
+        
+        // Initialize event listener tracking for cleanup
+        this.eventListeners = [];
+        
         // Initialize video recorder (temporarily disabled)
         // this.videoRecorder = new VideoRecorder(this);
         
@@ -1060,9 +1066,14 @@ export class App {
         // Wait a bit for DOM to be ready
         await new Promise(resolve => setTimeout(resolve, 100));
         
+        // Create abort controller for this operation
+        const controller = this.createAbortController('presets');
+        
         try {
             // Try to load a list of available presets
-            const response = await fetch('/presets/');
+            const response = await fetch('/presets/', { 
+                signal: controller.signal 
+            });
             if (response.ok) {
                 const text = await response.text();
                 // Parse the directory listing to find .json files
@@ -1077,40 +1088,53 @@ export class App {
                     return;
                 }
             }
-        } catch (error) {
-            // Could not load preset list, trying individual preset discovery
-        }
-        
-        // Fallback: Try to discover presets by attempting to load them
-        const knownPresets = [
-            'sample-multi-channel',
-            'essential-controls',
-            'animation-movement',
-            'visual-effects',
-            'lighting-materials',
-            'grid-composition',
-            'shape-controls',
-            'morphing-transitions'
-        ];
-        
-        const availablePresets = [];
-        
-        // Try to load each preset to see if it exists
-        for (const preset of knownPresets) {
-            try {
-                const response = await fetch(`/presets/${preset}.json`);
-                if (response.ok) {
-                    const presetData = await response.json();
-                    if (this.validatePreset(presetData)) {
-                        availablePresets.push(preset);
+            
+            // Fallback: Try to discover presets by attempting to load them
+            const knownPresets = [
+                'sample-multi-channel',
+                'essential-controls',
+                'animation-movement',
+                'visual-effects',
+                'lighting-materials',
+                'grid-composition',
+                'shape-controls',
+                'morphing-transitions'
+            ];
+            
+            const availablePresets = [];
+            
+            // Try to load each preset to see if it exists
+            for (const preset of knownPresets) {
+                try {
+                    const response = await fetch(`/presets/${preset}.json`, { 
+                        signal: controller.signal 
+                    });
+                    if (response.ok) {
+                        const presetData = await response.json();
+                        if (this.validatePreset(presetData)) {
+                            availablePresets.push(preset);
+                        }
                     }
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        console.log('Preset discovery was cancelled');
+                        return;
+                    }
+                    // Preset not found or invalid
                 }
-            } catch (error) {
-                // Preset not found or invalid
             }
+            
+            this.updatePresetDropdown(availablePresets);
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.log('Preset loading was cancelled');
+                return;
+            }
+            console.error('Error loading presets:', error);
+        } finally {
+            // Clean up the abort controller
+            this.cleanupAbortController('presets');
         }
-        
-        this.updatePresetDropdown(availablePresets);
     }
 
     async loadAvailableScenePresets() {
@@ -2148,6 +2172,68 @@ export class App {
         };
     }
 
+    /**
+     * Create and manage abort controller for async operations
+     * @param {string} operationKey - Unique key for the operation
+     * @returns {AbortController} The abort controller
+     */
+    createAbortController(operationKey) {
+        // Cancel any previous operation with the same key
+        if (this.abortControllers.has(operationKey)) {
+            this.abortControllers.get(operationKey).abort();
+        }
+        
+        // Create new controller
+        const controller = new AbortController();
+        this.abortControllers.set(operationKey, controller);
+        
+        return controller;
+    }
+
+    /**
+     * Clean up abort controller after operation completes
+     * @param {string} operationKey - Key of the operation to clean up
+     */
+    cleanupAbortController(operationKey) {
+        if (this.abortControllers.has(operationKey)) {
+            this.abortControllers.delete(operationKey);
+        }
+    }
+
+    /**
+     * Abort all ongoing operations
+     */
+    abortAllOperations() {
+        this.abortControllers.forEach(controller => {
+            controller.abort();
+        });
+        this.abortControllers.clear();
+    }
+
+    /**
+     * Add tracked event listener for proper cleanup
+     * @param {Element} element - DOM element to attach listener to
+     * @param {string} event - Event type
+     * @param {Function} handler - Event handler function
+     * @param {Object} options - Event listener options
+     */
+    addTrackedEventListener(element, event, handler, options = {}) {
+        if (element) {
+            element.addEventListener(event, handler, options);
+            this.eventListeners.push({ element, event, handler, options });
+        }
+    }
+
+    /**
+     * Remove all tracked event listeners
+     */
+    removeAllEventListeners() {
+        this.eventListeners.forEach(({ element, event, handler, options }) => {
+            element?.removeEventListener(event, handler, options);
+        });
+        this.eventListeners = [];
+    }
+
     triggerRandomMorph() {
         const morphingData = this.getMorphingData();
         if (!morphingData) return;
@@ -2411,8 +2497,8 @@ History: ${summary.historySize} entries`;
             if (mappingFrequencyElement) mappingFrequencyElement.textContent = frequency.toFixed(0);
         };
         
-        // Event listeners
-        interfaceSelect.addEventListener('change', (e) => {
+        // Event listeners with tracking for cleanup
+        this.addTrackedEventListener(interfaceSelect, 'change', (e) => {
             const interfaceId = e.target.value;
             const interfaces = this.audioManager.getAvailableInterfaces();
             const selectedInterface = interfaces.find(i => i.id === interfaceId);
@@ -2423,7 +2509,7 @@ History: ${summary.historySize} entries`;
             }
         });
         
-        connectButton.addEventListener('click', async () => {
+        this.addTrackedEventListener(connectButton, 'click', async () => {
             try {
                 await this.audioManager.startAudioCapture();
                 this.updateAudioStatus();
@@ -2433,15 +2519,15 @@ History: ${summary.historySize} entries`;
             }
         });
         
-        disconnectButton.addEventListener('click', () => {
+        this.addTrackedEventListener(disconnectButton, 'click', () => {
             this.audioManager.stopAudioCapture();
             this.updateAudioStatus();
         });
         
-        refreshButton.addEventListener('click', async () => {
+        this.addTrackedEventListener(refreshButton, 'click', async () => {
             await this.audioManager.refreshInterfaces();
             this.updateAudioInterfaceDropdown();
-            this.updateAudioChannelsDisplay();
+            this.updateAudioStatus();
         });
         
         // Initialize debounced audio update for performance optimization
@@ -2541,6 +2627,12 @@ History: ${summary.historySize} entries`;
         if (this.debouncedAudioUpdate) {
             this.debouncedAudioUpdate = null;
         }
+        
+        // Abort all ongoing operations
+        this.abortAllOperations();
+        
+        // Remove all tracked event listeners
+        this.removeAllEventListeners();
         
         // Stop animation loop
         if (this.animationLoop) {

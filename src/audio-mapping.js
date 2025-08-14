@@ -130,7 +130,7 @@ export class AudioMappingControl {
         this.mapping = {
             minFrequency: 250,
             maxFrequency: 2000,
-            target: '', // Changed from 'movementAmplitude' to empty string
+            target: 'cellSize', // Set cellSize as default for better user visibility
             minValue: 0,
             maxValue: 1,
             curve: 'linear',
@@ -244,18 +244,24 @@ export class AudioMappingControl {
         if (targetSelect) {
             targetSelect.value = this.mapping.target || ''; // Handle empty target
             targetSelect.addEventListener('change', (e) => {
-                this.mapping.target = e.target.value;
+                const selectedTarget = e.target.value;
                 
-                // Update min/max values based on the selected target
-                if (this.mapping.target) {
+                // Only update if a valid target is selected (not empty)
+                if (selectedTarget && selectedTarget.trim() !== '') {
+                    this.mapping.target = selectedTarget;
+                    
+                    // Update min/max values based on the selected target
                     const config = this.getParameterConfig(this.mapping.target);
                     if (config) {
                         this.mapping.minValue = config.min;
                         this.mapping.maxValue = config.max;
                     }
+                    
+                    this.updateMapping();
+                } else {
+                    // If empty target selected, revert to current value
+                    targetSelect.value = this.mapping.target || '';
                 }
-                
-                this.updateMapping();
             });
         }
         
@@ -390,6 +396,11 @@ export class AudioMappingControl {
     
     updateParameter(audioValue) {
         if (!this.app || !this.app.state) return;
+        
+        // Check if target is valid before proceeding
+        if (!this.mapping.target || this.mapping.target.trim() === '') {
+            return;
+        }
         
         const normalizedValue = this.normalizeValue(audioValue, this.mapping.target);
         

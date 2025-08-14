@@ -10,6 +10,17 @@ export class DOMCache {
     constructor() {
         this.cache = new Map();
         this.cacheInitialized = false;
+        
+        // Initialize cache when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initializeCache();
+            });
+        } else {
+            // DOM is already ready
+            setTimeout(() => this.initializeCache(), 0);
+        }
+        
         this.frequentlyAccessedElements = [
             // MIDI-related elements
             'midi-connect',
@@ -89,6 +100,13 @@ export class DOMCache {
             return;
         }
 
+        // Check if DOM is ready
+        if (document.readyState === 'loading') {
+            // DOM not ready yet, try again later
+            setTimeout(() => this.initializeCache(), 100);
+            return;
+        }
+
         console.log('Initializing DOM cache...');
         
         this.frequentlyAccessedElements.forEach(id => {
@@ -96,8 +114,10 @@ export class DOMCache {
             if (element) {
                 this.cache.set(id, element);
             } else {
-                // Log missing elements for debugging (but don't fail)
-                console.warn(`DOMCache: Element with id '${id}' not found during initialization`);
+                // Only log missing elements in debug mode to reduce console noise
+                if (window.DEBUG_MODE) {
+                    console.warn(`DOMCache: Element with id '${id}' not found during initialization`);
+                }
             }
         });
 
