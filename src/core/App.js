@@ -107,6 +107,9 @@ export class App {
             // Initialize scene
             this.scene.init();
             
+            // Set BPM timing manager reference on scene
+            this.scene.setBPMTimingManager(this.midiClockManager.getBPMTimingManager());
+            
             // Set up morphing system with shape generator
             this.scene.shapeGenerator.setMorphingSystem(this.morphingSystem);
             this.morphingSystem.setShapeGenerator(this.scene.shapeGenerator);
@@ -970,7 +973,13 @@ export class App {
     }
 
     getDivisionBeats(division) {
+        const bpmTimingManager = this.midiClockManager.getBPMTimingManager();
+        if (bpmTimingManager) {
+            return bpmTimingManager.getDivisionBeats(division);
+        }
+        // Fallback if BPM timing manager not available
         const divisionMap = {
+            '64th': 0.0625,   // 1/16 beat
             '32nd': 0.125,    // 1/8 beat
             '16th': 0.25,     // 1/4 beat
             '8th': 0.5,       // 1/2 beat
@@ -989,29 +998,31 @@ export class App {
         // Map the full 0-127 range to musical divisions with more granular control
         // INVERTED: Higher MIDI values = faster divisions (more intuitive)
         const divisions = [
-            '8bars',   // 0-12: 8 bars (slowest)
-            '4bars',   // 13-25: 4 bars
-            '2bars',   // 26-38: 2 bars
-            '1bar',    // 39-51: 1 bar
-            'whole',   // 52-64: whole notes
-            'half',    // 65-77: half notes
-            'quarter', // 78-90: quarter notes
-            '8th',     // 91-103: 8th notes
-            '16th',    // 104-116: 16th notes
-            '32nd'     // 117-127: 32nd notes (fastest)
+            '8bars',   // 0-11: 8 bars (slowest)
+            '4bars',   // 12-23: 4 bars
+            '2bars',   // 24-35: 2 bars
+            '1bar',    // 36-47: 1 bar
+            'whole',   // 48-59: whole notes
+            'half',    // 60-71: half notes
+            'quarter', // 72-83: quarter notes
+            '8th',     // 84-95: 8th notes
+            '16th',    // 96-107: 16th notes
+            '32nd',    // 108-119: 32nd notes
+            '64th'     // 120-127: 64th notes (fastest)
         ];
         
         // Map index to division with inverted distribution
-        if (index <= 12) return '8bars';
-        if (index <= 25) return '4bars';
-        if (index <= 38) return '2bars';
-        if (index <= 51) return '1bar';
-        if (index <= 64) return 'whole';
-        if (index <= 77) return 'half';
-        if (index <= 90) return 'quarter';
-        if (index <= 103) return '8th';
-        if (index <= 116) return '16th';
-        return '32nd';
+        if (index <= 11) return '8bars';
+        if (index <= 23) return '4bars';
+        if (index <= 35) return '2bars';
+        if (index <= 47) return '1bar';
+        if (index <= 59) return 'whole';
+        if (index <= 71) return 'half';
+        if (index <= 83) return 'quarter';
+        if (index <= 95) return '8th';
+        if (index <= 107) return '16th';
+        if (index <= 119) return '32nd';
+        return '64th';
     }
 
     /**

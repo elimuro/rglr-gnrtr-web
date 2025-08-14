@@ -18,6 +18,34 @@ export class GUIManager {
         this.init();
     }
 
+    /**
+     * Get available division names from BPMTimingManager
+     */
+    getAvailableDivisionNames() {
+        const bpmTimingManager = this.app.midiClockManager?.getBPMTimingManager();
+        if (bpmTimingManager) {
+            // Get divisions from BPMTimingManager and convert to display names
+            const divisions = bpmTimingManager.getAvailableDivisions();
+            return divisions.map(division => this.getDivisionDisplayName(division));
+        }
+        // Fallback if BPMTimingManager not available
+        return ['64th', '32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
+    }
+
+    /**
+     * Create a reusable division dropdown
+     */
+    createDivisionDropdown(folder, parameterName, defaultValue, displayName, icon) {
+        const divisionNames = this.getAvailableDivisionNames();
+        const currentDivision = this.getDivisionDisplayName(this.state.get(parameterName) || defaultValue);
+        return folder.add({ [parameterName]: currentDivision }, parameterName, divisionNames)
+            .name(`${displayName} ${icon}`)
+            .onChange((value) => {
+                const division = this.getDivisionFromDisplayName(value);
+                this.state.set(parameterName, division);
+            });
+    }
+
     init() {
         try {
             if (this.gui) this.gui.destroy();
@@ -271,14 +299,7 @@ export class GUIManager {
         this.addController(movementFolder, 'movementAmplitude', 0.01, 0.5, 0.01, 'Amplitude');
         
         // Movement division selector
-        const movementDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
-        const currentMovementDivision = this.getDivisionDisplayName(this.state.get('movementDivision') || '8th');
-        movementFolder.add({ movementDivision: currentMovementDivision }, 'movementDivision', movementDivisionNames)
-            .name('Division ♪')
-            .onChange((value) => {
-                const division = this.getDivisionFromDisplayName(value);
-                this.state.set('movementDivision', division);
-            });
+        this.createDivisionDropdown(movementFolder, 'movementDivision', '8th', 'Division', '♪');
         
         // Rotation Animation Folder
         const rotationFolder = animationFolder.addFolder('Rotation Animations');
@@ -286,14 +307,7 @@ export class GUIManager {
         this.addController(rotationFolder, 'rotationAmplitude', 0.01, 2, 0.01, 'Amplitude');
         
         // Rotation division selector
-        const rotationDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
-        const currentRotationDivision = this.getDivisionDisplayName(this.state.get('rotationDivision') || '16th');
-        rotationFolder.add({ rotationDivision: currentRotationDivision }, 'rotationDivision', rotationDivisionNames)
-            .name('Division ♩')
-            .onChange((value) => {
-                const division = this.getDivisionFromDisplayName(value);
-                this.state.set('rotationDivision', division);
-            });
+        this.createDivisionDropdown(rotationFolder, 'rotationDivision', '16th', 'Division', '♩');
         
         // Scale Animation Folder
         const scaleFolder = animationFolder.addFolder('Scale Animations');
@@ -301,27 +315,13 @@ export class GUIManager {
         this.addController(scaleFolder, 'scaleAmplitude', 0.01, 1, 0.01, 'Amplitude');
         
         // Scale division selector
-        const scaleDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
-        const currentScaleDivision = this.getDivisionDisplayName(this.state.get('scaleDivision') || 'half');
-        scaleFolder.add({ scaleDivision: currentScaleDivision }, 'scaleDivision', scaleDivisionNames)
-            .name('Division ♬')
-            .onChange((value) => {
-                const division = this.getDivisionFromDisplayName(value);
-                this.state.set('scaleDivision', division);
-            });
+        this.createDivisionDropdown(scaleFolder, 'scaleDivision', 'half', 'Division', '♬');
         
         // Shape Cycling Folder
         const shapeCyclingFolder = animationFolder.addFolder('Shape Cycling');
         
         // Shape cycling division selector
-        const shapeCyclingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
-        const currentShapeCyclingDivision = this.getDivisionDisplayName(this.state.get('shapeCyclingDivision') || 'quarter');
-        shapeCyclingFolder.add({ shapeCyclingDivision: currentShapeCyclingDivision }, 'shapeCyclingDivision', shapeCyclingDivisionNames)
-            .name('Division ♩')
-            .onChange((value) => {
-                const division = this.getDivisionFromDisplayName(value);
-                this.state.set('shapeCyclingDivision', division);
-            });
+        this.createDivisionDropdown(shapeCyclingFolder, 'shapeCyclingDivision', 'quarter', 'Division', '♩');
         
         const patternNames = ['Sequential', 'Random', 'Wave', 'Pulse', 'Staggered'];
         const currentPattern = patternNames[this.state.get('shapeCyclingPattern')] || patternNames[0];
@@ -395,14 +395,7 @@ export class GUIManager {
             });
         
         // Center scaling division selector
-        const centerScalingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
-        const currentCenterScalingDivision = this.getDivisionDisplayName(this.state.get('centerScalingDivision') || 'quarter');
-        centerScalingFolder.add({ centerScalingDivision: currentCenterScalingDivision }, 'centerScalingDivision', centerScalingDivisionNames)
-            .name('Division ♬')
-            .onChange((value) => {
-                const division = this.getDivisionFromDisplayName(value);
-                this.state.set('centerScalingDivision', division);
-            });
+        this.createDivisionDropdown(centerScalingFolder, 'centerScalingDivision', 'quarter', 'Division', '♬');
         
         // Center scaling animation speed
         this.addController(centerScalingFolder, 'centerScalingAnimationSpeed', 0.1, 3, 0.1, 'Animation Speed', () => {
@@ -425,14 +418,7 @@ export class GUIManager {
         const morphingFolder = this.gui.addFolder('Shape Morphing');
         
         // Morphing division selector
-        const morphingDivisionNames = ['32nd', '16th', '8th', 'Quarter', 'Half', 'Whole', '1 Bar', '2 Bars', '4 Bars', '8 Bars'];
-        const currentMorphingDivision = this.getDivisionDisplayName(this.state.get('morphingDivision') || 'quarter');
-        morphingFolder.add({ morphingDivision: currentMorphingDivision }, 'morphingDivision', morphingDivisionNames)
-            .name('Division ♩')
-            .onChange((value) => {
-                const division = this.getDivisionFromDisplayName(value);
-                this.state.set('morphingDivision', division);
-            });
+        this.createDivisionDropdown(morphingFolder, 'morphingDivision', 'quarter', 'Division', '♩');
         
 
         
@@ -758,6 +744,7 @@ export class GUIManager {
      */
     getDivisionDisplayName(division) {
         const nameMap = {
+            '64th': '64th',
             '32nd': '32nd',
             '16th': '16th', 
             '8th': '8th',
@@ -777,6 +764,7 @@ export class GUIManager {
      */
     getDivisionFromDisplayName(displayName) {
         const divisionMap = {
+            '64th': '64th',
             '32nd': '32nd',
             '16th': '16th',
             '8th': '8th',

@@ -10,6 +10,7 @@ export class ShapeAnimationManager {
         this.state = state;
         this.shapeGenerator = shapeGenerator;
         this.materialManager = materialManager;
+        this.bpmTimingManager = null; // Will be set by Scene.js
         
         // Performance tracking
         this.lastPerformanceMetrics = {
@@ -219,16 +220,27 @@ export class ShapeAnimationManager {
         
         // Calculate shape index
         let shapeIndex = 0;
-        if (shapeCyclingPattern === 0) { // Sequential
+        const patternType = Math.floor(shapeCyclingPattern) % 5; // Support patterns 0-4
+        
+        if (patternType === 0) { // Sequential
             shapeIndex = Math.floor(finalTime) % availableShapes.length;
-        } else if (shapeCyclingPattern === 1) { // Random
+        } else if (patternType === 1) { // Random
             // Use a deterministic random based on time and position
             const seed = Math.floor(finalTime) + cellSeed;
             shapeIndex = Math.abs(Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453) % 1;
             shapeIndex = Math.floor(shapeIndex * availableShapes.length);
-        } else if (shapeCyclingPattern === 2) { // Wave
+        } else if (patternType === 2) { // Wave
             const waveValue = (Math.sin(finalTime) + 1) / 2; // 0 to 1
             shapeIndex = Math.floor(waveValue * availableShapes.length);
+        } else if (patternType === 3) { // Pulse
+            // Pulse pattern - all shapes change together in pulses
+            const pulseTime = Math.floor(finalTime * 2) / 2; // Snap to half-beat intervals
+            shapeIndex = Math.floor(pulseTime) % availableShapes.length;
+        } else if (patternType === 4) { // Staggered
+            // Staggered pattern - shapes change in a cascading wave
+            const staggerDelay = (x + y * gridWidth) * 0.1;
+            const staggeredTime = finalTime - staggerDelay;
+            shapeIndex = Math.floor(Math.max(0, staggeredTime)) % availableShapes.length;
         }
         
         // Ensure valid index
@@ -456,8 +468,13 @@ export class ShapeAnimationManager {
      * @returns {number} Number of beats
      */
     getDivisionBeats(division) {
+        if (this.bpmTimingManager) {
+            return this.bpmTimingManager.getDivisionBeats(division);
+        }
+        // Fallback if BPM timing manager not available
         const divisionMap = {
             // Note divisions
+            '64th': 0.0625,   // 1/16 beat
             '32nd': 0.125,    // 1/8 beat
             '16th': 0.25,     // 1/4 beat
             '8th': 0.5,       // 1/2 beat
@@ -533,6 +550,13 @@ export class ShapeAnimationManager {
      */
     setObjectPool(objectPool) {
         this.objectPool = objectPool;
+    }
+
+    /**
+     * Set BPM timing manager reference
+     */
+    setBPMTimingManager(bpmTimingManager) {
+        this.bpmTimingManager = bpmTimingManager;
     }
 
     /**

@@ -10,12 +10,19 @@ export class BPMTimingManager {
         
         // Musical division mapping (in beats)
         this.divisionMap = {
+            // Note divisions
+            '64th': 0.0625,   // 1/16 beat
             '32nd': 0.125,    // 1/8 beat
             '16th': 0.25,     // 1/4 beat
             '8th': 0.5,       // 1/2 beat
             'quarter': 1,      // 1 beat
             'half': 2,         // 2 beats
-            'whole': 4         // 4 beats
+            'whole': 4,        // 4 beats
+            // Bar divisions (assuming 4/4 time)
+            '1bar': 4,         // 1 bar = 4 beats
+            '2bars': 8,        // 2 bars = 8 beats
+            '4bars': 16,       // 4 bars = 16 beats
+            '8bars': 32        // 8 bars = 32 beats
         };
         
         // Bar length mapping (in beats, assuming 4/4 time)
@@ -86,10 +93,22 @@ export class BPMTimingManager {
     }
 
     /**
-     * Get available divisions
+     * Get available divisions in logical order (fastest to slowest)
      */
     getAvailableDivisions() {
-        return Object.keys(this.divisionMap);
+        return [
+            '64th', '32nd', '16th', '8th', 'quarter', 'half', 'whole',
+            '1bar', '2bars', '4bars', '8bars'
+        ];
+    }
+
+    /**
+     * Get division beats for a given division
+     * @param {string} division - Musical division
+     * @returns {number} Number of beats
+     */
+    getDivisionBeats(division) {
+        return this.divisionMap[division] || 1;
     }
 
     /**
@@ -104,6 +123,7 @@ export class BPMTimingManager {
      */
     getDivisionDisplayName(division) {
         const nameMap = {
+            '64th': '64th',
             '32nd': '32nd',
             '16th': '16th', 
             '8th': '8th',
@@ -119,6 +139,7 @@ export class BPMTimingManager {
      */
     getDivisionSymbol(division) {
         const symbolMap = {
+            '64th': '♬',
             '32nd': '♬',
             '16th': '♪',
             '8th': '♪',
