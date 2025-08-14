@@ -51,6 +51,9 @@ export class App {
             cacheValid: false
         };
         
+        // Initialize debounced audio update for performance optimization
+        this.debouncedAudioUpdate = null;
+        
         // Initialize video recorder (temporarily disabled)
         // this.videoRecorder = new VideoRecorder(this);
         
@@ -2127,6 +2130,24 @@ export class App {
         this.morphingStateCache.cacheValid = false;
     }
 
+    /**
+     * Debounce utility for performance optimization
+     * @param {Function} func - Function to debounce
+     * @param {number} wait - Wait time in milliseconds
+     * @returns {Function} Debounced function
+     */
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
     triggerRandomMorph() {
         const morphingData = this.getMorphingData();
         if (!morphingData) return;
@@ -2423,7 +2444,14 @@ History: ${summary.historySize} entries`;
             this.updateAudioChannelsDisplay();
         });
         
-        // Subscribe to state changes
+        // Initialize debounced audio update for performance optimization
+        this.debouncedAudioUpdate = this.debounce(() => {
+            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
+                this.updateAudioAnalysisDisplay();
+            }
+        }, 16); // ~60fps debouncing
+        
+        // Subscribe to state changes with optimized subscriptions
         this.state.subscribe('audioListening', () => {
             this.updateAudioStatus();
             // Update drawer connection status if a mapping drawer is open
@@ -2433,41 +2461,12 @@ History: ${summary.historySize} entries`;
         });
         this.state.subscribe('audioAvailable', () => this.updateAudioStatus());
         
-        // Update audio analysis display for both audio interface and audio mapping drawers
-        this.state.subscribe('audioOverall', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioRMS', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioPeak', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioFrequency', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioRMS', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioPeak', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
-        });
-        this.state.subscribe('audioFrequency', () => {
-            if (this.currentDrawer === 'audio-interface' || this.currentDrawer === 'audio-mapping') {
-                this.updateAudioAnalysisDisplay();
-            }
+        // Single subscription for all audio values with debounced updates
+        const audioValues = ['audioOverall', 'audioRMS', 'audioPeak', 'audioFrequency'];
+        audioValues.forEach(key => {
+            this.state.subscribe(key, () => {
+                this.debouncedAudioUpdate();
+            });
         });
         
         // Initial setup
@@ -2537,6 +2536,11 @@ History: ${summary.historySize} entries`;
         
         // Invalidate morphing cache
         this.invalidateMorphingCache();
+        
+        // Clear debounced audio update
+        if (this.debouncedAudioUpdate) {
+            this.debouncedAudioUpdate = null;
+        }
         
         // Stop animation loop
         if (this.animationLoop) {
