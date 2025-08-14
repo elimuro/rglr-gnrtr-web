@@ -55,8 +55,10 @@ export const MATERIAL_CONSTANTS = {
                       // Purpose: Minimum clearcoat intensity (no clearcoat)
       max: 1.0,       // Connected to: MaterialManager.js clearcoat validation
                       // Purpose: Maximum clearcoat intensity (full clearcoat layer)
-      default: 0.09   // Connected to: MaterialManager.js default sphere setup
+      default: 0.09,  // Connected to: MaterialManager.js default sphere setup
                       // Purpose: Default clearcoat intensity (subtle clearcoat)
+      water: 0.9      // Connected to: MaterialManager.js water effect clearcoat
+                      // Purpose: Clearcoat intensity for water-like materials
     },
     
     clearcoatRoughness: { 
@@ -64,8 +66,10 @@ export const MATERIAL_CONSTANTS = {
                       // Purpose: Minimum clearcoat roughness (smooth clearcoat)
       max: 0.02,      // Connected to: MaterialManager.js clearcoat roughness clamping
                       // Purpose: Maximum clearcoat roughness (prevents visual artifacts)
-      default: 0.05   // Connected to: MaterialManager.js default clearcoat setup
+      default: 0.05,  // Connected to: MaterialManager.js default clearcoat setup
                       // Purpose: Default clearcoat roughness (slightly rough clearcoat)
+      water: 0.02     // Connected to: MaterialManager.js water effect clearcoat roughness
+                      // Purpose: Clearcoat roughness for water-like materials
     },
 
     metalness: {
@@ -86,6 +90,42 @@ export const MATERIAL_CONSTANTS = {
                       // Purpose: Maximum environment map intensity (strong reflections)
       default: 1.0    // Connected to: MaterialManager.js default environment setup
                       // Purpose: Default environment map intensity (normal reflections)
+    },
+
+    thickness: {
+      default: 0.5,   // Connected to: MaterialManager.js default material thickness
+                      // Purpose: Default thickness for refractive materials
+      water: 0.8,     // Connected to: MaterialManager.js water effect thickness
+                      // Purpose: Thickness for water-like materials
+      max: 2.0        // Connected to: MaterialManager.js maximum thickness
+                      // Purpose: Maximum thickness to prevent rendering issues
+    },
+
+    reflectivity: {
+      default: 0.9,   // Connected to: MaterialManager.js default reflectivity
+                      // Purpose: Default reflectivity for water-like materials
+      min: 0.0,       // Connected to: MaterialManager.js minimum reflectivity
+                      // Purpose: Minimum reflectivity (no reflection)
+      max: 1.0        // Connected to: MaterialManager.js maximum reflectivity
+                      // Purpose: Maximum reflectivity (mirror-like)
+    },
+
+    attenuationDistance: {
+      default: 0.5,   // Connected to: MaterialManager.js default attenuation distance
+                      // Purpose: Default distance for transmission attenuation
+      min: 0.1,       // Connected to: MaterialManager.js minimum attenuation distance
+                      // Purpose: Minimum distance to prevent rendering issues
+      max: 2.0        // Connected to: MaterialManager.js maximum attenuation distance
+                      // Purpose: Maximum distance for transmission effects
+    },
+
+    specularIntensity: {
+      default: 1.0,   // Connected to: MaterialManager.js default specular intensity
+                      // Purpose: Default specular highlight intensity
+      min: 0.0,       // Connected to: MaterialManager.js minimum specular intensity
+                      // Purpose: Minimum specular intensity (no highlights)
+      max: 2.0        // Connected to: MaterialManager.js maximum specular intensity
+                      // Purpose: Maximum specular intensity (bright highlights)
     }
   },
 
@@ -98,6 +138,20 @@ export const MATERIAL_CONSTANTS = {
                                 // Purpose: Multiplier for distortion effect strength
     transmissionBoost: 0.1,     // Connected to: MaterialManager.js water effect transmission boost
                                 // Purpose: Additional transmission when water effect is enabled
+    iorMultiplier: 0.5,         // Connected to: MaterialManager.js IOR adjustment for distortion
+                                // Purpose: Multiplier for IOR changes during distortion
+    clearcoatBoost: 0.1,        // Connected to: MaterialManager.js clearcoat boost during distortion
+                                // Purpose: Additional clearcoat intensity during distortion
+    envMapIntensityBoost: 0.5,  // Connected to: MaterialManager.js environment map intensity boost
+                                // Purpose: Additional environment map intensity during distortion
+    roughnessReduction: 0.1,    // Connected to: MaterialManager.js roughness reduction during distortion
+                                // Purpose: Reduction in roughness during distortion effects
+    thicknessMultiplier: 0.4,   // Connected to: MaterialManager.js thickness multiplier for distortion
+                                // Purpose: Multiplier for thickness changes during distortion
+    attenuationReduction: 0.3,  // Connected to: MaterialManager.js attenuation distance reduction
+                                // Purpose: Reduction in attenuation distance during distortion
+    specularBoost: 0.5,         // Connected to: MaterialManager.js specular intensity boost
+                                // Purpose: Additional specular intensity during distortion
     waveSpeed: 1.0,             // Connected to: distortion animation timing
                                 // Purpose: Speed of water wave distortion animation
     waveAmplitude: 0.05,        // Connected to: distortion displacement calculations

@@ -126,6 +126,8 @@ export const MIDI_CONSTANTS = {
                                // Purpose: MIDI clock pulses per 16th note
     pulsesPerEighthNote: 12,   // Connected to: subdivision timing calculations
                                // Purpose: MIDI clock pulses per 8th note
+    pulsesPerBar: 96,          // Connected to: MIDIClockManager.js bar calculations (4/4 time)
+                               // Purpose: MIDI clock pulses per bar (4 * 24 = 96 for 4/4 time)
     minTempo: 20,              // Connected to: MIDIClockManager.js tempo validation
                                // Purpose: Minimum valid MIDI tempo
     maxTempo: 300,             // Connected to: MIDIClockManager.js tempo validation

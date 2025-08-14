@@ -155,7 +155,7 @@ Extend scene/preset serialization to include:
 - Do we support multiple independent p5 layers (stacked), or only one overlay for v1?
 - Should we allow p5 WebGL mode in v1, or keep it 2D-only for simplicity?
 - How should we theme p5 canvas transparency and blending against the Three.js scene (add blend modes later)?
-- Do we want to record p5 output in the existing `VideoRecorder` pipeline in v1, or add later?
+- Do we want to add video recording capabilities for p5 output in a future version?
 
 ## Implementation Touch Points
 

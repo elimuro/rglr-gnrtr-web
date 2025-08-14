@@ -15,7 +15,6 @@ import { MIDIControlManager } from '../midi-controls.js';
 import { AudioMappingManager } from '../audio-mapping.js';
 import { GUIManager } from '../ui/GUIManager.js';
 import { ShapeMorphingSystem } from '../modules/ShapeMorphingSystem.js';
-// import { VideoRecorder } from '../modules/VideoRecorder.js';
 import { AudioManager } from '../modules/AudioManager.js';
 import { MIDIClockManager } from '../modules/MIDIClockManager.js';
 import { DOMCache } from '../modules/DOMCache.js';
@@ -64,8 +63,7 @@ export class App {
         // Initialize event listener tracking for cleanup
         this.eventListeners = [];
         
-        // Initialize video recorder (temporarily disabled)
-        // this.videoRecorder = new VideoRecorder(this);
+
         
         // Initialize audio manager
         this.audioManager = new AudioManager(this.state);

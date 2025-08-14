@@ -6,6 +6,7 @@
  */
 
 import * as THREE from 'three';
+import { LIGHTING_PRESETS } from '../config/LightingPresets.js';
 
 export class LightingManager {
     constructor(state) {
@@ -24,57 +25,57 @@ export class LightingManager {
         // Scene reference will be set by Scene.js
         this.scene = null;
         
-        // Default light intensities for fallback
+        // Use centralized lighting presets instead of hardcoded defaults
         this.defaultIntensities = {
-            ambientLightIntensity: 0.97,
-            directionalLightIntensity: 0.04,
-            pointLight1Intensity: 2.94,
-            pointLight2Intensity: 3,
-            rimLightIntensity: 3,
-            accentLightIntensity: 2.97
+            ambientLightIntensity: LIGHTING_PRESETS.default.ambient.intensity,
+            directionalLightIntensity: LIGHTING_PRESETS.default.directional.intensity,
+            pointLight1Intensity: LIGHTING_PRESETS.default.pointLights.light1.intensity,
+            pointLight2Intensity: LIGHTING_PRESETS.default.pointLights.light2.intensity,
+            rimLightIntensity: LIGHTING_PRESETS.default.rim.intensity,
+            accentLightIntensity: LIGHTING_PRESETS.default.accent.intensity
         };
         
-        // Light configuration presets
+        // Light configuration presets using centralized constants
         this.lightConfigs = {
             ambient: {
                 type: 'AmbientLight',
-                defaultColor: 0x404040,
+                defaultColor: LIGHTING_PRESETS.default.ambient.color,
                 position: null // Ambient lights don't have position
             },
             directional: {
                 type: 'DirectionalLight',
-                defaultColor: 0xffffff,
-                position: { x: 10, y: 10, z: 5 },
+                defaultColor: LIGHTING_PRESETS.default.directional.color,
+                position: LIGHTING_PRESETS.default.directional.position,
                 castShadow: true,
                 shadowConfig: {
-                    mapSize: { width: 2048, height: 2048 },
-                    camera: { near: 0.5, far: 50 }
+                    mapSize: LIGHTING_PRESETS.default.directional.shadow.mapSize,
+                    camera: LIGHTING_PRESETS.default.directional.shadow.camera
                 }
             },
             point1: {
                 type: 'PointLight',
-                defaultColor: 0xffffff,
-                position: { x: 0, y: 0, z: 10 },
-                distance: 100
+                defaultColor: LIGHTING_PRESETS.default.pointLights.light1.color,
+                position: LIGHTING_PRESETS.default.pointLights.light1.position,
+                distance: LIGHTING_PRESETS.default.pointLights.light1.distance
             },
             point2: {
                 type: 'PointLight',
-                defaultColor: 0x87ceeb, // Sky blue tint
-                position: { x: -5, y: 5, z: 8 },
-                distance: 80,
-                colorBlend: { color: 0x87ceeb, ratio: 0.7 }
+                defaultColor: LIGHTING_PRESETS.default.pointLights.light2.color,
+                position: LIGHTING_PRESETS.default.pointLights.light2.position,
+                distance: LIGHTING_PRESETS.default.pointLights.light2.distance,
+                colorBlend: { color: LIGHTING_PRESETS.default.pointLights.light2.color, ratio: 0.7 }
             },
             rim: {
                 type: 'DirectionalLight',
-                defaultColor: 0xffffff,
-                position: { x: -8, y: -8, z: 3 }
+                defaultColor: LIGHTING_PRESETS.default.rim.color,
+                position: LIGHTING_PRESETS.default.rim.position
             },
             accent: {
                 type: 'PointLight',
-                defaultColor: 0xff6b6b, // Red tint
-                position: { x: 8, y: -5, z: 6 },
-                distance: 60,
-                colorBlend: { color: 0xff6b6b, ratio: 0.6 }
+                defaultColor: LIGHTING_PRESETS.default.accent.color,
+                position: LIGHTING_PRESETS.default.accent.position,
+                distance: LIGHTING_PRESETS.default.accent.distance,
+                colorBlend: { color: LIGHTING_PRESETS.default.accent.color, ratio: 0.6 }
             }
         };
     }

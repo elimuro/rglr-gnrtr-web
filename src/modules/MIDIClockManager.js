@@ -146,7 +146,7 @@ export class MIDIClockManager {
         this.syncPoints.quarter = Math.floor(this.clockPulses / MIDI_CONSTANTS.clock.pulsesPerQuarterNote);
         this.syncPoints.eighth = Math.floor(this.clockPulses / MIDI_CONSTANTS.clock.pulsesPerEighthNote);
         this.syncPoints.sixteenth = Math.floor(this.clockPulses / MIDI_CONSTANTS.clock.pulsesPerSixteenthNote);
-        this.syncPoints.bar = Math.floor(this.clockPulses / 96); // Assuming 4/4 time
+        this.syncPoints.bar = Math.floor(this.clockPulses / MIDI_CONSTANTS.clock.pulsesPerBar); // Using centralized constant for 4/4 time
     }
 
     triggerClockBasedAnimations() {
@@ -163,7 +163,7 @@ export class MIDIClockManager {
         }
         
         // Sync morphing to bars
-        if (this.clockPulses % 96 === 0) {
+        if (this.clockPulses % MIDI_CONSTANTS.clock.pulsesPerBar === 0) {
             // Trigger morphing (placeholder for future implementation)
         }
     }

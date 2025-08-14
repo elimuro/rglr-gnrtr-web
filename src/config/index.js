@@ -35,8 +35,7 @@ export { MIDI_CONSTANTS } from './MidiConstants.js';
 // Material System Constants
 export { MATERIAL_CONSTANTS } from './MaterialConstants.js';
 
-// Video Recording Presets
-export { VIDEO_RECORDING_PRESETS } from './VideoRecordingPresets.js';
+
 
 /**
  * Configuration Helper Utilities

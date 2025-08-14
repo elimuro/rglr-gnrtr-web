@@ -7,6 +7,7 @@
  */
 
 import { gsap } from 'gsap';
+import { DEFAULT_SCENE_CONFIG } from '../config/DefaultSceneConfig.js';
 
 export class StateManager {
     constructor() {
@@ -82,7 +83,7 @@ export class StateManager {
                 
                 // Add sphereDistortionStrength if not present
                 if (!initialState.hasOwnProperty('sphereDistortionStrength')) {
-                    initialState.sphereDistortionStrength = 0.1;
+                    initialState.sphereDistortionStrength = DEFAULT_SCENE_CONFIG.sphere.distortionStrength;
                 }
                 
 
@@ -99,105 +100,121 @@ export class StateManager {
     }
 
     getFallbackState() {
-        // Fallback state if JSON file can't be loaded
+        // Fallback state if JSON file can't be loaded - now using centralized constants
         return {
-            "globalBPM": 120,
-            "animationType": 0,
-            "animationSpeed": 1.89,
-            "enableShapeCycling": false,
-            "enableMovementAnimation": false,
-            "enableRotationAnimation": false,
-            "enableScaleAnimation": false,
-            "movementAmplitude": 0.08,
-            "rotationAmplitude": 0.5,
-            "scaleAmplitude": 0.2,
-            "shapeCyclingSpeed": 0.4,
-            "shapeCyclingPattern": 0,
-            "shapeCyclingDirection": 0,
-            "shapeCyclingSync": 0,
-            "shapeCyclingIntensity": 1,
-            "shapeCyclingTrigger": 0,
+            // Timing and Animation
+            "globalBPM": DEFAULT_SCENE_CONFIG.timing.globalBPM,
+            "animationType": DEFAULT_SCENE_CONFIG.timing.animationType,
+            "animationSpeed": DEFAULT_SCENE_CONFIG.timing.animationSpeed,
+            "enableShapeCycling": DEFAULT_SCENE_CONFIG.animation.enableShapeCycling,
+            "enableMovementAnimation": DEFAULT_SCENE_CONFIG.animation.enableMovementAnimation,
+            "enableRotationAnimation": DEFAULT_SCENE_CONFIG.animation.enableRotationAnimation,
+            "enableScaleAnimation": DEFAULT_SCENE_CONFIG.animation.enableScaleAnimation,
+            "movementAmplitude": DEFAULT_SCENE_CONFIG.animation.movementAmplitude,
+            "rotationAmplitude": DEFAULT_SCENE_CONFIG.animation.rotationAmplitude,
+            "scaleAmplitude": DEFAULT_SCENE_CONFIG.animation.scaleAmplitude,
+            "shapeCyclingSpeed": DEFAULT_SCENE_CONFIG.animation.shapeCyclingSpeed,
+            "shapeCyclingPattern": DEFAULT_SCENE_CONFIG.animation.shapeCyclingPattern,
+            "shapeCyclingDirection": DEFAULT_SCENE_CONFIG.animation.shapeCyclingDirection,
+            "shapeCyclingSync": DEFAULT_SCENE_CONFIG.animation.shapeCyclingSync,
+            "shapeCyclingIntensity": DEFAULT_SCENE_CONFIG.animation.shapeCyclingIntensity,
+            "shapeCyclingTrigger": DEFAULT_SCENE_CONFIG.animation.shapeCyclingTrigger,
 
-            "morphingEasing": "power2.inOut",
-            "gridWidth": 19,
-            "gridHeight": 6,
-            "cellSize": 0.76,
-            "compositionWidth": 30,
-            "compositionHeight": 30,
-            "showGrid": false,
-            "randomness": 1,
-            "shapeColor": "#5cff00",
-            "backgroundColor": "#000000",
-            "enabledShapes": {
-                "Basic Shapes": true,
-                "Triangles": true,
-                "Rectangles": true,
-                "Ellipses": true,
-                "Refractive Spheres": true
-            },
-            "sphereRefraction": 1.67,
-            "sphereTransparency": 1,
-            "sphereRoughness": 0.04,
-            "sphereMetalness": 1,
-            "sphereTransmission": 1,
-            "sphereScale": 3,
-            "sphereClearcoat": 0.09,
-            "sphereClearcoatRoughness": 0.05,
-            "sphereEnvMapIntensity": 0.28,
-            "sphereWaterDistortion": true,
-            "sphereDistortionStrength": 0.1,
-            "sphereHighPerformanceMode": false,
-            "postProcessingEnabled": false,
-            "bloomEnabled": true,
-            "bloomStrength": 0.41,
-            "bloomRadius": 1.18,
-            "bloomThreshold": 0,
-            "chromaticAberrationEnabled": false,
-            "chromaticIntensity": 0.5,
-            "vignetteEnabled": true,
-            "vignetteIntensity": 1,
-            "vignetteRadius": 0.53,
-            "vignetteSoftness": 0.36,
-            "grainEnabled": true,
-            "grainIntensity": 0.1,
-            "colorGradingEnabled": false,
-            "colorHue": 0,
-            "colorSaturation": 1,
-            "colorBrightness": 1,
-            "colorContrast": 1,
-            "fxaaEnabled": true,
-            "ambientLightIntensity": 0.97,
-            "directionalLightIntensity": 0.04,
-            "pointLight1Intensity": 2.94,
-            "pointLight2Intensity": 3,
-            "rimLightIntensity": 3,
-            "accentLightIntensity": 2.97,
-            "lightColour": "#ffffff",
-            "enableFrustumCulling": true,
-            "centerScalingEnabled": false,
-            "centerScalingIntensity": 0.5,
-            "centerScalingCurve": 0,
-            "centerScalingRadius": 1.0,
-            "centerScalingDirection": 0,
-            "centerScalingAnimationSpeed": 1.0,
-            "centerScalingAnimationType": 0,
-            "centerScalingAnimation": false,
-            "shapeCyclingDivision": "quarter",
-            "movementDivision": "8th",
-            "rotationDivision": "16th",
-            "scaleDivision": "half",
-            "morphingDivision": "quarter",
-            "centerScalingDivision": "quarter",
-            "enableSizeAnimation": true,
-            "gridColor": "#ff0000",
-            "midiEnabled": false,
-            "midiChannel": 0,
-            "midiCCMappings": {},
-            "midiNoteMappings": {},
-            "midiStopStopsAnimation": false,
-            "audioMappings": {},
-            "midiStopStopsAnimation": false,
-            "audioMappings": {},
+            // Morphing
+            "morphingEasing": DEFAULT_SCENE_CONFIG.morphing.easing,
+
+            // Grid Configuration
+            "gridWidth": DEFAULT_SCENE_CONFIG.grid.width,
+            "gridHeight": DEFAULT_SCENE_CONFIG.grid.height,
+            "cellSize": DEFAULT_SCENE_CONFIG.grid.cellSize,
+            "compositionWidth": DEFAULT_SCENE_CONFIG.grid.compositionWidth,
+            "compositionHeight": DEFAULT_SCENE_CONFIG.grid.compositionHeight,
+            "showGrid": DEFAULT_SCENE_CONFIG.grid.showGrid,
+            "randomness": DEFAULT_SCENE_CONFIG.grid.randomness,
+            "gridColor": DEFAULT_SCENE_CONFIG.grid.color,
+
+            // Colors
+            "shapeColor": DEFAULT_SCENE_CONFIG.colors.shapeColor,
+            "backgroundColor": DEFAULT_SCENE_CONFIG.colors.backgroundColor,
+
+            // Shape Categories
+            "enabledShapes": DEFAULT_SCENE_CONFIG.shapes.enabledShapes,
+
+            // Sphere Properties
+            "sphereRefraction": DEFAULT_SCENE_CONFIG.sphere.refraction,
+            "sphereTransparency": DEFAULT_SCENE_CONFIG.sphere.transparency,
+            "sphereRoughness": DEFAULT_SCENE_CONFIG.sphere.roughness,
+            "sphereMetalness": DEFAULT_SCENE_CONFIG.sphere.metalness,
+            "sphereTransmission": DEFAULT_SCENE_CONFIG.sphere.transmission,
+            "sphereScale": DEFAULT_SCENE_CONFIG.sphere.scale,
+            "sphereClearcoat": DEFAULT_SCENE_CONFIG.sphere.clearcoat,
+            "sphereClearcoatRoughness": DEFAULT_SCENE_CONFIG.sphere.clearcoatRoughness,
+            "sphereEnvMapIntensity": DEFAULT_SCENE_CONFIG.sphere.envMapIntensity,
+            "sphereWaterDistortion": DEFAULT_SCENE_CONFIG.sphere.waterDistortion,
+            "sphereDistortionStrength": DEFAULT_SCENE_CONFIG.sphere.distortionStrength,
+            "sphereHighPerformanceMode": DEFAULT_SCENE_CONFIG.sphere.highPerformanceMode,
+
+            // Post-Processing
+            "postProcessingEnabled": DEFAULT_SCENE_CONFIG.postProcessing.enabled,
+            "bloomEnabled": DEFAULT_SCENE_CONFIG.postProcessing.bloom.enabled,
+            "bloomStrength": DEFAULT_SCENE_CONFIG.postProcessing.bloom.strength,
+            "bloomRadius": DEFAULT_SCENE_CONFIG.postProcessing.bloom.radius,
+            "bloomThreshold": DEFAULT_SCENE_CONFIG.postProcessing.bloom.threshold,
+            "chromaticAberrationEnabled": DEFAULT_SCENE_CONFIG.postProcessing.chromaticAberration.enabled,
+            "chromaticIntensity": DEFAULT_SCENE_CONFIG.postProcessing.chromaticAberration.intensity,
+            "vignetteEnabled": DEFAULT_SCENE_CONFIG.postProcessing.vignette.enabled,
+            "vignetteIntensity": DEFAULT_SCENE_CONFIG.postProcessing.vignette.intensity,
+            "vignetteRadius": DEFAULT_SCENE_CONFIG.postProcessing.vignette.radius,
+            "vignetteSoftness": DEFAULT_SCENE_CONFIG.postProcessing.vignette.softness,
+            "grainEnabled": DEFAULT_SCENE_CONFIG.postProcessing.grain.enabled,
+            "grainIntensity": DEFAULT_SCENE_CONFIG.postProcessing.grain.intensity,
+            "colorGradingEnabled": DEFAULT_SCENE_CONFIG.postProcessing.colorGrading.enabled,
+            "colorHue": DEFAULT_SCENE_CONFIG.postProcessing.colorGrading.hue,
+            "colorSaturation": DEFAULT_SCENE_CONFIG.postProcessing.colorGrading.saturation,
+            "colorBrightness": DEFAULT_SCENE_CONFIG.postProcessing.colorGrading.brightness,
+            "colorContrast": DEFAULT_SCENE_CONFIG.postProcessing.colorGrading.contrast,
+            "fxaaEnabled": DEFAULT_SCENE_CONFIG.postProcessing.fxaa.enabled,
+
+            // Lighting
+            "ambientLightIntensity": DEFAULT_SCENE_CONFIG.lighting.ambient.intensity,
+            "directionalLightIntensity": DEFAULT_SCENE_CONFIG.lighting.directional.intensity,
+            "pointLight1Intensity": DEFAULT_SCENE_CONFIG.lighting.pointLights.light1.intensity,
+            "pointLight2Intensity": DEFAULT_SCENE_CONFIG.lighting.pointLights.light2.intensity,
+            "rimLightIntensity": DEFAULT_SCENE_CONFIG.lighting.rim.intensity,
+            "accentLightIntensity": DEFAULT_SCENE_CONFIG.lighting.accent.intensity,
+            "lightColour": DEFAULT_SCENE_CONFIG.lighting.color,
+
+            // Performance
+            "enableFrustumCulling": DEFAULT_SCENE_CONFIG.performance.enableFrustumCulling,
+
+            // Center Scaling
+            "centerScalingEnabled": DEFAULT_SCENE_CONFIG.centerScaling.enabled,
+            "centerScalingIntensity": DEFAULT_SCENE_CONFIG.centerScaling.intensity,
+            "centerScalingCurve": DEFAULT_SCENE_CONFIG.centerScaling.curve,
+            "centerScalingRadius": DEFAULT_SCENE_CONFIG.centerScaling.radius,
+            "centerScalingDirection": DEFAULT_SCENE_CONFIG.centerScaling.direction,
+            "centerScalingAnimationSpeed": DEFAULT_SCENE_CONFIG.centerScaling.animationSpeed,
+            "centerScalingAnimationType": DEFAULT_SCENE_CONFIG.centerScaling.animationType,
+            "centerScalingAnimation": DEFAULT_SCENE_CONFIG.centerScaling.animation,
+
+            // Musical Divisions
+            "shapeCyclingDivision": DEFAULT_SCENE_CONFIG.divisions.shapeCycling,
+            "movementDivision": DEFAULT_SCENE_CONFIG.divisions.movement,
+            "rotationDivision": DEFAULT_SCENE_CONFIG.divisions.rotation,
+            "scaleDivision": DEFAULT_SCENE_CONFIG.divisions.scale,
+            "morphingDivision": DEFAULT_SCENE_CONFIG.divisions.morphing,
+            "centerScalingDivision": DEFAULT_SCENE_CONFIG.divisions.centerScaling,
+
+            // Animation
+            "enableSizeAnimation": DEFAULT_SCENE_CONFIG.animation.enableSizeAnimation,
+
+            // MIDI and Audio
+            "midiEnabled": DEFAULT_SCENE_CONFIG.midi.enabled,
+            "midiChannel": DEFAULT_SCENE_CONFIG.midi.channel,
+            "midiCCMappings": DEFAULT_SCENE_CONFIG.midi.ccMappings,
+            "midiNoteMappings": DEFAULT_SCENE_CONFIG.midi.noteMappings,
+            "midiStopStopsAnimation": DEFAULT_SCENE_CONFIG.midi.stopStopsAnimation,
+            "audioMappings": DEFAULT_SCENE_CONFIG.audio.mappings,
             
             // Audio reactivity parameters
             "audioEnabled": false,

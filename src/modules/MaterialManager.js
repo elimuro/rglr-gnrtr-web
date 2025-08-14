@@ -7,6 +7,7 @@
  */
 
 import * as THREE from 'three';
+import { MATERIAL_CONSTANTS } from '../config/MaterialConstants.js';
 
 export class MaterialManager {
     constructor() {
@@ -173,12 +174,12 @@ export class MaterialManager {
         // Apply water-like effects using standard material properties
         if (sphereWaterDistortion) {
             // Simulate water effect with standard material properties
-            material.roughness = Math.max(0.05, sphereRoughness); // Very smooth
-            material.metalness = Math.min(0.1, sphereMetalness); // Reduce metalness for water
-            material.envMapIntensity = sphereEnvMapIntensity + (sphereDistortionStrength * 0.3);
+            material.roughness = Math.max(MATERIAL_CONSTANTS.sphere.roughness.minSmooth, sphereRoughness); // Very smooth
+            material.metalness = Math.min(MATERIAL_CONSTANTS.distortion.transmissionBoost, sphereMetalness); // Reduce metalness for water
+            material.envMapIntensity = sphereEnvMapIntensity + (sphereDistortionStrength * MATERIAL_CONSTANTS.distortion.envMapIntensityBoost);
             
             // Enhance reflectivity for water-like appearance
-            material.roughness = Math.max(0.02, material.roughness - (sphereDistortionStrength * 0.1));
+            material.roughness = Math.max(MATERIAL_CONSTANTS.sphere.roughness.min, material.roughness - (sphereDistortionStrength * MATERIAL_CONSTANTS.distortion.roughnessReduction));
         }
         
         return material;
@@ -206,55 +207,55 @@ export class MaterialManager {
             metalness: sphereMetalness,
             ior: sphereRefraction, // Index of refraction (1.33 for water)
             transmission: sphereTransmission, // Transmission for refraction
-            thickness: 0.5, // Increased thickness for more distortion
+            thickness: MATERIAL_CONSTANTS.sphere.thickness.default, // Increased thickness for more distortion
             envMap: this.envMap, // Environment map for refraction
             envMapIntensity: sphereEnvMapIntensity, // Configurable intensity
             side: THREE.DoubleSide,
             // Water-like properties
             clearcoat: sphereClearcoat, // Configurable clearcoat
             clearcoatRoughness: sphereClearcoatRoughness, // Configurable clearcoat roughness
-            reflectivity: 0.9, // Very high reflectivity for water
+            reflectivity: MATERIAL_CONSTANTS.sphere.reflectivity.default, // Very high reflectivity for water
             // Enhanced transmission properties for water effect
-            attenuationDistance: 0.5, // Shorter distance for more intense effect
+            attenuationDistance: MATERIAL_CONSTANTS.sphere.attenuationDistance.default, // Shorter distance for more intense effect
             attenuationColor: shapeColor,
             // Additional water properties
             premultipliedAlpha: false,
             // Enhanced for water-like appearance
-            specularIntensity: 1.0,
+            specularIntensity: MATERIAL_CONSTANTS.sphere.specularIntensity.default,
             specularColor: new THREE.Color(0xffffff)
         });
         
         // Add water-like properties for better visual effect
         if (sphereWaterDistortion) {
             // Base water properties
-            material.roughness = Math.max(0.05, sphereRoughness); // Very smooth
-            material.metalness = Math.min(0.1, sphereMetalness); // Reduce metalness for water
-            material.transmission = Math.min(0.98, sphereTransmission); // High transmission
-            material.thickness = 0.8; // Thicker for more distortion
+            material.roughness = Math.max(MATERIAL_CONSTANTS.sphere.roughness.minSmooth, sphereRoughness); // Very smooth
+            material.metalness = Math.min(MATERIAL_CONSTANTS.distortion.transmissionBoost, sphereMetalness); // Reduce metalness for water
+            material.transmission = Math.min(MATERIAL_CONSTANTS.sphere.transmission.max, sphereTransmission); // High transmission
+            material.thickness = MATERIAL_CONSTANTS.sphere.thickness.water; // Thicker for more distortion
             material.ior = sphereRefraction; // Use user's refraction index
-            material.clearcoat = Math.max(0.9, sphereClearcoat); // High clearcoat for water shine
-            material.clearcoatRoughness = Math.min(0.02, sphereClearcoatRoughness); // Very smooth clearcoat
+            material.clearcoat = Math.max(MATERIAL_CONSTANTS.sphere.clearcoat.water, sphereClearcoat); // High clearcoat for water shine
+            material.clearcoatRoughness = Math.min(MATERIAL_CONSTANTS.sphere.clearcoatRoughness.water, sphereClearcoatRoughness); // Very smooth clearcoat
             
             // Apply distortion strength to material properties
             if (sphereDistortionStrength > 0) {
-                // Increase thickness for more distortion (0.8 to 1.2)
-                material.thickness = 0.8 + (sphereDistortionStrength * 0.4);
+                // Increase thickness for more distortion using constants
+                material.thickness = MATERIAL_CONSTANTS.sphere.thickness.water + (sphereDistortionStrength * MATERIAL_CONSTANTS.distortion.thicknessMultiplier);
                 
                 // Adjust transmission based on distortion strength (higher = more transparent)
-                material.transmission = Math.min(0.98, material.transmission + (sphereDistortionStrength * 0.1));
+                material.transmission = Math.min(MATERIAL_CONSTANTS.sphere.transmission.max, material.transmission + (sphereDistortionStrength * MATERIAL_CONSTANTS.distortion.transmissionBoost));
                 
                 // Adjust IOR for more dramatic refraction (builds on base value)
-                material.ior = sphereRefraction + (sphereDistortionStrength * 0.5);
+                material.ior = sphereRefraction + (sphereDistortionStrength * MATERIAL_CONSTANTS.distortion.iorMultiplier);
                 
                 // Adjust clearcoat for more shine with distortion (capped at 1.0)
-                material.clearcoat = Math.min(1.0, material.clearcoat + (sphereDistortionStrength * 0.1));
+                material.clearcoat = Math.min(MATERIAL_CONSTANTS.sphere.clearcoat.max, material.clearcoat + (sphereDistortionStrength * MATERIAL_CONSTANTS.distortion.clearcoatBoost));
                 
                 // Adjust envMapIntensity for more dramatic environment reflection
-                material.envMapIntensity = sphereEnvMapIntensity + (sphereDistortionStrength * 0.5);
+                material.envMapIntensity = sphereEnvMapIntensity + (sphereDistortionStrength * MATERIAL_CONSTANTS.distortion.envMapIntensityBoost);
                 
                 // Add additional distortion effects for more comprehensive water-like appearance
-                material.attenuationDistance = 0.5 - (sphereDistortionStrength * 0.3); // Shorter distance for more intense effect
-                material.specularIntensity = 1.0 + (sphereDistortionStrength * 0.5); // More specular highlights
+                material.attenuationDistance = MATERIAL_CONSTANTS.sphere.attenuationDistance.default - (sphereDistortionStrength * MATERIAL_CONSTANTS.distortion.attenuationReduction); // Shorter distance for more intense effect
+                material.specularIntensity = MATERIAL_CONSTANTS.sphere.specularIntensity.default + (sphereDistortionStrength * MATERIAL_CONSTANTS.distortion.specularBoost); // More specular highlights
             }
         }
         
