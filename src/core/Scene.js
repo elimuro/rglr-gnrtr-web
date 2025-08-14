@@ -13,6 +13,7 @@ import { ObjectPool } from '../modules/ObjectPool.js';
 import { AnimationSystem } from '../modules/AnimationSystem.js';
 import { ShapeAnimationManager } from '../modules/ShapeAnimationManager.js';
 import { GridManager } from '../modules/GridManager.js';
+import { LightingManager } from '../modules/LightingManager.js';
 import { PostProcessingManager } from '../modules/PostProcessingManager.js';
 
 export class Scene {
@@ -43,6 +44,10 @@ export class Scene {
             this.updateMeshShape(mesh, shapeName);
         });
         
+        // Initialize lighting manager
+        this.lightingManager = new LightingManager(state);
+        this.lightingManager.setScene(this.scene);
+        
         this.postProcessingManager = null;
         
         // Frustum culling optimization
@@ -54,15 +59,9 @@ export class Scene {
         this.setupCamera();
         this.setupRenderer();
         
-        // Store light references for dynamic updates
-        this.lights = {
-            ambient: null,
-            directional: null,
-            point1: null,
-            point2: null,
-            rim: null,
-            accent: null
-        };
+        // Light references are now managed by LightingManager
+        // Keep reference for backward compatibility
+        this.lights = {};
         
         this.setupEventListeners();
     }
@@ -111,6 +110,15 @@ export class Scene {
     }
 
     setupLighting() {
+        // Delegate to lighting manager
+        this.lightingManager.setupLighting();
+        
+        // Update local reference for backward compatibility
+        this.lights = this.lightingManager.getAllLights();
+    }
+
+    // Legacy method - kept for backward compatibility
+    setupLightingLegacy() {
         // Add safety check for state initialization
         if (!this.state.isInitialized()) {
             console.warn('StateManager not initialized, using default lighting values');
@@ -238,14 +246,8 @@ export class Scene {
         this.state.subscribe('sphereEnvMapIntensity', () => this.updateSphereMaterials());
         this.state.subscribe('sphereWaterDistortion', () => this.updateSphereMaterials());
         
-        // Lighting state subscriptions
-        this.state.subscribe('ambientLightIntensity', () => this.updateLighting());
-        this.state.subscribe('directionalLightIntensity', () => this.updateLighting());
-        this.state.subscribe('pointLight1Intensity', () => this.updateLighting());
-        this.state.subscribe('pointLight2Intensity', () => this.updateLighting());
-        this.state.subscribe('rimLightIntensity', () => this.updateLighting());
-        this.state.subscribe('accentLightIntensity', () => this.updateLighting());
-        this.state.subscribe('lightColour', () => this.updateLighting());
+        // Lighting state subscriptions are now handled by LightingManager
+        this.lightingManager.setupLightingEventListeners();
         
         // Post-processing state subscriptions
         this.state.subscribe('bloomEnabled', () => this.updatePostProcessing());
@@ -667,6 +669,20 @@ export class Scene {
     }
 
     updateLighting() {
+        // Delegate to lighting manager
+        this.lightingManager.updateLighting();
+        
+        // Update local reference for backward compatibility
+        this.lights = this.lightingManager.getAllLights();
+    }
+
+    // Delegation method for backward compatibility
+    blendColors(color1, color2, ratio) {
+        return this.lightingManager.blendColors(color1, color2, ratio);
+    }
+
+    // Legacy method - kept for backward compatibility
+    updateLightingLegacy() {
         try {
             if (!this.lights) {
                 console.warn('Lights not initialized yet');
