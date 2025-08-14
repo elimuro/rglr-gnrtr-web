@@ -118,11 +118,13 @@ export class DrawerManager {
             maxMessages: 100,
             isPaused: false,
             filterClock: true, // Default to filtering clock messages
+            autoScroll: true, // Default to auto scroll enabled
             messageCounts: {
                 cc: 0,
                 note: 0,
                 pitch: 0,
-                system: 0
+                system: 0,
+                clock: 0
             },
             lastActivity: null,
             messageRate: 0,
@@ -131,6 +133,9 @@ export class DrawerManager {
 
         // Set up MIDI activity drawer controls
         this.setupMIDIActivityControls();
+        
+        // Initialize control states
+        this.initializeMIDIActivityControls();
         
         // Start periodic updates for MIDI activity rate
         setInterval(() => {
@@ -165,6 +170,50 @@ export class DrawerManager {
             filterClockCheckbox.addEventListener('change', (e) => {
                 this.midiActivityState.filterClock = e.target.checked;
             });
+        }
+
+        // Auto scroll checkbox
+        const autoScrollCheckbox = this.domCache.getElement('midi-activity-autoscroll');
+        if (autoScrollCheckbox) {
+            autoScrollCheckbox.addEventListener('change', (e) => {
+                this.midiActivityState.autoScroll = e.target.checked;
+            });
+        }
+
+        // Max messages dropdown
+        const maxMessagesSelect = this.domCache.getElement('midi-activity-max');
+        if (maxMessagesSelect) {
+            maxMessagesSelect.addEventListener('change', (e) => {
+                this.midiActivityState.maxMessages = parseInt(e.target.value, 10);
+                // Trim messages if new limit is lower than current count
+                if (this.midiActivityState.messages.length > this.midiActivityState.maxMessages) {
+                    this.midiActivityState.messages = this.midiActivityState.messages.slice(0, this.midiActivityState.maxMessages);
+                    this.updateMIDIActivityDisplay();
+                }
+            });
+        }
+    }
+
+    /**
+     * Initialize MIDI activity control states to match defaults
+     */
+    initializeMIDIActivityControls() {
+        // Set filter clock checkbox to match state
+        const filterClockCheckbox = this.domCache.getElement('midi-activity-filter-clock');
+        if (filterClockCheckbox) {
+            filterClockCheckbox.checked = this.midiActivityState.filterClock;
+        }
+
+        // Set auto scroll checkbox to match state
+        const autoScrollCheckbox = this.domCache.getElement('midi-activity-autoscroll');
+        if (autoScrollCheckbox) {
+            autoScrollCheckbox.checked = this.midiActivityState.autoScroll;
+        }
+
+        // Set max messages dropdown to match state
+        const maxMessagesSelect = this.domCache.getElement('midi-activity-max');
+        if (maxMessagesSelect) {
+            maxMessagesSelect.value = this.midiActivityState.maxMessages.toString();
         }
     }
 
@@ -329,6 +378,10 @@ export class DrawerManager {
             case 'audio-mapping':
                 this.checkAudioConnectionStatus('audio-mapping-connection-status', 'audio-mapping-controls-container');
                 break;
+            case 'midi-activity':
+                // MIDI activity drawer should show current MIDI connection status
+                this.updateMIDIActivityConnectionStatus();
+                break;
         }
     }
 
@@ -373,6 +426,38 @@ export class DrawerManager {
         } else {
             statusElement.classList.add('hidden');
             controlsContainer.classList.remove('opacity-50');
+        }
+    }
+
+    /**
+     * Update MIDI activity connection status display
+     */
+    updateMIDIActivityConnectionStatus() {
+        const statusElement = this.domCache.getElement('midi-activity-status');
+        const deviceElement = this.domCache.getElement('midi-activity-device');
+        
+        if (statusElement) {
+            const isMIDIConnected = this.app.midiManager && this.app.midiManager.isConnected;
+            
+            if (isMIDIConnected) {
+                statusElement.textContent = 'Connected';
+                statusElement.className = 'text-green-400';
+                
+                // Update device name if available
+                if (deviceElement && this.app.midiManager) {
+                    const deviceInfo = this.app.midiManager.getCurrentDeviceInfo();
+                    if (deviceInfo && deviceInfo.input) {
+                        deviceElement.textContent = deviceInfo.input;
+                    }
+                }
+            } else {
+                statusElement.textContent = 'Disconnected';
+                statusElement.className = 'text-red-400';
+                
+                if (deviceElement) {
+                    deviceElement.textContent = 'No device';
+                }
+            }
         }
     }
 
@@ -475,6 +560,17 @@ export class DrawerManager {
             activityStream.appendChild(messageElement);
         });
 
+        // Auto scroll to bottom if enabled
+        if (this.midiActivityState.autoScroll) {
+            activityStream.scrollTop = activityStream.scrollHeight;
+        }
+
+        // Update total message count
+        const totalCountElement = this.domCache.getElement('midi-activity-count');
+        if (totalCountElement) {
+            totalCountElement.textContent = this.midiActivityState.messages.length;
+        }
+
         // Update message counts
         this.updateMIDIActivityCounts();
     }
@@ -506,11 +602,13 @@ export class DrawerManager {
         const noteCount = this.domCache.getElement('midi-note-count');
         const pitchCount = this.domCache.getElement('midi-pitch-count');
         const systemCount = this.domCache.getElement('midi-system-count');
+        const clockCount = this.domCache.getElement('midi-clock-count');
 
         if (ccCount) ccCount.textContent = counts.cc;
         if (noteCount) noteCount.textContent = counts.note;
         if (pitchCount) pitchCount.textContent = counts.pitch;
         if (systemCount) systemCount.textContent = counts.system;
+        if (clockCount) clockCount.textContent = counts.clock;
     }
 
     /**
@@ -555,7 +653,8 @@ export class DrawerManager {
             cc: 0,
             note: 0,
             pitch: 0,
-            system: 0
+            system: 0,
+            clock: 0
         };
         this.midiActivityState.lastActivity = null;
         this.midiActivityState.messageRate = 0;

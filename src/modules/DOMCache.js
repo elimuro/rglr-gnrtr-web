@@ -43,6 +43,7 @@ export class DOMCache {
             'midi-note-count',
             'midi-pitch-count',
             'midi-system-count',
+            'midi-clock-count',
             'midi-status',
             'midi-device-selection',
             'midi-input-select',

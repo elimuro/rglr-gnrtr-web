@@ -273,7 +273,7 @@ export class MIDIManager {
                 case 0xF8: // MIDI Clock (24 pulses per quarter note)
                     this.app.onMIDIClock();
                     messageType = 'MIDI Clock';
-                    messageCategory = 'system';
+                    messageCategory = 'clock';
                     break;
 
                 case 0xFA: // MIDI Start

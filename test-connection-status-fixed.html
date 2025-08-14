@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Status Test - Fixed</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .test-button {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #7c3aed;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .connected { background: #065f46; color: #10b981; }
+        .disconnected { background: #7f1d1d; color: #ef4444; }
+        .controls-container {
+            padding: 15px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            margin: 10px 0;
+            transition: opacity 0.3s;
+        }
+        .controls-container.opacity-50 {
+            opacity: 0.5;
+        }
+        .connection-status {
+            background: #7f1d1d;
+            color: #ef4444;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #dc2626;
+            margin-bottom: 10px;
+        }
+        .connection-status.hidden {
+            display: none;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .status-display {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔗 Connection Status Test - Fixed</h1>
+        
+        <div class="test-section">
+            <h2>Connection Simulation</h2>
+            <button class="test-button" onclick="toggleMIDI()">Toggle MIDI Connection</button>
+            <button class="test-button" onclick="toggleAudio()">Toggle Audio Connection</button>
+            <button class="test-button" onclick="resetAll()">Reset All</button>
+        </div>
+
+        <div class="grid">
+            <!-- MIDI Status Tests -->
+            <div class="test-section">
+                <h2>MIDI Connection Status</h2>
+                
+                <h3>Top Bar Status (midi-status)</h3>
+                <div id="midi-status" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
+                    <div class="w-2 h-2 rounded-full bg-red-500 transition-all duration-300"></div>
+                    <span class="text-xs font-medium text-white">No MIDI Device</span>
+                </div>
+
+                <h3>MIDI Activity Status</h3>
+                <div class="status-display">
+                    Connection Status: <span id="midi-activity-status" class="text-red-400">Disconnected</span><br>
+                    Device: <span id="midi-activity-device" class="text-gray-400">No device</span>
+                </div>
+
+                <h3>CC Controls (Mapping Drawer)</h3>
+                <div id="cc-midi-connection-status" class="connection-status">
+                    <strong>MIDI Not Connected</strong><br>
+                    Please connect a MIDI device to use CC controls.
+                </div>
+                <div id="cc-controls-container" class="controls-container opacity-50">
+                    <h4>CC Control Panel</h4>
+                    <p>This should be dimmed when MIDI is not connected.</p>
+                    <button class="test-button">Add CC Control</button>
+                </div>
+
+                <h3>Note Controls (Mapping Drawer)</h3>
+                <div id="note-midi-connection-status" class="connection-status">
+                    <strong>MIDI Not Connected</strong><br>
+                    Please connect a MIDI device to use note controls.
+                </div>
+                <div id="note-controls-container" class="controls-container opacity-50">
+                    <h4>Note Control Panel</h4>
+                    <p>This should be dimmed when MIDI is not connected.</p>
+                    <button class="test-button">Add Note Control</button>
+                </div>
+            </div>
+
+            <!-- Audio Status Tests -->
+            <div class="test-section">
+                <h2>Audio Connection Status</h2>
+                
+                <h3>Top Bar Status (audio-status-top)</h3>
+                <div id="audio-status-top" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
+                    <div class="w-2 h-2 rounded-full bg-red-500 transition-all duration-300"></div>
+                    <span class="text-xs font-medium text-white">No Audio Device</span>
+                </div>
+
+                <h3>Connect Drawer Status</h3>
+                <div id="audio-status-indicator" class="w-2 h-2 rounded-full bg-red-500 transition-all duration-300 inline-block"></div>
+                <span id="audio-status-text" class="text-xs text-gray-300 ml-2">Disconnected</span>
+
+                <h3>Audio Mapping Controls</h3>
+                <div id="audio-mapping-connection-status" class="connection-status">
+                    <strong>Audio Not Connected</strong><br>
+                    Please connect an audio device to use audio mapping.
+                </div>
+                <div id="audio-mapping-controls-container" class="controls-container opacity-50">
+                    <h4>Audio Mapping Panel</h4>
+                    <p>This should be dimmed when audio is not connected.</p>
+                    <button class="test-button">Add Audio Mapping</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="test-results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mock connection states
+        let midiConnected = false;
+        let audioConnected = false;
+
+        // Mock managers
+        const mockApp = {
+            midiManager: {
+                isConnected: false,
+                getCurrentDeviceInfo: () => ({ input: 'Mock MIDI Device' })
+            },
+            audioManager: {
+                isListening: false,
+                getCurrentDeviceName: () => 'Mock Audio Device'
+            }
+        };
+
+        // Mock DOM cache
+        const mockDOMCache = {
+            getElement: (id) => document.getElementById(id)
+        };
+
+        // Mock drawer manager methods
+        function checkMIDIConnectionStatus(statusElementId, controlsContainerId) {
+            const statusElement = document.getElementById(statusElementId);
+            const controlsContainer = document.getElementById(controlsContainerId);
+            
+            if (!statusElement || !controlsContainer) return;
+            
+            const isMIDIConnected = mockApp.midiManager && mockApp.midiManager.isConnected;
+            
+            if (!isMIDIConnected) {
+                statusElement.classList.remove('hidden');
+                controlsContainer.classList.add('opacity-50');
+            } else {
+                statusElement.classList.add('hidden');
+                controlsContainer.classList.remove('opacity-50');
+            }
+        }
+
+        function checkAudioConnectionStatus(statusElementId, controlsContainerId) {
+            const statusElement = document.getElementById(statusElementId);
+            const controlsContainer = document.getElementById(controlsContainerId);
+            
+            if (!statusElement || !controlsContainer) return;
+            
+            const isAudioConnected = mockApp.audioManager && mockApp.audioManager.isListening;
+            
+            if (!isAudioConnected) {
+                statusElement.classList.remove('hidden');
+                controlsContainer.classList.add('opacity-50');
+            } else {
+                statusElement.classList.add('hidden');
+                controlsContainer.classList.remove('opacity-50');
+            }
+        }
+
+        function updateMIDIActivityConnectionStatus() {
+            const statusElement = document.getElementById('midi-activity-status');
+            const deviceElement = document.getElementById('midi-activity-device');
+            
+            if (statusElement) {
+                const isMIDIConnected = mockApp.midiManager && mockApp.midiManager.isConnected;
+                
+                if (isMIDIConnected) {
+                    statusElement.textContent = 'Connected';
+                    statusElement.className = 'text-green-400';
+                    
+                    if (deviceElement && mockApp.midiManager) {
+                        const deviceInfo = mockApp.midiManager.getCurrentDeviceInfo();
+                        if (deviceInfo && deviceInfo.input) {
+                            deviceElement.textContent = deviceInfo.input;
+                        }
+                    }
+                } else {
+                    statusElement.textContent = 'Disconnected';
+                    statusElement.className = 'text-red-400';
+                    
+                    if (deviceElement) {
+                        deviceElement.textContent = 'No device';
+                    }
+                }
+            }
+        }
+
+        function updateMIDIStatus(message, connected) {
+            const statusElement = document.getElementById('midi-status');
+            if (statusElement) {
+                const statusDot = statusElement.querySelector('div.rounded-full');
+                const statusText = statusElement.querySelector('.text-xs.font-medium.text-white');
+                
+                if (statusDot) {
+                    statusDot.classList.remove('bg-red-500', 'bg-green-500', 'transition-all', 'duration-300');
+                    if (connected) {
+                        statusDot.classList.add('bg-green-500', 'transition-all', 'duration-300');
+                    } else {
+                        statusDot.classList.add('bg-red-500', 'transition-all', 'duration-300');
+                    }
+                }
+                
+                if (statusText) {
+                    statusText.textContent = message;
+                }
+            }
+        }
+
+        function updateAudioStatus(deviceName, connected) {
+            const statusElement = document.getElementById('audio-status-top');
+            if (statusElement) {
+                const statusDot = statusElement.querySelector('div.rounded-full');
+                const statusText = statusElement.querySelector('.text-xs.font-medium.text-white');
+                
+                if (statusDot) {
+                    statusDot.classList.remove('bg-red-500', 'bg-green-500', 'transition-all', 'duration-300');
+                    if (connected) {
+                        statusDot.classList.add('bg-green-500', 'transition-all', 'duration-300');
+                    } else {
+                        statusDot.classList.add('bg-red-500', 'transition-all', 'duration-300');
+                    }
+                }
+                
+                if (statusText) {
+                    statusText.textContent = deviceName;
+                }
+            }
+
+            // Update connect drawer status
+            const statusIndicator = document.getElementById('audio-status-indicator');
+            const statusText = document.getElementById('audio-status-text');
+            
+            if (statusIndicator) {
+                statusIndicator.classList.remove('bg-red-500', 'bg-green-500', 'bg-yellow-500');
+                if (connected) {
+                    statusIndicator.classList.add('bg-green-500');
+                } else {
+                    statusIndicator.classList.add('bg-red-500');
+                }
+            }
+            
+            if (statusText) {
+                statusText.textContent = connected ? 'Connected' : 'Disconnected';
+            }
+        }
+
+        function toggleMIDI() {
+            midiConnected = !midiConnected;
+            mockApp.midiManager.isConnected = midiConnected;
+            
+            // Update all MIDI status displays
+            updateMIDIStatus(midiConnected ? 'Mock MIDI Device' : 'No MIDI Device', midiConnected);
+            updateMIDIActivityConnectionStatus();
+            checkMIDIConnectionStatus('cc-midi-connection-status', 'cc-controls-container');
+            checkMIDIConnectionStatus('note-midi-connection-status', 'note-controls-container');
+            
+            logResult(`MIDI ${midiConnected ? 'Connected' : 'Disconnected'}`, 'info');
+        }
+
+        function toggleAudio() {
+            audioConnected = !audioConnected;
+            mockApp.audioManager.isListening = audioConnected;
+            
+            // Update all audio status displays
+            updateAudioStatus(audioConnected ? 'Mock Audio Device' : 'No Audio Device', audioConnected);
+            checkAudioConnectionStatus('audio-mapping-connection-status', 'audio-mapping-controls-container');
+            
+            logResult(`Audio ${audioConnected ? 'Connected' : 'Disconnected'}`, 'info');
+        }
+
+        function resetAll() {
+            midiConnected = false;
+            audioConnected = false;
+            mockApp.midiManager.isConnected = false;
+            mockApp.audioManager.isListening = false;
+            
+            // Reset all displays
+            updateMIDIStatus('No MIDI Device', false);
+            updateAudioStatus('No Audio Device', false);
+            updateMIDIActivityConnectionStatus();
+            checkMIDIConnectionStatus('cc-midi-connection-status', 'cc-controls-container');
+            checkMIDIConnectionStatus('note-midi-connection-status', 'note-controls-container');
+            checkAudioConnectionStatus('audio-mapping-connection-status', 'audio-mapping-controls-container');
+            
+            logResult('All connections reset', 'info');
+        }
+
+        function logResult(message, type) {
+            const results = document.getElementById('test-results');
+            const result = document.createElement('div');
+            result.style.cssText = `
+                padding: 8px;
+                margin: 4px 0;
+                border-radius: 4px;
+                background: ${type === 'info' ? '#1e3a8a' : type === 'pass' ? '#065f46' : '#7f1d1d'};
+                color: white;
+            `;
+            result.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(result);
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            resetAll();
+            logResult('Connection Status Test initialized - Fixed version', 'info');
+            logResult('Toggle connections to test status updates', 'info');
+        });
+    </script>
+</body>
+</html>

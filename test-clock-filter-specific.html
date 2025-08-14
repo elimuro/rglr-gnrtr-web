@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock Filter Test - Specific</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .test-button {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #7c3aed;
+        }
+        .checkbox-container {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .pass { background: #065f46; }
+        .fail { background: #7f1d1d; }
+        .info { background: #1e3a8a; }
+        .midi-activity-stream {
+            height: 200px;
+            background: #000;
+            border: 1px solid #666;
+            padding: 10px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .counts-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .count-item {
+            background: #333;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .count-value {
+            color: #10b981;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>⏰ Clock Filter Test - Specific</h1>
+        
+        <div class="test-section">
+            <h2>Clock Filter Controls</h2>
+            <div class="checkbox-container">
+                <label>
+                    <input type="checkbox" id="test-filter-clock" checked> Filter Clock Messages
+                </label>
+                <span id="filter-status" class="count-value">ENABLED</span>
+            </div>
+            <div>
+                <button class="test-button" onclick="addClockMessage()">Add Clock Message</button>
+                <button class="test-button" onclick="addNonClockMessage()">Add CC Message</button>
+                <button class="test-button" onclick="addSystemMessage()">Add System Message</button>
+                <button class="test-button" onclick="simulateClockStream()">Simulate Clock Stream (10 msgs)</button>
+                <button class="test-button" onclick="clearMessages()">Clear All</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Message Counts</h2>
+            <div class="counts-display">
+                <div class="count-item">
+                    <div>CC Messages</div>
+                    <div class="count-value" id="cc-count">0</div>
+                </div>
+                <div class="count-item">
+                    <div>System Messages</div>
+                    <div class="count-value" id="system-count">0</div>
+                </div>
+                <div class="count-item">
+                    <div>Clock Messages</div>
+                    <div class="count-value" id="clock-count">0</div>
+                </div>
+                <div class="count-item">
+                    <div>Total Messages</div>
+                    <div class="count-value" id="total-count">0</div>
+                </div>
+                <div class="count-item">
+                    <div>Visible Messages</div>
+                    <div class="count-value" id="visible-count">0</div>
+                </div>
+                <div class="count-item">
+                    <div>Filtered Out</div>
+                    <div class="count-value" id="filtered-count">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>MIDI Activity Stream</h2>
+            <div class="midi-activity-stream" id="activity-stream">
+                <div style="color: #888; text-align: center; padding: 50px;">No MIDI activity detected</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="test-results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mock MIDI activity state
+        let midiActivityState = {
+            messages: [],
+            maxMessages: 100,
+            filterClock: true,
+            autoScroll: true,
+            messageCounts: { cc: 0, system: 0, clock: 0 },
+            totalAdded: 0,
+            filteredOut: 0
+        };
+
+        // Initialize controls
+        function initializeControls() {
+            const filterCheckbox = document.getElementById('test-filter-clock');
+            const filterStatus = document.getElementById('filter-status');
+
+            filterCheckbox.addEventListener('change', (e) => {
+                midiActivityState.filterClock = e.target.checked;
+                filterStatus.textContent = e.target.checked ? 'ENABLED' : 'DISABLED';
+                filterStatus.style.color = e.target.checked ? '#10b981' : '#ef4444';
+                logResult('Clock filter ' + (e.target.checked ? 'enabled' : 'disabled'), 'info');
+            });
+        }
+
+        // Mock the addMIDIActivityMessage method from DrawerManager
+        function addMIDIActivityMessage(message, category) {
+            midiActivityState.totalAdded++;
+
+            // Filter clock messages if enabled
+            if (midiActivityState.filterClock && category === 'clock') {
+                midiActivityState.filteredOut++;
+                logResult(`Clock message filtered out: "${message}"`, 'pass');
+                updateCounts();
+                return;
+            }
+
+            const timestamp = new Date();
+            const activityMessage = {
+                message,
+                category,
+                timestamp,
+                id: Date.now() + Math.random()
+            };
+
+            midiActivityState.messages.unshift(activityMessage);
+
+            // Update message counts
+            if (midiActivityState.messageCounts.hasOwnProperty(category)) {
+                midiActivityState.messageCounts[category]++;
+            }
+
+            // Limit messages
+            if (midiActivityState.messages.length > midiActivityState.maxMessages) {
+                midiActivityState.messages.pop();
+            }
+
+            // Update UI
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const activityStream = document.getElementById('activity-stream');
+
+            // Clear existing content
+            activityStream.innerHTML = '';
+
+            // Add messages
+            midiActivityState.messages.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.style.cssText = `
+                    font-size: 12px;
+                    padding: 4px;
+                    border-bottom: 1px solid #333;
+                    color: ${getCategoryColor(msg.category)};
+                `;
+                messageElement.textContent = `${msg.timestamp.toLocaleTimeString()} - ${msg.message}`;
+                activityStream.appendChild(messageElement);
+            });
+
+            // Auto scroll to bottom if enabled
+            if (midiActivityState.autoScroll) {
+                activityStream.scrollTop = activityStream.scrollHeight;
+            }
+
+            updateCounts();
+        }
+
+        function updateCounts() {
+            const counts = midiActivityState.messageCounts;
+            
+            document.getElementById('cc-count').textContent = counts.cc;
+            document.getElementById('system-count').textContent = counts.system;
+            document.getElementById('clock-count').textContent = counts.clock;
+            document.getElementById('total-count').textContent = midiActivityState.totalAdded;
+            document.getElementById('visible-count').textContent = midiActivityState.messages.length;
+            document.getElementById('filtered-count').textContent = midiActivityState.filteredOut;
+        }
+
+        function getCategoryColor(category) {
+            switch (category) {
+                case 'cc': return '#60a5fa';
+                case 'system': return '#a78bfa';
+                case 'clock': return '#9ca3af';
+                default: return '#ffffff';
+            }
+        }
+
+        function addClockMessage() {
+            addMIDIActivityMessage('MIDI Clock Tick', 'clock');
+        }
+
+        function addNonClockMessage() {
+            addMIDIActivityMessage('CC #1: 64 → Channel 1', 'cc');
+        }
+
+        function addSystemMessage() {
+            addMIDIActivityMessage('System Exclusive Message', 'system');
+        }
+
+        function simulateClockStream() {
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    addClockMessage();
+                }, i * 100);
+            }
+            logResult('Simulating 10 clock messages over 1 second', 'info');
+        }
+
+        function clearMessages() {
+            midiActivityState.messages = [];
+            midiActivityState.messageCounts = { cc: 0, system: 0, clock: 0 };
+            midiActivityState.totalAdded = 0;
+            midiActivityState.filteredOut = 0;
+            updateDisplay();
+            logResult('All messages and counts cleared', 'info');
+        }
+
+        function logResult(message, type) {
+            const results = document.getElementById('test-results');
+            const result = document.createElement('div');
+            result.className = `status ${type}`;
+            result.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(result);
+        }
+
+        // Test scenarios
+        function runAutoTests() {
+            setTimeout(() => {
+                logResult('=== Starting Automated Tests ===', 'info');
+                
+                // Test 1: Clock filter enabled (default)
+                logResult('Test 1: Clock filter enabled - adding clock message', 'info');
+                addClockMessage();
+                
+                setTimeout(() => {
+                    if (midiActivityState.filteredOut === 1 && midiActivityState.messages.length === 0) {
+                        logResult('✓ Test 1 PASSED: Clock message was filtered out', 'pass');
+                    } else {
+                        logResult('✗ Test 1 FAILED: Clock message was not filtered', 'fail');
+                    }
+                    
+                    // Test 2: Non-clock message should pass through
+                    logResult('Test 2: Adding CC message (should pass through)', 'info');
+                    addNonClockMessage();
+                    
+                    setTimeout(() => {
+                        if (midiActivityState.messages.length === 1 && midiActivityState.messages[0].category === 'cc') {
+                            logResult('✓ Test 2 PASSED: CC message passed through filter', 'pass');
+                        } else {
+                            logResult('✗ Test 2 FAILED: CC message was filtered incorrectly', 'fail');
+                        }
+                        
+                        // Test 3: Disable filter and add clock message
+                        logResult('Test 3: Disabling filter and adding clock message', 'info');
+                        const checkbox = document.getElementById('test-filter-clock');
+                        checkbox.checked = false;
+                        checkbox.dispatchEvent(new Event('change'));
+                        
+                        setTimeout(() => {
+                            addClockMessage();
+                            
+                            setTimeout(() => {
+                                const clockMessages = midiActivityState.messages.filter(m => m.category === 'clock');
+                                if (clockMessages.length === 1) {
+                                    logResult('✓ Test 3 PASSED: Clock message passed through when filter disabled', 'pass');
+                                } else {
+                                    logResult('✗ Test 3 FAILED: Clock message was still filtered when filter disabled', 'fail');
+                                }
+                                
+                                logResult('=== Automated Tests Complete ===', 'info');
+                            }, 100);
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 1000);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            initializeControls();
+            updateCounts();
+            logResult('Clock Filter Test initialized', 'info');
+            logResult('Use buttons to test clock filtering manually', 'info');
+            logResult('Automated tests will run in 1 second...', 'info');
+            runAutoTests();
+        });
+    </script>
+</body>
+</html>
