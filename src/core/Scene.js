@@ -18,8 +18,9 @@ import { PerformanceManager } from '../modules/PerformanceManager.js';
 import { PostProcessingManager } from '../modules/PostProcessingManager.js';
 
 export class Scene {
-    constructor(state) {
+    constructor(state, app = null) {
         this.state = state;
+        this.app = app;
         this.scene = new THREE.Scene();
         this.camera = null;
         this.renderer = null;
@@ -852,6 +853,11 @@ export class Scene {
                 this.postProcessingManager.render();
             } else {
                 this.renderer.render(this.scene, this.camera);
+            }
+            
+            // Render additional layers on top if LayerManager has any
+            if (this.app && this.app.layerManager && this.app.layerManager.layers.size > 0) {
+                this.app.layerManager.render(this.renderer, this.camera);
             }
         } else {
             console.error('Cannot render: renderer, scene, or camera is null');

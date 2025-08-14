@@ -17,6 +17,7 @@ export class DrawerManager {
             'drawer-connect',
             'drawer-mapping',
             'drawer-scene-management',
+            'drawer-layers',
             'drawer-midi-activity'
         ];
     }
@@ -290,7 +291,7 @@ export class DrawerManager {
      */
     updateDrawerPositionClasses(drawerName) {
         // Remove all drawer-specific classes first
-        this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer', 'midi-activity-drawer');
+        this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer', 'midi-activity-drawer', 'layers-drawer');
         
         // Add appropriate class based on drawer type
         switch (drawerName) {
@@ -302,6 +303,9 @@ export class DrawerManager {
                 break;
             case 'midi-activity':
                 this.drawerContainer.classList.add('midi-activity-drawer');
+                break;
+            case 'layers':
+                this.drawerContainer.classList.add('layers-drawer');
                 break;
         }
     }
@@ -322,7 +326,7 @@ export class DrawerManager {
             this.currentDrawer = null;
             
             // Remove drawer-specific classes
-            this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer', 'midi-activity-drawer');
+            this.drawerContainer.classList.remove('connect-drawer', 'audio-interface-drawer', 'midi-activity-drawer', 'layers-drawer');
             
             // Reset all button states
             this.updateDrawerButtonStates(null);
@@ -381,6 +385,9 @@ export class DrawerManager {
             case 'midi-activity':
                 // MIDI activity drawer should show current MIDI connection status
                 this.updateMIDIActivityConnectionStatus();
+                break;
+            case 'layers':
+                // Layers drawer doesn't need connection status checking
                 break;
         }
     }

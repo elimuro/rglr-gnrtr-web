@@ -9,12 +9,11 @@ This document outlines the implementation plan for a comprehensive layer system 
 - Enable multiple visual layers that can be positioned in front of or behind each other
 - Maintain compatibility with existing grid-based animation
 - Integrate with current MIDI and audio mapping systems
-- Support future 3D camera system for isometric viewing
+- Support 3D camera system for isometric viewing (Phase 5)
 - Provide flexible, extensible architecture for new layer types
 
 ## Non-Goals (for v1)
 
-- 3D camera system (Phase 5 enhancement)
 - Node-based visual programming
 - Advanced layer effects beyond basic blending
 - Real-time collaboration features
@@ -159,18 +158,21 @@ LayerManager → Layer1 → Layer2 → ... → LayerN → Compositor → Rendere
 - [ ] Implement 3D layer positioning system
 - [ ] Add basic orbit camera controls
 - [ ] Create 3D render pipeline
+- [ ] Implement depth sorting for transparent layers
 
 #### Week 17-18: Layer 3D Adaptations
 - [ ] Adapt each layer type for 3D rendering
 - [ ] Implement P5 canvas → 3D texture mapping
 - [ ] Add video texture UV mapping
 - [ ] Create shader layer 3D surface rendering
+- [ ] Handle layer depth and collision detection
 
 #### Week 19-20: UI and Camera Controls
 - [ ] Add 3D camera controls to UI
-- [ ] Implement layer position controls
+- [ ] Implement layer position controls with 3D gizmos
 - [ ] Add camera presets and animations
 - [ ] Integrate camera parameters with MIDI mapping
+- [ ] Create 3D viewport with layer position indicators
 
 **Deliverables**:
 - `src/modules/CameraManager.js`
@@ -180,8 +182,9 @@ LayerManager → Layer1 → Layer2 → ... → LayerN → Compositor → Rendere
 
 ## Technical Architecture
 
-### Layer Base Class
+### Layer Base Class Evolution
 ```javascript
+// Phase 1-4: 2D Layer Base
 class LayerBase {
     constructor(id, config) {
         this.id = id;
@@ -193,9 +196,41 @@ class LayerBase {
     
     // Abstract methods
     initialize() {}
-    render(renderer, camera, deltaTime) {}
+    render2D(renderer, camera, deltaTime) {}
     update(deltaTime) {}
     dispose() {}
+    
+    // Parameter interface
+    setParameter(name, value) {}
+    getParameter(name) {}
+    getExposedParameters() {}
+}
+
+// Phase 5: Add 3D Support
+class LayerBase {
+    constructor(id, config) {
+        this.id = id;
+        this.visible = true;
+        this.opacity = 1.0;
+        this.blendMode = 'normal';
+        this.renderTarget = null;
+        this.position3D = new THREE.Vector3(0, 0, 0);
+        this.rotation3D = new THREE.Euler(0, 0, 0);
+        this.scale3D = new THREE.Vector3(1, 1, 1);
+        this.thickness = 0.1; // For collision detection
+    }
+    
+    // Abstract methods
+    initialize() {}
+    render2D(renderer, camera, deltaTime) {}
+    render3D(renderer, camera, deltaTime) {}
+    update(deltaTime) {}
+    dispose() {}
+    
+    // 3D positioning
+    get3DPosition() { return this.position3D; }
+    set3DPosition(x, y, z) { this.position3D.set(x, y, z); }
+    getBoundingBox() { /* Return 3D bounding box */ }
     
     // Parameter interface
     setParameter(name, value) {}
@@ -221,6 +256,7 @@ updateAnimationParameter(target, value) {
 
 ### State Management Structure
 ```javascript
+// Phase 1-4: 2D Layer State
 state.layers = {
     order: ['grid', 'p5', 'shader', 'video', 'particle', 'image'],
     configs: {
@@ -230,6 +266,23 @@ state.layers = {
         video: { visible: true, opacity: 1.0, blendMode: 'normal', url: '...', ... },
         particle: { visible: true, opacity: 1.0, blendMode: 'normal', ... },
         image: { visible: true, opacity: 1.0, blendMode: 'normal', url: '...', ... }
+    }
+}
+
+// Phase 5: Add 3D Camera State
+state.layers = {
+    order: ['grid', 'p5', 'shader', 'video', 'particle', 'image'],
+    configs: { /* layer configs */ },
+    camera: {
+        mode: '2D', // '2D' or '3D'
+        position3D: { x: 0, y: 0, z: 5 },
+        rotation3D: { x: 0, y: 0, z: 0 },
+        fov: 75
+    },
+    positions3D: {
+        grid: { x: 0, y: 0, z: 0 },
+        p5: { x: 0, y: 0, z: 1 },
+        shader: { x: 0, y: 0, z: 2 }
     }
 }
 ```
@@ -277,23 +330,41 @@ state.layers = {
 
 ### Scene Versioning
 ```javascript
+// Scene format evolution
 {
-    version: "2.0",
-    layers: { /* layer config */ },
-    camera: { /* 3D camera config - Phase 5 */ }
+    version: "2.0", // Add version field
+    layers: { /* existing layer config */ },
+    camera: { /* new 3D camera config */ } // Optional for v1 scenes
 }
 ```
+
+### Migration Strategy
+
+#### Existing Scenes (Backward Compatibility)
+- All existing scenes work in 2D mode
+- 3D mode is opt-in (toggle in UI)
+- Default camera position preserves original view
+- Gradual migration to 3D positioning
+
+#### Layer-Specific 3D Adaptations
+- **Grid Layer**: Mapped to 3D plane or curved surface
+- **P5 Layer**: Canvas rendered to texture, mapped to 3D plane
+- **Shader Layer**: Applied to 3D surfaces (planes, spheres, custom geometry)
+- **Video Layer**: Video textures on 3D planes
+- **Particle Layer**: True 3D particle systems with depth
+- **Image Layer**: Images as textures on 3D planes
 
 ## Risk Mitigation
 
 ### High-Risk Components
 - **Shader Layer**: Start with simple shaders, robust error handling
 - **Particle Layer**: Performance monitoring, fallback modes
-- **3D Camera**: Incremental implementation, extensive testing
+- **3D Camera**: Incremental implementation, extensive testing, depth sorting complexity
 
 ### Medium-Risk Components
 - **P5 Layer**: Start with simple sketches, add complexity gradually
 - **Video Layer**: Start with local files, add streaming later
+- **Layer 3D Adaptations**: Texture mapping, UV coordinates, coordinate system transformations
 
 ### Low-Risk Components
 - **Grid Layer**: Just refactoring existing code
@@ -310,9 +381,10 @@ state.layers = {
 
 ### Overall Success Metrics:
 - All 6 layer types working together
-- 3D camera system functional
-- Performance maintained with multiple layers
+- 3D camera system functional with proper depth sorting
+- Performance maintained with multiple layers (2D and 3D modes)
 - User adoption and feedback positive
+- Smooth transitions between 2D and 3D modes
 
 ## Future Enhancements
 
@@ -323,6 +395,10 @@ state.layers = {
 - Video recording capabilities
 - Real-time collaboration features
 - Advanced 3D effects and animations
+- Camera animations synchronized to BPM
+- Parallax effects between layers
+- Depth-based parameter modulation
+- 3D space as a performance tool
 
 ## Open Questions
 
@@ -330,6 +406,10 @@ state.layers = {
 - How should we handle layer asset management (videos, images, shaders)?
 - What level of 3D complexity should we support initially?
 - How should we handle layer performance profiling and optimization?
+- Should we implement layer collision detection in 3D mode?
+- How should we handle transparent layer blending in 3D space?
+- What camera presets would be most useful for performers?
+- Should camera parameters be mappable to MIDI/audio for reactive camera movement?
 
 ## Implementation Notes
 
@@ -338,6 +418,9 @@ state.layers = {
 - Focus on user value and performance
 - Document as we go for future maintenance
 - Test thoroughly before moving to next phase
+- 3D camera system is additive enhancement, not breaking change
+- Layer system designed for 2D-first, 3D-later approach
+- Performance monitoring critical for 3D mode with multiple layers
 
 ---
 

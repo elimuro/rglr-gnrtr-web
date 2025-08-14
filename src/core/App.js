@@ -23,11 +23,13 @@ import { MIDIEventHandler } from '../modules/MIDIEventHandler.js';
 import { DrawerManager } from '../modules/DrawerManager.js';
 import { PresetManager } from '../modules/PresetManager.js';
 import { SceneManager } from '../modules/SceneManager.js';
+import { LayerManager } from '../modules/LayerManager.js';
+import { LayerPanel } from '../ui/LayerPanel.js';
 
 export class App {
     constructor() {
         this.state = new StateManager();
-        this.scene = new Scene(this.state);
+        this.scene = new Scene(this.state, this);
         
         // Initialize DOM cache for performance optimization
         this.domCache = new DOMCache();
@@ -80,6 +82,12 @@ export class App {
         // Initialize scene manager
         this.sceneManager = new SceneManager(this);
         
+        // Initialize layer manager
+        this.layerManager = new LayerManager(this);
+        
+        // Initialize layer panel
+        this.layerPanel = new LayerPanel(this);
+        
         this.init();
     }
 
@@ -108,6 +116,18 @@ export class App {
             // Set BPM timing manager reference on scene
             this.scene.setBPMTimingManager(this.midiClockManager.getBPMTimingManager());
             
+            // Initialize layer manager with scene context
+            await this.layerManager.initialize({
+                scene: this.scene.scene,
+                renderer: this.scene.renderer,
+                camera: this.scene.camera,
+                state: this.state,
+                shapeGenerator: this.scene.shapeGenerator,
+                materialManager: this.scene.materialManager,
+                objectPool: this.scene.objectPool,
+                shapeAnimationManager: this.scene.shapeAnimationManager
+            });
+            
             // Set up morphing system with shape generator
             this.scene.shapeGenerator.setMorphingSystem(this.morphingSystem);
             this.morphingSystem.setShapeGenerator(this.scene.shapeGenerator);
@@ -115,6 +135,9 @@ export class App {
             // Initialize GUI
             this.guiManager = new GUIManager(this.state, this);
             this.guiManager.init();
+            
+            // Initialize layer panel
+            this.layerPanel.init();
             
             // Initialize DOM cache after GUI is ready
             this.domCache.initializeCache();
