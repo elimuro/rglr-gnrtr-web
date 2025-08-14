@@ -5,6 +5,8 @@
  * Extracted from Scene.js to improve modularity and separation of concerns.
  */
 
+import { ANIMATION_CONSTANTS } from '../config/AnimationConstants.js';
+
 export class ShapeAnimationManager {
     constructor(state, shapeGenerator, materialManager) {
         this.state = state;
@@ -165,10 +167,10 @@ export class ShapeAnimationManager {
         let shouldCycle = true;
         if (shapeCyclingTrigger === 1) { // Movement-triggered
             const movementAmp = this.state.get('movementAmplitude');
-            shouldCycle = movementAmp > 0.1;
+            shouldCycle = movementAmp > ANIMATION_CONSTANTS.centerScaling.intensityRange.min;
         } else if (shapeCyclingTrigger === 2) { // Rotation-triggered
             const rotationAmp = this.state.get('rotationAmplitude');
-            shouldCycle = rotationAmp > 0.1;
+            shouldCycle = rotationAmp > ANIMATION_CONSTANTS.centerScaling.intensityRange.min;
         } else if (shapeCyclingTrigger === 3) { // Manual
             shouldCycle = false; // Manual triggers would be handled elsewhere
         }
@@ -181,7 +183,7 @@ export class ShapeAnimationManager {
         const timeOffset = animationTime / divisionBeats;
         
         // Calculate shape index based on pattern and sync
-        const cellSeed = x * 1000 + y * 100;
+        const cellSeed = x * ANIMATION_CONSTANTS.patterns.cellSeedMultipliers[0] + y * ANIMATION_CONSTANTS.patterns.cellSeedMultipliers[1];
         const gridWidth = this.state.get('gridWidth');
         const gridHeight = this.state.get('gridHeight');
         
@@ -190,7 +192,7 @@ export class ShapeAnimationManager {
         if (shapeCyclingSync === 1) { // Synchronized
             syncOffset = 0;
         } else if (shapeCyclingSync === 2) { // Wave
-            const waveSpeed = 2.0;
+            const waveSpeed = ANIMATION_CONSTANTS.waveSpeed.default;
             syncOffset = Math.sin(timeOffset * waveSpeed + (x + y) * 0.5) * 1000;
         } else if (shapeCyclingSync === 3) { // Cluster
             const clusterSize = 3;
@@ -198,7 +200,7 @@ export class ShapeAnimationManager {
             const clusterY = Math.floor(y / clusterSize);
             syncOffset = (clusterX + clusterY) * 500;
         } else { // Independent (default)
-            syncOffset = cellSeed * 0.1;
+            syncOffset = cellSeed * ANIMATION_CONSTANTS.patterns.staggerDelay;
         }
         
         // Calculate base time with sync
@@ -215,7 +217,7 @@ export class ShapeAnimationManager {
         }
         
         // Apply intensity (affects cycling speed)
-        const intensityFactor = 0.1 + (shapeCyclingIntensity * 0.9); // 0.1 to 1.0 range
+        const intensityFactor = ANIMATION_CONSTANTS.centerScaling.intensityRange.min + (shapeCyclingIntensity * (ANIMATION_CONSTANTS.centerScaling.intensityRange.max - ANIMATION_CONSTANTS.centerScaling.intensityRange.min)); // Dynamic range based on constants
         const finalTime = baseTime * directionMultiplier * intensityFactor;
         
         // Calculate shape index
@@ -227,7 +229,7 @@ export class ShapeAnimationManager {
         } else if (patternType === 1) { // Random
             // Use a deterministic random based on time and position
             const seed = Math.floor(finalTime) + cellSeed;
-            shapeIndex = Math.abs(Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453) % 1;
+            shapeIndex = Math.abs(Math.sin(seed * ANIMATION_CONSTANTS.randomSeeds.multiplier1 + seed * ANIMATION_CONSTANTS.randomSeeds.multiplier2) * ANIMATION_CONSTANTS.randomSeeds.multiplier3) % 1;
             shapeIndex = Math.floor(shapeIndex * availableShapes.length);
         } else if (patternType === 2) { // Wave
             const waveValue = (Math.sin(finalTime) + 1) / 2; // 0 to 1
@@ -238,7 +240,7 @@ export class ShapeAnimationManager {
             shapeIndex = Math.floor(pulseTime) % availableShapes.length;
         } else if (patternType === 4) { // Staggered
             // Staggered pattern - shapes change in a cascading wave
-            const staggerDelay = (x + y * gridWidth) * 0.1;
+            const staggerDelay = (x + y * gridWidth) * ANIMATION_CONSTANTS.patterns.staggerDelay;
             const staggeredTime = finalTime - staggerDelay;
             shapeIndex = Math.floor(Math.max(0, staggeredTime)) % availableShapes.length;
         }
@@ -448,7 +450,7 @@ export class ShapeAnimationManager {
         }
 
         // Clamp animation offset to prevent extreme scaling
-        const clampedAnimationOffset = Math.max(-0.5, Math.min(0.5, animationOffset));
+        const clampedAnimationOffset = Math.max(ANIMATION_CONSTANTS.centerScaling.animationClamp.min, Math.min(ANIMATION_CONSTANTS.centerScaling.animationClamp.max, animationOffset));
         
         // Calculate scaling factor with more dramatic range
         let scalingFactor = 1.0 + (curveFactor * intensity + clampedAnimationOffset);
@@ -459,7 +461,7 @@ export class ShapeAnimationManager {
         }
         
         // Ensure scaling factor stays within reasonable bounds
-        return Math.max(0.1, Math.min(3.0, scalingFactor));
+        return Math.max(ANIMATION_CONSTANTS.scaling.min, Math.min(ANIMATION_CONSTANTS.scaling.max, scalingFactor));
     }
 
     /**

@@ -179,13 +179,13 @@ export const GUI_CONTROL_CONFIGS = {
   // ===== LIGHTING CONTROLS =====
   // Used in GUIManager.js createLightingControls()
   
-  ambientIntensity: {
+  ambientLightIntensity: {
     min: 0, max: 2, step: 0.01, default: 0.97,
     // Connected to: LightingManager.js ambient light configuration
     // Purpose: Controls overall ambient lighting intensity
   },
   
-  directionalIntensity: {
+  directionalLightIntensity: {
     min: 0, max: 2, step: 0.01, default: 0.04,
     // Connected to: LightingManager.js directional light setup
     // Purpose: Controls main directional light intensity
@@ -213,6 +213,12 @@ export const GUI_CONTROL_CONFIGS = {
     min: 0, max: 5, step: 0.01, default: 2.97,
     // Connected to: LightingManager.js accent light configuration
     // Purpose: Controls accent lighting intensity
+  },
+  
+  lightColour: {
+    min: 0, max: 1, step: 0.01, default: '#ffffff',
+    // Connected to: LightingManager.js light color configuration
+    // Purpose: Controls the color of all lights in the scene
   },
   
   // ===== POST-PROCESSING CONTROLS =====
@@ -345,7 +351,7 @@ export const GUI_CATEGORIES = {
   MATERIAL: ['sphereRefraction', 'sphereTransparency', 'sphereRoughness', 'sphereTransmission', 'sphereClearcoat', 'sphereClearcoatRoughness', 'sphereEnvMapIntensity', 'sphereMetalness', 'sphereDistortionStrength', 'sphereScale'],
   ANIMATION: ['animationSpeed', 'movementAmplitude', 'rotationAmplitude', 'scaleAmplitude', 'centerScalingIntensity', 'shapeCyclingIntensity', 'centerScalingRadius', 'centerScalingAnimationSpeed'],
   TIMING: ['globalBPM'],
-  LIGHTING: ['ambientIntensity', 'directionalIntensity', 'pointLight1Intensity', 'pointLight2Intensity', 'rimLightIntensity', 'accentLightIntensity'],
+  LIGHTING: ['ambientLightIntensity', 'directionalLightIntensity', 'pointLight1Intensity', 'pointLight2Intensity', 'rimLightIntensity', 'accentLightIntensity', 'lightColour'],
   POST_PROCESSING: ['bloomStrength', 'bloomRadius', 'bloomThreshold', 'chromaticIntensity', 'vignetteIntensity', 'vignetteRadius', 'vignetteSoftness', 'grainIntensity', 'colorHue', 'colorSaturation', 'colorBrightness', 'colorContrast'],
   AUDIO: ['bassAmplitude', 'midAmplitude', 'trebleAmplitude', 'audioSmoothing'],
   MORPHING: ['morphingIntensity', 'morphingSpeed']

@@ -5,6 +5,8 @@
  * range analysis for different visual parameters.
  */
 
+import { AUDIO_PROCESSING } from '../config/AudioConstants.js';
+
 export class AudioManager {
     constructor(state) {
         this.state = state;
@@ -28,9 +30,9 @@ export class AudioManager {
             frequency: 0
         };
         
-        // Analysis settings
-        this.fftSize = 2048;
-        this.smoothing = 0.8;
+        // Analysis settings - now using centralized constants
+        this.fftSize = AUDIO_PROCESSING.fft.size;
+        this.smoothing = AUDIO_PROCESSING.fft.smoothing;
         this.sensitivity = 1.0;
         
         this.setupStateSubscriptions();
@@ -136,8 +138,16 @@ export class AudioManager {
                     echoCancellation: false,
                     noiseSuppression: false,
                     autoGainControl: false,
-                    channelCount: { min: 1, ideal: 2, max: 8 },
-                    sampleRate: { min: 22050, ideal: 44100, max: 48000 }
+                    channelCount: { 
+                        min: AUDIO_PROCESSING.channels.min, 
+                        ideal: AUDIO_PROCESSING.channels.ideal, 
+                        max: AUDIO_PROCESSING.channels.max 
+                    },
+                    sampleRate: { 
+                        min: AUDIO_PROCESSING.sampleRates.min, 
+                        ideal: AUDIO_PROCESSING.sampleRates.ideal, 
+                        max: AUDIO_PROCESSING.sampleRates.max 
+                    }
                 }
             });
             
@@ -149,8 +159,8 @@ export class AudioManager {
                 channels.push({
                     id: i,
                     label: `Channel ${i + 1}`,
-                    sampleRate: settings.sampleRate || 44100,
-                    channelCount: settings.channelCount || 1
+                    sampleRate: settings.sampleRate || AUDIO_PROCESSING.sampleRates.ideal,
+                    channelCount: settings.channelCount || AUDIO_PROCESSING.channels.min
                 });
             }
             
@@ -170,8 +180,16 @@ export class AudioManager {
                         echoCancellation: false,
                         noiseSuppression: false,
                         autoGainControl: false,
-                        channelCount: { min: 1, ideal: 2, max: 8 },
-                        sampleRate: { min: 22050, ideal: 44100, max: 48000 }
+                        channelCount: { 
+                            min: AUDIO_PROCESSING.channels.min, 
+                            ideal: AUDIO_PROCESSING.channels.ideal, 
+                            max: AUDIO_PROCESSING.channels.max 
+                        },
+                        sampleRate: { 
+                            min: AUDIO_PROCESSING.sampleRates.min, 
+                            ideal: AUDIO_PROCESSING.sampleRates.ideal, 
+                            max: AUDIO_PROCESSING.sampleRates.max 
+                        }
                     }
                 });
                 
@@ -182,9 +200,9 @@ export class AudioManager {
                     const settings = audioTracks[i].getSettings();
                     channels.push({
                         id: i,
-                        label: `Channel ${i + 1}`,
-                        sampleRate: settings.sampleRate || 44100,
-                        channelCount: settings.channelCount || 1
+                                            label: `Channel ${i + 1}`,
+                    sampleRate: settings.sampleRate || AUDIO_PROCESSING.sampleRates.ideal,
+                    channelCount: settings.channelCount || AUDIO_PROCESSING.channels.min
                     });
                 }
                 
@@ -230,8 +248,16 @@ export class AudioManager {
                     echoCancellation: false,
                     noiseSuppression: false,
                     autoGainControl: false,
-                    channelCount: { min: 1, ideal: this.selectedChannels.length || 2, max: 8 },
-                    sampleRate: { min: 22050, ideal: 44100, max: 48000 }
+                    channelCount: { 
+                        min: AUDIO_PROCESSING.channels.min, 
+                        ideal: this.selectedChannels.length || AUDIO_PROCESSING.channels.ideal, 
+                        max: AUDIO_PROCESSING.channels.max 
+                    },
+                    sampleRate: { 
+                        min: AUDIO_PROCESSING.sampleRates.min, 
+                        ideal: AUDIO_PROCESSING.sampleRates.ideal, 
+                        max: AUDIO_PROCESSING.sampleRates.max 
+                    }
                 }
             });
             
@@ -266,8 +292,16 @@ export class AudioManager {
                         echoCancellation: false,
                         noiseSuppression: false,
                         autoGainControl: false,
-                        channelCount: { min: 1, ideal: this.selectedChannels.length || 2, max: 8 },
-                        sampleRate: { min: 22050, ideal: 44100, max: 48000 }
+                        channelCount: { 
+                            min: AUDIO_PROCESSING.channels.min, 
+                            ideal: this.selectedChannels.length || AUDIO_PROCESSING.channels.ideal, 
+                            max: AUDIO_PROCESSING.channels.max 
+                        },
+                        sampleRate: { 
+                            min: AUDIO_PROCESSING.sampleRates.min, 
+                            ideal: AUDIO_PROCESSING.sampleRates.ideal, 
+                            max: AUDIO_PROCESSING.sampleRates.max 
+                        }
                     }
                 });
                 
@@ -324,7 +358,7 @@ export class AudioManager {
         // Calculate RMS (Root Mean Square) for overall volume
         let rms = 0;
         for (let i = 0; i < this.timeData.length; i++) {
-            const sample = (this.timeData[i] - 128) / 128;
+            const sample = (this.timeData[i] - AUDIO_PROCESSING.normalization.midiCenter) / AUDIO_PROCESSING.normalization.midiCenter;
             rms += sample * sample;
         }
         rms = Math.sqrt(rms / this.timeData.length);
@@ -332,15 +366,15 @@ export class AudioManager {
         // Calculate peak
         let peak = 0;
         for (let i = 0; i < this.timeData.length; i++) {
-            const sample = Math.abs((this.timeData[i] - 128) / 128);
+            const sample = Math.abs((this.timeData[i] - AUDIO_PROCESSING.normalization.midiCenter) / AUDIO_PROCESSING.normalization.midiCenter);
             if (sample > peak) peak = sample;
         }
         
         // Update audio data with smoothing
         this.audioData = {
-            overall: this.lerp(this.audioData.overall, rms * this.sensitivity, 0.1),
-            rms: this.lerp(this.audioData.rms, rms * this.sensitivity, 0.1),
-            peak: this.lerp(this.audioData.peak, peak * this.sensitivity, 0.1),
+            overall: this.lerp(this.audioData.overall, rms * this.sensitivity, AUDIO_PROCESSING.smoothing.lerpFactor),
+            rms: this.lerp(this.audioData.rms, rms * this.sensitivity, AUDIO_PROCESSING.smoothing.lerpFactor),
+            peak: this.lerp(this.audioData.peak, peak * this.sensitivity, AUDIO_PROCESSING.smoothing.lerpFactor),
             frequency: this.calculateDominantFrequency()
         };
         
@@ -384,7 +418,7 @@ export class AudioManager {
     }
 
     // Linear interpolation helper
-    lerp(start, end, factor) {
+    lerp(start, end, factor = AUDIO_PROCESSING.smoothing.lerpFactor) {
         return start + (end - start) * factor;
     }
 

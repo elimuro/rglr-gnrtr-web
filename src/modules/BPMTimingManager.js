@@ -4,33 +4,21 @@
  * to provide BPM-based timing for animations and effects.
  */
 
+import { MUSICAL_CONSTANTS } from '../config/AudioConstants.js';
+
 export class BPMTimingManager {
-    constructor(bpm = 120) {
-        this.bpm = bpm;
+    constructor(bpm = MUSICAL_CONSTANTS.bpm.default) {
+        this.bpm = Math.max(MUSICAL_CONSTANTS.bpm.min, Math.min(MUSICAL_CONSTANTS.bpm.max, bpm));
         
-        // Musical division mapping (in beats)
-        this.divisionMap = {
-            // Note divisions
-            '64th': 0.0625,   // 1/16 beat
-            '32nd': 0.125,    // 1/8 beat
-            '16th': 0.25,     // 1/4 beat
-            '8th': 0.5,       // 1/2 beat
-            'quarter': 1,      // 1 beat
-            'half': 2,         // 2 beats
-            'whole': 4,        // 4 beats
-            // Bar divisions (assuming 4/4 time)
-            '1bar': 4,         // 1 bar = 4 beats
-            '2bars': 8,        // 2 bars = 8 beats
-            '4bars': 16,       // 4 bars = 16 beats
-            '8bars': 32        // 8 bars = 32 beats
-        };
+        // Musical division mapping (in beats) - now using centralized constants
+        this.divisionMap = MUSICAL_CONSTANTS.divisions;
         
         // Bar length mapping (in beats, assuming 4/4 time)
         this.barLengthMap = {
-            1: 4,   // 1 bar = 4 beats
-            2: 8,   // 2 bars = 8 beats
-            4: 16,  // 4 bars = 16 beats
-            8: 32   // 8 bars = 32 beats
+            1: MUSICAL_CONSTANTS.timeSignature.beatsPerBar,   // 1 bar = 4 beats
+            2: MUSICAL_CONSTANTS.timeSignature.beatsPerBar * 2,   // 2 bars = 8 beats
+            4: MUSICAL_CONSTANTS.timeSignature.beatsPerBar * 4,  // 4 bars = 16 beats
+            8: MUSICAL_CONSTANTS.timeSignature.beatsPerBar * 8   // 8 bars = 32 beats
         };
     }
 
@@ -38,7 +26,7 @@ export class BPMTimingManager {
      * Set the global BPM
      */
     setBPM(bpm) {
-        this.bpm = Math.max(1, Math.min(300, bpm)); // Clamp between 1-300 BPM
+        this.bpm = Math.max(MUSICAL_CONSTANTS.bpm.min, Math.min(MUSICAL_CONSTANTS.bpm.max, bpm));
     }
 
     /**
@@ -68,7 +56,7 @@ export class BPMTimingManager {
      */
     getTimeForBarLength(barLength) {
         const secondsPerBeat = 60 / this.bpm;
-        const beatsPerBar = 4; // Assuming 4/4 time
+        const beatsPerBar = MUSICAL_CONSTANTS.timeSignature.beatsPerBar; // Using centralized time signature
         const totalBeats = barLength * beatsPerBar;
         return totalBeats * secondsPerBeat;
     }
@@ -81,8 +69,9 @@ export class BPMTimingManager {
     getMusicalPosition(animationTime) {
         const secondsPerBeat = 60 / this.bpm;
         const totalBeats = animationTime / secondsPerBeat;
-        const bar = Math.floor(totalBeats / 4) + 1; // Assuming 4/4 time
-        const beat = (Math.floor(totalBeats) % 4) + 1;
+        const beatsPerBar = MUSICAL_CONSTANTS.timeSignature.beatsPerBar;
+        const bar = Math.floor(totalBeats / beatsPerBar) + 1; // Using centralized time signature
+        const beat = (Math.floor(totalBeats) % beatsPerBar) + 1;
         const division = (totalBeats % 1) * 8; // 8 divisions per beat (32nd notes)
         
         return {
@@ -154,10 +143,10 @@ export class BPMTimingManager {
      * Check if a time point aligns with a musical division
      * @param {number} time - Time in seconds
      * @param {string} division - Musical division to check against
-     * @param {number} tolerance - Tolerance in seconds (default 0.01)
+     * @param {number} tolerance - Tolerance in seconds (default from constants)
      * @returns {boolean} True if aligned
      */
-    isAlignedWithDivision(time, division, tolerance = 0.01) {
+    isAlignedWithDivision(time, division, tolerance = MUSICAL_CONSTANTS.sync.tolerance) {
         const divisionTime = this.getTimeForDivision(division);
         const position = time % divisionTime;
         return position < tolerance || position > (divisionTime - tolerance);

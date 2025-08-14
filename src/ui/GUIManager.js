@@ -56,23 +56,27 @@ export class GUIManager {
             // Check if GUI container exists
             const container = document.getElementById('gui-container');
             if (!container) {
+                console.error('GUI container not found');
                 return;
             }
 
-            this.setupPerformanceControls();
-            this.setupShapeControls();
-            this.setupCompositionControls();
-            this.setupColorControls();
-            this.setupSphereControls();
-            this.setupAnimationControls();
-            this.setupMorphingControls();
-            this.setupPostProcessingControls();
-            this.setupLightingControls();
+            console.log('Setting up GUI controls...');
+            
+            try { this.setupPerformanceControls(); console.log('Performance controls OK'); } catch (e) { console.error('Performance controls failed:', e); }
+            try { this.setupShapeControls(); console.log('Shape controls OK'); } catch (e) { console.error('Shape controls failed:', e); }
+            try { this.setupCompositionControls(); console.log('Composition controls OK'); } catch (e) { console.error('Composition controls failed:', e); }
+            try { this.setupColorControls(); console.log('Color controls OK'); } catch (e) { console.error('Color controls failed:', e); }
+            try { this.setupSphereControls(); console.log('Sphere controls OK'); } catch (e) { console.error('Sphere controls failed:', e); }
+            try { this.setupAnimationControls(); console.log('Animation controls OK'); } catch (e) { console.error('Animation controls failed:', e); }
+            try { this.setupMorphingControls(); console.log('Morphing controls OK'); } catch (e) { console.error('Morphing controls failed:', e); }
+            try { this.setupPostProcessingControls(); console.log('Post-processing controls OK'); } catch (e) { console.error('Post-processing controls failed:', e); }
+            try { this.setupLightingControls(); console.log('Lighting controls OK'); } catch (e) { console.error('Lighting controls failed:', e); }
             
             // Collapse all folders by default
             this.collapseAllFolders();
+            console.log('GUI initialization complete');
         } catch (error) {
-            // Error during GUI initialization
+            console.error('Error during GUI initialization:', error);
         }
     }
     
@@ -638,14 +642,14 @@ export class GUIManager {
             const ambientDirectionalFolder = lightingFolder.addFolder('Ambient & Directional');
             
             // Ambient light control
-            this.addConfiguredController(ambientDirectionalFolder, 'ambientIntensity', 'Ambient Light', () => {
+            this.addConfiguredController(ambientDirectionalFolder, 'ambientLightIntensity', 'Ambient Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
             });
             
             // Directional light control
-            this.addConfiguredController(ambientDirectionalFolder, 'directionalIntensity', 'Directional Light', () => {
+            this.addConfiguredController(ambientDirectionalFolder, 'directionalLightIntensity', 'Directional Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
@@ -685,7 +689,7 @@ export class GUIManager {
                 }
             });
         } catch (error) {
-            // Error setting up lighting controls
+            console.error('Error setting up lighting controls:', error);
         }
     }
 
