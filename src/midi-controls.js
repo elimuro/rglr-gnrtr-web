@@ -6,6 +6,8 @@
  * removal, and ensures proper parameter binding between MIDI inputs and application features.
  */
 
+import { ParameterMapper } from './modules/ParameterMapper.js';
+
 // MIDI Control Component System
 // Replaces hardcoded HTML with dynamic component-based rendering
 
@@ -339,116 +341,13 @@ export class MIDIControl {
     }
     
     normalizeValue(midiValue, target) {
-        // Convert 0-127 MIDI value to parameter range
-        const paramConfig = this.getParameterConfig(target);
-        if (paramConfig) {
-            return paramConfig.min + (midiValue / 127) * (paramConfig.max - paramConfig.min);
-        }
-        return midiValue / 127; // Default to 0-1 range
+        // Convert 0-127 MIDI value to normalized 0-1 range for ParameterMapper
+        return midiValue / 127; // Always normalize to 0-1 range
     }
     
     getParameterConfig(target) {
-        // Define parameter ranges for different targets
-        const configs = {
-            // Shape Controls
-            gridWidth: { min: 1, max: 30 },
-            gridHeight: { min: 1, max: 30 },
-            cellSize: { min: 0.5, max: 2 },
-            randomness: { min: 0, max: 1 },
-            
-            // Composition Controls
-            compositionWidth: { min: 1, max: 30 },
-            compositionHeight: { min: 1, max: 30 },
-            
-            // Color Controls (handled as colors, not numeric)
-            shapeColor: { min: 0, max: 1 },
-            backgroundColor: { min: 0, max: 1 },
-            gridColor: { min: 0, max: 1 },
-            
-            // Sphere Controls - Material Properties
-            sphereRefraction: { min: 0, max: 2 },
-            sphereTransparency: { min: 0, max: 1 },
-            sphereTransmission: { min: 0, max: 1 },
-            sphereRoughness: { min: 0, max: 1 },
-            sphereMetalness: { min: 0, max: 1 },
-            
-            // Sphere Controls - Clearcoat Properties
-            sphereClearcoat: { min: 0, max: 1 },
-            sphereClearcoatRoughness: { min: 0, max: 1 },
-            
-            // Sphere Controls - Environment & Effects
-            sphereEnvMapIntensity: { min: 0, max: 3 },
-            sphereDistortionStrength: { min: 0, max: 1 },
-            sphereScale: { min: 0.5, max: 3 },
-            
-            // Animation Controls - Global
-            globalBPM: { min: 60, max: 300 },
-            
-            // Animation Controls - Movement
-            movementAmplitude: { min: 0.01, max: 0.5 },
-            movementDivision: { min: 0, max: 127 },
-            
-            // Animation Controls - Rotation
-            rotationAmplitude: { min: 0.01, max: 2 },
-            rotationDivision: { min: 0, max: 127 },
-            
-            // Animation Controls - Scale
-            scaleAmplitude: { min: 0.01, max: 1 },
-            scaleDivision: { min: 0, max: 127 },
-            
-            // Animation Controls - Shape Cycling
-            shapeCyclingDivision: { min: 0, max: 127 },
-            shapeCyclingPattern: { min: 0, max: 4 },
-            shapeCyclingDirection: { min: 0, max: 3 },
-            shapeCyclingSync: { min: 0, max: 3 },
-            shapeCyclingIntensity: { min: 0.1, max: 1 },
-            shapeCyclingTrigger: { min: 0, max: 3 },
-            
-            // Animation Controls - Center Scaling
-            centerScalingIntensity: { min: 0, max: 2 },
-            centerScalingCurve: { min: 0, max: 3 },
-            centerScalingRadius: { min: 0.1, max: 5 },
-            centerScalingDirection: { min: 0, max: 1 },
-            centerScalingDivision: { min: 0, max: 127 },
-            centerScalingAnimationSpeed: { min: 0.1, max: 3 },
-            centerScalingAnimationType: { min: 0, max: 3 },
-            
-            // Morphing Controls
-            morphingDivision: { min: 0, max: 127 },
-            morphingEasing: { min: 0, max: 1 },
-            
-            // Post Processing Controls - Bloom
-            bloomStrength: { min: 0, max: 2 },
-            bloomRadius: { min: 0, max: 2 },
-            bloomThreshold: { min: 0, max: 1 },
-            
-            // Post Processing Controls - Chromatic Aberration
-            chromaticIntensity: { min: 0, max: 1 },
-            
-            // Post Processing Controls - Vignette
-            vignetteIntensity: { min: 0, max: 1 },
-            vignetteRadius: { min: 0.1, max: 1 },
-            vignetteSoftness: { min: 0, max: 1 },
-            
-            // Post Processing Controls - Film Grain
-            grainIntensity: { min: 0, max: 0.5 },
-            
-            // Post Processing Controls - Color Grading
-            colorHue: { min: -0.5, max: 0.5 },
-            colorSaturation: { min: 0, max: 3 },
-            colorBrightness: { min: 0, max: 2 },
-            colorContrast: { min: 0, max: 2 },
-            
-            // Lighting Controls
-            lightColour: { min: 0, max: 1 },
-            ambientLightIntensity: { min: 0, max: 2 },
-            directionalLightIntensity: { min: 0, max: 3 },
-            pointLight1Intensity: { min: 0, max: 3 },
-            pointLight2Intensity: { min: 0, max: 3 },
-            rimLightIntensity: { min: 0, max: 3 },
-            accentLightIntensity: { min: 0, max: 3 }
-        };
-        return configs[target];
+        // Use the unified ParameterMapper for parameter configurations
+        return ParameterMapper.getParameterConfig(target);
     }
     
     triggerAction(isNoteOn) {

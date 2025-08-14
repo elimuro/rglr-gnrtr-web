@@ -15,6 +15,8 @@
  * range mapping, allowing for fine-tuned control over audio reactivity.
  */
 
+import { ParameterMapper } from './modules/ParameterMapper.js';
+
 // Audio Mapping Configuration
 const AUDIO_MAPPING_CONFIGS = {
     frequency: {
@@ -427,38 +429,18 @@ export class AudioMappingControl {
                 normalizedValue = audioValue;
         }
         
-        // Apply min/max range from the mapping
-        normalizedValue = this.mapping.minValue + (normalizedValue * (this.mapping.maxValue - this.mapping.minValue));
-        
         // Apply sensitivity
         normalizedValue *= this.mapping.sensitivity || 1;
         
-        // Ensure the value is between 0 and 1 for the updateAnimationParameter method
+        // Ensure the value is between 0 and 1 for the ParameterMapper
         normalizedValue = Math.max(0, Math.min(1, normalizedValue));
         
         return normalizedValue;
     }
     
     getParameterConfig(target) {
-        // This will be expanded to include all parameter configurations
-        const configs = {
-            animationSpeed: { min: 0.01, max: 2, step: 0.01 },
-            movementAmplitude: { min: 0.01, max: 0.5, step: 0.01 },
-            rotationAmplitude: { min: 0.01, max: 2, step: 0.01 },
-            scaleAmplitude: { min: 0.01, max: 1, step: 0.01 },
-            randomness: { min: 0, max: 1, step: 0.01 },
-            cellSize: { min: 0.5, max: 2, step: 0.01 },
-            // Center Scaling Parameters
-            centerScalingIntensity: { min: 0, max: 2, step: 0.01 },
-            centerScalingCurve: { min: 0, max: 3, step: 1 },
-            centerScalingRadius: { min: 0.1, max: 5, step: 0.1 },
-            centerScalingDirection: { min: 0, max: 1, step: 1 },
-            centerScalingAnimationSpeed: { min: 0.1, max: 3, step: 0.1 },
-            centerScalingAnimationType: { min: 0, max: 3, step: 1 },
-            // Add more parameter configurations as needed
-        };
-        
-        return configs[target];
+        // Use the unified ParameterMapper for parameter configurations
+        return ParameterMapper.getParameterConfig(target);
     }
     
     updateSensitivityDisplay() {
