@@ -14,6 +14,7 @@ import { AnimationSystem } from '../modules/AnimationSystem.js';
 import { ShapeAnimationManager } from '../modules/ShapeAnimationManager.js';
 import { GridManager } from '../modules/GridManager.js';
 import { LightingManager } from '../modules/LightingManager.js';
+import { PerformanceManager } from '../modules/PerformanceManager.js';
 import { PostProcessingManager } from '../modules/PostProcessingManager.js';
 
 export class Scene {
@@ -48,9 +49,13 @@ export class Scene {
         this.lightingManager = new LightingManager(state);
         this.lightingManager.setScene(this.scene);
         
+        // Initialize performance manager
+        this.performanceManager = new PerformanceManager(state, this.objectPool);
+        
         this.postProcessingManager = null;
         
-        // Frustum culling optimization
+        // Performance-related properties are now managed by PerformanceManager
+        // Keep references for backward compatibility
         this.frustum = new THREE.Frustum();
         this.projectionMatrix = new THREE.Matrix4();
         this.viewMatrix = new THREE.Matrix4();
@@ -73,6 +78,9 @@ export class Scene {
             
             // Setup lighting after state is initialized
             this.setupLighting();
+            
+            // Setup performance manager references
+            this.setupPerformanceManager();
             
             // Initialize post-processing
             this.postProcessingManager = new PostProcessingManager(this.scene, this.camera, this.renderer);
@@ -115,6 +123,17 @@ export class Scene {
         
         // Update local reference for backward compatibility
         this.lights = this.lightingManager.getAllLights();
+    }
+
+    setupPerformanceManager() {
+        // Set scene references for performance manager
+        this.performanceManager.setSceneReferences(this.shapes, this.camera, this.renderer, this.scene);
+        
+        // Update local references for backward compatibility
+        this.frustum = this.performanceManager.frustum;
+        this.projectionMatrix = this.performanceManager.projectionMatrix;
+        this.viewMatrix = this.performanceManager.viewMatrix;
+        this.visibleShapes = this.performanceManager.getVisibleShapes();
     }
 
     // Legacy method - kept for backward compatibility
@@ -762,6 +781,15 @@ export class Scene {
     }
 
     updateFrustumCulling() {
+        // Delegate to performance manager
+        this.performanceManager.updateFrustumCulling();
+        
+        // Update local reference for backward compatibility
+        this.visibleShapes = this.performanceManager.getVisibleShapes();
+    }
+
+    // Legacy method - kept for backward compatibility
+    updateFrustumCullingLegacy() {
         // Implement proper frustum culling using camera viewport
         this.visibleShapes.clear();
         
@@ -810,15 +838,11 @@ export class Scene {
 
     render() {
         if (this.renderer && this.scene && this.camera) {
-            // Update frustum culling before rendering (if enabled)
-            if (this.state.get('enableFrustumCulling')) {
-                this.updateFrustumCulling();
-            } else {
-                // If frustum culling is disabled, make all shapes visible
-                this.shapes.forEach(shape => {
-                    if (shape) shape.visible = true;
-                });
-            }
+            // Delegate performance optimization to performance manager
+            this.performanceManager.optimizeRendering();
+            
+            // Update local reference for backward compatibility
+            this.visibleShapes = this.performanceManager.getVisibleShapes();
             
             // Use post-processing if enabled
             if (this.postProcessingManager && this.state.get('postProcessingEnabled')) {
@@ -852,16 +876,8 @@ export class Scene {
     }
 
     getPerformanceMetrics() {
-        const poolStats = this.objectPool.getPoolStats();
-        return {
-            ...(this.lastPerformanceMetrics || {
-                totalShapes: 0,
-                visibleShapes: 0,
-                animatedShapes: 0,
-                cullingRatio: 0
-            }),
-            poolStats
-        };
+        // Delegate to performance manager
+        return this.performanceManager.getPerformanceMetrics();
     }
 
     calculateCenterScaling(x, y, gridWidth, gridHeight, cellSize, animationTime = null, globalBPM = null) {
