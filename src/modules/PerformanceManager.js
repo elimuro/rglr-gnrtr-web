@@ -6,6 +6,7 @@
  */
 
 import * as THREE from 'three';
+import { PERFORMANCE_CONSTANTS } from '../config/index.js';
 
 export class PerformanceManager {
     constructor(state, objectPool) {
@@ -33,11 +34,11 @@ export class PerformanceManager {
         this.frameTime = 0;
         this.renderTime = 0;
         
-        // Culling configuration
+        // Culling configuration using performance constants
         this.cullingConfig = {
-            enabled: true,
-            margin: 2, // Margin around viewport for culling
-            updateFrequency: 1, // Update culling every N frames
+            enabled: PERFORMANCE_CONSTANTS.culling.enabled,
+            margin: PERFORMANCE_CONSTANTS.culling.margin, // Margin around viewport for culling
+            updateFrequency: PERFORMANCE_CONSTANTS.culling.updateFrequency, // Update culling every N frames
             frameCounter: 0
         };
         
@@ -195,7 +196,7 @@ export class PerformanceManager {
         }
         
         this.lastPerformanceMetrics.visibleShapes = this.shapes.length;
-        this.lastPerformanceMetrics.cullingRatio = 1.0;
+        this.lastPerformanceMetrics.cullingRatio = PERFORMANCE_CONSTANTS.culling.fullVisibilityRatio;
     }
 
     /**
@@ -205,9 +206,9 @@ export class PerformanceManager {
         this.frameCount++;
         const currentTime = performance.now();
         
-        // Update FPS every second
-        if (currentTime - this.lastFPSUpdate >= 1000) {
-            this.fps = Math.round((this.frameCount * 1000) / (currentTime - this.lastFPSUpdate));
+        // Update FPS using configured interval
+        if (currentTime - this.lastFPSUpdate >= PERFORMANCE_CONSTANTS.updates.fpsUpdateInterval) {
+            this.fps = Math.round((this.frameCount * PERFORMANCE_CONSTANTS.calculations.millisecondsPerSecond) / (currentTime - this.lastFPSUpdate));
             this.frameCount = 0;
             this.lastFPSUpdate = currentTime;
         }
@@ -268,7 +269,7 @@ export class PerformanceManager {
             visibleShapes: this.lastPerformanceMetrics.visibleShapes,
             culledShapes: this.lastPerformanceMetrics.totalShapes - this.lastPerformanceMetrics.visibleShapes,
             cullingRatio: this.lastPerformanceMetrics.cullingRatio,
-            cullingTime: this.lastPerformanceMetrics.cullingTime || 0,
+            cullingTime: this.lastPerformanceMetrics.cullingTime || PERFORMANCE_CONSTANTS.calculations.defaultCullingTime,
             enabled: this.cullingConfig.enabled
         };
     }
@@ -306,7 +307,7 @@ export class PerformanceManager {
      * @param {number} frequency - Update every N frames
      */
     setCullingUpdateFrequency(frequency) {
-        this.cullingConfig.updateFrequency = Math.max(1, frequency);
+        this.cullingConfig.updateFrequency = Math.max(PERFORMANCE_CONSTANTS.culling.minUpdateFrequency, frequency);
     }
 
     /**
@@ -339,7 +340,7 @@ export class PerformanceManager {
             stats.renderer = {
                 geometries: this.renderer.info.memory.geometries,
                 textures: this.renderer.info.memory.textures,
-                programs: this.renderer.info.programs?.length || 0
+                programs: this.renderer.info.programs?.length || PERFORMANCE_CONSTANTS.calculations.defaultProgramCount
             };
             
             stats.render = {
@@ -350,12 +351,12 @@ export class PerformanceManager {
             };
         }
         
-        // Add browser memory info if available
+        // Add browser memory info if available using performance constants
         if (performance.memory) {
             stats.memory = {
-                used: Math.round(performance.memory.usedJSHeapSize / 1048576), // MB
-                total: Math.round(performance.memory.totalJSHeapSize / 1048576), // MB
-                limit: Math.round(performance.memory.jsHeapSizeLimit / 1048576) // MB
+                used: Math.round(performance.memory.usedJSHeapSize / PERFORMANCE_CONSTANTS.memory.conversionFactor), // MB
+                total: Math.round(performance.memory.totalJSHeapSize / PERFORMANCE_CONSTANTS.memory.conversionFactor), // MB
+                limit: Math.round(performance.memory.jsHeapSizeLimit / PERFORMANCE_CONSTANTS.memory.conversionFactor) // MB
             };
         }
         
@@ -376,34 +377,34 @@ export class PerformanceManager {
             severity: 'good' // good, warning, critical
         };
         
-        // FPS analysis
-        if (metrics.fps < 30) {
+        // FPS analysis using performance constants
+        if (metrics.fps < PERFORMANCE_CONSTANTS.fps.critical) {
             analysis.issues.push('Low FPS detected');
             analysis.recommendations.push('Enable frustum culling or reduce grid size');
-            analysis.severity = 'critical';
-        } else if (metrics.fps < 50) {
+            analysis.severity = PERFORMANCE_CONSTANTS.severity.CRITICAL;
+        } else if (metrics.fps < PERFORMANCE_CONSTANTS.fps.warning) {
             analysis.issues.push('Below optimal FPS');
             analysis.recommendations.push('Consider enabling performance optimizations');
-            analysis.severity = 'warning';
+            analysis.severity = PERFORMANCE_CONSTANTS.severity.WARNING;
         }
         
-        // Frame time analysis
-        if (metrics.frameTime > 33) { // 30 FPS threshold
+        // Frame time analysis using performance constants
+        if (metrics.frameTime > PERFORMANCE_CONSTANTS.frameTime.critical) {
             analysis.issues.push('High frame time');
             analysis.recommendations.push('Optimize animation complexity');
-            if (analysis.severity === 'good') analysis.severity = 'warning';
+            if (analysis.severity === 'good') analysis.severity = PERFORMANCE_CONSTANTS.severity.WARNING;
         }
         
-        // Culling efficiency analysis
-        if (metrics.cullingRatio > 0.8 && metrics.cullingEnabled) {
+        // Culling efficiency analysis using performance constants
+        if (metrics.cullingRatio > PERFORMANCE_CONSTANTS.culling.efficiencyThreshold && metrics.cullingEnabled) {
             analysis.recommendations.push('Frustum culling may not be beneficial with current viewport');
         }
         
-        // Memory analysis
-        if (memoryStats.memory && memoryStats.memory.used > 100) { // 100MB threshold
+        // Memory analysis using performance constants
+        if (memoryStats.memory && memoryStats.memory.used > PERFORMANCE_CONSTANTS.memory.warningThreshold) {
             analysis.issues.push('High memory usage');
             analysis.recommendations.push('Check for memory leaks or reduce object complexity');
-            if (analysis.severity === 'good') analysis.severity = 'warning';
+            if (analysis.severity === 'good') analysis.severity = PERFORMANCE_CONSTANTS.severity.WARNING;
         }
         
         return analysis;

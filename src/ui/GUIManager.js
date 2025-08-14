@@ -7,6 +7,7 @@
  */
 
 import { GUI } from 'dat.gui';
+import { GUI_CONTROL_CONFIGS, ConfigHelpers } from '../config/index.js';
 
 export class GUIManager {
     constructor(state, app) {
@@ -82,8 +83,8 @@ export class GUIManager {
     setupShapeControls() {
         const shapeFolder = this.gui.addFolder('Shapes');
         
-        // Grid size controls
-        this.addController(shapeFolder, 'gridWidth', 1, 30, 1, 'Display Width', () => {
+        // Grid size controls using configuration constants
+        this.addConfiguredController(shapeFolder, 'gridWidth', 'Display Width', () => {
             this.state.set('gridWidth', this.state.get('gridWidth'));
             this.app.scene.createGrid();
             if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation')) {
@@ -91,7 +92,7 @@ export class GUIManager {
             }
         });
         
-        this.addController(shapeFolder, 'gridHeight', 1, 30, 1, 'Display Height', () => {
+        this.addConfiguredController(shapeFolder, 'gridHeight', 'Display Height', () => {
             this.state.set('gridHeight', this.state.get('gridHeight'));
             this.app.scene.createGrid();
             if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation')) {
@@ -99,12 +100,12 @@ export class GUIManager {
             }
         });
         
-        this.addController(shapeFolder, 'cellSize', 0.5, 2, 0.01, 'Cell Size', () => {
+        this.addConfiguredController(shapeFolder, 'cellSize', 'Cell Size', () => {
             this.state.set('cellSize', this.state.get('cellSize'));
             this.app.scene.updateCellSize();
         });
         
-        this.addController(shapeFolder, 'randomness', 0, 1, 0.01, 'Randomness', () => {
+        this.addConfiguredController(shapeFolder, 'randomness', 'Randomness', () => {
             this.state.set('randomness', this.state.get('randomness'));
             this.app.scene.createGrid();
             if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation')) {
@@ -141,7 +142,7 @@ export class GUIManager {
     setupCompositionControls() {
         const compositionFolder = this.gui.addFolder('Composition');
         
-        this.addController(compositionFolder, 'compositionWidth', 1, 30, 1, 'Composition Width', () => {
+        this.addConfiguredController(compositionFolder, 'compositionWidth', 'Composition Width', () => {
             this.state.set('compositionWidth', this.state.get('compositionWidth'));
             this.app.scene.createGrid();
             if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation')) {
@@ -149,7 +150,7 @@ export class GUIManager {
             }
         });
         
-        this.addController(compositionFolder, 'compositionHeight', 1, 30, 1, 'Composition Height', () => {
+        this.addConfiguredController(compositionFolder, 'compositionHeight', 'Composition Height', () => {
             this.state.set('compositionHeight', this.state.get('compositionHeight'));
             this.app.scene.createGrid();
             if (this.state.get('enableShapeCycling') || this.state.get('enableSizeAnimation')) {
@@ -183,27 +184,27 @@ export class GUIManager {
         // Material Properties Folder
         const materialFolder = sphereFolder.addFolder('Material Properties');
         
-        this.addController(materialFolder, 'sphereRefraction', 0.0, 2.0, 0.01, 'Refraction Index', () => {
+        this.addConfiguredController(materialFolder, 'sphereRefraction', 'Refraction Index', () => {
             this.state.set('sphereRefraction', this.state.get('sphereRefraction'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(materialFolder, 'sphereTransparency', 0.0, 1.0, 0.01, 'Transparency', () => {
+        this.addConfiguredController(materialFolder, 'sphereTransparency', 'Transparency', () => {
             this.state.set('sphereTransparency', this.state.get('sphereTransparency'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(materialFolder, 'sphereTransmission', 0.0, 1.0, 0.01, 'Transmission', () => {
+        this.addConfiguredController(materialFolder, 'sphereTransmission', 'Transmission', () => {
             this.state.set('sphereTransmission', this.state.get('sphereTransmission'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(materialFolder, 'sphereRoughness', 0.0, 1.0, 0.01, 'Roughness', () => {
+        this.addConfiguredController(materialFolder, 'sphereRoughness', 'Roughness', () => {
             this.state.set('sphereRoughness', this.state.get('sphereRoughness'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(materialFolder, 'sphereMetalness', 0.0, 1.0, 0.01, 'Metalness', () => {
+        this.addConfiguredController(materialFolder, 'sphereMetalness', 'Metalness', () => {
             this.state.set('sphereMetalness', this.state.get('sphereMetalness'));
             this.app.scene.updateSphereMaterials();
         });
@@ -211,12 +212,12 @@ export class GUIManager {
         // Clearcoat Properties Folder
         const clearcoatFolder = sphereFolder.addFolder('Clearcoat Properties');
         
-        this.addController(clearcoatFolder, 'sphereClearcoat', 0, 1, 0.01, 'Intensity', () => {
+        this.addConfiguredController(clearcoatFolder, 'sphereClearcoat', 'Intensity', () => {
             this.state.set('sphereClearcoat', this.state.get('sphereClearcoat'));
             this.app.scene.updateSphereMaterials();
         });
         
-        this.addController(clearcoatFolder, 'sphereClearcoatRoughness', 0, 1, 0.01, 'Smoothness', () => {
+        this.addConfiguredController(clearcoatFolder, 'sphereClearcoatRoughness', 'Smoothness', () => {
             this.state.set('sphereClearcoatRoughness', this.state.get('sphereClearcoatRoughness'));
             this.app.scene.updateSphereMaterials();
         });
@@ -224,7 +225,7 @@ export class GUIManager {
         // Environment & Effects Folder
         const effectsFolder = sphereFolder.addFolder('Environment & Effects');
         
-        this.addController(effectsFolder, 'sphereEnvMapIntensity', 0, 3, 0.01, 'Environment Map Intensity', () => {
+        this.addConfiguredController(effectsFolder, 'sphereEnvMapIntensity', 'Environment Map Intensity', () => {
             this.state.set('sphereEnvMapIntensity', this.state.get('sphereEnvMapIntensity'));
             this.app.scene.updateSphereMaterials();
         });
@@ -236,7 +237,7 @@ export class GUIManager {
         });
         
         // Distortion strength control
-        this.addController(effectsFolder, 'sphereDistortionStrength', 0.0, 1.0, 0.01, 'Distortion Strength', () => {
+        this.addConfiguredController(effectsFolder, 'sphereDistortionStrength', 'Distortion Strength', () => {
             this.state.set('sphereDistortionStrength', this.state.get('sphereDistortionStrength'));
             this.app.scene.updateSphereMaterials();
         });
@@ -244,7 +245,7 @@ export class GUIManager {
         // Size & Performance Folder
         const sizeFolder = sphereFolder.addFolder('Size');
         
-        this.addController(sizeFolder, 'sphereScale', 0.5, 3.0, 0.1, 'Scale', () => {
+        this.addConfiguredController(sizeFolder, 'sphereScale', 'Scale', () => {
             this.state.set('sphereScale', this.state.get('sphereScale'));
             this.app.scene.updateSphereScales();
         });
@@ -265,7 +266,7 @@ export class GUIManager {
         }
         
         // Main controls
-        this.addController(animationFolder, 'globalBPM', 60, 300, 1, 'Global BPM');
+        this.addConfiguredController(animationFolder, 'globalBPM', 'Global BPM');
         
         // Effect toggles
         this.addController(animationFolder, 'enableShapeCycling', false, true, false, 'Shape Cycling', () => {
@@ -296,7 +297,7 @@ export class GUIManager {
         // Movement Animation Folder
         const movementFolder = animationFolder.addFolder('Movement Animations');
         
-        this.addController(movementFolder, 'movementAmplitude', 0.01, 0.5, 0.01, 'Amplitude');
+        this.addConfiguredController(movementFolder, 'movementAmplitude', 'Amplitude');
         
         // Movement division selector
         this.createDivisionDropdown(movementFolder, 'movementDivision', '8th', 'Division', '♪');
@@ -304,7 +305,7 @@ export class GUIManager {
         // Rotation Animation Folder
         const rotationFolder = animationFolder.addFolder('Rotation Animations');
         
-        this.addController(rotationFolder, 'rotationAmplitude', 0.01, 2, 0.01, 'Amplitude');
+        this.addConfiguredController(rotationFolder, 'rotationAmplitude', 'Amplitude');
         
         // Rotation division selector
         this.createDivisionDropdown(rotationFolder, 'rotationDivision', '16th', 'Division', '♩');
@@ -312,7 +313,7 @@ export class GUIManager {
         // Scale Animation Folder
         const scaleFolder = animationFolder.addFolder('Scale Animations');
         
-        this.addController(scaleFolder, 'scaleAmplitude', 0.01, 1, 0.01, 'Amplitude');
+        this.addConfiguredController(scaleFolder, 'scaleAmplitude', 'Amplitude');
         
         // Scale division selector
         this.createDivisionDropdown(scaleFolder, 'scaleDivision', 'half', 'Division', '♬');
@@ -350,7 +351,7 @@ export class GUIManager {
                 this.state.set('shapeCyclingSync', index);
             });
         
-        this.addController(shapeCyclingFolder, 'shapeCyclingIntensity', 0.1, 1, 0.1, 'Intensity');
+        this.addConfiguredController(shapeCyclingFolder, 'shapeCyclingIntensity', 'Intensity');
         
         const triggerNames = ['Time-based', 'Movement-triggered', 'Rotation-triggered', 'Manual'];
         const currentTrigger = triggerNames[this.state.get('shapeCyclingTrigger')] || triggerNames[0];
@@ -364,7 +365,7 @@ export class GUIManager {
         // Center Scaling Folder
         const centerScalingFolder = animationFolder.addFolder('Center Scaling');
         
-        this.addController(centerScalingFolder, 'centerScalingIntensity', 0, 2, 0.01, 'Intensity', () => {
+        this.addConfiguredController(centerScalingFolder, 'centerScalingIntensity', 'Intensity', () => {
             this.state.set('centerScalingIntensity', this.state.get('centerScalingIntensity'));
             this.app.scene.updateCenterScaling();
         });
@@ -379,7 +380,7 @@ export class GUIManager {
                 this.app.scene.updateCenterScaling();
             });
         
-        this.addController(centerScalingFolder, 'centerScalingRadius', 0.1, 5, 0.1, 'Radius', () => {
+        this.addConfiguredController(centerScalingFolder, 'centerScalingRadius', 'Radius', () => {
             this.state.set('centerScalingRadius', this.state.get('centerScalingRadius'));
             this.app.scene.updateCenterScaling();
         });
@@ -398,7 +399,7 @@ export class GUIManager {
         this.createDivisionDropdown(centerScalingFolder, 'centerScalingDivision', 'quarter', 'Division', '♬');
         
         // Center scaling animation speed
-        this.addController(centerScalingFolder, 'centerScalingAnimationSpeed', 0.1, 3, 0.1, 'Animation Speed', () => {
+        this.addConfiguredController(centerScalingFolder, 'centerScalingAnimationSpeed', 'Animation Speed', () => {
             this.state.set('centerScalingAnimationSpeed', this.state.get('centerScalingAnimationSpeed'));
             this.app.scene.updateCenterScaling();
         });
@@ -550,13 +551,13 @@ export class GUIManager {
             this.state.set('bloomEnabled', this.state.get('bloomEnabled'));
             this.app.scene.updatePostProcessing();
         });
-        this.addController(bloomFolder, 'bloomStrength', 0, 2, 0.01, 'Strength', () => {
+        this.addConfiguredController(bloomFolder, 'bloomStrength', 'Strength', () => {
             this.app.scene.updatePostProcessing();
         });
-        this.addController(bloomFolder, 'bloomRadius', 0, 2, 0.01, 'Radius', () => {
+        this.addConfiguredController(bloomFolder, 'bloomRadius', 'Radius', () => {
             this.app.scene.updatePostProcessing();
         });
-        this.addController(bloomFolder, 'bloomThreshold', 0, 1, 0.01, 'Threshold', () => {
+        this.addConfiguredController(bloomFolder, 'bloomThreshold', 'Threshold', () => {
             this.app.scene.updatePostProcessing();
         });
         
@@ -566,7 +567,7 @@ export class GUIManager {
             this.state.set('chromaticAberrationEnabled', this.state.get('chromaticAberrationEnabled'));
             this.app.scene.updatePostProcessing();
         });
-        this.addController(chromaticFolder, 'chromaticIntensity', 0, 1, 0.01, 'Intensity', () => {
+        this.addConfiguredController(chromaticFolder, 'chromaticIntensity', 'Intensity', () => {
             this.app.scene.updatePostProcessing();
         });
         
@@ -576,13 +577,13 @@ export class GUIManager {
             this.state.set('vignetteEnabled', this.state.get('vignetteEnabled'));
             this.app.scene.updatePostProcessing();
         });
-        this.addController(vignetteFolder, 'vignetteIntensity', 0, 1, 0.01, 'Intensity', () => {
+        this.addConfiguredController(vignetteFolder, 'vignetteIntensity', 'Intensity', () => {
             this.app.scene.updatePostProcessing();
         });
-        this.addController(vignetteFolder, 'vignetteRadius', 0.1, 1, 0.01, 'Radius', () => {
+        this.addConfiguredController(vignetteFolder, 'vignetteRadius', 'Radius', () => {
             this.app.scene.updatePostProcessing();
         });
-        this.addController(vignetteFolder, 'vignetteSoftness', 0, 1, 0.01, 'Softness', () => {
+        this.addConfiguredController(vignetteFolder, 'vignetteSoftness', 'Softness', () => {
             this.app.scene.updatePostProcessing();
         });
         
@@ -592,7 +593,7 @@ export class GUIManager {
             this.state.set('grainEnabled', this.state.get('grainEnabled'));
             this.app.scene.updatePostProcessing();
         });
-        this.addController(grainFolder, 'grainIntensity', 0, 0.5, 0.01, 'Intensity', () => {
+        this.addConfiguredController(grainFolder, 'grainIntensity', 'Intensity', () => {
             this.app.scene.updatePostProcessing();
         });
         
@@ -602,16 +603,16 @@ export class GUIManager {
             this.state.set('colorGradingEnabled', this.state.get('colorGradingEnabled'));
             this.app.scene.updatePostProcessing();
         });
-        this.addController(colorGradingFolder, 'colorHue', -0.5, 0.5, 0.01, 'Hue Shift', () => {
+        this.addConfiguredController(colorGradingFolder, 'colorHue', 'Hue Shift', () => {
             this.app.scene.updatePostProcessing();
         });
-        this.addController(colorGradingFolder, 'colorSaturation', 0, 3, 0.01, 'Saturation', () => {
+        this.addConfiguredController(colorGradingFolder, 'colorSaturation', 'Saturation', () => {
             this.app.scene.updatePostProcessing();
         });
-        this.addController(colorGradingFolder, 'colorBrightness', 0, 2, 0.01, 'Brightness', () => {
+        this.addConfiguredController(colorGradingFolder, 'colorBrightness', 'Brightness', () => {
             this.app.scene.updatePostProcessing();
         });
-        this.addController(colorGradingFolder, 'colorContrast', 0, 2, 0.01, 'Contrast', () => {
+        this.addConfiguredController(colorGradingFolder, 'colorContrast', 'Contrast', () => {
             this.app.scene.updatePostProcessing();
         });
         
@@ -637,14 +638,14 @@ export class GUIManager {
             const ambientDirectionalFolder = lightingFolder.addFolder('Ambient & Directional');
             
             // Ambient light control
-            this.addController(ambientDirectionalFolder, 'ambientLightIntensity', 0, 2, 0.01, 'Ambient Light', () => {
+            this.addConfiguredController(ambientDirectionalFolder, 'ambientIntensity', 'Ambient Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
             });
             
             // Directional light control
-            this.addController(ambientDirectionalFolder, 'directionalLightIntensity', 0, 3, 0.01, 'Directional Light', () => {
+            this.addConfiguredController(ambientDirectionalFolder, 'directionalIntensity', 'Directional Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
@@ -654,14 +655,14 @@ export class GUIManager {
             const pointLightsFolder = lightingFolder.addFolder('Point Lights');
             
             // Point light 1 control
-            this.addController(pointLightsFolder, 'pointLight1Intensity', 0, 3, 0.01, 'Point Light 1', () => {
+            this.addConfiguredController(pointLightsFolder, 'pointLight1Intensity', 'Point Light 1', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
             });
             
             // Point light 2 control
-            this.addController(pointLightsFolder, 'pointLight2Intensity', 0, 3, 0.01, 'Point Light 2', () => {
+            this.addConfiguredController(pointLightsFolder, 'pointLight2Intensity', 'Point Light 2', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
@@ -671,14 +672,14 @@ export class GUIManager {
             const effectsLightsFolder = lightingFolder.addFolder('Special Effects');
             
             // Rim light control
-            this.addController(effectsLightsFolder, 'rimLightIntensity', 0, 3, 0.01, 'Rim Light', () => {
+            this.addConfiguredController(effectsLightsFolder, 'rimLightIntensity', 'Rim Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
             });
             
             // Accent light control
-            this.addController(effectsLightsFolder, 'accentLightIntensity', 0, 3, 0.01, 'Accent Light', () => {
+            this.addConfiguredController(effectsLightsFolder, 'accentLightIntensity', 'Accent Light', () => {
                 if (this.app && this.app.scene) {
                     this.app.scene.updateLighting();
                 }
@@ -704,6 +705,20 @@ export class GUIManager {
         
         this.controllers.set(key, controller);
         return controller;
+    }
+
+    /**
+     * Add controller using configuration constants
+     * Automatically looks up min, max, step from GUI_CONTROL_CONFIGS
+     */
+    addConfiguredController(folder, key, name, onChange = null) {
+        const config = GUI_CONTROL_CONFIGS[key];
+        if (!config) {
+            console.warn(`No GUI config found for parameter: ${key}, using default values`);
+            return this.addController(folder, key, 0, 1, 0.01, name, onChange);
+        }
+        
+        return this.addController(folder, key, config.min, config.max, config.step, name, onChange);
     }
 
     addColorController(folder, key, name, onChange = null) {

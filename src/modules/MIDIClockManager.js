@@ -5,6 +5,7 @@
  */
 
 import { BPMTimingManager } from './BPMTimingManager.js';
+import { MIDI_CONSTANTS } from '../config/index.js';
 
 export class MIDIClockManager {
     constructor(app) {
@@ -13,23 +14,23 @@ export class MIDIClockManager {
         this.clockPulses = 0;
         this.lastClockTime = 0;
         this.clockInterval = 0; // Time between clock pulses
-        this.bpm = 120; // Default BPM
+        this.bpm = MIDI_CONSTANTS.defaults.tempo; // Default BPM from MIDI constants
         this.clockSource = 'internal'; // 'internal' or 'external'
         
         // Initialize BPM timing manager
         this.bpmTimingManager = new BPMTimingManager(this.bpm);
         
-        // BPM calculation improvements
-        this.bpmUpdateInterval = 24; // Update BPM every quarter note (24 pulses)
+        // BPM calculation improvements using MIDI constants
+        this.bpmUpdateInterval = MIDI_CONSTANTS.clock.pulsesPerQuarterNote; // Update BPM every quarter note
         this.bpmSamples = []; // Store recent BPM samples for averaging
         this.maxBpmSamples = 4; // Number of samples to average
         
         this.syncMode = 'auto'; // 'auto', 'manual', 'off'
         
-        // Clock subdivisions
-        this.quarterNotePulses = 24; // Standard MIDI clock
-        this.eighthNotePulses = 12;
-        this.sixteenthNotePulses = 6;
+        // Clock subdivisions using MIDI constants
+        this.quarterNotePulses = MIDI_CONSTANTS.clock.pulsesPerQuarterNote; // Standard MIDI clock
+        this.eighthNotePulses = MIDI_CONSTANTS.clock.pulsesPerEighthNote;
+        this.sixteenthNotePulses = MIDI_CONSTANTS.clock.pulsesPerSixteenthNote;
         
         // Transport state
         this.isPlaying = false;
@@ -54,12 +55,12 @@ export class MIDIClockManager {
             this.clockInterval = now - this.lastClockTime;
             
             // Validate clock interval to prevent division by zero or very small values
-            if (this.clockInterval > 0 && this.clockInterval < 10000) { // Max 10 seconds between pulses
-                // Calculate BPM from this interval
-                const currentBpm = 60000 / (this.clockInterval * 24);
+            if (this.clockInterval > 0 && this.clockInterval < MIDI_CONSTANTS.clock.clockTimeout * 10) { // Max timeout between pulses
+                // Calculate BPM from this interval using MIDI constants
+                const currentBpm = 60000 / (this.clockInterval * MIDI_CONSTANTS.clock.pulsesPerQuarterNote);
                 
-                // Validate BPM is within reasonable bounds (40-300 BPM)
-                if (currentBpm >= 40 && currentBpm <= 300 && isFinite(currentBpm)) {
+                // Validate BPM is within reasonable bounds using MIDI constants
+                if (currentBpm >= MIDI_CONSTANTS.clock.minTempo && currentBpm <= MIDI_CONSTANTS.clock.maxTempo && isFinite(currentBpm)) {
                     // Add to samples for averaging
                     this.bpmSamples.push(currentBpm);
                     if (this.bpmSamples.length > this.maxBpmSamples) {
@@ -142,9 +143,9 @@ export class MIDIClockManager {
 
     updateSyncPoints() {
         // Calculate various musical subdivisions
-        this.syncPoints.quarter = Math.floor(this.clockPulses / 24);
-        this.syncPoints.eighth = Math.floor(this.clockPulses / 12);
-        this.syncPoints.sixteenth = Math.floor(this.clockPulses / 6);
+        this.syncPoints.quarter = Math.floor(this.clockPulses / MIDI_CONSTANTS.clock.pulsesPerQuarterNote);
+        this.syncPoints.eighth = Math.floor(this.clockPulses / MIDI_CONSTANTS.clock.pulsesPerEighthNote);
+        this.syncPoints.sixteenth = Math.floor(this.clockPulses / MIDI_CONSTANTS.clock.pulsesPerSixteenthNote);
         this.syncPoints.bar = Math.floor(this.clockPulses / 96); // Assuming 4/4 time
     }
 
@@ -152,12 +153,12 @@ export class MIDIClockManager {
         const state = this.app.state;
         
         // Sync shape cycling to quarter notes
-        if (this.clockPulses % 24 === 0 && state.get('enableShapeCycling')) {
+        if (this.clockPulses % MIDI_CONSTANTS.clock.pulsesPerQuarterNote === 0 && state.get('enableShapeCycling')) {
             // Trigger shape cycle animation
         }
         
         // Sync size animation to eighth notes
-        if (this.clockPulses % 12 === 0 && state.get('enableSizeAnimation')) {
+        if (this.clockPulses % MIDI_CONSTANTS.clock.pulsesPerEighthNote === 0 && state.get('enableSizeAnimation')) {
             // Trigger size animation
         }
         
@@ -169,7 +170,7 @@ export class MIDIClockManager {
 
     getClockTime() {
         if (this.clockSource === 'external' && this.isClockActive) {
-            return this.clockPulses / 24; // Return time in quarter notes
+            return this.clockPulses / MIDI_CONSTANTS.clock.pulsesPerQuarterNote; // Return time in quarter notes
         } else {
             // Return internal time converted to quarter notes based on BPM
             const internalTime = this.app.animationLoop.getAnimationTime();
@@ -180,7 +181,7 @@ export class MIDIClockManager {
 
     getClockTimeInSeconds() {
         if (this.clockSource === 'external' && this.isClockActive) {
-            const quarterNotes = this.clockPulses / 24;
+            const quarterNotes = this.clockPulses / MIDI_CONSTANTS.clock.pulsesPerQuarterNote;
             const secondsPerQuarter = 60 / this.bpm;
             return quarterNotes * secondsPerQuarter;
         } else {
@@ -252,7 +253,7 @@ export class MIDIClockManager {
                     </div>
                     
                     <div id="bpm-display" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
-                        <span class="text-xs font-medium text-white">BPM: <span id="bpm-value">120</span></span>
+                        <span class="text-xs font-medium text-white">BPM: <span id="bpm-value">${MIDI_CONSTANTS.defaults.tempo}</span></span>
                     </div>
                     
                     <button id="bpm-down" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
@@ -378,7 +379,7 @@ export class MIDIClockManager {
     }
 
     increaseBPM() {
-        const newBPM = Math.min(300, this.bpm + 1);
+        const newBPM = Math.min(MIDI_CONSTANTS.clock.maxTempo, this.bpm + 1);
         this.setBPM(newBPM);
         console.log(`BPM increased to: ${newBPM}`);
     }
@@ -391,7 +392,7 @@ export class MIDIClockManager {
 
     setBPM(bpm) {
         // Validate BPM value before setting
-        if (bpm >= 40 && bpm <= 300 && isFinite(bpm)) {
+        if (bpm >= MIDI_CONSTANTS.clock.minTempo && bpm <= MIDI_CONSTANTS.clock.maxTempo && isFinite(bpm)) {
             this.bpm = bpm;
             this.bpmTimingManager.setBPM(bpm);
             
@@ -402,7 +403,7 @@ export class MIDIClockManager {
             
             this.updateClockDisplay();
         } else {
-            console.warn(`Attempted to set invalid BPM: ${bpm}. BPM must be between 40-300 and finite.`);
+            console.warn(`Attempted to set invalid BPM: ${bpm}. BPM must be between ${MIDI_CONSTANTS.clock.minTempo}-${MIDI_CONSTANTS.clock.maxTempo} and finite.`);
         }
     }
 
@@ -423,7 +424,7 @@ export class MIDIClockManager {
      * @param {number} newBPM - New BPM from MIDI device
      */
     onMIDITempoChange(newBPM) {
-        if (newBPM > 0 && newBPM <= 300) {
+        if (newBPM > 0 && newBPM <= MIDI_CONSTANTS.clock.maxTempo) {
             this.setBPM(newBPM);
             console.log(`MIDI Tempo Change: ${Math.round(newBPM)} BPM`);
         }
@@ -453,7 +454,7 @@ export class MIDIClockManager {
             for (let i = 1; i < this.tapTimes.length; i++) {
                 const interval = this.tapTimes[i] - this.tapTimes[i - 1];
                 // Validate interval is reasonable (between 100ms and 10 seconds)
-                if (interval >= 100 && interval <= 10000) {
+                if (interval >= 100 && interval <= MIDI_CONSTANTS.clock.clockTimeout * 10) {
                     intervals.push(interval);
                 }
             }
@@ -464,10 +465,10 @@ export class MIDIClockManager {
                 const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
                 
                 // Validate average interval before calculating BPM
-                if (avgInterval > 0 && avgInterval < 10000 && isFinite(avgInterval)) {
+                if (avgInterval > 0 && avgInterval < MIDI_CONSTANTS.clock.clockTimeout * 10 && isFinite(avgInterval)) {
                     const newBPM = 60000 / avgInterval; // Convert to BPM
                     
-                    if (newBPM >= 40 && newBPM <= 300 && isFinite(newBPM)) { // Reasonable BPM range
+                    if (newBPM >= MIDI_CONSTANTS.clock.minTempo && newBPM <= MIDI_CONSTANTS.clock.maxTempo && isFinite(newBPM)) { // Reasonable BPM range
                         this.setBPM(newBPM);
                         console.log(`MIDI Tap Tempo: ${Math.round(newBPM)} BPM`);
                     } else {

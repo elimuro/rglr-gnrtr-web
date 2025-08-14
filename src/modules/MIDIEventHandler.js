@@ -6,6 +6,7 @@
  */
 
 import { ParameterMapper } from './ParameterMapper.js';
+import { MIDI_CONSTANTS } from '../config/index.js';
 
 export class MIDIEventHandler {
     constructor(app) {
@@ -187,8 +188,8 @@ export class MIDIEventHandler {
             return config.normalizeValue(midiValue);
         }
         
-        // Default normalization: convert 0-127 to 0-1
-        return midiValue / 127;
+        // Default normalization: convert 0-127 to 0-1 using MIDI constants
+        return midiValue / MIDI_CONSTANTS.ranges.controllers.max;
     }
 
     /**
@@ -202,7 +203,7 @@ export class MIDIEventHandler {
             this.app.triggerNoteAction(target);
         } else {
             // Fallback for basic actions if App method is not available
-            const normalizedVelocity = velocity / 127;
+            const normalizedVelocity = velocity / MIDI_CONSTANTS.ranges.velocity.max;
             
             switch (target) {
                 case 'tapTempo':
@@ -312,8 +313,8 @@ export class MIDIEventHandler {
         
         Object.entries(ccMappings).forEach(([controlId, mapping]) => {
             if (mapping && mapping.target) {
-                // Simulate a CC value of 64 (middle value)
-                this.handleCCMapping(controlId, mapping, 64);
+                // Simulate a CC value of default velocity (middle value)
+                this.handleCCMapping(controlId, mapping, MIDI_CONSTANTS.defaults.velocity);
             }
         });
     }
