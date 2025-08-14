@@ -23,6 +23,7 @@ import { ParameterMapper } from '../modules/ParameterMapper.js';
 import { MIDIEventHandler } from '../modules/MIDIEventHandler.js';
 import { DrawerManager } from '../modules/DrawerManager.js';
 import { PresetManager } from '../modules/PresetManager.js';
+import { SceneManager } from '../modules/SceneManager.js';
 
 export class App {
     constructor() {
@@ -78,6 +79,9 @@ export class App {
         // Initialize preset manager
         this.presetManager = new PresetManager(this);
         
+        // Initialize scene manager
+        this.sceneManager = new SceneManager(this);
+        
         this.init();
     }
 
@@ -123,13 +127,13 @@ export class App {
                     this.initializeControlManager();
                     this.initializeAudioMappingManager();
                     this.presetManager.loadAvailablePresets();
-                    this.loadAvailableScenePresets();
+                    this.sceneManager.loadAvailableScenePresets();
                 });
             } else {
                 this.initializeControlManager();
                 this.initializeAudioMappingManager();
                 this.presetManager.loadAvailablePresets();
-                this.loadAvailableScenePresets();
+                this.sceneManager.loadAvailableScenePresets();
             }
             
             // Start animation loop
@@ -153,6 +157,9 @@ export class App {
         // Set up preset management
         this.presetManager.setupPresetManagement();
         
+        // Set up scene management
+        this.sceneManager.setupSceneManagement();
+        
         // Set up MIDI UI event listeners using cached DOM elements
         this.domCache.getElement('midi-connect').addEventListener('click', () => {
             this.midiManager.connect();
@@ -174,10 +181,7 @@ export class App {
 
 
         
-        // Scene preset selector (still handled by App.js for now)
-        this.domCache.getElement('scene-preset-select').addEventListener('change', (e) => {
-            this.applyScenePreset(e.target.value);
-        });
+        // Scene management is now handled by SceneManager
         
         // Add control buttons
         this.domCache.getElement('add-cc-control').addEventListener('click', () => {
@@ -224,14 +228,7 @@ export class App {
             });
         }
         
-        // Scene management buttons
-        this.domCache.getElement('save-scene-button').addEventListener('click', () => {
-            this.saveScene();
-        });
-        
-        this.domCache.getElement('load-scene-button').addEventListener('click', () => {
-            this.domCache.getElement('preset-file-input').click();
-        });
+        // Scene management buttons are now handled by SceneManager
         
 
         
@@ -390,6 +387,27 @@ export class App {
 
     recreateControlsFromPreset(preset = null) {
         this.presetManager.recreateControlsFromPreset(preset);
+    }
+
+    // Scene delegation methods for backward compatibility
+    saveScene() {
+        this.sceneManager.saveScene();
+    }
+
+    loadScene() {
+        this.sceneManager.loadScene();
+    }
+
+    loadSceneFile(sceneData) {
+        this.sceneManager.loadSceneFile(sceneData);
+    }
+
+    applyScenePreset(presetName) {
+        return this.sceneManager.applyScenePreset(presetName);
+    }
+
+    validateScenePreset(sceneData) {
+        return this.sceneManager.validateScenePreset(sceneData);
     }
 
     handleKeyDown(event) {
