@@ -42,6 +42,15 @@ export class App {
         // Initialize morphing system
         this.morphingSystem = new ShapeMorphingSystem();
         
+        // Initialize morphing state cache for performance optimization
+        this.morphingStateCache = {
+            morphableShapes: [],
+            filteredPairs: {},
+            availableShapes: [],
+            lastUpdate: 0,
+            cacheValid: false
+        };
+        
         // Initialize video recorder (temporarily disabled)
         // this.videoRecorder = new VideoRecorder(this);
         
@@ -2045,184 +2054,160 @@ export class App {
         return '32nd';
     }
 
-    triggerRandomMorph() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            // Filter morphable pairs to only include enabled shapes
-            const allMorphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
-            const filteredPairs = {};
-            
-            Object.entries(allMorphablePairs).forEach(([pairName, [shape1, shape2]]) => {
-                if (availableShapes.includes(shape1) && availableShapes.includes(shape2)) {
-                    filteredPairs[pairName] = [shape1, shape2];
-                }
-            });
-            
-            const pairNames = Object.keys(filteredPairs);
-            
-            if (pairNames.length === 0) return;
-            
-            const randomShape = morphableShapes[Math.floor(Math.random() * morphableShapes.length)];
-            const randomPair = filteredPairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-            this.scene.shapeGenerator.startShapeMorph(randomShape, randomPair[0], randomPair[1], this.getMorphingDuration());
+    /**
+     * Get consolidated morphing data with caching for performance optimization
+     * Eliminates duplicate filtering logic across all morphing methods
+     * @returns {Object} Cached morphing data or null if no valid data
+     */
+    getMorphingData() {
+        const now = Date.now();
+        
+        // Cache for 100ms to avoid recalculation during rapid triggers
+        if (this.morphingStateCache.cacheValid && 
+            (now - this.morphingStateCache.lastUpdate) < 100) {
+            return this.morphingStateCache;
         }
+        
+        // Validate scene and shapes exist
+        if (!this.scene || !this.scene.shapes || this.scene.shapes.length === 0) {
+            return null;
+        }
+        
+        // Calculate morphable shapes (filtered by geometry type)
+        const morphableShapes = this.scene.shapes.filter(shape => {
+            return shape.geometry && shape.geometry.type === 'ShapeGeometry';
+        });
+        
+        if (morphableShapes.length === 0) {
+            return null;
+        }
+        
+        // Get enabled shapes from state
+        const enabledShapes = this.state.get('enabledShapes');
+        const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
+        
+        if (availableShapes.length === 0) {
+            return null;
+        }
+        
+        // Filter morphable pairs to only include enabled shapes
+        const allMorphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
+        const filteredPairs = {};
+        
+        Object.entries(allMorphablePairs).forEach(([pairName, [shape1, shape2]]) => {
+            if (availableShapes.includes(shape1) && availableShapes.includes(shape2)) {
+                filteredPairs[pairName] = [shape1, shape2];
+            }
+        });
+        
+        const pairNames = Object.keys(filteredPairs);
+        
+        if (pairNames.length === 0) {
+            return null;
+        }
+        
+        // Update cache
+        this.morphingStateCache = {
+            morphableShapes,
+            filteredPairs,
+            availableShapes,
+            pairNames,
+            lastUpdate: now,
+            cacheValid: true
+        };
+        
+        return this.morphingStateCache;
+    }
+
+    /**
+     * Invalidate the morphing cache when shapes change
+     * Should be called when shapes are added, removed, or modified
+     */
+    invalidateMorphingCache() {
+        this.morphingStateCache.cacheValid = false;
+    }
+
+    triggerRandomMorph() {
+        const morphingData = this.getMorphingData();
+        if (!morphingData) return;
+        
+        const randomShape = morphingData.morphableShapes[Math.floor(Math.random() * morphingData.morphableShapes.length)];
+        const randomPair = morphingData.filteredPairs[morphingData.pairNames[Math.floor(Math.random() * morphingData.pairNames.length)]];
+        this.scene.shapeGenerator.startShapeMorph(randomShape, randomPair[0], randomPair[1], this.getMorphingDuration());
     }
 
     triggerMorphAllShapes() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            // Filter morphable pairs to only include enabled shapes
-            const allMorphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
-            const filteredPairs = {};
-            
-            Object.entries(allMorphablePairs).forEach(([pairName, [shape1, shape2]]) => {
-                if (availableShapes.includes(shape1) && availableShapes.includes(shape2)) {
-                    filteredPairs[pairName] = [shape1, shape2];
-                }
-            });
-            
-            const pairNames = Object.keys(filteredPairs);
-            
-            if (pairNames.length === 0) return;
-            
-            // Get morphing division timing for the entire sequence
-            const morphingDivision = this.state.get('morphingDivision') || 'quarter';
-            const globalBPM = this.state.get('globalBPM') || 120;
-            const divisionBeats = this.getDivisionBeats(morphingDivision);
-            const secondsPerBeat = 60 / globalBPM;
-            const totalSequenceTime = divisionBeats * secondsPerBeat;
-            
-            // Calculate delay per shape to distribute evenly across the musical division
-            const delayPerShape = (totalSequenceTime * 1000) / Math.max(morphableShapes.length - 1, 1); // Convert to milliseconds
-            
-            console.log(`Morph All Shapes: Using ${morphingDivision} division (${totalSequenceTime.toFixed(2)}s total, ${delayPerShape.toFixed(1)}ms delay per shape for ${morphableShapes.length} shapes)`);
-            
-            morphableShapes.forEach((shape, index) => {
-                setTimeout(() => {
-                    const randomPair = filteredPairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                    this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.getMorphingDuration());
-                }, index * delayPerShape);
-            });
-        }
+        const morphingData = this.getMorphingData();
+        if (!morphingData) return;
+        
+        // Get morphing division timing for the entire sequence
+        const morphingDivision = this.state.get('morphingDivision') || 'quarter';
+        const globalBPM = this.state.get('globalBPM') || 120;
+        const divisionBeats = this.getDivisionBeats(morphingDivision);
+        const secondsPerBeat = 60 / globalBPM;
+        const totalSequenceTime = divisionBeats * secondsPerBeat;
+        
+        // Calculate delay per shape to distribute evenly across the musical division
+        const delayPerShape = (totalSequenceTime * 1000) / Math.max(morphingData.morphableShapes.length - 1, 1); // Convert to milliseconds
+        
+        console.log(`Morph All Shapes: Using ${morphingDivision} division (${totalSequenceTime.toFixed(2)}s total, ${delayPerShape.toFixed(1)}ms delay per shape for ${morphingData.morphableShapes.length} shapes)`);
+        
+        morphingData.morphableShapes.forEach((shape, index) => {
+            setTimeout(() => {
+                const randomPair = morphingData.filteredPairs[morphingData.pairNames[Math.floor(Math.random() * morphingData.pairNames.length)]];
+                this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.getMorphingDuration());
+            }, index * delayPerShape);
+        });
     }
 
     triggerMorphAllToSame() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
-            
-            // Get morphing division timing for the entire sequence
-            const morphingDivision = this.state.get('morphingDivision') || 'quarter';
-            const globalBPM = this.state.get('globalBPM') || 120;
-            const divisionBeats = this.getDivisionBeats(morphingDivision);
-            const secondsPerBeat = 60 / globalBPM;
-            const totalSequenceTime = divisionBeats * secondsPerBeat;
-            
-            // Calculate delay per shape to distribute evenly across the musical division
-            const delayPerShape = (totalSequenceTime * 1000) / Math.max(morphableShapes.length - 1, 1); // Convert to milliseconds
-            
-            console.log(`Morph All to Same: Using ${morphingDivision} division (${totalSequenceTime.toFixed(2)}s total, ${delayPerShape.toFixed(1)}ms delay per shape for ${morphableShapes.length} shapes)`);
-            
-            morphableShapes.forEach((shape, index) => {
-                setTimeout(() => {
-                    // Get the current shape name from the mesh
-                    const currentShapeName = shape.userData.shapeName || 'triangle_UP';
-                    this.scene.shapeGenerator.startShapeMorph(shape, currentShapeName, targetShape, this.getMorphingDuration());
-                }, index * delayPerShape);
-            });
-        }
+        const morphingData = this.getMorphingData();
+        if (!morphingData) return;
+        
+        const targetShape = morphingData.availableShapes[Math.floor(Math.random() * morphingData.availableShapes.length)];
+        
+        // Get morphing division timing for the entire sequence
+        const morphingDivision = this.state.get('morphingDivision') || 'quarter';
+        const globalBPM = this.state.get('globalBPM') || 120;
+        const divisionBeats = this.getDivisionBeats(morphingDivision);
+        const secondsPerBeat = 60 / globalBPM;
+        const totalSequenceTime = divisionBeats * secondsPerBeat;
+        
+        // Calculate delay per shape to distribute evenly across the musical division
+        const delayPerShape = (totalSequenceTime * 1000) / Math.max(morphingData.morphableShapes.length - 1, 1); // Convert to milliseconds
+        
+        console.log(`Morph All to Same: Using ${morphingDivision} division (${totalSequenceTime.toFixed(2)}s total, ${delayPerShape.toFixed(1)}ms delay per shape for ${morphingData.morphableShapes.length} shapes)`);
+        
+        morphingData.morphableShapes.forEach((shape, index) => {
+            setTimeout(() => {
+                // Get the current shape name from the mesh
+                const currentShapeName = shape.userData.shapeName || 'triangle_UP';
+                this.scene.shapeGenerator.startShapeMorph(shape, currentShapeName, targetShape, this.getMorphingDuration());
+            }, index * delayPerShape);
+        });
     }
 
     triggerMorphAllToSameSimultaneously() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            const targetShape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
-            
-            // Morph all shapes to the same target simultaneously (no staggered timing)
-            morphableShapes.forEach(shape => {
-                const currentShapeName = shape.userData.shapeName || 'triangle_UP';
-                this.scene.shapeGenerator.startShapeMorph(shape, currentShapeName, targetShape, this.getMorphingDuration());
-            });
-        }
+        const morphingData = this.getMorphingData();
+        if (!morphingData) return;
+        
+        const targetShape = morphingData.availableShapes[Math.floor(Math.random() * morphingData.availableShapes.length)];
+        
+        // Morph all shapes to the same target simultaneously (no staggered timing)
+        morphingData.morphableShapes.forEach(shape => {
+            const currentShapeName = shape.userData.shapeName || 'triangle_UP';
+            this.scene.shapeGenerator.startShapeMorph(shape, currentShapeName, targetShape, this.getMorphingDuration());
+        });
     }
 
     triggerMorphAllSimultaneously() {
-        if (this.scene && this.scene.shapes.length > 0) {
-            const morphableShapes = this.scene.shapes.filter(shape => {
-                return shape.geometry && shape.geometry.type === 'ShapeGeometry';
-            });
-            
-            if (morphableShapes.length === 0) return;
-            
-            // Get enabled shapes from state
-            const enabledShapes = this.state.get('enabledShapes');
-            const availableShapes = this.scene.shapeGenerator.getAvailableShapes(enabledShapes);
-            
-            if (availableShapes.length === 0) return;
-            
-            // Filter morphable pairs to only include enabled shapes
-            const allMorphablePairs = this.scene.shapeGenerator.getMorphableShapePairs();
-            const filteredPairs = {};
-            
-            Object.entries(allMorphablePairs).forEach(([pairName, [shape1, shape2]]) => {
-                if (availableShapes.includes(shape1) && availableShapes.includes(shape2)) {
-                    filteredPairs[pairName] = [shape1, shape2];
-                }
-            });
-            
-            const pairNames = Object.keys(filteredPairs);
-            
-            if (pairNames.length === 0) return;
-            
-            morphableShapes.forEach(shape => {
-                const randomPair = filteredPairs[pairNames[Math.floor(Math.random() * pairNames.length)]];
-                this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.getMorphingDuration());
-            });
-        }
+        const morphingData = this.getMorphingData();
+        if (!morphingData) return;
+        
+        morphingData.morphableShapes.forEach(shape => {
+            const randomPair = morphingData.filteredPairs[morphingData.pairNames[Math.floor(Math.random() * morphingData.pairNames.length)]];
+            this.scene.shapeGenerator.startShapeMorph(shape, randomPair[0], randomPair[1], this.getMorphingDuration());
+        });
     }
     
     debugInterpolation() {
@@ -2549,6 +2534,9 @@ History: ${summary.historySize} entries`;
         if (this.domCache) {
             this.domCache.clearCache();
         }
+        
+        // Invalidate morphing cache
+        this.invalidateMorphingCache();
         
         // Stop animation loop
         if (this.animationLoop) {
