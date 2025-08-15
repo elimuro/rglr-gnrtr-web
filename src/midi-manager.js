@@ -6,6 +6,8 @@
  * interface for all MIDI hardware interactions and device state management.
  */
 
+import { MIDI_CONSTANTS } from './config/index.js';
+
 export class MIDIManager {
     constructor(app) {
         this.app = app;
@@ -150,6 +152,8 @@ export class MIDIManager {
             this.lastSelectedDevices.input = this.midiInput.name;
         }
         
+        // Selected MIDI input connected successfully
+        
         // Clear any existing output connection
         this.midiOutput = null;
         this.lastSelectedDevices.output = null;
@@ -211,6 +215,8 @@ export class MIDIManager {
         this.midiInput = inputs[0];
         this.midiInput.onmidimessage = (event) => this.handleMIDIMessage(event);
         
+        // MIDI input connected successfully
+        
         this.updateStatus(`Connected to: ${this.midiInput.name}`, true);
 
         // Set up state change listener for disconnections only
@@ -260,6 +266,8 @@ export class MIDIManager {
         const rawStatus = data[0];
         const channel = data[0] & 0x0f;
 
+        // MIDI message received - processing...
+
         // Show MIDI activity for all message types
         this.showMIDIActivity();
 
@@ -270,25 +278,25 @@ export class MIDIManager {
         // These don't need status masking
         if (rawStatus >= 0xF8) {
             switch (rawStatus) {
-                case 0xF8: // MIDI Clock (24 pulses per quarter note)
+                case MIDI_CONSTANTS.messageTypes.midiClock: // MIDI Clock (24 pulses per quarter note)
                     this.app.onMIDIClock();
                     messageType = 'MIDI Clock';
                     messageCategory = 'clock';
                     break;
 
-                case 0xFA: // MIDI Start
+                case MIDI_CONSTANTS.messageTypes.midiStart: // MIDI Start
                     this.app.onMIDIStart();
                     messageType = 'MIDI Start';
                     messageCategory = 'system';
                     break;
 
-                case 0xFB: // MIDI Continue
+                case MIDI_CONSTANTS.messageTypes.midiContinue: // MIDI Continue
                     this.app.onMIDIContinue();
                     messageType = 'MIDI Continue';
                     messageCategory = 'system';
                     break;
 
-                case 0xFC: // MIDI Stop
+                case MIDI_CONSTANTS.messageTypes.midiStop: // MIDI Stop
                     this.app.onMIDIStop();
                     messageType = 'MIDI Stop';
                     messageCategory = 'system';
@@ -347,8 +355,10 @@ export class MIDIManager {
             // Regular MIDI messages - apply status masking to strip channel
             const status = rawStatus & 0xf0;
             
+            // Regular MIDI message parsing
+            
             switch (status) {
-                case 0x80: // Note Off
+                case MIDI_CONSTANTS.messageTypes.noteOff: // Note Off
                     {
                         const note = data[1];
                         const velocity = data[2];
@@ -359,7 +369,7 @@ export class MIDIManager {
                     }
                     break;
 
-                case 0x90: // Note On
+                case MIDI_CONSTANTS.messageTypes.noteOn: // Note On
                     {
                         const note = data[1];
                         const velocity = data[2];
@@ -371,7 +381,7 @@ export class MIDIManager {
                     }
                     break;
 
-                case 0xB0: // Control Change
+                case MIDI_CONSTANTS.messageTypes.controlChange: // Control Change
                     {
                         const controller = data[1];
                         const value = data[2];
@@ -464,15 +474,15 @@ export class MIDIManager {
 
     // Utility methods for sending specific MIDI messages
     sendNoteOn(note, velocity, channel = 0) {
-        this.sendMIDI([0x90 + channel, note, velocity]);
+        this.sendMIDI([MIDI_CONSTANTS.messageTypes.noteOn + channel, note, velocity]);
     }
 
     sendNoteOff(note, velocity, channel = 0) {
-        this.sendMIDI([0x80 + channel, note, velocity]);
+        this.sendMIDI([MIDI_CONSTANTS.messageTypes.noteOff + channel, note, velocity]);
     }
 
     sendControlChange(controller, value, channel = 0) {
-        this.sendMIDI([0xB0 + channel, controller, value]);
+        this.sendMIDI([MIDI_CONSTANTS.messageTypes.controlChange + channel, controller, value]);
     }
 
 

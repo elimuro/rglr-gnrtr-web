@@ -11,31 +11,28 @@
  * - Foundation for preset systems
  */
 
-// GUI Control Configurations
-export { GUI_CONTROL_CONFIGS } from './GuiConstants.js';
+// Import all constants first
+import { GUI_CONTROL_CONFIGS } from './GuiConstants.js';
+import { PERFORMANCE_CONSTANTS } from './PerformanceConstants.js';
+import { MUSICAL_CONSTANTS, AUDIO_PROCESSING } from './AudioConstants.js';
+import { ANIMATION_CONSTANTS } from './AnimationConstants.js';
+import { LIGHTING_PRESETS } from './LightingPresets.js';
+import { DEFAULT_SCENE_CONFIG } from './DefaultSceneConfig.js';
+import { MIDI_CONSTANTS } from './MidiConstants.js';
+import { MATERIAL_CONSTANTS } from './MaterialConstants.js';
 
-// Performance System Constants
-export { PERFORMANCE_CONSTANTS } from './PerformanceConstants.js';
-
-// Audio and Musical Constants
-export { MUSICAL_CONSTANTS, AUDIO_PROCESSING } from './AudioConstants.js';
-
-// Animation and Mathematical Constants
-export { ANIMATION_CONSTANTS } from './AnimationConstants.js';
-
-// Lighting System Presets
-export { LIGHTING_PRESETS } from './LightingPresets.js';
-
-// Default Scene Configuration
-export { DEFAULT_SCENE_CONFIG } from './DefaultSceneConfig.js';
-
-// MIDI System Constants
-export { MIDI_CONSTANTS } from './MidiConstants.js';
-
-// Material System Constants
-export { MATERIAL_CONSTANTS } from './MaterialConstants.js';
-
-
+// Re-export all constants
+export { 
+    GUI_CONTROL_CONFIGS,
+    PERFORMANCE_CONSTANTS,
+    MUSICAL_CONSTANTS,
+    AUDIO_PROCESSING,
+    ANIMATION_CONSTANTS,
+    LIGHTING_PRESETS,
+    DEFAULT_SCENE_CONFIG,
+    MIDI_CONSTANTS,
+    MATERIAL_CONSTANTS
+};
 
 /**
  * Configuration Helper Utilities

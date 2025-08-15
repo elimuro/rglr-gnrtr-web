@@ -4,7 +4,7 @@
  * to provide BPM-based timing for animations and effects.
  */
 
-import { MUSICAL_CONSTANTS } from '../config/AudioConstants.js';
+import { MUSICAL_CONSTANTS } from '../config/index.js';
 
 export class BPMTimingManager {
     constructor(bpm = MUSICAL_CONSTANTS.bpm.default) {

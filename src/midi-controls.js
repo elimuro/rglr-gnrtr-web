@@ -7,6 +7,7 @@
  */
 
 import { ParameterMapper } from './modules/ParameterMapper.js';
+import { MIDI_CONSTANTS } from './config/index.js';
 
 // MIDI Control Component System
 // Replaces hardcoded HTML with dynamic component-based rendering
@@ -15,7 +16,7 @@ import { ParameterMapper } from './modules/ParameterMapper.js';
 const CONTROL_CONFIGS = {
     cc: {
         label: 'CC Control',
-        defaultValue: 1,
+        defaultValue: MIDI_CONSTANTS.defaults.controller,
         inputType: 'CC',
         inputPlaceholder: 'CC',
         targets: [
@@ -120,7 +121,7 @@ const CONTROL_CONFIGS = {
     },
     note: {
         label: 'Note Control',
-        defaultValue: 60,
+        defaultValue: MIDI_CONSTANTS.defaults.note,
         inputType: 'Note',
         inputPlaceholder: 'Note',
         targets: [
@@ -173,16 +174,24 @@ const CONTROL_CONFIGS = {
 // HTML Templates
 const CONTROL_TEMPLATES = {
     cc: `
-        <div class="flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
-            <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
-            <div class="flex gap-1 items-center flex-1">
-                <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-midi-green rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch" data-drawer-interactive>
-                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}" data-drawer-interactive>
-                <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none" data-drawer-interactive>
-                    {targetOptions}
+        <div class="flex flex-col gap-1 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
+            <div class="flex items-center gap-2">
+                <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
+                <div class="flex gap-1 items-center flex-1">
+                    <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-midi-green rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch" data-drawer-interactive>
+                    <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="{minValue}" max="{maxValue}" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}" data-drawer-interactive>
+                    <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none" data-drawer-interactive>
+                        {targetOptions}
+                    </select>
+                    <button id="midi-{controlId}-learn" class="px-2 py-0.5 bg-yellow-500 bg-opacity-20 text-yellow-400 border border-yellow-500 border-opacity-30 rounded text-xs font-medium transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50" data-drawer-interactive>Learn</button>
+                    <button id="midi-{controlId}-remove" class="px-1 py-0.5 bg-red-500 bg-opacity-20 text-red-400 border border-red-500 border-opacity-30 rounded text-xs font-bold transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50" data-drawer-interactive>×</button>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 ml-10">
+                <label class="text-xs font-medium text-blue-300 min-w-8 flex-shrink-0">P5:</label>
+                <select id="midi-{controlId}-p5-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-blue-600 border-opacity-30 text-white rounded text-xs transition-all duration-300 focus:border-blue-400 focus:outline-none" data-drawer-interactive>
+                    {p5TargetOptions}
                 </select>
-                <button id="midi-{controlId}-learn" class="px-2 py-0.5 bg-yellow-500 bg-opacity-20 text-yellow-400 border border-yellow-500 border-opacity-30 rounded text-xs font-medium transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50" data-drawer-interactive>Learn</button>
-                <button id="midi-{controlId}-remove" class="px-1 py-0.5 bg-red-500 bg-opacity-20 text-red-400 border border-red-500 border-opacity-30 rounded text-xs font-bold transition-all duration-300 hover:bg-opacity-30 hover:border-opacity-50" data-drawer-interactive>×</button>
             </div>
         </div>
     `,
@@ -191,7 +200,7 @@ const CONTROL_TEMPLATES = {
             <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
             <div class="flex gap-1 items-center flex-1">
                 <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-midi-green rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch" data-drawer-interactive>
-                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="0" max="127" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}" data-drawer-interactive>
+                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="{minValue}" max="{maxValue}" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}" data-drawer-interactive>
                 <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none" data-drawer-interactive>
                     {targetOptions}
                 </select>
@@ -249,12 +258,43 @@ export class MIDIControl {
                 .map(target => `<option value="${target.value}">${target.label}</option>`)
                 .join('');
         
+        const p5TargetOptions = this.generateP5Options();
+        
+        // Determine min/max values based on control type
+        const minValue = this.type === 'cc' ? MIDI_CONSTANTS.ranges.controllers.min : MIDI_CONSTANTS.ranges.notes.min;
+        const maxValue = this.type === 'cc' ? MIDI_CONSTANTS.ranges.controllers.max : MIDI_CONSTANTS.ranges.notes.max;
+        
         return template
             .replace(/{controlId}/g, this.controlId)
             .replace(/{index}/g, this.index)
             .replace(/{defaultValue}/g, this.config.defaultValue)
             .replace(/{inputPlaceholder}/g, this.config.inputPlaceholder)
-            .replace(/{targetOptions}/g, targetOptions);
+            .replace(/{minValue}/g, minValue)
+            .replace(/{maxValue}/g, maxValue)
+            .replace(/{targetOptions}/g, targetOptions)
+            .replace(/{p5TargetOptions}/g, p5TargetOptions);
+    }
+    
+    generateP5Options() {
+        try {
+            const p5Layer = this.app.layerManager?.getLayer('p5');
+            if (!p5Layer) {
+                return '<option value="">No P5 Layer</option>';
+            }
+            
+            const params = p5Layer.getAllParameters();
+            if (!params || Object.keys(params).length === 0) {
+                return '<option value="">No P5 Parameters</option>';
+            }
+            
+            return '<option value="">No P5 Parameter</option>' + 
+                   Object.entries(params).map(([name, param]) => 
+                       `<option value="p5:${name}">${param.label || name}</option>`
+                   ).join('');
+        } catch (error) {
+            console.warn('Error generating P5 options:', error);
+            return '<option value="">P5 Error</option>';
+        }
     }
     
     createElement(html) {
@@ -270,6 +310,7 @@ export class MIDIControl {
         const channelInput = document.getElementById(`midi-${this.controlId}-channel`);
         const valueInput = document.getElementById(`midi-${this.controlId}-value`);
         const targetSelect = document.getElementById(`midi-${this.controlId}-target`);
+        const p5TargetSelect = document.getElementById(`midi-${this.controlId}-p5-target`);
         const learnButton = document.getElementById(`midi-${this.controlId}-learn`);
         const removeButton = document.getElementById(`midi-${this.controlId}-remove`);
         
@@ -283,6 +324,11 @@ export class MIDIControl {
         valueInput.value = mapping.value;
         targetSelect.value = mapping.target || ''; // Handle empty target
         
+        // Set P5 target if available
+        if (p5TargetSelect) {
+            p5TargetSelect.value = mapping.p5Target || '';
+        }
+        
         // Event listeners
         channelInput.addEventListener('change', (e) => {
             this.updateMapping({ channel: parseInt(e.target.value) - 1 });
@@ -295,6 +341,13 @@ export class MIDIControl {
         targetSelect.addEventListener('change', (e) => {
             this.updateMapping({ target: e.target.value });
         });
+        
+        // P5 target listener
+        if (p5TargetSelect) {
+            p5TargetSelect.addEventListener('change', (e) => {
+                this.updateMapping({ p5Target: e.target.value });
+            });
+        }
         
         // Learn button
         learnButton.addEventListener('click', () => {
@@ -340,20 +393,28 @@ export class MIDIControl {
         if (this.updateTimeout) clearTimeout(this.updateTimeout);
         
         this.updateTimeout = setTimeout(() => {
-            const target = this.getMapping().target;
-            // Check if target is empty before updating parameter
-            if (!target || target.trim() === '') {
-                return; // No target specified
+            const mapping = this.getMapping();
+            const normalizedValue = this.normalizeValue(midiValue);
+            
+            console.log(`MIDI CC${this.controlId}: Raw=${midiValue}, Normalized=${normalizedValue.toFixed(3)}`);
+            
+            // Route to primary target
+            if (mapping.target && mapping.target.trim() !== '') {
+                console.log(`→ Primary target: ${mapping.target}`);
+                this.app.updateAnimationParameter(mapping.target, normalizedValue);
             }
             
-            const normalizedValue = this.normalizeValue(midiValue, target);
-            this.app.updateAnimationParameter(target, normalizedValue);
+            // Route to P5 target
+            if (mapping.p5Target && mapping.p5Target.trim() !== '') {
+                console.log(`→ P5 target: ${mapping.p5Target}`);
+                this.app.updateAnimationParameter(mapping.p5Target, normalizedValue);
+            }
         }, 16); // ~60fps debouncing
     }
     
-    normalizeValue(midiValue, target) {
-        // Convert 0-127 MIDI value to normalized 0-1 range for ParameterMapper
-        return midiValue / 127; // Always normalize to 0-1 range
+    normalizeValue(midiValue) {
+        // Convert MIDI value to normalized 0-1 range for ParameterMapper
+        return midiValue / MIDI_CONSTANTS.ranges.controllers.max; // Always normalize to 0-1 range
     }
     
     getParameterConfig(target) {
@@ -485,15 +546,17 @@ export class MIDIControl {
         const defaultMapping = {
             channel: 0,
             value: this.config.defaultValue,
-            target: '' // Always start with empty target
+            target: '', // Always start with empty target
+            p5Target: '' // Always start with empty P5 target
         };
         
-        // If there's an existing mapping, use it but ensure target is empty if not explicitly set
+        // If there's an existing mapping, use it but ensure targets are empty if not explicitly set
         const existingMapping = mappings[this.controlId];
         if (existingMapping) {
             return {
                 ...existingMapping,
-                target: existingMapping.target || '' // Ensure target is empty if not set
+                target: existingMapping.target || '', // Ensure target is empty if not set
+                p5Target: existingMapping.p5Target || '' // Ensure P5 target is empty if not set
             };
         }
         
@@ -534,10 +597,12 @@ export class MIDIControl {
             const channelInput = document.getElementById(`midi-${this.controlId}-channel`);
             const valueInput = document.getElementById(`midi-${this.controlId}-value`);
             const targetSelect = document.getElementById(`midi-${this.controlId}-target`);
+            const p5TargetSelect = document.getElementById(`midi-${this.controlId}-p5-target`);
             
             if (channelInput) channelInput.value = data.config.channel + 1;
             if (valueInput) valueInput.value = data.config.value;
             if (targetSelect) targetSelect.value = data.config.target || ''; // Handle empty target
+            if (p5TargetSelect) p5TargetSelect.value = data.config.p5Target || ''; // Handle empty P5 target
         }
     }
     
@@ -685,6 +750,33 @@ export class MIDIControlManager {
         
         const nextIndex = allIndices.length > 0 ? Math.max(...allIndices) + 1 : 1;
         return nextIndex;
+    }
+    
+    /**
+     * Refresh P5 parameter dropdowns when sketch changes
+     */
+    refreshP5Parameters() {
+        console.log('Refreshing P5 parameters in MIDI controls...');
+        
+        this.controls.forEach(control => {
+            if (control.type === 'cc') {
+                const p5TargetSelect = document.getElementById(`midi-${control.controlId}-p5-target`);
+                if (p5TargetSelect) {
+                    const currentValue = p5TargetSelect.value;
+                    const newOptions = control.generateP5Options();
+                    p5TargetSelect.innerHTML = newOptions;
+                    
+                    // Try to restore the previous selection if it still exists
+                    if (currentValue && p5TargetSelect.querySelector(`option[value="${currentValue}"]`)) {
+                        p5TargetSelect.value = currentValue;
+                    } else if (currentValue) {
+                        // Parameter no longer exists, clear the mapping
+                        console.log(`P5 parameter ${currentValue} no longer exists, clearing mapping`);
+                        control.updateMapping({ p5Target: '' });
+                    }
+                }
+            }
+        });
     }
     
     serialize() {

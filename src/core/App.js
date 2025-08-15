@@ -379,9 +379,13 @@ export class App {
         // Handle P5 layer parameters
         if (target.startsWith('p5:')) {
             const paramName = target.substring(3); // Remove 'p5:' prefix
+            console.log(`App: Routing P5 parameter ${paramName} = ${value}`);
             const p5Layer = this.layerManager.getLayer('p5');
             if (p5Layer) {
+                console.log(`App: Found P5 layer, setting parameter`);
                 p5Layer.setParameter(paramName, value);
+            } else {
+                console.warn(`App: P5 layer not found`);
             }
             return;
         }

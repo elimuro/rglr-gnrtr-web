@@ -183,6 +183,20 @@ function draw() {
         
         console.log(`Registered P5 parameter: ${name}`, param);
     }
+    
+    /**
+     * Refresh MIDI control dropdowns with current P5 parameters
+     */
+    refreshMIDIControls() {
+        // Access the app through the layer manager
+        const app = this.layerManager?.app;
+        if (app && app.controlManager) {
+            // Use setTimeout to ensure parameters are fully registered before refresh
+            setTimeout(() => {
+                app.controlManager.refreshP5Parameters();
+            }, 100);
+        }
+    }
 
     /**
      * Compile and run p5 sketch
@@ -194,6 +208,10 @@ function draw() {
             
             // Stop existing sketch
             this.stop();
+            
+            // Clear previous parameters
+            this.parameters.clear();
+            this.exposedParameters = {};
             
             // Store code
             this.sketchCode = code;
@@ -210,6 +228,9 @@ function draw() {
             
             this.isRunning = true;
             console.log(`P5Layer ${this.id} sketch compiled and running`);
+            
+            // Refresh MIDI parameter dropdowns after compilation
+            this.refreshMIDIControls();
             
         } catch (error) {
             console.error(`Failed to compile P5 sketch:`, error);
@@ -364,12 +385,21 @@ function draw() {
     onSetParameter(name, value) {
         const param = this.parameters.get(name);
         if (param) {
-            // Clamp value to range if specified
-            if (param.min !== undefined && value < param.min) value = param.min;
-            if (param.max !== undefined && value > param.max) value = param.max;
+            // Convert normalized value (0-1) to parameter range if min/max are specified
+            let actualValue = value;
+            if (param.min !== undefined && param.max !== undefined) {
+                // Assume incoming value is normalized (0-1) and convert to parameter range
+                actualValue = param.min + (value * (param.max - param.min));
+            }
             
-            param.value = value;
-            console.log(`P5Layer ${this.id} parameter ${name} set to ${value}`);
+            // Clamp value to range if specified
+            if (param.min !== undefined && actualValue < param.min) actualValue = param.min;
+            if (param.max !== undefined && actualValue > param.max) actualValue = param.max;
+            
+            param.value = actualValue;
+            console.log(`P5Layer ${this.id} parameter ${name} set to ${actualValue} (from normalized ${value})`);
+        } else {
+            console.warn(`P5Layer ${this.id}: Parameter ${name} not found`);
         }
     }
 

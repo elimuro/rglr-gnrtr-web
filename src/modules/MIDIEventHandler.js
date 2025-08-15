@@ -123,23 +123,37 @@ export class MIDIEventHandler {
      * @param {number} midiValue - Raw MIDI value (0-127)
      */
     handleCCMapping(controlId, mapping, midiValue) {
-        // More robust check for empty target - check for empty string, null, undefined, or whitespace
-        if (!mapping.target || mapping.target.trim() === '') {
-            return; // No target specified
-        }
-
         try {
-            // Normalize MIDI value to 0-1 range
-            const normalizedValue = this.normalizeValue(midiValue, mapping.target);
+            console.log(`MIDIEventHandler: CC${controlId} Raw=${midiValue}`);
             
-            // Use the unified ParameterMapper to handle parameter updates
-            ParameterMapper.handleParameterUpdate(
-                mapping.target, 
-                normalizedValue, 
-                this.app.state, 
-                this.app.scene, 
-                'midi'
-            );
+            // Handle primary target
+            if (mapping.target && mapping.target.trim() !== '') {
+                console.log(`→ Primary target: ${mapping.target}`);
+                
+                // Use existing normalization for grid parameters
+                const normalizedValue = this.normalizeValue(midiValue, mapping.target);
+                
+                // Use ParameterMapper for grid parameters
+                ParameterMapper.handleParameterUpdate(
+                    mapping.target, 
+                    normalizedValue, 
+                    this.app.state, 
+                    this.app.scene, 
+                    'midi'
+                );
+            }
+            
+            // Handle P5 target
+            if (mapping.p5Target && mapping.p5Target.trim() !== '') {
+                console.log(`→ P5 target: ${mapping.p5Target}`);
+                
+                // Simple 0-1 normalization for P5 parameters
+                const normalizedP5Value = midiValue / MIDI_CONSTANTS.ranges.controllers.max;
+                console.log(`→ P5 normalized: ${normalizedP5Value.toFixed(3)}`);
+                
+                // Use App's updateAnimationParameter for P5 parameters
+                this.app.updateAnimationParameter(mapping.p5Target, normalizedP5Value);
+            }
 
             // Ensure changes are visible even when animation is paused
             if (this.app.scene && !this.app.animationLoop.getRunningState()) {

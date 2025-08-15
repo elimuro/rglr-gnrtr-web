@@ -114,6 +114,9 @@ export class LayerManager {
             await this.removeLayer(layer.id);
         }
         
+        // Set layer manager reference
+        layer.layerManager = this;
+        
         // Initialize the layer
         await layer.initialize(this.context);
         
