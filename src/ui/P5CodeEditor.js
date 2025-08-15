@@ -37,13 +37,6 @@ export class P5CodeEditor {
      * Setup event listeners
      */
     setupEventListeners() {
-        // Listen for P5 Code Editor button click
-        document.addEventListener('click', (event) => {
-            if (event.target.id === 'p5-code-editor' || event.target.closest('#p5-code-editor')) {
-                this.toggle();
-            }
-        });
-        
         // Close on escape key
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && this.isOpen) {
@@ -69,31 +62,44 @@ export class P5CodeEditor {
     async open() {
         if (this.isOpen) return;
         
+        console.log('P5CodeEditor: Opening editor...');
+        
         // Check if there's a P5 layer to edit
         this.currentP5Layer = this.app.layerManager.getLayer('p5');
+        console.log('P5CodeEditor: Current P5 layer:', this.currentP5Layer);
+        
         if (!this.currentP5Layer) {
             // Create a P5 layer if none exists
-            console.log('No P5 layer found, creating one...');
-            await this.app.addP5Layer();
-            this.currentP5Layer = this.app.layerManager.getLayer('p5');
+            console.log('P5CodeEditor: No P5 layer found, creating one...');
+            try {
+                await this.app.addP5Layer();
+                this.currentP5Layer = this.app.layerManager.getLayer('p5');
+                console.log('P5CodeEditor: P5 layer created:', this.currentP5Layer);
+            } catch (error) {
+                console.error('P5CodeEditor: Failed to create P5 layer:', error);
+                return;
+            }
         }
         
         if (!this.currentP5Layer) {
-            console.error('Failed to create P5 layer for editing');
+            console.error('P5CodeEditor: Failed to get P5 layer for editing');
             return;
         }
         
         // Create editor overlay
+        console.log('P5CodeEditor: Creating editor overlay...');
         this.createEditorOverlay();
         
         // Load Monaco Editor if not already loaded
+        console.log('P5CodeEditor: Loading Monaco Editor...');
         await this.loadMonacoEditor();
         
         // Initialize the editor
+        console.log('P5CodeEditor: Initializing editor...');
         this.initializeEditor();
         
         this.isOpen = true;
-        console.log('P5 Code Editor opened');
+        console.log('P5CodeEditor: Editor opened successfully');
     }
     
     /**
@@ -236,16 +242,31 @@ export class P5CodeEditor {
             const runButton = document.getElementById('p5-editor-run');
             const resetButton = document.getElementById('p5-editor-reset');
             
-            if (closeButton) closeButton.addEventListener('click', () => this.close());
-            if (runButton) runButton.addEventListener('click', () => this.runCode());
-            if (resetButton) resetButton.addEventListener('click', () => this.resetCode());
-            
-            // Debug: Check if buttons were found
-            console.log('P5 Editor buttons found:', {
+            console.log('P5CodeEditor: Setting up button event listeners...');
+            console.log('P5CodeEditor: Buttons found:', {
                 close: !!closeButton,
                 run: !!runButton,
                 reset: !!resetButton
             });
+            
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    console.log('P5CodeEditor: Close button clicked');
+                    this.close();
+                });
+            }
+            if (runButton) {
+                runButton.addEventListener('click', () => {
+                    console.log('P5CodeEditor: Run button clicked');
+                    this.runCode();
+                });
+            }
+            if (resetButton) {
+                resetButton.addEventListener('click', () => {
+                    console.log('P5CodeEditor: Reset button clicked');
+                    this.resetCode();
+                });
+            }
         }, 10);
         
         // Close on overlay click (but not on editor click)
@@ -270,30 +291,40 @@ export class P5CodeEditor {
      * Load Monaco Editor library
      */
     async loadMonacoEditor() {
+        console.log('P5CodeEditor: Loading Monaco Editor...');
+        
         // Check if Monaco is already loaded
         if (typeof window.monaco !== 'undefined') {
+            console.log('P5CodeEditor: Monaco Editor already loaded');
             return;
         }
         
         return new Promise((resolve, reject) => {
+            console.log('P5CodeEditor: Loading Monaco Editor from CDN...');
+            
             // Load Monaco Editor from CDN
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js';
+            
             script.onload = () => {
+                console.log('P5CodeEditor: Monaco loader script loaded');
+                
                 // Configure Monaco
                 window.require.config({
                     paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' }
                 });
                 
                 window.require(['vs/editor/editor.main'], () => {
-                    console.log('Monaco Editor loaded successfully');
+                    console.log('P5CodeEditor: Monaco Editor loaded successfully');
                     resolve();
                 });
             };
-            script.onerror = () => {
-                console.error('Failed to load Monaco Editor');
+            
+            script.onerror = (error) => {
+                console.error('P5CodeEditor: Failed to load Monaco Editor:', error);
                 reject(new Error('Failed to load Monaco Editor'));
             };
+            
             document.head.appendChild(script);
         });
     }
@@ -302,34 +333,53 @@ export class P5CodeEditor {
      * Initialize the Monaco editor
      */
     initializeEditor() {
+        console.log('P5CodeEditor: Initializing Monaco Editor...');
+        
         const container = document.getElementById('p5-monaco-editor');
-        if (!container || !window.monaco) return;
+        console.log('P5CodeEditor: Editor container found:', !!container);
+        
+        if (!container) {
+            console.error('P5CodeEditor: Editor container not found');
+            return;
+        }
+        
+        if (!window.monaco) {
+            console.error('P5CodeEditor: Monaco Editor not loaded');
+            return;
+        }
         
         // Get current sketch code
         const currentCode = this.currentP5Layer.getSketchCode() || this.currentP5Layer.getDefaultSketch();
+        console.log('P5CodeEditor: Current sketch code length:', currentCode.length);
         
-        // Create the editor
-        this.editor = window.monaco.editor.create(container, {
-            value: currentCode,
-            ...this.editorConfig
-        });
-        
-        // Add p5.js intellisense/autocomplete
-        this.setupP5Intellisense();
-        
-        // Update parameter list
-        this.updateParameterList();
-        
-        // Auto-save on changes (debounced)
-        let saveTimeout;
-        this.editor.onDidChangeModelContent(() => {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
-                this.updateParameterList();
-            }, 1000);
-        });
-        
-        console.log('Monaco Editor initialized with P5 sketch');
+        try {
+            // Create the editor
+            this.editor = window.monaco.editor.create(container, {
+                value: currentCode,
+                ...this.editorConfig
+            });
+            
+            console.log('P5CodeEditor: Monaco Editor created successfully');
+            
+            // Add p5.js intellisense/autocomplete
+            this.setupP5Intellisense();
+            
+            // Update parameter list
+            this.updateParameterList();
+            
+            // Auto-save on changes (debounced)
+            let saveTimeout;
+            this.editor.onDidChangeModelContent(() => {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    this.updateParameterList();
+                }, 1000);
+            });
+            
+            console.log('P5CodeEditor: Monaco Editor initialized with P5 sketch');
+        } catch (error) {
+            console.error('P5CodeEditor: Failed to initialize Monaco Editor:', error);
+        }
     }
     
     /**

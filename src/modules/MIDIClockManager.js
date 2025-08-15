@@ -6,6 +6,7 @@
 
 import { BPMTimingManager } from './BPMTimingManager.js';
 import { MIDI_CONSTANTS } from '../config/index.js';
+import { TransportBar } from '../ui/TransportBar.js';
 
 export class MIDIClockManager {
     constructor(app) {
@@ -45,7 +46,8 @@ export class MIDIClockManager {
             bar: 0
         };
         
-        this.setupUI();
+        // Initialize transport bar UI component
+        this.transportBar = new TransportBar(this);
     }
 
     onMIDIClock() {
@@ -99,7 +101,7 @@ export class MIDIClockManager {
         
         // Update UI less frequently
         if (this.clockPulses % 6 === 0) { // Update every 6 pulses (16th note)
-            this.updateClockDisplay();
+            this.transportBar.updateAllDisplays();
         }
         
         // Trigger animations based on clock
@@ -115,7 +117,7 @@ export class MIDIClockManager {
         this.isPaused = false;
         
         this.app.animationLoop.resetAnimationTime();
-        this.updateTransportDisplay();
+        this.transportBar.updateAllDisplays();
         console.log('MIDI Start received');
     }
 
@@ -126,7 +128,7 @@ export class MIDIClockManager {
         this.isStopped = true;
         this.isPaused = false;
         
-        this.updateTransportDisplay();
+        this.transportBar.updateAllDisplays();
         console.log('MIDI Stop received');
     }
 
@@ -137,7 +139,7 @@ export class MIDIClockManager {
         this.isStopped = false;
         this.isPaused = false;
         
-        this.updateTransportDisplay();
+        this.transportBar.updateAllDisplays();
         console.log('MIDI Continue received');
     }
 
@@ -206,163 +208,12 @@ export class MIDIClockManager {
         return this.isClockActive && this.clockSource === 'external';
     }
 
-    setupUI() {
-        // Create bottom transport bar if it doesn't exist
-        if (!document.getElementById('transport-bottom-bar')) {
-            this.createTransportBar();
-        }
-    }
-
-    createTransportBar() {
-        const transportBar = document.createElement('div');
-        transportBar.id = 'transport-bottom-bar';
-        transportBar.className = 'fixed bottom-0 left-0 right-0 h-12 md:h-12 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white font-mono z-50 shadow-lg backdrop-blur-md border-t border-gray-700';
-        
-        transportBar.innerHTML = `
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between h-full px-4 py-1 md:py-0">
-                <!-- All controls on the left side -->
-                <div class="flex items-center justify-start gap-2 md:gap-4 mb-1 md:mb-0">
-                    <button id="transport-play" class="btn btn-secondary btn-sm">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="5,3 19,12 5,21"></polygon>
-                        </svg>
-                        <span>Play</span>
-                    </button>
-                    
-                    <button id="transport-stop" class="btn btn-secondary btn-sm">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="6" y="4" width="4" height="16"></rect>
-                            <rect x="14" y="4" width="4" height="16"></rect>
-                        </svg>
-                        <span>Stop</span>
-                    </button>
-                    
-                    <button id="transport-reset" class="btn btn-secondary btn-sm">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-                            <path d="M21 3v5h-5"></path>
-                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-                            <path d="M3 21v-5h5"></path>
-                        </svg>
-                        <span>Reset</span>
-                    </button>
-                    
-                    <div id="clock-status" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
-                        <div class="w-1.5 h-1.5 rounded-full bg-red-500 transition-all duration-300"></div>
-                        <span class="text-xs font-medium text-white hidden sm:inline">Internal Clock</span>
-                    </div>
-                    
-                    <div id="bpm-display" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
-                        <span class="text-xs font-medium text-white">BPM: <span id="bpm-value">${MIDI_CONSTANTS.defaults.tempo}</span></span>
-                    </div>
-                    
-                    <button id="bpm-down" class="btn btn-secondary btn-xs">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 9l6 6 6-6"/>
-                        </svg>
-                    </button>
-                    
-                    <button id="bpm-up" class="btn btn-secondary btn-xs">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 15l6-6 6 6"/>
-                        </svg>
-                    </button>
-                    
-
-                    
-                    <button id="sync-toggle" class="btn btn-secondary btn-xs">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2v4"/>
-                            <path d="M12 18v4"/>
-                            <path d="M4.93 4.93l2.83 2.83"/>
-                            <path d="M16.24 16.24l2.83 2.83"/>
-                            <path d="M2 12h4"/>
-                            <path d="M18 12h4"/>
-                            <path d="M4.93 19.07l2.83-2.83"/>
-                            <path d="M16.24 7.76l2.83-2.83"/>
-                        </svg>
-                        <span id="sync-button-text">Auto</span>
-                    </button>
-                    
-                    <div id="sync-mode" class="flex items-center gap-1 px-2 py-1 bg-black bg-opacity-30 rounded-full border border-gray-600">
-                        <span class="text-xs font-medium text-white">Sync: <span id="sync-value">Auto</span></span>
-                    </div>
-                </div>
-                
-                <!-- Right side - P5 Code Editor and Help buttons -->
-                <div class="flex items-center justify-end gap-2 md:gap-4 mb-1 md:mb-0">
-                    <button id="p5-code-editor" class="btn btn-secondary btn-sm">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M16 3h5v5"/>
-                            <path d="M8 3H3v5"/>
-                            <path d="M12 22v-7"/>
-                            <path d="M3 12h18"/>
-                            <path d="M8 21h8"/>
-                            <path d="M8 3v4"/>
-                            <path d="M16 3v4"/>
-                        </svg>
-                        <span>P5 Code</span>
-                    </button>
-                    
-                    <button id="midi-help" class="btn btn-secondary btn-sm">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                            <path d="M12 17h.01"/>
-                        </svg>
-                        <span>Help</span>
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(transportBar);
-        
-        // Add event listeners
-        this.setupTransportEventListeners();
-    }
-
-    setupTransportEventListeners() {
-        document.getElementById('transport-play').addEventListener('click', () => {
-            this.startInternalClock();
-        });
-        
-        document.getElementById('transport-stop').addEventListener('click', () => {
-            this.stopInternalClock();
-        });
-        
-        document.getElementById('transport-reset').addEventListener('click', () => {
-            this.resetClock();
-        });
-        
-
-        
-        // Sync mode toggle
-        document.getElementById('sync-toggle').addEventListener('click', () => {
-            this.toggleSyncMode();
-        });
-        
-        // BPM controls
-        document.getElementById('bpm-up').addEventListener('click', () => {
-            this.increaseBPM();
-        });
-        
-        document.getElementById('bpm-down').addEventListener('click', () => {
-            this.decreaseBPM();
-        });
-        
-        // Help button
-        document.getElementById('midi-help').addEventListener('click', () => {
-            window.open('midi-help.html', '_blank');
-        });
-    }
-
     startInternalClock() {
         this.isPlaying = true;
         this.isStopped = false;
         this.isPaused = false;
         this.clockSource = 'internal';
-        this.updateTransportDisplay();
+        this.transportBar.updateAllDisplays();
         console.log('Internal clock started');
     }
 
@@ -370,14 +221,14 @@ export class MIDIClockManager {
         this.isPlaying = false;
         this.isStopped = true;
         this.isPaused = false;
-        this.updateTransportDisplay();
+        this.transportBar.updateAllDisplays();
         console.log('Internal clock stopped');
     }
 
     resetClock() {
         this.clockPulses = 0;
         this.app.animationLoop.resetAnimationTime();
-        this.updateClockDisplay();
+        this.transportBar.updateAllDisplays();
         console.log('Clock reset');
     }
 
@@ -387,7 +238,7 @@ export class MIDIClockManager {
         const modes = ['auto', 'manual', 'off'];
         const currentIndex = modes.indexOf(this.syncMode);
         this.syncMode = modes[(currentIndex + 1) % modes.length];
-        this.updateSyncModeDisplay();
+        this.transportBar.updateAllDisplays();
         console.log(`Sync mode changed to: ${this.syncMode}`);
     }
 
@@ -414,7 +265,7 @@ export class MIDIClockManager {
                 this.app.state.set('globalBPM', Math.round(bpm));
             }
             
-            this.updateClockDisplay();
+            this.transportBar.updateAllDisplays();
         } else {
             console.warn(`Attempted to set invalid BPM: ${bpm}. BPM must be between ${MIDI_CONSTANTS.clock.minTempo}-${MIDI_CONSTANTS.clock.maxTempo} and finite.`);
         }
@@ -496,91 +347,5 @@ export class MIDIClockManager {
 
 
 
-    updateSyncModeDisplay() {
-        const syncElement = document.getElementById('sync-value');
-        const syncButtonText = document.getElementById('sync-button-text');
-        
-        if (syncElement) {
-            syncElement.textContent = this.syncMode.charAt(0).toUpperCase() + this.syncMode.slice(1);
-        }
-        
-        if (syncButtonText) {
-            syncButtonText.textContent = this.syncMode.charAt(0).toUpperCase() + this.syncMode.slice(1);
-        }
-    }
 
-    updateClockDisplay() {
-        const bpmElement = document.getElementById('bpm-value');
-        const clockStatusElement = document.getElementById('clock-status');
-        
-        // Update BPM display - use state value if available, otherwise use calculated BPM
-        if (bpmElement) {
-            let displayBPM = this.bpm;
-            if (this.app && this.app.state) {
-                const stateBPM = this.app.state.get('globalBPM');
-                if (stateBPM) {
-                    displayBPM = stateBPM;
-                }
-            }
-            bpmElement.textContent = Math.round(displayBPM);
-        }
-        
-        if (clockStatusElement) {
-            const statusDot = clockStatusElement.querySelector('div.rounded-full');
-            const statusText = clockStatusElement.querySelector('.text-xs.font-medium.text-white');
-            
-            if (statusDot) {
-                statusDot.classList.remove('bg-red-500', 'bg-green-500', 'bg-yellow-500');
-                if (this.clockSource === 'external' && this.isClockActive) {
-                    statusDot.classList.add('bg-green-500');
-                } else if (this.clockSource === 'internal' && this.isPlaying) {
-                    statusDot.classList.add('bg-yellow-500');
-                } else {
-                    statusDot.classList.add('bg-red-500');
-                }
-            }
-            
-            if (statusText) {
-                if (this.clockSource === 'external' && this.isClockActive) {
-                    statusText.textContent = 'External Clock';
-                } else if (this.clockSource === 'internal' && this.isPlaying) {
-                    statusText.textContent = 'Internal Clock';
-                } else {
-                    statusText.textContent = 'Clock Stopped';
-                }
-            }
-        }
-        
-        // Update sync mode display
-        this.updateSyncModeDisplay();
-        
-        // Debug: Log sync status occasionally
-        if (Math.random() < 0.01) { // 1% chance per update
-            const animationLoop = this.app.animationLoop;
-            if (animationLoop) {
-                console.log(`Clock Status: Source=${this.clockSource}, Active=${this.isClockActive}, Sync=${animationLoop.getSyncMode()}, Using External=${animationLoop.isUsingExternalClock()}`);
-            }
-        }
-    }
-
-    updateTransportDisplay() {
-        const playButton = document.getElementById('transport-play');
-        const stopButton = document.getElementById('transport-stop');
-        
-        if (playButton && stopButton) {
-            if (this.isPlaying) {
-                playButton.classList.add('bg-green-500', 'bg-opacity-20', 'border-green-500');
-                playButton.classList.remove('bg-black', 'bg-opacity-30', 'border-gray-600');
-                stopButton.classList.remove('bg-red-500', 'bg-opacity-20', 'border-red-500');
-                stopButton.classList.add('bg-black', 'bg-opacity-30', 'border-gray-600');
-            } else {
-                playButton.classList.remove('bg-green-500', 'bg-opacity-20', 'border-green-500');
-                playButton.classList.add('bg-black', 'bg-opacity-30', 'border-gray-600');
-                stopButton.classList.add('bg-red-500', 'bg-opacity-20', 'border-red-500');
-                stopButton.classList.remove('bg-black', 'bg-opacity-30', 'border-gray-600');
-            }
-        }
-        
-        this.updateClockDisplay();
-    }
 } 
