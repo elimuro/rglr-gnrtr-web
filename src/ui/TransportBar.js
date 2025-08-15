@@ -171,7 +171,7 @@ export class TransportBar {
         
         // Help button
         document.getElementById('midi-help').addEventListener('click', () => {
-            window.open('help/general-setup-help.html', '_blank');
+            window.open('help/help.html', '_blank');
         });
     }
 
