@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presets & Scenes Guide - RGLR GNRTR</title>
-    <link rel="stylesheet" href="/src/tailwind.css">
+    <link rel="stylesheet" href="tailwind.css">
     <!-- Include the HelpSidebar component inline -->
     <script>
         // HelpSidebar component - inline version for HTML compatibility
@@ -18,11 +18,11 @@
             generate() {
                 const helpPages = [
                     { name: 'Main Help', url: 'help.html', icon: '🎵' },
-                    { name: 'General Setup', url: 'general-setup-help.html', icon: '🔧' },
-                    { name: 'Parameters', url: 'parameters-help.html', icon: '📊' },
-                    { name: 'Animations', url: 'animations-help.html', icon: '🎬' },
-                    { name: 'Presets & Scenes', url: 'presets-scenes-help.html', icon: '💾' },
-                    { name: 'P5 Layer', url: 'p5-layer-help.html', icon: '🎨' }
+                    { name: 'General Setup', url: 'help-general-setup.html', icon: '🔧' },
+                    { name: 'Parameters', url: 'help-parameters.html', icon: '📊' },
+                    { name: 'Animations', url: 'help-animations.html', icon: '🎬' },
+                    { name: 'Presets & Scenes', url: 'help-presets-scenes.html', icon: '💾' },
+                    { name: 'P5 Layer', url: 'help-p5-layer.html', icon: '🎨' }
                 ];
 
                 let sidebarHTML = `
@@ -708,7 +708,7 @@
             ];
 
             // Create and initialize the sidebar
-            const sidebar = new HelpSidebar('presets-scenes-help.html', pageSections);
+            const sidebar = new HelpSidebar('help-presets-scenes.html', pageSections);
             document.getElementById('help-sidebar-container').innerHTML = sidebar.generate();
             sidebar.init();
         });

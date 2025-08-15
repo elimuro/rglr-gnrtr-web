@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RGLR GNRTR - Complete Help Guide</title>
-    <link rel="stylesheet" href="/src/tailwind.css">
+    <link rel="stylesheet" href="tailwind.css">
     <!-- Include the HelpSidebar component inline -->
     <script>
         // HelpSidebar component - inline version for HTML compatibility
@@ -18,11 +18,11 @@
             generate() {
                 const helpPages = [
                     { name: 'Main Help', url: 'help.html', icon: '🎵' },
-                    { name: 'General Setup', url: 'general-setup-help.html', icon: '🔧' },
-                    { name: 'Parameters', url: 'parameters-help.html', icon: '📊' },
-                    { name: 'Animations', url: 'animations-help.html', icon: '🎬' },
-                    { name: 'Presets & Scenes', url: 'presets-scenes-help.html', icon: '💾' },
-                    { name: 'P5 Layer', url: 'p5-layer-help.html', icon: '🎨' }
+                    { name: 'General Setup', url: 'help-general-setup.html', icon: '🔧' },
+                    { name: 'Parameters', url: 'help-parameters.html', icon: '📊' },
+                    { name: 'Animations', url: 'help-animations.html', icon: '🎬' },
+                    { name: 'Presets & Scenes', url: 'help-presets-scenes.html', icon: '💾' },
+                    { name: 'P5 Layer', url: 'help-p5-layer.html', icon: '🎨' }
                 ];
 
                 let sidebarHTML = `
@@ -207,14 +207,14 @@
                         <li><strong>Start Creating:</strong> Experiment with different parameters and scenes!</li>
                     </ol>
                     <p style="margin-top: 15px; font-size: 14px; color: #888;">
-                        Need help with setup? Check the <a href="general-setup-help.html" style="color: var(--color-primary);">General Setup Guide</a> for detailed instructions.
+                        Need help with setup? Check the <a href="help-general-setup.html" style="color: var(--color-primary);">General Setup Guide</a> for detailed instructions.
                     </p>
                 </div>
 
                 <!-- Help Cards Grid -->
                 <div class="help-card-grid">
                     <!-- General Setup Card -->
-                    <div class="help-card" onclick="window.open('general-setup-help.html', '_blank')">
+                    <div class="help-card" onclick="window.open('help-general-setup.html', '_blank')">
                         <h3>🔧 General Setup Guide</h3>
                         <p>Essential setup instructions for MIDI controllers, audio input, and browser requirements. Start here if you're new to the system.</p>
                         <div class="help-card-features">
@@ -229,7 +229,7 @@
                     </div>
 
                     <!-- Parameters Reference Card -->
-                    <div class="help-card" onclick="window.open('parameters-help.html', '_blank')">
+                    <div class="help-card" onclick="window.open('help-parameters.html', '_blank')">
                         <h3>📊 Parameters Reference</h3>
                         <p>Complete reference for every parameter available for MIDI and audio mapping. Includes ranges, descriptions, and performance tips.</p>
                         <div class="help-card-features">
@@ -244,7 +244,7 @@
                     </div>
 
                     <!-- Animation Types Card -->
-                    <div class="help-card" onclick="window.open('animations-help.html', '_blank')">
+                    <div class="help-card" onclick="window.open('help-animations.html', '_blank')">
                         <h3>🎬 Animation Types & Systems</h3>
                         <p>Deep dive into the animation system, musical timing, and how to create compelling visual movement synchronized to your music.</p>
                         <div class="help-card-features">
@@ -259,7 +259,7 @@
                     </div>
 
                     <!-- Presets & Scenes Card -->
-                    <div class="help-card" onclick="window.open('presets-scenes-help.html', '_blank')">
+                    <div class="help-card" onclick="window.open('help-presets-scenes.html', '_blank')">
                         <h3>💾 Presets & Scenes Guide</h3>
                         <p>Learn to use and create presets and scenes for efficient workflow and consistent visual configurations across performances.</p>
                         <div class="help-card-features">
@@ -274,7 +274,7 @@
                     </div>
 
                     <!-- P5 Layer Card -->
-                    <div class="help-card" onclick="window.open('p5-layer-help.html', '_blank')">
+                    <div class="help-card" onclick="window.open('help-p5-layer.html', '_blank')">
                         <h3>🎨 P5 Layer Guide</h3>
                         <p>Comprehensive guide to the P5.js layer system, including how to write custom sketches and expose parameters for MIDI control.</p>
                         <div class="help-card-features">
@@ -367,7 +367,7 @@
                     </ol>
 
                     <div class="help-note">
-                        <strong>P5 Layer Quick Start:</strong> Check out the <a href="p5-layer-help.html" style="color: var(--color-primary);">P5 Layer Guide</a> for detailed instructions on creating custom p5.js sketches and exposing parameters for MIDI control.
+                        <strong>P5 Layer Quick Start:</strong> Check out the <a href="help-p5-layer.html" style="color: var(--color-primary);">P5 Layer Guide</a> for detailed instructions on creating custom p5.js sketches and exposing parameters for MIDI control.
                     </div>
                 </div>
 

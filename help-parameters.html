@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parameters Reference - RGLR GNRTR</title>
-    <link rel="stylesheet" href="/src/tailwind.css">
+    <link rel="stylesheet" href="tailwind.css">
     <!-- Include the HelpSidebar component inline -->
     <script>
         // HelpSidebar component - inline version for HTML compatibility
@@ -18,11 +18,11 @@
             generate() {
                 const helpPages = [
                     { name: 'Main Help', url: 'help.html', icon: '🎵' },
-                    { name: 'General Setup', url: 'general-setup-help.html', icon: '🔧' },
-                    { name: 'Parameters', url: 'parameters-help.html', icon: '📊' },
-                    { name: 'Animations', url: 'animations-help.html', icon: '🎬' },
-                    { name: 'Presets & Scenes', url: 'presets-scenes-help.html', icon: '💾' },
-                    { name: 'P5 Layer', url: 'p5-layer-help.html', icon: '🎨' }
+                    { name: 'General Setup', url: 'help-general-setup.html', icon: '🔧' },
+                    { name: 'Parameters', url: 'help-parameters.html', icon: '📊' },
+                    { name: 'Animations', url: 'help-animations.html', icon: '🎬' },
+                    { name: 'Presets & Scenes', url: 'help-presets-scenes.html', icon: '💾' },
+                    { name: 'P5 Layer', url: 'help-p5-layer.html', icon: '🎨' }
                 ];
 
                 let sidebarHTML = `
@@ -951,7 +951,7 @@
                             <li><span class="parameter-name">p5:particleCount</span> - Number of particles in particle system</li>
                         </ul>
                         
-                        <p><strong>📖 <a href="p5-layer-help.html" style="color: #00aaff;">Complete P5 Layer Documentation</a></strong> - Learn how to create and expose parameters in your p5.js sketches.</p>
+                        <p><strong>📖 <a href="help-p5-layer.html" style="color: #00aaff;">Complete P5 Layer Documentation</a></strong> - Learn how to create and expose parameters in your p5.js sketches.</p>
                     </div>
 
                     <h3 class="help-h3">Future Layer Types (Coming Soon)</h3>
@@ -1008,7 +1008,7 @@
             ];
 
             // Create and initialize the sidebar
-            const sidebar = new HelpSidebar('parameters-help.html', pageSections);
+            const sidebar = new HelpSidebar('help-parameters.html', pageSections);
             document.getElementById('help-sidebar-container').innerHTML = sidebar.generate();
             sidebar.init();
         });
