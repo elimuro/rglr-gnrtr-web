@@ -32,7 +32,7 @@
                             ${helpPages.map(page => {
                                 const isActive = this.currentPage === page.url;
                                 return `
-                                    <a href="${page.url}" class="nav-item ${isActive ? 'active' : ''}" target="_blank">
+                                    <a href="${page.url}" class="nav-item ${isActive ? 'active' : ''}">
                                         ${page.icon} ${page.name}
                                     </a>
                                 `;
