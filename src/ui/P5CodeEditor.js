@@ -230,10 +230,23 @@ export class P5CodeEditor {
         
         document.body.appendChild(overlay);
         
-        // Add event listeners for editor controls
-        document.getElementById('p5-editor-close').addEventListener('click', () => this.close());
-        document.getElementById('p5-editor-run').addEventListener('click', () => this.runCode());
-        document.getElementById('p5-editor-reset').addEventListener('click', () => this.resetCode());
+        // Add event listeners for editor controls (with small delay to ensure DOM is ready)
+        setTimeout(() => {
+            const closeButton = document.getElementById('p5-editor-close');
+            const runButton = document.getElementById('p5-editor-run');
+            const resetButton = document.getElementById('p5-editor-reset');
+            
+            if (closeButton) closeButton.addEventListener('click', () => this.close());
+            if (runButton) runButton.addEventListener('click', () => this.runCode());
+            if (resetButton) resetButton.addEventListener('click', () => this.resetCode());
+            
+            // Debug: Check if buttons were found
+            console.log('P5 Editor buttons found:', {
+                close: !!closeButton,
+                run: !!runButton,
+                reset: !!resetButton
+            });
+        }, 10);
         
         // Close on overlay click (but not on editor click)
         overlay.addEventListener('click', (event) => {
