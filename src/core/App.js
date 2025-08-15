@@ -25,6 +25,7 @@ import { PresetManager } from '../modules/PresetManager.js';
 import { SceneManager } from '../modules/SceneManager.js';
 import { LayerManager } from '../modules/LayerManager.js';
 import { LayerPanel } from '../ui/LayerPanel.js';
+import { P5CodeEditor } from '../ui/P5CodeEditor.js';
 
 export class App {
     constructor() {
@@ -87,6 +88,9 @@ export class App {
         
         // Initialize layer panel
         this.layerPanel = new LayerPanel(this);
+        
+        // Initialize P5 Code Editor
+        this.p5CodeEditor = new P5CodeEditor(this);
         
         this.init();
     }
@@ -372,7 +376,17 @@ export class App {
 
 
     updateAnimationParameter(target, value) {
-        // Use the unified ParameterMapper to handle all parameter updates
+        // Handle P5 layer parameters
+        if (target.startsWith('p5:')) {
+            const paramName = target.substring(3); // Remove 'p5:' prefix
+            const p5Layer = this.layerManager.getLayer('p5');
+            if (p5Layer) {
+                p5Layer.setParameter(paramName, value);
+            }
+            return;
+        }
+        
+        // Use the unified ParameterMapper to handle all other parameter updates
         ParameterMapper.handleParameterUpdate(target, value, this.state, this.scene, 'animation');
         
         // Ensure changes are visible even when animation is paused
@@ -384,6 +398,111 @@ export class App {
     handleNoteMapping(target) {
         // Delegate to the new MIDIEventHandler
         this.midiEventHandler.triggerNoteAction(target, 127); // Default velocity
+    }
+
+    /**
+     * Add a P5 layer to the layer system
+     * @param {Object} config - P5 layer configuration
+     * @returns {Promise<P5Layer>} The created P5 layer
+     */
+    async addP5Layer(config = {}) {
+        return await this.layerManager.addP5Layer('p5', config);
+    }
+
+    /**
+     * Get P5 layer parameters for MIDI/audio mapping
+     * @returns {Array} Array of P5 parameter targets
+     */
+    getP5Parameters() {
+        const p5Layer = this.layerManager.getLayer('p5');
+        if (!p5Layer) return [];
+        
+        const params = p5Layer.getAllParameters();
+        return Object.keys(params).map(name => ({
+            target: `p5:${name}`,
+            label: params[name].label || name,
+            min: params[name].min,
+            max: params[name].max
+        }));
+    }
+
+    /**
+     * Test P5 layer functionality (for development)
+     */
+    async testP5Layer() {
+        console.log('🧪 Testing P5 Layer...');
+        
+        try {
+            // Check if p5 layer already exists
+            let p5Layer = this.layerManager.getLayer('p5');
+            
+            if (!p5Layer) {
+                console.log('➕ Creating P5 layer...');
+                p5Layer = await this.addP5Layer();
+                console.log('✅ P5 Layer created successfully');
+            } else {
+                console.log('ℹ️ P5 Layer already exists');
+            }
+            
+            // Wait a moment for initialization
+            console.log('⏳ Waiting for initialization...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Debug layer state
+            console.log('🔍 P5 Layer state:');
+            console.log('- ID:', p5Layer.id);
+            console.log('- Visible:', p5Layer.visible);
+            console.log('- Opacity:', p5Layer.opacity);
+            console.log('- Running:', p5Layer.isSketchRunning());
+            console.log('- Has Error:', p5Layer.hasSketchError());
+            if (p5Layer.hasSketchError()) {
+                console.log('- Error:', p5Layer.getLastError());
+            }
+            console.log('- Canvas Element:', p5Layer.canvasElement);
+            console.log('- P5 Instance:', p5Layer.p5Instance);
+            
+            // Check LayerManager state
+            console.log('🔍 LayerManager state:');
+            console.log('- Layer count:', this.layerManager.layers.size);
+            console.log('- Layer order:', this.layerManager.getLayerOrder());
+            
+            // Test parameter setting
+            console.log('⚙️ Testing parameters...');
+            p5Layer.setParameter('ballSize', 100);
+            p5Layer.setParameter('speed', 2);
+            p5Layer.setParameter('color', 270);
+            console.log('✅ Parameters set successfully');
+            
+            // Test MIDI routing
+            console.log('🎛️ Testing MIDI routing...');
+            this.updateAnimationParameter('p5:ballSize', 150);
+            this.updateAnimationParameter('p5:speed', 3);
+            console.log('✅ MIDI routing works');
+            
+            // Get parameters for mapping
+            const params = this.getP5Parameters();
+            console.log('✅ Available P5 parameters:', params);
+            
+            // Check if canvas is in DOM
+            const canvasElements = document.querySelectorAll('canvas');
+            console.log('🔍 Canvas elements in DOM:', canvasElements.length);
+            canvasElements.forEach((canvas, i) => {
+                console.log(`- Canvas ${i}:`, {
+                    width: canvas.width,
+                    height: canvas.height,
+                    style: canvas.style.cssText,
+                    parent: canvas.parentElement?.tagName
+                });
+            });
+            
+            console.log('🎉 P5 Layer test completed!');
+            console.log('💡 If you don\'t see the overlay, check the canvas styling above');
+            console.log('💡 Try: document.querySelector(\'canvas:last-child\').style.background = \'red\'');
+            
+        } catch (error) {
+            console.error('❌ P5 Layer test failed:', error);
+            console.error('Full error:', error);
+        }
     }
 
     triggerNoteAction(target) {

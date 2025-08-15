@@ -101,6 +101,12 @@ export class LayerPanel {
                 this.layerList.appendChild(layerItem);
             }
         });
+        
+        // Add button to create P5 layer if none exists
+        if (!layers.has('p5')) {
+            const addP5Button = this.createAddP5Button();
+            this.layerList.appendChild(addP5Button);
+        }
 
         // Update performance info
         this.updatePerformanceInfo();
@@ -198,7 +204,179 @@ export class LayerPanel {
         opacityContainer.appendChild(opacitySlider);
         item.appendChild(opacityContainer);
 
+        // Add P5-specific controls
+        if (layer.constructor.name === 'P5Layer') {
+            const p5Controls = this.createP5Controls(layer);
+            item.appendChild(p5Controls);
+        }
+
         return item;
+    }
+
+    /**
+     * Create button to add P5 layer
+     * @returns {HTMLElement} Add P5 button element
+     */
+    createAddP5Button() {
+        const button = document.createElement('button');
+        button.className = 'add-p5-layer-btn';
+        button.style.cssText = `
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 150, 255, 0.2);
+            border: 2px dashed rgba(0, 150, 255, 0.5);
+            border-radius: 8px;
+            color: #00aaff;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        `;
+        button.textContent = '+ Add P5.js Layer';
+        
+        button.addEventListener('mouseover', () => {
+            button.style.background = 'rgba(0, 150, 255, 0.3)';
+            button.style.borderColor = 'rgba(0, 150, 255, 0.8)';
+        });
+        
+        button.addEventListener('mouseout', () => {
+            button.style.background = 'rgba(0, 150, 255, 0.2)';
+            button.style.borderColor = 'rgba(0, 150, 255, 0.5)';
+        });
+        
+        button.onclick = async () => {
+            try {
+                await this.app.addP5Layer();
+                this.updatePanel(); // Refresh to show new layer
+            } catch (error) {
+                console.error('Failed to add P5 layer:', error);
+                alert('Failed to add P5 layer. Check console for details.');
+            }
+        };
+        
+        return button;
+    }
+
+    /**
+     * Create P5-specific controls
+     * @param {P5Layer} layer - P5 layer instance
+     * @returns {HTMLElement} P5 controls element
+     */
+    createP5Controls(layer) {
+        const controls = document.createElement('div');
+        controls.style.cssText = `
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        `;
+
+        // Sketch status
+        const status = document.createElement('div');
+        status.style.cssText = `
+            font-size: 10px;
+            margin-bottom: 5px;
+        `;
+        
+        if (layer.hasSketchError()) {
+            status.innerHTML = `<span style="color: #ff6b6b;">❌ Error: ${layer.getLastError()}</span>`;
+        } else if (layer.isSketchRunning()) {
+            status.innerHTML = `<span style="color: #51cf66;">✅ Running</span>`;
+        } else {
+            status.innerHTML = `<span style="color: #ffd43b;">⏸️ Stopped</span>`;
+        }
+        controls.appendChild(status);
+
+        // Parameters list
+        const params = layer.getAllParameters();
+        if (Object.keys(params).length > 0) {
+            const paramsList = document.createElement('div');
+            paramsList.style.cssText = `
+                margin-top: 5px;
+                font-size: 10px;
+            `;
+            
+            const paramsTitle = document.createElement('div');
+            paramsTitle.textContent = 'P5 Parameters:';
+            paramsTitle.style.cssText = `
+                font-weight: bold;
+                margin-bottom: 5px;
+                color: #00aaff;
+            `;
+            paramsList.appendChild(paramsTitle);
+            
+            Object.entries(params).forEach(([name, param]) => {
+                const paramRow = document.createElement('div');
+                paramRow.style.cssText = `
+                    display: flex;
+                    justify-content: between;
+                    align-items: center;
+                    margin-bottom: 3px;
+                    padding: 2px 5px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 3px;
+                `;
+                
+                const paramInfo = document.createElement('span');
+                paramInfo.textContent = `${param.label}: ${param.value.toFixed(2)}`;
+                paramInfo.style.flex = '1';
+                
+                const midiTarget = document.createElement('span');
+                midiTarget.textContent = `p5:${name}`;
+                midiTarget.style.cssText = `
+                    font-family: monospace;
+                    font-size: 9px;
+                    color: #888;
+                `;
+                
+                paramRow.appendChild(paramInfo);
+                paramRow.appendChild(midiTarget);
+                paramsList.appendChild(paramRow);
+            });
+            
+            controls.appendChild(paramsList);
+        }
+
+        // Code editor button
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Edit Sketch';
+        editButton.style.cssText = `
+            margin-top: 5px;
+            padding: 5px 10px;
+            background: rgba(0, 150, 255, 0.3);
+            border: 1px solid rgba(0, 150, 255, 0.5);
+            border-radius: 4px;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+        `;
+        
+        editButton.onclick = () => {
+            this.openP5Editor(layer);
+        };
+        
+        controls.appendChild(editButton);
+
+        return controls;
+    }
+
+    /**
+     * Open P5 sketch editor (placeholder for now)
+     * @param {P5Layer} layer - P5 layer instance
+     */
+    openP5Editor(layer) {
+        // For now, just show the code in a prompt
+        // In a full implementation, this would open a proper code editor
+        const code = layer.getSketchCode();
+        const newCode = prompt('Edit P5 Sketch Code:', code);
+        
+        if (newCode && newCode !== code) {
+            layer.compileAndRun(newCode).then(() => {
+                this.updatePanel(); // Refresh to show changes
+            }).catch(error => {
+                alert(`Sketch error: ${error.message}`);
+            });
+        }
     }
 
     /**

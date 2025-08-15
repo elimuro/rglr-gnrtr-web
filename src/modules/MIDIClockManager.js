@@ -289,8 +289,21 @@ export class MIDIClockManager {
                     </div>
                 </div>
                 
-                <!-- Right side - Help button -->
+                <!-- Right side - P5 Code Editor and Help buttons -->
                 <div class="flex items-center justify-end gap-2 md:gap-4 mb-1 md:mb-0">
+                    <button id="p5-code-editor" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 3h5v5"/>
+                            <path d="M8 3H3v5"/>
+                            <path d="M12 22v-7"/>
+                            <path d="M3 12h18"/>
+                            <path d="M8 21h8"/>
+                            <path d="M8 3v4"/>
+                            <path d="M16 3v4"/>
+                        </svg>
+                        <span>P5 Code</span>
+                    </button>
+                    
                     <button id="midi-help" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">
                         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/>

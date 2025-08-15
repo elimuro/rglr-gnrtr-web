@@ -82,6 +82,25 @@ export class LayerManager {
     }
 
     /**
+     * Add a P5 layer
+     * @param {string} layerId - Layer ID
+     * @param {Object} config - Layer configuration
+     */
+    async addP5Layer(layerId = 'p5', config = {}) {
+        const { P5Layer } = await import('./layers/P5Layer.js');
+        
+        const p5Layer = new P5Layer(layerId, {
+            visible: true,
+            opacity: 1.0,
+            blendMode: 'normal',
+            ...config
+        });
+        
+        await this.addLayer(p5Layer);
+        return p5Layer;
+    }
+
+    /**
      * Add a layer to the system
      * @param {LayerBase} layer - Layer instance
      */
