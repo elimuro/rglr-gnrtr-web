@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Help Guide</title>
+    <title>RGLR GNRTR - Complete Help Guide</title>
     <link rel="stylesheet" href="tailwind.css">
     <style>
         /* Help page specific styles that complement the main CSS */
@@ -13,7 +12,6 @@
             gap: 16px;
             max-width: 1600px;
             margin: 0 auto;
-            /* Add centering back */
         }
 
         .help-container {
@@ -55,36 +53,6 @@
             margin-bottom: var(--spacing-md);
             padding-bottom: var(--spacing-sm);
             border-bottom: 1px solid var(--color-primary);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-        }
-
-        .nav-section-title:hover {
-            color: var(--color-primary);
-            opacity: 0.8;
-        }
-
-        .nav-section-toggle {
-            font-size: 12px;
-            transition: transform 0.3s ease;
-            color: var(--color-primary);
-        }
-
-        .nav-section-toggle.collapsed {
-            transform: rotate(-90deg);
-        }
-
-        .nav-section-content {
-            transition: max-height 0.3s ease, opacity 0.3s ease;
-            overflow: hidden;
-        }
-
-        .nav-section-content.collapsed {
-            max-height: 0;
-            opacity: 0;
         }
 
         .nav-item {
@@ -109,6 +77,68 @@
             font-weight: 600;
         }
 
+        .help-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .help-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .help-card:hover {
+            border-color: var(--color-primary);
+            background: #1e1e1e;
+            transform: translateY(-2px);
+        }
+
+        .help-card h3 {
+            color: var(--color-primary);
+            font-size: 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .help-card p {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .help-card-features {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.4;
+        }
+
+        .help-card-features ul {
+            margin: 0;
+            padding-left: 15px;
+        }
+
+        .quick-start {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+
+        .quick-start h3 {
+            color: var(--color-primary);
+            margin-bottom: 15px;
+        }
+
         @media (max-width: 1024px) {
             .help-layout {
                 flex-direction: column;
@@ -117,6 +147,11 @@
             .help-sidebar {
                 width: 100%;
                 position: static;
+                height: auto;
+            }
+
+            .help-card-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -127,1091 +162,336 @@
         <div class="help-layout">
             <!-- Sidebar Navigation -->
             <div class="help-sidebar">
-                <h3 class="nav-section-title">Table of Contents</h3>
+                <h3 class="nav-section-title">📚 Help Documentation</h3>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        Getting Started
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#getting-started" class="nav-item">Getting Started</a>
-                        <a href="#connection" class="nav-item">Connection</a>
+                    <h4 style="color: var(--color-primary); font-size: 14px; margin-bottom: 10px;">🚀 Getting Started</h4>
+                    <a href="general-setup-help.html" class="nav-item" target="_blank">🔧 General Setup Guide</a>
+                    <a href="#quick-start" class="nav-item">⚡ Quick Start</a>
+                    <a href="#overview" class="nav-item">📖 System Overview</a>
+                </div>
+
+                <div class="nav-section">
+                    <h4 style="color: var(--color-primary); font-size: 14px; margin-bottom: 10px;">📋 Reference Guides</h4>
+                    <a href="parameters-help.html" class="nav-item" target="_blank">📊 Complete Parameters Reference</a>
+                    <a href="animations-help.html" class="nav-item" target="_blank">🎬 Animation Types & Systems</a>
+                    <a href="presets-scenes-help.html" class="nav-item" target="_blank">💾 Presets & Scenes Guide</a>
+                </div>
+
+                <div class="nav-section">
+                    <h4 style="color: var(--color-primary); font-size: 14px; margin-bottom: 10px;">🎭 Layer System</h4>
+                    <a href="p5-layer-help.html" class="nav-item" target="_blank">🎨 P5 Layer Guide</a>
+                    <a href="#layers-overview" class="nav-item">🎭 Layer System Overview</a>
+                    <div style="padding-left: 15px; margin-top: 5px;">
+                        <div style="font-size: 12px; color: #666; font-style: italic;">Coming Soon:</div>
+                        <div style="font-size: 12px; color: #666;">• Shader Layer Guide</div>
+                        <div style="font-size: 12px; color: #666;">• Video Layer Guide</div>
+                        <div style="font-size: 12px; color: #666;">• Particle Layer Guide</div>
                     </div>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        MIDI Controls
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#cc-mappings" class="nav-item">CC Mappings</a>
-                        <a href="#note-controls" class="nav-item">Note Controls</a>
-                        <a href="#midi-learn" class="nav-item">MIDI Learn</a>
-    
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        NEW: BPM Timing System
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#bpm-timing-system" class="nav-item">BPM-Based Timing</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        NEW: MIDI Clock
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#midi-clock" class="nav-item">MIDI Clock Sync</a>
-                        <a href="#transport-controls" class="nav-item">Transport Controls</a>
-                        <a href="#tempo-divisions" class="nav-item">Tempo Divisions</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        NEW: Audio Mapping
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#audio-mapping" class="nav-item">Audio Frequency Mapping</a>
-                        <a href="#sensitivity-controls" class="nav-item">Sensitivity Controls</a>
-                        <a href="#frequency-ranges" class="nav-item">Frequency Ranges</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        NEW: Shape Morphing
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#shape-morphing" class="nav-item">Shape Morphing System</a>
-                        <a href="#morphing-controls" class="nav-item">Morphing Controls</a>
-                        <a href="#morphing-triggers" class="nav-item">MIDI Morphing Triggers</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        Parameters
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#parameter-reference" class="nav-item">Parameter Reference</a>
-                        <a href="#animation-params" class="nav-item">Animation Parameters</a>
-                        <a href="#center-scaling-params" class="nav-item">3D Center Scaling</a>
-                        <a href="#grid-params" class="nav-item">Grid Parameters</a>
-                        <a href="#material-params" class="nav-item">Material Parameters</a>
-                        <a href="#post-processing-params" class="nav-item">Post-Processing</a>
-                        <a href="#color-params" class="nav-item">Color Parameters</a>
-                        <a href="#lighting-params" class="nav-item">Lighting Parameters</a>
-                    </div>
-                </div>
-
-
-
-                <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        Presets
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#preset-management" class="nav-item">Preset Management</a>
-                        <a href="#built-in-presets" class="nav-item">Built-in Presets</a>
-                        <a href="#custom-presets" class="nav-item">Creating Custom Presets</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        Effects
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#post-processing-effects" class="nav-item">Post-Processing Effects</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        NEW: GUI Improvements
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#improved-dropdowns" class="nav-item">Improved Dropdown Controls</a>
-                        <a href="#animation-type-fix" class="nav-item">Animation Type Labels</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <h4 class="nav-section-title" onclick="toggleSection(this)">
-                        Help
-                        <span class="nav-section-toggle">▼</span>
-                    </h4>
-                    <div class="nav-section-content">
-                        <a href="#performance-tips" class="nav-item">Performance Tips</a>
-                        <a href="#troubleshooting" class="nav-item">Troubleshooting</a>
-                    </div>
+                    <h4 style="color: var(--color-primary); font-size: 14px; margin-bottom: 10px;">🎯 Advanced Topics</h4>
+                    <a href="#performance-tips" class="nav-item">⚡ Performance Optimization</a>
+                    <a href="#troubleshooting" class="nav-item">🔧 Troubleshooting</a>
+                    <a href="#workflow-tips" class="nav-item">💡 Workflow Tips</a>
                 </div>
             </div>
 
             <!-- Main Content -->
             <div class="help-main-content">
-                <h1 class="help-h1">Help Guide</h1>
+                <h1 class="help-h1">🎵 RGLR GNRTR - Complete Help Guide</h1>
+                <p style="font-size: 16px; color: #ccc; margin-bottom: 30px;">
+                    Welcome to the comprehensive documentation for RGLR GNRTR, a powerful real-time visual generator designed for live performance and creative expression. This guide covers everything from basic setup to advanced techniques.
+                </p>
 
-                <!-- Getting Started Section -->
-                <div id="getting-started" class="help-section">
-                    <h2 class="help-h2">Getting Started</h2>
-                    <p>Welcome to the visual generator! This app lets you create dynamic, animated visuals that respond to your MIDI controller, audio input, and musical timing. Here's how to get started:</p>
-
-                    <h3 class="help-h3">What You Can Do</h3>
-                    <ul>
-                        <li><strong>Control Visuals with MIDI:</strong> Use any MIDI controller to manipulate colors, shapes, animations, and effects in real-time</li>
-                        <li><strong>Sync to Music:</strong> All animations can sync to musical timing (BPM) for rhythmic, synchronized visuals</li>
-                        <li><strong>Audio Reactivity:</strong> Make visuals respond to your microphone input or audio playback</li>
-                        <li><strong>Shape Morphing:</strong> Create smooth transitions between different shape types</li>
-
-                    </ul>
-
-                    <div class="help-note">
-                        <strong>Browser Requirements:</strong> This app works best in Chrome, Edge, or Firefox. Make sure you're running over HTTPS or localhost for MIDI support.
-                    </div>
-                </div>
-
-                <div id="connection" class="help-section">
-                    <h2 class="help-h2">Connecting Your Devices</h2>
-                    
-                    <h3 class="help-h3">Connecting MIDI Controllers</h3>
-                    <ol>
-                        <li>Connect your MIDI controller to your computer via USB</li>
-                        <li>Click the "Connect MIDI" button in the MIDI interface panel</li>
-                        <li>Allow MIDI access when prompted by your browser</li>
-                        <li>You'll see a green "Connected" status when successful</li>
+                <!-- Quick Start Section -->
+                <div id="quick-start" class="quick-start">
+                    <h3>⚡ Quick Start - Get Creating in 5 Minutes</h3>
+                    <ol style="color: #ccc; line-height: 1.6;">
+                        <li><strong>Connect MIDI:</strong> Plug in your MIDI controller and click "Connect MIDI"</li>
+                        <li><strong>Load a Preset:</strong> Try "Essential Controls" for basic MIDI mappings</li>
+                        <li><strong>Load a Scene:</strong> Start with "RGLR Mode" for the classic aesthetic</li>
+                        <li><strong>Test Controls:</strong> Move knobs and see the visuals respond</li>
+                        <li><strong>Start Creating:</strong> Experiment with different parameters and scenes!</li>
                     </ol>
-
-                    <h3 class="help-h3">Setting Up Audio Input</h3>
-                    <ol>
-                        <li>Connect your microphone or audio interface</li>
-                        <li>Click "Connect Audio" in the audio mapping panel</li>
-                        <li>Allow microphone access when prompted</li>
-                        <li>You'll see real-time audio levels when connected</li>
-                    </ol>
-
-                    <div class="help-note">
-                        <strong>Supported Devices:</strong> Any MIDI controller (keyboards, drum machines, control surfaces) and any microphone or audio interface will work.
-                    </div>
+                    <p style="margin-top: 15px; font-size: 14px; color: #888;">
+                        Need help with setup? Check the <a href="general-setup-help.html" style="color: var(--color-primary);">General Setup Guide</a> for detailed instructions.
+                    </p>
                 </div>
 
-                <!-- CC Mappings Section -->
-                <div id="cc-mappings" class="help-section">
-                    <h2 class="help-h2">Mapping Parameters to MIDI Controls</h2>
-                    <p>This section explains how to map visual parameters to your MIDI controller knobs and sliders for real-time control.</p>
-
-                    <h3 class="help-h3">How CC Mappings Work</h3>
-                    <p>CC (Control Change) mappings let you use knobs, sliders, and other continuous controllers on your MIDI device to control visual parameters smoothly. Each knob can control one parameter, like color, animation speed, or effect intensity.</p>
-
-                    <h3 class="help-h3">Setting Up Your First Mapping</h3>
-                    <ol>
-                        <li>Click "+ Add New CC Control" to create a new mapping</li>
-                        <li>Select what you want to control from the dropdown (like "Color Hue" or "Animation Speed")</li>
-                        <li>Move a knob or slider on your MIDI controller</li>
-                        <li>Click the "Learn" button to automatically capture that control</li>
-                        <li>Your mapping is now active - move the knob to control the parameter!</li>
-                    </ol>
-
-                    <h3 class="help-h3">What You Can Control</h3>
-                    <ul>
-                        <li><strong>Colors:</strong> Hue, saturation, brightness, contrast</li>
-                        <li><strong>Animations:</strong> Speed, intensity, timing divisions</li>
-                        <li><strong>Shapes:</strong> Size, rotation, movement</li>
-                        <li><strong>Effects:</strong> Bloom, chromatic aberration, vignette, grain</li>
-                        <li><strong>Lighting:</strong> Ambient, directional, and point light intensities</li>
-                        <li><strong>Timing:</strong> Global BPM and musical divisions</li>
-                    </ul>
-
-                    <div class="help-note">
-                        <strong>Pro Tip:</strong> Start with just a few mappings and add more as you get comfortable. Most users find 4-8 controls to be the sweet spot for live performance.
-                    </div>
-                </div>
-
-                <!-- Note Controls Section -->
-                <div id="note-controls" class="help-section">
-                    <h2 class="help-h2">Using MIDI Notes as Triggers</h2>
-                    <p>MIDI notes work like buttons - press a key to trigger an action. Perfect for toggling effects on/off or triggering special actions.</p>
-
-                    <h3 class="help-h3">Setting Up Note Controls</h3>
-                    <ol>
-                        <li>Click "+ Add New Note Control" to create a new trigger</li>
-                        <li>Select what you want to trigger from the dropdown</li>
-                        <li>Press a key on your MIDI controller</li>
-                        <li>Click the "Learn" button to capture that key</li>
-                        <li>Now pressing that key will trigger the action!</li>
-                    </ol>
-
-                    <h3 class="help-h3">What You Can Trigger</h3>
-                    
-                    <div class="help-section">
-                        <h4 class="help-h4">Animation Controls</h4>
-                        <ul>
-                            <li><strong>Toggle Shape Cycling:</strong> Turn shape changes on/off</li>
-                            <li><strong>Toggle Size Animation:</strong> Turn size/movement/rotation animations on/off</li>
-                            <li><strong>Reset Animation:</strong> Reset all animations to starting values</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h4 class="help-h4">Shape Visibility</h4>
-                        <ul>
-                            <li><strong>Toggle Grid:</strong> Show/hide the background grid</li>
-                            <li><strong>Toggle Basic Shapes:</strong> Show/hide simple shapes (circles, squares)</li>
-                            <li><strong>Toggle Triangles:</strong> Show/hide triangle shapes</li>
-                            <li><strong>Toggle Rectangles:</strong> Show/hide rectangle shapes</li>
-                            <li><strong>Toggle Ellipses:</strong> Show/hide ellipse shapes</li>
-                            <li><strong>Toggle Refractive Spheres:</strong> Show/hide 3D sphere effects</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h4 class="help-h4">Visual Effects</h4>
-                        <ul>
-                            <li><strong>Toggle Bloom:</strong> Turn the glow effect on/off</li>
-                            <li><strong>Toggle Chromatic Aberration:</strong> Turn the color separation effect on/off</li>
-                            <li><strong>Toggle Vignette:</strong> Turn the edge darkening on/off</li>
-                            <li><strong>Toggle Film Grain:</strong> Turn the film grain noise on/off</li>
-                            <li><strong>Toggle Color Grading:</strong> Turn color adjustments on/off</li>
-                            <li><strong>Toggle Post Processing:</strong> Turn all effects on/off at once</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h4 class="help-h4">Shape Morphing</h4>
-                        <ul>
-                            <li><strong>Random Morph:</strong> Change one random shape to a different type</li>
-                            <li><strong>Morph All Shapes:</strong> Change all shapes with staggered timing</li>
-                            <li><strong>Morph All to Same:</strong> Change all shapes to the same type at once</li>
-                            <li><strong>Morph All Simultaneously:</strong> Change all shapes at the same time</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Note:</strong> MIDI notes work as simple on/off triggers. The velocity (how hard you press) only determines if the note is active, not the intensity of the action.
-                    </div>
-                </div>
-
-                <!-- MIDI Learn Section -->
-                <div id="midi-learn" class="help-section">
-                    <h2 class="help-h2">MIDI Learn Functionality</h2>
-                    <p>New controls feature a "Learn" button that automatically detects MIDI input:</p>
-                    <ol>
-                        <li>Click the "Learn" button on any control</li>
-                        <li>Send a MIDI CC or Note message from your device</li>
-                        <li>The system will automatically detect the channel and CC/Note number</li>
-                        <li>The control will be configured and ready to use</li>
-                    </ol>
-
-                    <div class="help-note">
-                        <strong>Note:</strong> The Learn function works for both CC and Note controls. For CC controls,
-                        it learns the CC number and channel. For Note controls, it learns the note number and channel.
-                    </div>
-                </div>
-
-                <!-- BPM-Based Timing System Section -->
-                <div id="bpm-timing-system" class="help-section">
-                    <h2 class="help-h2">BPM-Based Timing System</h2>
-                    <p>The application now uses a musical timing system where all animations sync to a global BPM (Beats Per Minute). This creates rhythmic, synchronized animations that follow musical time instead of arbitrary speeds.</p>
-                    
-                    <h3 class="help-h3">Global BPM Control</h3>
-                    <ul>
-                        <li><strong>Range:</strong> 60-300 BPM</li>
-                        <li><strong>Default:</strong> 120 BPM</li>
-                        <li><strong>MIDI Control:</strong> Can be mapped to any CC controller</li>
-                        <li><strong>External Sync:</strong> Automatically syncs to incoming MIDI clock</li>
-                    </ul>
-                    
-                    <h3 class="help-h3">Musical Timing Divisions</h3>
-                    <p>Each animation type can be set to different musical divisions, creating complex rhythmic patterns:</p>
-                    <ul>
-                        <li><strong>32nd Note:</strong> Very fast (1/8 beat) - 0.0625s at 120 BPM</li>
-                        <li><strong>16th Note:</strong> Fast (1/4 beat) - 0.125s at 120 BPM</li>
-                        <li><strong>8th Note:</strong> Medium-fast (1/2 beat) - 0.25s at 120 BPM</li>
-                        <li><strong>Quarter Note:</strong> Medium (1 beat) - 0.5s at 120 BPM</li>
-                        <li><strong>Half Note:</strong> Slow (2 beats) - 1s at 120 BPM</li>
-                        <li><strong>Whole Note:</strong> Very slow (4 beats) - 2s at 120 BPM</li>
-                        <li><strong>1 Bar:</strong> Very slow (4 beats) - 2s at 120 BPM</li>
-                        <li><strong>2 Bars:</strong> Extremely slow (8 beats) - 4s at 120 BPM</li>
-                        <li><strong>4 Bars:</strong> Very long (16 beats) - 8s at 120 BPM</li>
-                        <li><strong>8 Bars:</strong> Longest (32 beats) - 16s at 120 BPM</li>
-                    </ul>
-                    
-                    <h3 class="help-h3">Animation Types with Musical Timing</h3>
-                    <ul>
-                        <li><strong>Movement:</strong> Shapes move in rhythmic patterns</li>
-                        <li><strong>Rotation:</strong> Shapes rotate at musical intervals</li>
-                        <li><strong>Scaling:</strong> Shapes scale in time with the beat</li>
-                        <li><strong>Shape Cycling:</strong> Shapes change at musical divisions</li>
-                        <li><strong>Morphing:</strong> Shape morphing follows musical timing</li>
-                        <li><strong>Center Scaling:</strong> 3D scaling pulses with the rhythm</li>
-                    </ul>
-                    
-                    <h3 class="help-h3">MIDI Clock Integration</h3>
-                    <ul>
-                        <li><strong>External Clock:</strong> Automatically detects and syncs to MIDI clock</li>
-                        <li><strong>BPM Detection:</strong> Calculates BPM from incoming clock signals</li>
-                        <li><strong>Transport Control:</strong> Start/Stop/Continue messages control animation</li>
-                        <li><strong>Tap Tempo:</strong> Press 'T' key to set BPM from manual taps</li>
-                    </ul>
-                    
-                    <div class="help-note">
-                        <strong>Musical Synchronization:</strong> This system allows for precise musical timing and synchronization with external MIDI devices, DAWs, and other musical equipment. All animations become rhythmically coherent and can be used for live performance or synchronized video creation.
-                    </div>
-                </div>
-
-
-
-                <!-- NEW: MIDI Clock Section -->
-                <div id="midi-clock" class="help-section">
-                    <h2 class="help-h2">NEW: MIDI Clock Synchronization</h2>
-                    <p>The application now supports MIDI clock synchronization for precise timing control:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Clock Messages</h3>
-                        <ul>
-                            <li><strong>MIDI Clock (0xF8):</strong> 24 pulses per quarter note for precise timing</li>
-                            <li><strong>MIDI Start (0xFA):</strong> Starts the transport and resets to beginning</li>
-                            <li><strong>MIDI Continue (0xFB):</strong> Continues from current position</li>
-                            <li><strong>MIDI Stop (0xFC):</strong> Stops the transport</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Clock Features</h3>
-                        <ul>
-                            <li><strong>Real-time BPM Detection:</strong> Automatically calculates and displays BPM from external clock</li>
-                            <li><strong>Clock Source Detection:</strong> Shows whether using external or internal clock</li>
-                            <li><strong>Transport Controls:</strong> Play, Stop, and Reset buttons in bottom transport bar</li>
-                            <li><strong>Animation Sync:</strong> Animations can be synchronized to musical timing</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Clock Status Indicators:</strong> The bottom transport bar shows:
-                        <ul>
-                            <li><strong>Green dot:</strong> External clock active</li>
-                            <li><strong>Yellow dot:</strong> Internal clock active</li>
-                            <li><strong>Red dot:</strong> Clock stopped</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div id="transport-controls" class="help-section">
-                    <h2 class="help-h2">Transport Controls</h2>
-                    <p>The bottom transport bar provides comprehensive clock and transport control:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Transport Buttons</h3>
-                        <ul>
-                            <li><strong>Play:</strong> Start internal clock when no external clock is present</li>
-                            <li><strong>Stop:</strong> Stop all clock activity</li>
-                            <li><strong>Reset:</strong> Reset clock position to beginning</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Clock Display</h3>
-                        <ul>
-                            <li><strong>BPM Display:</strong> Shows current tempo (updates in real-time)</li>
-                            <li><strong>Clock Source:</strong> Shows "External Clock", "Internal Clock", or "Clock Stopped"</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div id="tempo-divisions" class="help-section">
-                    <h2 class="help-h2">Tempo Divisions</h2>
-                    <p>Control the musical subdivision for synchronized animations:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Available Divisions</h3>
-                        <ul>
-                            <li><strong>Whole Note:</strong> 96 pulses (4 beats)</li>
-                            <li><strong>Half Note:</strong> 48 pulses (2 beats)</li>
-                            <li><strong>Quarter Note:</strong> 24 pulses (1 beat) - Default</li>
-                            <li><strong>Eighth Note:</strong> 12 pulses (1/2 beat)</li>
-                            <li><strong>Sixteenth Note:</strong> 6 pulses (1/4 beat)</li>
-                            <li><strong>Thirty-Second Note:</strong> 3 pulses (1/8 beat)</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Sync Modes</h3>
-                        <ul>
-                            <li><strong>Auto:</strong> Automatically syncs to external clock when available</li>
-                            <li><strong>Manual:</strong> Manual control of internal clock</li>
-                            <li><strong>Off:</strong> Disables clock synchronization</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- NEW: Audio Mapping Section -->
-                <div id="audio-mapping" class="help-section">
-                    <h2 class="help-h2">NEW: Audio Frequency Mapping</h2>
-                    <p>The application now supports real-time audio analysis and frequency-based parameter control:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Audio Mapping Features</h3>
-                        <ul>
-                            <li><strong>Frequency Range Selection:</strong> Choose specific frequency ranges to monitor</li>
-                            <li><strong>Real-time Analysis:</strong> Continuous audio analysis with visual feedback</li>
-                            <li><strong>Parameter Mapping:</strong> Map any audio frequency to any visual parameter</li>
-                            <li><strong>Sensitivity Control:</strong> Adjust the intensity of audio effects</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Frequency Bands</h3>
-                        <ul>
-                            <li><strong>Overall:</strong> Full frequency spectrum analysis</li>
-                            <li><strong>RMS:</strong> Root Mean Square energy measurement</li>
-                            <li><strong>Peak:</strong> Peak amplitude detection</li>
-                            <li><strong>Dominant Frequency:</strong> Most prominent frequency component</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Audio Input:</strong> The application requires microphone access for audio analysis. 
-                        Allow microphone permissions when prompted.
-                    </div>
-                </div>
-
-                <div id="sensitivity-controls" class="help-section">
-                    <h2 class="help-h2">Sensitivity Controls</h2>
-                    <p>Each audio mapping includes a sensitivity slider for fine-tuned control:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Sensitivity Settings</h3>
-                        <ul>
-                            <li><strong>0.0:</strong> No effect (audio input is ignored)</li>
-                            <li><strong>1.0:</strong> Normal effect (default)</li>
-                            <li><strong>2.0:</strong> Double effect (audio input is amplified)</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Application Order:</strong> Sensitivity is applied after curve transformation but before 
-                        min/max range mapping, allowing for precise control over audio reactivity.
-                    </div>
-                </div>
-
-                <div id="frequency-ranges" class="help-section">
-                    <h2 class="help-h2">Frequency Range Selection</h2>
-                    <p>Use the frequency range slider to select specific frequency bands:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Range Selection</h3>
-                        <ul>
-                            <li><strong>Low Frequencies:</strong> 20Hz - 250Hz (bass and kick drums)</li>
-                            <li><strong>Low-Mid Frequencies:</strong> 250Hz - 2000Hz (vocals and instruments)</li>
-                            <li><strong>High-Mid Frequencies:</strong> 2000Hz - 8000Hz (cymbals and effects)</li>
-                            <li><strong>High Frequencies:</strong> 8000Hz - 20000Hz (brightness and air)</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Visual Feedback:</strong> The frequency slider shows real-time audio levels across 
-                        the selected frequency range for easy monitoring and adjustment.
-                    </div>
-                </div>
-
-                <!-- NEW: Shape Morphing Section -->
-                <div id="shape-morphing" class="help-section">
-                    <h2 class="help-h2">NEW: Shape Morphing System</h2>
-                    <p>The application now includes an advanced shape morphing system that allows smooth transitions between different shape types with MIDI control:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Morphing Features</h3>
-                        <ul>
-                            <li><strong>Real-time Morphing:</strong> Smooth transitions between shape types</li>
-                            <li><strong>MIDI Trigger Control:</strong> Use MIDI notes to trigger morphing actions</li>
-                            <li><strong>Multiple Morph Types:</strong> Random, all shapes, synchronized, and more</li>
-                            <li><strong>Musical Timing:</strong> Morphing can sync to BPM and musical divisions</li>
-                            <li><strong>Easing Control:</strong> Customizable easing functions for smooth animations</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Supported Shape Types</h3>
-                        <ul>
-                            <li><strong>Basic Shapes:</strong> Circles, squares, triangles</li>
-                            <li><strong>Complex Shapes:</strong> Ellipses, rectangles, refractive spheres</li>
-                            <li><strong>3D Shapes:</strong> Spheres with advanced materials</li>
-                            <li><strong>Custom Shapes:</strong> User-defined geometric forms</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Performance:</strong> The morphing system uses GSAP for smooth animations and includes 
-                        object pooling for optimal performance during complex morphing sequences.
-                    </div>
-                </div>
-
-                <div id="morphing-controls" class="help-section">
-                    <h2 class="help-h2">Morphing Controls</h2>
-                    <p>The morphing system provides several control options for different morphing behaviors:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Manual Morphing Controls</h3>
-                        <ul>
-                            <li><strong>Random Morph:</strong> Morphs one random shape to a different type</li>
-                            <li><strong>Morph All Shapes:</strong> Morphs all shapes with staggered timing</li>
-                            <li><strong>Morph All to Same:</strong> Morphs all shapes to the same target type</li>
-                            <li><strong>Morph All Simultaneously:</strong> Morphs all shapes at the same time</li>
-                            <li><strong>Morph All to Same Simultaneously:</strong> Morphs all shapes to the same type at once</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Morphing Parameters</h3>
-                        <ul>
-                            <li><strong>Morphing Speed:</strong> Controls the duration of morphing animations (0.5-5.0 seconds)</li>
-                            <li><strong>Morphing Easing:</strong> Selects the easing function for smooth transitions</li>
-                            <li><strong>Morphing Division:</strong> Musical timing division for synchronized morphing</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Available Easing Functions</h3>
-                        <ul>
-                            <li><strong>Power Functions:</strong> Power 2/3 In/Out/InOut for smooth acceleration</li>
-                            <li><strong>Back Functions:</strong> Back In/Out/InOut for overshoot effects</li>
-                            <li><strong>Elastic Functions:</strong> Elastic In/Out/InOut for bouncy effects</li>
-                            <li><strong>Bounce Functions:</strong> Bounce In/Out/InOut for bouncing effects</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div id="morphing-triggers" class="help-section">
-                    <h2 class="help-h2">MIDI Morphing Triggers</h2>
-                    <p>Use MIDI notes to trigger morphing actions in real-time:</p>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Available MIDI Triggers</h3>
-                        <ul>
-                            <li><strong>Random Morph:</strong> Triggers random shape morphing</li>
-                            <li><strong>Morph All Shapes:</strong> Triggers morphing of all shapes</li>
-                            <li><strong>Morph All to Same:</strong> Triggers synchronized morphing to same type</li>
-                            <li><strong>Morph All Simultaneously:</strong> Triggers simultaneous morphing</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Setting Up MIDI Morphing</h3>
-                        <ol>
-                            <li>Open the "Notes" drawer in the MIDI interface</li>
-                            <li>Click "Add Note Control" to create new note controls</li>
-                            <li>Select a morphing target from the dropdown (e.g., "Random Morph")</li>
-                            <li>Set the MIDI note number and channel</li>
-                            <li>Use the "Learn" button to automatically capture MIDI input</li>
-                            <li>Press the assigned MIDI note to trigger the morphing action</li>
-                        </ol>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Default Mapping:</strong> New note controls automatically cycle through the four morphing 
-                        trigger types, making it easy to set up a complete morphing control system.
-                    </div>
-
-                    <div class="help-section">
-                        <h3 class="help-h3">Example MIDI Setup</h3>
-                        <ul>
-                            <li><strong>Note 36:</strong> Random Morph</li>
-                            <li><strong>Note 37:</strong> Morph All Shapes</li>
-                            <li><strong>Note 38:</strong> Morph All to Same</li>
-                            <li><strong>Note 39:</strong> Morph All Simultaneously</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Parameter Reference Section -->
-                <div id="parameter-reference" class="help-section">
-                    <h2 class="help-h2">What Each Parameter Does</h2>
-                    <p>This section explains what each visual parameter controls and how it affects your composition. Use this as a guide when mapping your MIDI controller.</p>
-
-                    <div id="animation-params" class="help-section">
-                        <h3 class="help-h3">Animation Controls</h3>
-                        <p>These parameters control how your shapes move, rotate, and change over time:</p>
-                        <ul>
-                            <li><strong>Global BPM:</strong> Sets the master tempo (60-300 BPM) - all animations sync to this speed</li>
-                            <li><strong>Movement Amplitude:</strong> How far shapes move from their center position</li>
-                            <li><strong>Rotation Amplitude:</strong> How much shapes rotate around their center</li>
-                            <li><strong>Scale Amplitude:</strong> How much shapes grow and shrink</li>
-                            <li><strong>Randomness:</strong> Adds unpredictable variation to animations</li>
-                            <li><strong>Cell Size:</strong> Controls the size of individual shapes</li>
-                        </ul>
-                        
-                        <h4 class="help-h4">Musical Timing</h4>
-                        <p>All animations sync to musical time instead of arbitrary speeds. These controls let you set how often each animation happens relative to the beat:</p>
-                        <ul>
-                            <li><strong>Movement Division:</strong> How often shapes move:
-                                <ul>
-                                    <li><strong>32nd Note:</strong> Very fast (1/8 beat)</li>
-                                    <li><strong>16th Note:</strong> Fast (1/4 beat)</li>
-                                    <li><strong>8th Note:</strong> Medium-fast (1/2 beat)</li>
-                                    <li><strong>Quarter Note:</strong> Medium (1 beat)</li>
-                                    <li><strong>Half Note:</strong> Slow (2 beats)</li>
-                                    <li><strong>Whole Note:</strong> Very slow (4 beats)</li>
-                                    <li><strong>1 Bar:</strong> Very slow (4 beats)</li>
-                                    <li><strong>2 Bars:</strong> Extremely slow (8 beats)</li>
-                                    <li><strong>4 Bars:</strong> Very long (16 beats)</li>
-                                    <li><strong>8 Bars:</strong> Longest (32 beats)</li>
-                                </ul>
-                            </li>
-                            <li><strong>Rotation Division:</strong> How often shapes rotate (same timing options)</li>
-                            <li><strong>Scale Division:</strong> How often shapes grow/shrink (same timing options)</li>
-                            <li><strong>Shape Cycling Division:</strong> How often shapes change type (same timing options)</li>
-                            <li><strong>Morphing Division:</strong> How often morphing happens (same timing options)</li>
-                            <li><strong>Center Scaling Division:</strong> How often 3D depth effects pulse (same timing options)</li>
-                        </ul>
-                        
-                        <div class="help-note">
-                            <strong>Pro Tip:</strong> Try setting different divisions for different animations to create complex, layered rhythms. For example, set movement to quarter notes and rotation to 16th notes for interesting patterns.
-                        </div>
-                    </div>
-
-                    <div id="morphing-params" class="help-section">
-                        <h3 class="help-h3">Morphing Parameters</h3>
-                        <ul>
-                            <li><strong>morphingDivision:</strong> Controls the musical timing division for morphing animations (same divisions as movement)</li>
-                            <li><strong>morphingEasing:</strong> Controls the easing function for morphing animations:
-                                <ul>
-                                    <li><strong>Power Functions:</strong> Power 2/3 In/Out/InOut for smooth acceleration</li>
-                                    <li><strong>Back Functions:</strong> Back In/Out/InOut for overshoot effects</li>
-                                    <li><strong>Elastic Functions:</strong> Elastic In/Out/InOut for bouncy effects</li>
-                                    <li><strong>Bounce Functions:</strong> Bounce In/Out/InOut for bouncing effects</li>
-                                </ul>
-                            </li>
-                        </ul>
-                        
-                        <div class="help-note">
-                            <strong>Morphing Triggers:</strong> Morphing can be triggered via MIDI notes using the following targets:
+                <!-- Help Cards Grid -->
+                <div class="help-card-grid">
+                    <!-- General Setup Card -->
+                    <div class="help-card" onclick="window.open('general-setup-help.html', '_blank')">
+                        <h3>🔧 General Setup Guide</h3>
+                        <p>Essential setup instructions for MIDI controllers, audio input, and browser requirements. Start here if you're new to the system.</p>
+                        <div class="help-card-features">
                             <ul>
-                                <li><code>randomMorph</code> - Triggers random shape morphing</li>
-                                <li><code>morphAllShapes</code> - Triggers morphing of all shapes</li>
-                                <li><code>morphAllToSame</code> - Triggers synchronized morphing to same type</li>
-                                <li><code>morphAllSimultaneously</code> - Triggers simultaneous morphing</li>
+                                <li>MIDI controller setup and connection</li>
+                                <li>Audio input configuration</li>
+                                <li>MIDI Learn functionality</li>
+                                <li>MIDI Clock synchronization</li>
+                                <li>Troubleshooting common issues</li>
                             </ul>
                         </div>
                     </div>
 
-                    <div id="center-scaling-params" class="help-section">
-                        <h3 class="help-h3">3D Center Scaling Parameters</h3>
-                        <p>These parameters control the 3D depth effect by scaling shapes based on their distance from the center of the grid:</p>
-                        <ul>
-                            <li><strong>centerScalingEnabled:</strong> Toggles the 3D center scaling effect on/off</li>
-                            <li><strong>centerScalingIntensity:</strong> Controls the strength of the scaling effect (0-2)</li>
-                            <li><strong>centerScalingCurve:</strong> Selects the scaling curve function:
-                                <ul>
-                                    <li><strong>0 - Linear:</strong> Uniform scaling from center to edge</li>
-                                    <li><strong>1 - Exponential:</strong> Sharp scaling near center, gradual at edges</li>
-                                    <li><strong>2 - Logarithmic:</strong> Gradual scaling near center, sharp at edges</li>
-                                    <li><strong>3 - Sine Wave:</strong> Smooth wave-like scaling pattern</li>
-                                </ul>
-                            </li>
-                            <li><strong>centerScalingRadius:</strong> Controls the maximum distance where scaling applies (0.1-5)</li>
-                            <li><strong>centerScalingDirection:</strong> Controls the scaling direction:
-                                <ul>
-                                    <li><strong>0 - Convex:</strong> Shapes larger at center, smaller at edges (dome effect)</li>
-                                    <li><strong>1 - Concave:</strong> Shapes smaller at center, larger at edges (bowl effect)</li>
-                                </ul>
-                            </li>
-                            <li><strong>centerScalingAnimation:</strong> Enables animated scaling effects</li>
-                            <li><strong>centerScalingDivision:</strong> Controls the timing of center scaling animations using musical divisions (same as movement divisions)</li>
-                            <li><strong>centerScalingAnimationType:</strong> Controls the type of scaling animation (0-3)</li>
-                        </ul>
-                        
-                        <div class="help-note">
-                            <strong>Visual Effects:</strong> The center scaling system creates depth perception by making shapes appear closer or further away based on their position relative to the grid center. This creates a 3D effect on an otherwise 2D grid.
+                    <!-- Parameters Reference Card -->
+                    <div class="help-card" onclick="window.open('parameters-help.html', '_blank')">
+                        <h3>📊 Parameters Reference</h3>
+                        <p>Complete reference for every parameter available for MIDI and audio mapping. Includes ranges, descriptions, and performance tips.</p>
+                        <div class="help-card-features">
+                            <ul>
+                                <li>Grid and composition parameters</li>
+                                <li>Animation controls (movement, rotation, scale)</li>
+                                <li>Material and lighting parameters</li>
+                                <li>Post-processing effects</li>
+                                <li>Layer-specific parameters</li>
+                            </ul>
                         </div>
                     </div>
 
-                    <div id="grid-params" class="help-section">
-                        <h3 class="help-h3">Grid Parameters</h3>
-                        <ul>
-                            <li><strong>gridWidth:</strong> Controls the width of the grid</li>
-                            <li><strong>gridHeight:</strong> Controls the height of the grid</li>
-                            <li><strong>compositionWidth:</strong> Controls the composition width</li>
-                            <li><strong>compositionHeight:</strong> Controls the composition height</li>
-                        </ul>
+                    <!-- Animation Types Card -->
+                    <div class="help-card" onclick="window.open('animations-help.html', '_blank')">
+                        <h3>🎬 Animation Types & Systems</h3>
+                        <p>Deep dive into the animation system, musical timing, and how to create compelling visual movement synchronized to your music.</p>
+                        <div class="help-card-features">
+                            <ul>
+                                <li>Musical timing and BPM synchronization</li>
+                                <li>Movement, rotation, and scale animations</li>
+                                <li>Shape cycling and morphing systems</li>
+                                <li>3D center scaling effects</li>
+                                <li>Combining multiple animations</li>
+                            </ul>
+                        </div>
                     </div>
 
-                    <div id="material-params" class="help-section">
-                        <h3 class="help-h3">Material Parameters</h3>
-                        <ul>
-                            <li><strong>sphereRefraction:</strong> Controls sphere refraction</li>
-                            <li><strong>sphereTransparency:</strong> Controls sphere transparency</li>
-                            <li><strong>sphereTransmission:</strong> Controls sphere transmission</li>
-                            <li><strong>sphereRoughness:</strong> Controls sphere roughness</li>
-                            <li><strong>sphereMetalness:</strong> Controls sphere metalness</li>
-                            <li><strong>sphereScale:</strong> Controls sphere scale</li>
-                            <li><strong>sphereClearcoat:</strong> Controls sphere clearcoat</li>
-                            <li><strong>sphereClearcoatRoughness:</strong> Controls sphere clearcoat roughness</li>
-                            <li><strong>sphereEnvMapIntensity:</strong> Controls sphere environment map intensity</li>
-                        </ul>
+                    <!-- Presets & Scenes Card -->
+                    <div class="help-card" onclick="window.open('presets-scenes-help.html', '_blank')">
+                        <h3>💾 Presets & Scenes Guide</h3>
+                        <p>Learn to use and create presets and scenes for efficient workflow and consistent visual configurations across performances.</p>
+                        <div class="help-card-features">
+                            <ul>
+                                <li>Understanding presets vs scenes</li>
+                                <li>Available preset and scene library</li>
+                                <li>Creating custom configurations</li>
+                                <li>Live performance workflows</li>
+                                <li>File management and organization</li>
+                            </ul>
+                        </div>
                     </div>
 
-                    <div id="post-processing-params" class="help-section">
-                        <h3 class="help-h3">Visual Effects</h3>
-                        <p>These parameters add cinematic and artistic effects to your composition:</p>
-                        <ul>
-                            <li><strong>Bloom Strength:</strong> Controls the glow effect around bright areas</li>
-                            <li><strong>Bloom Radius:</strong> How far the glow effect spreads</li>
-                            <li><strong>Bloom Threshold:</strong> How bright an area needs to be to glow</li>
-                            <li><strong>Chromatic Intensity:</strong> Creates color separation effects (like old film)</li>
-                            <li><strong>Vignette Intensity:</strong> Darkens the edges of the frame</li>
-                            <li><strong>Vignette Radius:</strong> How far from the center the darkening starts</li>
-                            <li><strong>Vignette Softness:</strong> How gradual the edge darkening is</li>
-                            <li><strong>Grain Intensity:</strong> Adds film grain texture for a vintage look</li>
-                        </ul>
+                    <!-- P5 Layer Card -->
+                    <div class="help-card" onclick="window.open('p5-layer-help.html', '_blank')">
+                        <h3>🎨 P5 Layer Guide</h3>
+                        <p>Comprehensive guide to the P5.js layer system, including how to write custom sketches and expose parameters for MIDI control.</p>
+                        <div class="help-card-features">
+                            <ul>
+                                <li>P5.js sketch development</li>
+                                <li>Parameter exposure with p5Param()</li>
+                                <li>MIDI mapping to P5 parameters</li>
+                                <li>Code examples and templates</li>
+                                <li>Best practices and optimization</li>
+                            </ul>
+                        </div>
                     </div>
 
-                    <div id="color-params" class="help-section">
-                        <h3 class="help-h3">Color Controls</h3>
-                        <p>These parameters control the overall color and appearance of your composition:</p>
-                        <ul>
-                            <li><strong>Color Hue:</strong> Changes the base color (red, blue, green, etc.)</li>
-                            <li><strong>Color Saturation:</strong> Controls how vivid or muted the colors are</li>
-                            <li><strong>Color Brightness:</strong> Makes everything brighter or darker</li>
-                            <li><strong>Color Contrast:</strong> Increases or decreases the difference between light and dark areas</li>
-                        </ul>
-                    </div>
-
-                    <div id="lighting-params" class="help-section">
-                        <h3 class="help-h3">Lighting Parameters</h3>
-                        <ul>
-                            <li><strong>ambientLightIntensity:</strong> Controls ambient light intensity</li>
-                            <li><strong>directionalLightIntensity:</strong> Controls directional light intensity</li>
-                            <li><strong>pointLight1Intensity:</strong> Controls point light 1 intensity</li>
-                            <li><strong>pointLight2Intensity:</strong> Controls point light 2 intensity</li>
-                            <li><strong>rimLightIntensity:</strong> Controls rim light intensity</li>
-                            <li><strong>accentLightIntensity:</strong> Controls accent light intensity</li>
-                        </ul>
+                    <!-- Coming Soon Card -->
+                    <div class="help-card" style="opacity: 0.6; cursor: default;" onclick="">
+                        <h3>🚧 More Layer Guides</h3>
+                        <p>Additional layer documentation is coming soon as new layer types are implemented.</p>
+                        <div class="help-card-features">
+                            <ul>
+                                <li>Shader Layer Guide (Coming Soon)</li>
+                                <li>Video Layer Guide (Coming Soon)</li>
+                                <li>Particle Layer Guide (Coming Soon)</li>
+                                <li>Image Layer Guide (Coming Soon)</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
+                <!-- System Overview Section -->
+                <div id="overview" class="help-section">
+                    <h2 class="help-h2">📖 System Overview</h2>
+                    <p>RGLR GNRTR is a browser-based real-time visual generator designed for live performance, music visualization, and creative expression. The system features a modular architecture with multiple layers, comprehensive MIDI control, and audio-reactive capabilities.</p>
 
-
-                <!-- Preset Management Section -->
-                <div id="preset-management" class="help-section">
-                    <h2 class="help-h2">Preset Management</h2>
-                    <p>You can save and load custom control mapping presets (MIDI + Audio):</p>
+                    <h3 class="help-h3">🏗️ Core Architecture</h3>
                     <ul>
-                        <li><strong>Save Preset:</strong> Exports your current MIDI and audio mappings to a JSON file</li>
-                        <li><strong>Load Preset:</strong> Imports a previously saved preset file</li>
-                        <li><strong>Built-in Presets:</strong> Quick access to common mapping configurations</li>
+                        <li><strong>Multi-Layer System:</strong> Composable visual layers (P5.js, Shader, Video, Particle)</li>
+                        <li><strong>MIDI Integration:</strong> Complete MIDI controller support with learning and mapping</li>
+                        <li><strong>Audio Analysis:</strong> Real-time frequency analysis for audio-reactive visuals</li>
+                        <li><strong>Musical Timing:</strong> BPM-synchronized animations with MIDI clock support</li>
+                        <li><strong>Preset System:</strong> Save and load parameter configurations and complete scenes</li>
                     </ul>
+
+                    <h3 class="help-h3">🎛️ Control Methods</h3>
+                    <ul>
+                        <li><strong>MIDI Controllers:</strong> Hardware knobs, faders, and buttons</li>
+                        <li><strong>Audio Input:</strong> Microphone or line input for audio-reactive control</li>
+                        <li><strong>GUI Controls:</strong> On-screen sliders and controls</li>
+                        <li><strong>Keyboard Shortcuts:</strong> Quick access to common functions</li>
+                        <li><strong>Automation:</strong> Time-based and musical timing automation</li>
+                    </ul>
+
+                    <h3 class="help-h3">🎨 Visual Capabilities</h3>
+                    <ul>
+                        <li><strong>3D Rendering:</strong> WebGL-based 3D graphics with lighting and materials</li>
+                        <li><strong>Shape Generation:</strong> Procedural geometric shapes with morphing</li>
+                        <li><strong>Post-Processing:</strong> Bloom, chromatic aberration, vignette, film grain</li>
+                        <li><strong>Color Grading:</strong> HSB color control with real-time adjustment</li>
+                        <li><strong>Custom Shaders:</strong> GLSL shader support for advanced effects</li>
+                    </ul>
+                </div>
+
+                <!-- Layer System Overview -->
+                <div id="layers-overview" class="help-section">
+                    <h2 class="help-h2">🎭 Multi-Layer Visual System</h2>
+                    <p>The layer system allows you to combine different types of visual content, creating rich, complex compositions from multiple sources.</p>
+
+                    <h3 class="help-h3">Available Layer Types</h3>
+                    <ul>
+                        <li><strong>🎨 P5 Layer:</strong> Custom p5.js sketches with parameter exposure</li>
+                        <li><strong>🔺 Shader Layer:</strong> Custom GLSL shaders (Coming Soon)</li>
+                        <li><strong>🎬 Video Layer:</strong> Video playback with effects (Coming Soon)</li>
+                        <li><strong>✨ Particle Layer:</strong> GPU-accelerated particle systems (Coming Soon)</li>
+                        <li><strong>🖼️ Image Layer:</strong> Static and animated images (Coming Soon)</li>
+                    </ul>
+
+                    <h3 class="help-h3">Layer MIDI Control</h3>
+                    <p>Each layer can expose its own parameters for MIDI control. The dual-dropdown system allows one MIDI input to control both:</p>
+                    <ul>
+                        <li><strong>Primary Target:</strong> Main grid/animation parameters</li>
+                        <li><strong>Layer Target:</strong> Layer-specific parameters (e.g., P5 sketch parameters)</li>
+                    </ul>
+
+                    <h3 class="help-h3">Using the Layer Panel</h3>
+                    <ol>
+                        <li><strong>Open Layer Panel:</strong> Click the layers icon in the left sidebar</li>
+                        <li><strong>Add Layers:</strong> Click "Add Layer" and choose the layer type</li>
+                        <li><strong>Configure Layers:</strong> Set up layer-specific parameters</li>
+                        <li><strong>Arrange Layers:</strong> Drag to reorder layer stacking</li>
+                        <li><strong>Blend Modes:</strong> Choose how layers composite together</li>
+                    </ol>
 
                     <div class="help-note">
-                        <strong>Preset File Format:</strong> Presets are saved as JSON files with the following
-                        structure:
-                        <pre class="help-pre">{
-  "name": "Preset Name",
-  "description": "Description",
-  "version": "1.0",
-  "created": "2024-01-15T10:30:00Z",
-  "midiCCMappings": {
-    "cc1": { "channel": 0, "value": 1, "target": "globalBPM" },
-    "cc2": { "channel": 1, "value": 1, "target": "movementAmplitude" },
-    "cc3": { "channel": 2, "value": 1, "target": "movementDivision" },
-    "cc4": { "channel": 3, "value": 1, "target": "rotationDivision" },
-    "cc5": { "channel": 4, "value": 1, "target": "scaleDivision" },
-    "cc6": { "channel": 5, "value": 1, "target": "morphingDivision" }
-  },
-  "midiNoteMappings": {
-    "note1": { "channel": 0, "note": 60, "target": "shapeCycling" },
-    "note2": { "channel": 0, "note": 61, "target": "sizeAnimation" }
-  },
-  "audioMappings": {
-    "audio1": { 
-      "minFrequency": 250, 
-      "maxFrequency": 2000, 
-      "target": "movementAmplitude", 
-      "minValue": 0, 
-      "maxValue": 1, 
-      "curve": "linear", 
-      "sensitivity": 1.0 
-    },
-    "audio2": { 
-      "minFrequency": 2000, 
-      "maxFrequency": 8000, 
-      "target": "rotationAmplitude", 
-      "minValue": 0, 
-      "maxValue": 1, 
-      "curve": "exponential", 
-      "sensitivity": 1.5 
-    }
-  }
-}</pre>
+                        <strong>P5 Layer Quick Start:</strong> Check out the <a href="p5-layer-help.html" style="color: var(--color-primary);">P5 Layer Guide</a> for detailed instructions on creating custom p5.js sketches and exposing parameters for MIDI control.
                     </div>
                 </div>
-
-                <!-- Built-in Presets Section -->
-                <div id="built-in-presets" class="help-section">
-                    <h2 class="help-h2">Available Built-in Presets</h2>
-                    <p>The application includes several pre-configured presets optimized for different MIDI controllers:
-                    </p>
-
-                    <div class="help-section">
-                        <h4 class="help-h3">Sample Multi-Channel Preset</h4>
-                        <p>A sample preset that uses different MIDI channels for each parameter. Useful for testing and
-                            understanding the mapping structure.</p>
-                    </div>
-
-                    <div class="help-section">
-                        <h4 class="help-h3">Novation Launch Control XL</h4>
-                        <p>Optimized for Novation Launch Control XL with 8 rotary encoders and 16 buttons. Maps the most
-                            commonly used parameters to the available controls.</p>
-                        <ul>
-                            <li>Uses CC numbers 13-48 for rotary encoders</li>
-                            <li>Uses note numbers 36-50 for buttons</li>
-                            <li>All controls on channel 0</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h4 class="help-h3">Akai MPK Mini</h4>
-                        <p>Optimized for Akai MPK Mini with 8 pads and 4 rotary encoders. Focuses on the most essential
-                            parameters for live performance.</p>
-                        <ul>
-                            <li>Uses CC numbers 1-36 for rotary encoders</li>
-                            <li>Uses note numbers 36-50 for pads</li>
-                            <li>All controls on channel 0</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h4 class="help-h3">Arturia BeatStep Pro</h4>
-                        <p>Optimized for Arturia BeatStep Pro with 16 rotary encoders and 16 pads. Comprehensive mapping
-                            for full control over all parameters.</p>
-                        <ul>
-                            <li>Uses CC numbers 1-41 for rotary encoders</li>
-                            <li>Uses note numbers 36-50 for pads</li>
-                            <li>All controls on channel 0</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-section">
-                        <h4 class="help-h3">Morphing & Transitions</h4>
-                        <p>Advanced morphing and transition controls for dynamic shape transformations with musical timing.</p>
-                        <ul>
-                            <li>Includes morphing division controls for musical timing</li>
-                            <li>Maps morphing triggers to MIDI notes</li>
-                            <li>Optimized for live performance and composition</li>
-                            <li>All controls on channel 0</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Creating Custom Presets Section -->
-                <div id="custom-presets" class="help-section">
-                    <h2 class="help-h2">Creating Custom Presets</h2>
-                    <ol>
-                        <li>Set up your MIDI mappings in the application</li>
-                        <li>Use the "Save Preset" function to download your current mappings</li>
-                        <li>Copy the downloaded file to the presets folder</li>
-                        <li>Rename it to something descriptive (e.g., `my-controller-name.json`)</li>
-                    </ol>
-                </div>
-
-                <!-- Post-Processing Effects Section -->
-                <div id="post-processing-effects" class="help-section">
-                    <h2 class="help-h2">Post-Processing Effects</h2>
-                    <p>The application includes advanced post-processing effects that can be controlled via MIDI:</p>
-
-                    <h3 class="help-h3">Bloom Effect</h3>
-                    <ul>
-                        <li><strong>Bloom Strength:</strong> Controls the intensity of the glow effect around bright
-                            areas</li>
-                        <li><strong>Bloom Radius:</strong> Controls the size and spread of the bloom effect</li>
-                        <li><strong>Bloom Threshold:</strong> Sets the brightness level at which bloom begins</li>
-                    </ul>
-
-                    <h3 class="help-h3">Chromatic Aberration</h3>
-                    <ul>
-                        <li><strong>Chromatic Intensity:</strong> Controls the amount of color separation effect</li>
-                    </ul>
-
-                    <h3 class="help-h3">Vignette Effect</h3>
-                    <ul>
-                        <li><strong>Vignette Intensity:</strong> Controls the darkness of the edge effect</li>
-                        <li><strong>Vignette Radius:</strong> Controls the size of the vignette area</li>
-                        <li><strong>Vignette Softness:</strong> Controls the softness of the vignette edges</li>
-                    </ul>
-
-                    <h3 class="help-h3">Film Grain</h3>
-                    <ul>
-                        <li><strong>Grain Intensity:</strong> Controls the amount of film grain noise</li>
-                    </ul>
-
-                    <h3 class="help-h3">Color Grading</h3>
-                    <ul>
-                        <li><strong>Color Hue:</strong> Shifts the overall hue of the scene</li>
-                        <li><strong>Color Saturation:</strong> Controls the intensity of colors</li>
-                        <li><strong>Color Brightness:</strong> Adjusts the overall brightness</li>
-                        <li><strong>Color Contrast:</strong> Controls the contrast between light and dark areas</li>
-                    </ul>
-
-                    <h3 class="help-h3">FXAA Anti-Aliasing</h3>
-                    <ul>
-                        <li><strong>FXAA Enabled:</strong> Toggles fast approximate anti-aliasing for smoother edges
-                        </li>
-                    </ul>
-                </div>
-
-                
-              
 
                 <!-- Performance Tips Section -->
                 <div id="performance-tips" class="help-section">
-                    <h2 class="help-h2">Tips for Best Results</h2>
-                    
-                    <h3 class="help-h3">Getting Started</h3>
+                    <h2 class="help-h2">⚡ Performance Optimization</h2>
+                    <p>Tips for maintaining smooth 60fps performance during live shows.</p>
+
+                    <h3 class="help-h3">Hardware Recommendations</h3>
                     <ul>
-                        <li>Start with just a few MIDI mappings (4-8 controls) and add more as you get comfortable</li>
-                        <li>Use knobs and sliders for smooth control of colors, speeds, and effects</li>
-                        <li>Use buttons and keys for triggering effects and toggling features on/off</li>
-                        <li>Experiment with different parameter combinations to find your style</li>
+                        <li><strong>Graphics:</strong> Dedicated GPU recommended for complex scenes</li>
+                        <li><strong>RAM:</strong> 8GB+ for large grid sizes and multiple layers</li>
+                        <li><strong>CPU:</strong> Modern multi-core processor for audio analysis</li>
+                        <li><strong>Browser:</strong> Chrome or Edge for best WebGL performance</li>
                     </ul>
 
-                    <h3 class="help-h3">Live Performance</h3>
+                    <h3 class="help-h3">Performance Settings</h3>
                     <ul>
-                        <li>Map your most-used parameters to easily accessible controls</li>
-                        <li>Use different keys for different effects - each key can trigger a different action</li>
-                        <li>Set up a few different presets for different songs or sections</li>
-                        <li>Practice your mappings before a performance</li>
-                    </ul>
-
-                    <h3 class="help-h3">Optimizing Performance</h3>
-                    <ul>
-                        <li>Turn off unused visual effects to improve speed</li>
-                        <li>Use lower audio sensitivity if your computer is struggling</li>
-
-                        <li>Use stable BPM settings for predictable morphing and timing</li>
-                    </ul>
-
-                    <h3 class="help-h3">Creative Tips</h3>
-                    <ul>
-                        <li>Try different musical timing divisions for layered rhythms</li>
-                        <li>Use audio mapping to make visuals respond to your music</li>
-                        <li>Combine MIDI control with audio reactivity for complex effects</li>
-                        <li>Record your best compositions to share or use later</li>
+                        <li><strong>Grid Size:</strong> Keep total shapes under 400 (20×20) for smooth performance</li>
+                        <li><strong>Post-Processing:</strong> Reduce bloom intensity if frame rate drops</li>
+                        <li><strong>Layer Count:</strong> Limit active layers based on system capabilities</li>
+                        <li><strong>Animation Speed:</strong> Avoid very fast divisions (32nd notes) when possible</li>
                     </ul>
                 </div>
 
                 <!-- Troubleshooting Section -->
                 <div id="troubleshooting" class="help-section">
-                    <h2 class="help-h2">Common Issues & Solutions</h2>
-                    
+                    <h2 class="help-h2">🔧 Common Troubleshooting</h2>
+                    <p>Solutions for frequently encountered issues.</p>
+
                     <div class="help-warning">
-                        <strong>My MIDI controller isn't working</strong>
+                        <strong>MIDI Not Working:</strong>
                         <ul>
-                            <li>Make sure your controller is connected via USB and turned on</li>
-                            <li>Try refreshing the page and clicking "Connect MIDI" again</li>
-                            <li>Check that you're using Chrome, Edge, or Firefox</li>
-                            <li>Make sure you're on HTTPS or localhost (not HTTP)</li>
-                            <li>Try a different USB port if available</li>
+                            <li>Ensure you're using HTTPS or localhost</li>
+                            <li>Check MIDI controller is connected and powered on</li>
+                            <li>Try refreshing the page and reconnecting MIDI</li>
+                            <li>Use Chrome or Edge for best MIDI support</li>
                         </ul>
                     </div>
 
                     <div class="help-warning">
-                        <strong>The app is running slowly</strong>
+                        <strong>Poor Performance:</strong>
                         <ul>
-                            <li>Turn off some visual effects (bloom, grain, etc.) in the GUI</li>
-                            <li>Reduce the number of shapes or make the grid smaller</li>
+                            <li>Reduce grid size (gridWidth × gridHeight)</li>
+                            <li>Lower post-processing effect intensities</li>
                             <li>Close other browser tabs and applications</li>
-                            <li>Lower the audio mapping sensitivity if using microphone input</li>
-    
+                            <li>Check if hardware acceleration is enabled</li>
                         </ul>
                     </div>
 
                     <div class="help-warning">
-                        <strong>Audio input isn't working</strong>
+                        <strong>Audio Not Responsive:</strong>
                         <ul>
-                            <li>Check that your microphone is connected and not muted</li>
-                            <li>Allow microphone access when your browser asks for permission</li>
-                            <li>Try refreshing the page and clicking "Connect Audio" again</li>
-                            <li>Check your system's microphone settings</li>
-                            <li>Try adjusting the sensitivity controls</li>
+                            <li>Grant microphone permissions when prompted</li>
+                            <li>Check audio input device selection</li>
+                            <li>Verify audio levels in your system settings</li>
+                            <li>Try different audio input sources</li>
                         </ul>
-                    </div>
-
-
-
-                    <div class="help-warning">
-                        <strong>MIDI clock sync isn't working</strong>
-                        <ul>
-                            <li>Make sure your MIDI device is sending clock messages</li>
-                            <li>Check the clock indicator in the bottom transport bar</li>
-                            <li>Try switching between Auto, Manual, and Off sync modes</li>
-                            <li>Make sure your external device has a stable tempo</li>
-                            <li>Try using the internal clock instead</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-warning">
-                        <strong>Shape morphing isn't working</strong>
-                        <ul>
-                            <li>Make sure morphing is turned on in the GUI</li>
-                            <li>Check that you've mapped MIDI notes to morphing triggers</li>
-                            <li>Try adjusting the morphing speed and easing settings</li>
-                            <li>Make sure some shapes are visible (not all toggled off)</li>
-                            <li>Try the manual morphing buttons first</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-note">
-                        <strong>Still having issues?</strong> Try refreshing the page completely, or restart your browser. Most issues can be resolved by reconnecting your devices.
                     </div>
                 </div>
 
-                
+                <!-- Workflow Tips Section -->
+                <div id="workflow-tips" class="help-section">
+                    <h2 class="help-h2">💡 Workflow Tips</h2>
+                    <p>Best practices for efficient creative workflow and live performance.</p>
+
+                    <h3 class="help-h3">🎭 Live Performance Workflow</h3>
+                    <ol>
+                        <li><strong>Pre-Show Setup:</strong> Test all MIDI controllers and load essential presets</li>
+                        <li><strong>Scene Planning:</strong> Choose scenes that match your musical progression</li>
+                        <li><strong>Progressive Loading:</strong> Start simple, add complexity during builds</li>
+                        <li><strong>Contrast Usage:</strong> Alternate between different visual styles</li>
+                        <li><strong>Backup Plans:</strong> Have fallback scenes ready for technical issues</li>
+                    </ol>
+
+                    <h3 class="help-h3">🎨 Creative Development</h3>
+                    <ul>
+                        <li><strong>Start with Presets:</strong> Use existing presets as creative starting points</li>
+                        <li><strong>Experiment Freely:</strong> Try unexpected parameter combinations</li>
+                        <li><strong>Save Discoveries:</strong> Immediately save interesting configurations</li>
+                        <li><strong>Document Everything:</strong> Add descriptions to your presets and scenes</li>
+                        <li><strong>Test with Music:</strong> Always test configurations with actual musical content</li>
+                    </ul>
+
+                    <h3 class="help-h3">🗂️ Organization</h3>
+                    <ul>
+                        <li><strong>Consistent Naming:</strong> Use descriptive names for presets and scenes</li>
+                        <li><strong>Version Control:</strong> Number versions of evolving configurations</li>
+                        <li><strong>Regular Backups:</strong> Export and backup your preset/scene libraries</li>
+                        <li><strong>Performance Testing:</strong> Test new configurations under performance conditions</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Toggle section functionality
-        function toggleSection(titleElement) {
-            const section = titleElement.parentElement;
-            const content = section.querySelector('.nav-section-content');
-            const toggle = titleElement.querySelector('.nav-section-toggle');
-            
-            if (content.classList.contains('collapsed')) {
-                content.classList.remove('collapsed');
-                toggle.classList.remove('collapsed');
-            } else {
-                content.classList.add('collapsed');
-                toggle.classList.add('collapsed');
-            }
-        }
-
         // Smooth scrolling for navigation links
         document.querySelectorAll('.nav-item').forEach(link => {
             link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href').substring(1);
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                const href = link.getAttribute('href');
+                
+                // Only apply smooth scrolling to internal links (starting with #)
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 }
+                // External links will work normally
             });
         });
 
@@ -1238,5 +518,4 @@
         });
     </script>
 </body>
-
 </html>

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presets & Scenes Guide - RGLR GNRTR</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <style>
+        /* Help page specific styles that complement the main CSS */
+        .help-layout {
+            display: flex;
+            gap: 16px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .help-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .help-sidebar {
+            width: 280px;
+            background: var(--color-bg-overlay);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-primary);
+            height: 100vh;
+            position: sticky;
+            top: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .help-main-content {
+            flex: 1;
+            background: var(--color-bg-overlay);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-primary);
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .nav-section-title {
+            color: var(--color-primary);
+            font-weight: 600;
+            font-size: var(--text-lg);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--color-primary);
+        }
+
+        .nav-item {
+            display: block;
+            padding: var(--spacing-sm) var(--spacing-md);
+            margin: var(--spacing-xs) 0;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            font-size: var(--text-sm);
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--color-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(139, 92, 246, 0.3);
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .preset-demo {
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #1a1a1a;
+        }
+
+        .preset-demo h4 {
+            color: #00aaff;
+            margin-bottom: 10px;
+        }
+
+        .preset-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .preset-card {
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            background: #1e1e1e;
+        }
+
+        .preset-card h4 {
+            color: #ff6b35;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .preset-card p {
+            font-size: 13px;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+
+        .preset-features {
+            font-size: 12px;
+            color: #888;
+        }
+
+        @media (max-width: 1024px) {
+            .help-layout {
+                flex-direction: column;
+            }
+
+            .help-sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body class="help-body">
+    <div class="help-container">
+        <div class="help-layout">
+            <!-- Sidebar Navigation -->
+            <div class="help-sidebar">
+                <h3 class="nav-section-title">Presets & Scenes</h3>
+
+                <div class="nav-section">
+                    <a href="#overview" class="nav-item">Overview</a>
+                    <a href="#presets-system" class="nav-item">Preset System</a>
+                    <a href="#available-presets" class="nav-item">Available Presets</a>
+                    <a href="#using-presets" class="nav-item">Using Presets</a>
+                    <a href="#scenes-system" class="nav-item">Scene System</a>
+                    <a href="#available-scenes" class="nav-item">Available Scenes</a>
+                    <a href="#scene-management" class="nav-item">Scene Management</a>
+                    <a href="#creating-presets" class="nav-item">Creating Custom Presets</a>
+                    <a href="#creating-scenes" class="nav-item">Creating Custom Scenes</a>
+                    <a href="#workflow-tips" class="nav-item">Workflow Tips</a>
+                </div>
+
+                <div class="nav-section">
+                    <h4 class="nav-section-title">Other Help Pages</h4>
+                    <a href="midi-help.html" class="nav-item">← Main Help</a>
+                    <a href="general-setup-help.html" class="nav-item">General Setup</a>
+                    <a href="parameters-help.html" class="nav-item">Parameters Reference</a>
+                    <a href="animations-help.html" class="nav-item">Animation Types</a>
+                    <a href="p5-layer-help.html" class="nav-item">P5 Layer Guide</a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="help-main-content">
+                <h1 class="help-h1">💾 Presets & Scenes Guide</h1>
+
+                <!-- Overview Section -->
+                <div id="overview" class="help-section">
+                    <h2 class="help-h2">System Overview</h2>
+                    <p>The RGLR GNRTR uses a two-tier system for saving and organizing your visual configurations:</p>
+
+                    <div class="help-note">
+                        <strong>Key Differences:</strong>
+                        <ul>
+                            <li><strong>Presets:</strong> Save specific parameter groups (MIDI mappings, animation settings, etc.)</li>
+                            <li><strong>Scenes:</strong> Save complete visual configurations including all settings and layers</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Presets vs Scenes</h3>
+                    
+                    <div class="preset-demo">
+                        <h4>🎛️ Presets</h4>
+                        <ul>
+                            <li><strong>Purpose:</strong> Focused collections of related parameters</li>
+                            <li><strong>Scope:</strong> Specific aspects like animation controls, lighting, or materials</li>
+                            <li><strong>Use Case:</strong> Building blocks for creating complex visuals</li>
+                            <li><strong>Flexibility:</strong> Mix and match multiple presets</li>
+                            <li><strong>Examples:</strong> "Essential Controls", "Grid Composition", "Visual Effects"</li>
+                        </ul>
+                    </div>
+
+                    <div class="preset-demo">
+                        <h4>🎬 Scenes</h4>
+                        <ul>
+                            <li><strong>Purpose:</strong> Complete visual configurations</li>
+                            <li><strong>Scope:</strong> Everything - all parameters, layers, MIDI mappings</li>
+                            <li><strong>Use Case:</strong> Complete compositions for specific songs or moods</li>
+                            <li><strong>Flexibility:</strong> One-click complete visual setups</li>
+                            <li><strong>Examples:</strong> "RGLR Mode", "Globules", "Matcha Mode"</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Workflow Integration</h3>
+                    <ul>
+                        <li><strong>Start with Presets:</strong> Load presets to quickly configure specific aspects</li>
+                        <li><strong>Customize:</strong> Adjust parameters for your specific needs</li>
+                        <li><strong>Save as Scene:</strong> Save complete configurations for later use</li>
+                        <li><strong>Live Performance:</strong> Switch between scenes for different songs/sections</li>
+                    </ul>
+                </div>
+
+                <!-- Presets System Section -->
+                <div id="presets-system" class="help-section">
+                    <h2 class="help-h2">🎛️ Preset System</h2>
+                    <p>Presets are curated collections of parameter settings that focus on specific aspects of the visual system. They're designed to be mixed and matched to create complex configurations quickly.</p>
+
+                    <h3 class="help-h3">Preset Categories</h3>
+                    <ul>
+                        <li><strong>Control Presets:</strong> MIDI mappings and essential controls</li>
+                        <li><strong>Composition Presets:</strong> Grid layouts and structural settings</li>
+                        <li><strong>Animation Presets:</strong> Movement, rotation, and timing configurations</li>
+                        <li><strong>Visual Presets:</strong> Effects, lighting, and materials</li>
+                        <li><strong>Transition Presets:</strong> Morphing and shape cycling settings</li>
+                    </ul>
+
+                    <h3 class="help-h3">How Presets Work</h3>
+                    <ul>
+                        <li><strong>Selective Loading:</strong> Presets only change specific parameters, leaving others untouched</li>
+                        <li><strong>Additive:</strong> You can load multiple presets to combine their effects</li>
+                        <li><strong>Non-Destructive:</strong> Loading a preset doesn't overwrite unrelated settings</li>
+                        <li><strong>Instant Application:</strong> Changes take effect immediately</li>
+                    </ul>
+
+                    <div class="help-note">
+                        <strong>Preset Loading Strategy:</strong>
+                        <ol>
+                            <li><strong>Start with Control Preset:</strong> Set up MIDI mappings first</li>
+                            <li><strong>Add Composition Preset:</strong> Configure grid and layout</li>
+                            <li><strong>Apply Animation Presets:</strong> Add movement and timing</li>
+                            <li><strong>Enhance with Visual Presets:</strong> Add effects and lighting</li>
+                            <li><strong>Fine-tune:</strong> Adjust individual parameters as needed</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Available Presets Section -->
+                <div id="available-presets" class="help-section">
+                    <h2 class="help-h2">📦 Available Presets</h2>
+                    <p>The system comes with carefully crafted presets designed by experienced visual artists and performers.</p>
+
+                    <div class="preset-list">
+                        <div class="preset-card">
+                            <h4>Essential Controls</h4>
+                            <p>Core MIDI mappings for live performance, including basic animation controls and essential parameters.</p>
+                            <div class="preset-features">
+                                <strong>Includes:</strong> Movement, rotation, scale controls, BPM, color parameters
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Grid Composition</h4>
+                            <p>Grid layout and structural settings for different composition styles and screen formats.</p>
+                            <div class="preset-features">
+                                <strong>Includes:</strong> Grid dimensions, cell sizes, composition framing, randomness
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Animation Movement</h4>
+                            <p>Comprehensive movement animation settings with musical timing and amplitude controls.</p>
+                            <div class="preset-features">
+                                <strong>Includes:</strong> Movement patterns, timing divisions, amplitude mapping, sync settings
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Shape Controls</h4>
+                            <p>Complete shape cycling and morphing system with easing curves and transition controls.</p>
+                            <div class="preset-features">
+                                <strong>Includes:</strong> Shape cycling, morphing triggers, easing functions, timing
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Lighting Materials</h4>
+                            <p>Professional lighting setup with multiple light sources and material configurations.</p>
+                            <div class="preset-features">
+                                <strong>Includes:</strong> Light intensities, sphere materials, refraction, transparency
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Visual Effects</h4>
+                            <p>Post-processing effects including bloom, chromatic aberration, vignette, and film grain.</p>
+                            <div class="preset-features">
+                                <strong>Includes:</strong> Bloom settings, color grading, visual filters, cinematic effects
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Morphing Transitions</h4>
+                            <p>Advanced morphing system with multiple trigger types and smooth easing curves.</p>
+                            <div class="preset-features">
+                                <strong>Includes:</strong> Morphing triggers, easing curves, timing divisions, sync modes
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Sample Multi-Channel</h4>
+                            <p>Example configuration showing how to use multiple MIDI channels and complex mappings.</p>
+                            <div class="preset-features">
+                                <strong>Includes:</strong> Multi-channel setup, advanced mappings, performance examples
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Preset Combinations:</strong>
+                        <ul>
+                            <li><strong>Quick Start:</strong> Essential Controls + Grid Composition</li>
+                            <li><strong>Full Animation:</strong> Animation Movement + Shape Controls + Morphing Transitions</li>
+                            <li><strong>Cinematic Look:</strong> Lighting Materials + Visual Effects</li>
+                            <li><strong>Performance Setup:</strong> Essential Controls + Sample Multi-Channel</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Using Presets Section -->
+                <div id="using-presets" class="help-section">
+                    <h2 class="help-h2">🎮 Using Presets</h2>
+                    <p>Loading and managing presets is designed to be quick and intuitive for live performance.</p>
+
+                    <h3 class="help-h3">Loading Presets</h3>
+                    <ol>
+                        <li><strong>Open Preset Panel:</strong> Click the preset icon in the left sidebar</li>
+                        <li><strong>Browse Presets:</strong> Scroll through the available preset list</li>
+                        <li><strong>Preview Information:</strong> Read the preset description and included parameters</li>
+                        <li><strong>Load Preset:</strong> Click "Load" to apply the preset settings</li>
+                        <li><strong>Observe Changes:</strong> Watch as parameters update in real-time</li>
+                    </ol>
+
+                    <h3 class="help-h3">Preset Loading Behavior</h3>
+                    <ul>
+                        <li><strong>Immediate Effect:</strong> Changes are applied instantly</li>
+                        <li><strong>Selective Update:</strong> Only parameters included in the preset are changed</li>
+                        <li><strong>Preserved Settings:</strong> Unrelated parameters remain unchanged</li>
+                        <li><strong>MIDI Mapping Integration:</strong> MIDI controls automatically connect to new parameters</li>
+                    </ul>
+
+                    <div class="preset-demo">
+                        <h4>Example Preset Loading Sequence:</h4>
+                        <ol>
+                            <li><strong>Start:</strong> Default/blank configuration</li>
+                            <li><strong>Load "Essential Controls":</strong> MIDI mappings and basic controls are set up</li>
+                            <li><strong>Load "Grid Composition":</strong> Grid layout is configured, MIDI mappings remain</li>
+                            <li><strong>Load "Animation Movement":</strong> Movement animations are added to existing setup</li>
+                            <li><strong>Result:</strong> Combined configuration with all three preset features</li>
+                        </ol>
+                    </div>
+
+                    <h3 class="help-h3">Live Performance Tips</h3>
+                    <ul>
+                        <li><strong>Pre-load Favorites:</strong> Know which presets work well together</li>
+                        <li><strong>Quick Access:</strong> Keep the preset panel open for fast loading</li>
+                        <li><strong>Layer Gradually:</strong> Add presets progressively during builds</li>
+                        <li><strong>Reset Strategy:</strong> Know how to quickly return to baseline configurations</li>
+                    </ul>
+                </div>
+
+                <!-- Scenes System Section -->
+                <div id="scenes-system" class="help-section">
+                    <h2 class="help-h2">🎬 Scene System</h2>
+                    <p>Scenes capture complete visual configurations, including all parameters, MIDI mappings, layer settings, and visual state. They're perfect for creating distinct looks for different songs or performance sections.</p>
+
+                    <h3 class="help-h3">What Scenes Include</h3>
+                    <ul>
+                        <li><strong>All Parameters:</strong> Every visual parameter and its current value</li>
+                        <li><strong>MIDI Mappings:</strong> Complete MIDI controller configuration</li>
+                        <li><strong>Layer Settings:</strong> P5 sketches, layer configurations, blend modes</li>
+                        <li><strong>Animation States:</strong> Current animation types and timing</li>
+                        <li><strong>Visual Effects:</strong> Post-processing settings and material configurations</li>
+                        <li><strong>Grid Configuration:</strong> Layout, dimensions, and structural settings</li>
+                    </ul>
+
+                    <h3 class="help-h3">Scene Loading Behavior</h3>
+                    <ul>
+                        <li><strong>Complete Replacement:</strong> Scenes overwrite all current settings</li>
+                        <li><strong>Instant Transformation:</strong> Entire visual changes immediately</li>
+                        <li><strong>State Preservation:</strong> Scenes remember exact configurations</li>
+                        <li><strong>Performance Optimized:</strong> Loading is fast for live use</li>
+                    </ul>
+
+                    <div class="help-warning">
+                        <strong>Scene Loading Note:</strong> Unlike presets, scenes replace your entire configuration. Make sure to save your current work as a scene before loading a different one if you want to preserve it.
+                    </div>
+                </div>
+
+                <!-- Available Scenes Section -->
+                <div id="available-scenes" class="help-section">
+                    <h2 class="help-h2">🎭 Available Scenes</h2>
+                    <p>The system includes a variety of pre-designed scenes, each with a distinct aesthetic and purpose.</p>
+
+                    <div class="preset-list">
+                        <div class="preset-card">
+                            <h4>RGLR Mode</h4>
+                            <p>The signature RGLR GNRTR aesthetic - clean geometric patterns with smooth animations and professional lighting.</p>
+                            <div class="preset-features">
+                                <strong>Style:</strong> Minimal, geometric, professional • <strong>Best For:</strong> Electronic music, clean visuals
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Globules</h4>
+                            <p>Organic, fluid-like visuals with sphere materials and flowing movements. Creates liquid, bubble-like effects.</p>
+                            <div class="preset-features">
+                                <strong>Style:</strong> Organic, fluid, refractive • <strong>Best For:</strong> Ambient music, organic aesthetics
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Matcha Mode</h4>
+                            <p>Soft, natural color palette with gentle animations. Inspired by organic tea ceremony aesthetics.</p>
+                            <div class="preset-features">
+                                <strong>Style:</strong> Soft, natural, calming • <strong>Best For:</strong> Acoustic music, meditation, relaxed settings
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Meat Mode</h4>
+                            <p>Bold, intense visuals with strong contrasts and dramatic lighting. High-energy aesthetic.</p>
+                            <div class="preset-features">
+                                <strong>Style:</strong> Bold, intense, high-contrast • <strong>Best For:</strong> Rock, metal, high-energy performances
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Worm Mode</h4>
+                            <p>Flowing, segmented patterns that create worm-like or snake-like movements across the grid.</p>
+                            <div class="preset-features">
+                                <strong>Style:</strong> Flowing, segmented, hypnotic • <strong>Best For:</strong> Experimental music, mesmerizing effects
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Angles Mode</h4>
+                            <p>Sharp, angular geometry with precise movements. Emphasizes geometric patterns and mathematical precision.</p>
+                            <div class="preset-features">
+                                <strong>Style:</strong> Angular, precise, mathematical • <strong>Best For:</strong> Techno, minimal music, geometric aesthetics
+                            </div>
+                        </div>
+
+                        <div class="preset-card">
+                            <h4>Forbidden Bubblegum</h4>
+                            <p>Playful, colorful aesthetic with bouncy animations and bright, saturated colors.</p>
+                            <div class="preset-features">
+                                <strong>Style:</strong> Playful, colorful, bouncy • <strong>Best For:</strong> Pop music, fun performances, colorful shows
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="help-h3">Scene Selection Guide</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
+                        <thead>
+                            <tr style="background: #2a2a2a;">
+                                <th style="border: 1px solid #333; padding: 12px; color: #00aaff;">Music Genre</th>
+                                <th style="border: 1px solid #333; padding: 12px; color: #00aaff;">Recommended Scenes</th>
+                                <th style="border: 1px solid #333; padding: 12px; color: #00aaff;">Aesthetic Match</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid #333; padding: 12px;">Electronic/Techno</td>
+                                <td style="border: 1px solid #333; padding: 12px;">RGLR Mode, Angles Mode</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Clean, geometric, precise</td>
+                            </tr>
+                            <tr style="background: #1e1e1e;">
+                                <td style="border: 1px solid #333; padding: 12px;">Ambient/Chill</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Globules, Matcha Mode</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Organic, flowing, calming</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #333; padding: 12px;">Rock/Metal</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Meat Mode, Angles Mode</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Intense, bold, dramatic</td>
+                            </tr>
+                            <tr style="background: #1e1e1e;">
+                                <td style="border: 1px solid #333; padding: 12px;">Pop/Dance</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Forbidden Bubblegum, RGLR Mode</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Colorful, energetic, fun</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #333; padding: 12px;">Experimental</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Worm Mode, Globules</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Unusual, hypnotic, abstract</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Scene Management Section -->
+                <div id="scene-management" class="help-section">
+                    <h2 class="help-h2">🎛️ Scene Management</h2>
+                    <p>Managing scenes effectively is crucial for smooth live performances and organized visual libraries.</p>
+
+                    <h3 class="help-h3">Loading Scenes</h3>
+                    <ol>
+                        <li><strong>Open Scene Panel:</strong> Click the scene icon in the left sidebar</li>
+                        <li><strong>Browse Available Scenes:</strong> View the scene list with descriptions</li>
+                        <li><strong>Preview Scene Info:</strong> Read about the scene's style and purpose</li>
+                        <li><strong>Load Scene:</strong> Click "Load" to switch to the complete scene configuration</li>
+                        <li><strong>Immediate Effect:</strong> All visuals change instantly to match the scene</li>
+                    </ol>
+
+                    <h3 class="help-h3">Scene Loading Performance</h3>
+                    <ul>
+                        <li><strong>Fast Loading:</strong> Scenes load in &lt; 100ms for responsive live use</li>
+                        <li><strong>Smooth Transitions:</strong> Visual changes are immediate but smooth</li>
+                        <li><strong>State Consistency:</strong> All parameters are perfectly synchronized</li>
+                        <li><strong>MIDI Integration:</strong> Controller mappings are instantly updated</li>
+                    </ul>
+
+                    <div class="preset-demo">
+                        <h4>Live Performance Scene Workflow:</h4>
+                        <ol>
+                            <li><strong>Pre-Show:</strong> Load your starting scene (e.g., "RGLR Mode")</li>
+                            <li><strong>Song 1:</strong> Perform with current scene, use MIDI controls for variation</li>
+                            <li><strong>Transition:</strong> Load new scene between songs (e.g., "Globules")</li>
+                            <li><strong>Song 2:</strong> New aesthetic matches different musical style</li>
+                            <li><strong>Build Section:</strong> Use MIDI controls to intensify current scene</li>
+                            <li><strong>Dramatic Change:</strong> Load contrasting scene (e.g., "Meat Mode") for climax</li>
+                        </ol>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Scene Organization Tips:</strong>
+                        <ul>
+                            <li><strong>Plan Your Set:</strong> Choose scenes that complement your musical progression</li>
+                            <li><strong>Contrast is Key:</strong> Alternate between different aesthetic styles</li>
+                            <li><strong>Quick Access:</strong> Keep the scene panel open for fast switching</li>
+                            <li><strong>Practice Transitions:</strong> Rehearse scene changes to match musical cues</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Creating Presets Section -->
+                <div id="creating-presets" class="help-section">
+                    <h2 class="help-h2">🛠️ Creating Custom Presets</h2>
+                    <p>Custom presets allow you to save and share your own parameter configurations for specific use cases.</p>
+
+                    <h3 class="help-h3">When to Create Presets</h3>
+                    <ul>
+                        <li><strong>Specialized MIDI Setups:</strong> Your specific controller configuration</li>
+                        <li><strong>Signature Effects:</strong> Unique combinations of visual parameters</li>
+                        <li><strong>Performance Templates:</strong> Starting points for different types of shows</li>
+                        <li><strong>Collaboration:</strong> Share configurations with other performers</li>
+                        <li><strong>Workflow Optimization:</strong> Speed up your setup process</li>
+                    </ul>
+
+                    <h3 class="help-h3">Preset Creation Process</h3>
+                    <ol>
+                        <li><strong>Configure Parameters:</strong> Set up the exact parameter values you want to save</li>
+                        <li><strong>Test Configuration:</strong> Verify everything works as expected</li>
+                        <li><strong>Open Preset Panel:</strong> Access the preset management interface</li>
+                        <li><strong>Click "Save Preset":</strong> Initiate the preset creation process</li>
+                        <li><strong>Choose Parameters:</strong> Select which parameters to include in the preset</li>
+                        <li><strong>Name and Describe:</strong> Give your preset a clear name and description</li>
+                        <li><strong>Save to File:</strong> Export the preset as a JSON file</li>
+                    </ol>
+
+                    <h3 class="help-h3">Preset Design Best Practices</h3>
+                    
+                    <div class="preset-demo">
+                        <h4>Parameter Selection Guidelines:</h4>
+                        <ul>
+                            <li><strong>Focus:</strong> Include related parameters that serve a common purpose</li>
+                            <li><strong>Completeness:</strong> Include all parameters needed for the effect to work</li>
+                            <li><strong>Avoid Conflicts:</strong> Don't include parameters that might conflict with other presets</li>
+                            <li><strong>Consider Combinations:</strong> Think about how your preset will work with others</li>
+                        </ul>
+                    </div>
+
+                    <div class="preset-demo">
+                        <h4>Naming Conventions:</h4>
+                        <ul>
+                            <li><strong>Descriptive:</strong> "Bass-Responsive Scaling" rather than "My Preset 1"</li>
+                            <li><strong>Category:</strong> Include the type (e.g., "Animation - Wave Motion")</li>
+                            <li><strong>Purpose:</strong> Indicate use case (e.g., "Live Performance - Essential Controls")</li>
+                            <li><strong>Version:</strong> Include version numbers for iterations (e.g., "v2.1")</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Preset File Management</h3>
+                    <ul>
+                        <li><strong>File Location:</strong> Save presets in the <code>public/presets/</code> directory</li>
+                        <li><strong>File Format:</strong> JSON format with .json extension</li>
+                        <li><strong>Backup:</strong> Keep backups of your custom presets</li>
+                        <li><strong>Sharing:</strong> Presets can be shared by copying JSON files</li>
+                        <li><strong>Version Control:</strong> Consider using git for preset libraries</li>
+                    </ul>
+                </div>
+
+                <!-- Creating Scenes Section -->
+                <div id="creating-scenes" class="help-section">
+                    <h2 class="help-h2">🎬 Creating Custom Scenes</h2>
+                    <p>Custom scenes capture your complete visual configurations for specific songs, moods, or performance contexts.</p>
+
+                    <h3 class="help-h3">Scene Creation Process</h3>
+                    <ol>
+                        <li><strong>Perfect Your Configuration:</strong> Set up all parameters, MIDI mappings, and layers exactly as desired</li>
+                        <li><strong>Test Thoroughly:</strong> Verify all animations, effects, and controls work correctly</li>
+                        <li><strong>Open Scene Panel:</strong> Access the scene management interface</li>
+                        <li><strong>Click "Save Scene":</strong> Initiate the scene creation process</li>
+                        <li><strong>Name Your Scene:</strong> Choose a memorable, descriptive name</li>
+                        <li><strong>Add Description:</strong> Document the scene's purpose and characteristics</li>
+                        <li><strong>Save Configuration:</strong> Export the complete scene as a JSON file</li>
+                    </ol>
+
+                    <h3 class="help-h3">Scene Design Philosophy</h3>
+                    
+                    <div class="preset-demo">
+                        <h4>Complete Configuration Approach:</h4>
+                        <ul>
+                            <li><strong>Holistic Design:</strong> Consider how all elements work together</li>
+                            <li><strong>Musical Alignment:</strong> Design scenes for specific musical styles or songs</li>
+                            <li><strong>Performance Context:</strong> Consider lighting, venue, and audience</li>
+                            <li><strong>Controller Integration:</strong> Ensure MIDI mappings support live performance</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Scene Naming and Organization</h3>
+                    
+                    <div class="preset-demo">
+                        <h4>Effective Scene Names:</h4>
+                        <ul>
+                            <li><strong>Mood-Based:</strong> "Ethereal Dreams", "Industrial Storm", "Peaceful Garden"</li>
+                            <li><strong>Genre-Based:</strong> "Techno Minimalism", "Ambient Waves", "Rock Energy"</li>
+                            <li><strong>Song-Specific:</strong> "Track 1 - Opening", "Breakdown Section", "Finale"</li>
+                            <li><strong>Color/Style:</strong> "Blue Serenity", "Golden Hour", "Neon Nights"</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Scene Documentation</h3>
+                    <ul>
+                        <li><strong>Description:</strong> Explain the scene's aesthetic and purpose</li>
+                        <li><strong>Musical Context:</strong> Note what genres or moods it works best with</li>
+                        <li><strong>Key Features:</strong> Highlight special effects or unique elements</li>
+                        <li><strong>Performance Notes:</strong> Document any special performance considerations</li>
+                        <li><strong>MIDI Requirements:</strong> Note any specific controller requirements</li>
+                    </ul>
+
+                    <h3 class="help-h3">Scene File Management</h3>
+                    <ul>
+                        <li><strong>File Location:</strong> Save scenes in the <code>public/scenes/</code> directory</li>
+                        <li><strong>File Format:</strong> JSON format with .json extension</li>
+                        <li><strong>Backup Strategy:</strong> Regularly backup your scene library</li>
+                        <li><strong>Version Control:</strong> Track changes to scenes over time</li>
+                        <li><strong>Performance Optimization:</strong> Keep scene files organized for quick access</li>
+                    </ul>
+                </div>
+
+                <!-- Workflow Tips Section -->
+                <div id="workflow-tips" class="help-section">
+                    <h2 class="help-h2">💡 Workflow Tips & Best Practices</h2>
+                    <p>Maximize your efficiency and creativity with these proven workflow strategies.</p>
+
+                    <h3 class="help-h3">Preparation Workflow</h3>
+                    
+                    <div class="preset-demo">
+                        <h4>Pre-Performance Setup:</h4>
+                        <ol>
+                            <li><strong>Plan Your Set:</strong> Choose scenes that complement your musical progression</li>
+                            <li><strong>Test All Scenes:</strong> Load each scene to verify they work correctly</li>
+                            <li><strong>Check MIDI Mappings:</strong> Ensure all controllers are properly configured</li>
+                            <li><strong>Prepare Transitions:</strong> Plan which scenes to use for different songs</li>
+                            <li><strong>Create Backup Scenes:</strong> Have fallback options ready</li>
+                            <li><strong>Document Your Setup:</strong> Note scene order and transition cues</li>
+                        </ol>
+                    </div>
+
+                    <h3 class="help-h3">Live Performance Strategies</h3>
+                    
+                    <div class="preset-demo">
+                        <h4>During Performance:</h4>
+                        <ul>
+                            <li><strong>Start Simple:</strong> Begin with familiar scenes, add complexity gradually</li>
+                            <li><strong>Use Contrast:</strong> Alternate between different visual styles</li>
+                            <li><strong>Match Energy:</strong> Align visual intensity with musical energy</li>
+                            <li><strong>Plan Transitions:</strong> Change scenes during musical transitions</li>
+                            <li><strong>Stay Flexible:</strong> Be ready to adapt to unexpected musical changes</li>
+                            <li><strong>Monitor Performance:</strong> Watch for frame rate drops or visual glitches</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Creative Development Process</h3>
+                    
+                    <div class="preset-demo">
+                        <h4>Building New Configurations:</h4>
+                        <ol>
+                            <li><strong>Start with Presets:</strong> Use existing presets as building blocks</li>
+                            <li><strong>Experiment Freely:</strong> Try unexpected parameter combinations</li>
+                            <li><strong>Document Discoveries:</strong> Save interesting configurations immediately</li>
+                            <li><strong>Iterate Gradually:</strong> Make small changes and observe results</li>
+                            <li><strong>Test with Music:</strong> Always test with actual musical content</li>
+                            <li><strong>Save Variations:</strong> Create multiple versions of successful configurations</li>
+                        </ol>
+                    </div>
+
+                    <h3 class="help-h3">Organization Best Practices</h3>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
+                        <thead>
+                            <tr style="background: #2a2a2a;">
+                                <th style="border: 1px solid #333; padding: 12px; color: #00aaff;">Category</th>
+                                <th style="border: 1px solid #333; padding: 12px; color: #00aaff;">Organization Strategy</th>
+                                <th style="border: 1px solid #333; padding: 12px; color: #00aaff;">Benefits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid #333; padding: 12px;">File Naming</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Use consistent, descriptive names with categories</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Easy to find and identify configurations</td>
+                            </tr>
+                            <tr style="background: #1e1e1e;">
+                                <td style="border: 1px solid #333; padding: 12px;">Version Control</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Number versions and track changes over time</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Can revert to previous versions if needed</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #333; padding: 12px;">Documentation</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Include detailed descriptions and usage notes</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Remember purpose and context months later</td>
+                            </tr>
+                            <tr style="background: #1e1e1e;">
+                                <td style="border: 1px solid #333; padding: 12px;">Backup Strategy</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Regular backups of preset and scene libraries</td>
+                                <td style="border: 1px solid #333; padding: 12px;">Protect against data loss and corruption</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Collaboration Tips</h3>
+                    <ul>
+                        <li><strong>Share Configurations:</strong> Export and share interesting presets/scenes with other performers</li>
+                        <li><strong>Document Requirements:</strong> Note any specific hardware or setup requirements</li>
+                        <li><strong>Use Standard Naming:</strong> Follow consistent naming conventions for shared files</li>
+                        <li><strong>Version Compatibility:</strong> Note which software version configurations were created with</li>
+                        <li><strong>Performance Context:</strong> Document the musical context and performance conditions</li>
+                    </ul>
+
+                    <div class="help-note">
+                        <strong>Pro Tips:</strong>
+                        <ul>
+                            <li><strong>Regular Cleanup:</strong> Periodically review and organize your preset/scene libraries</li>
+                            <li><strong>Performance Testing:</strong> Always test new configurations under performance conditions</li>
+                            <li><strong>Backup Before Shows:</strong> Create backups before important performances</li>
+                            <li><strong>Learn from Others:</strong> Study and adapt configurations from other visual artists</li>
+                            <li><strong>Document Everything:</strong> Good documentation saves time and prevents confusion</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                
+                // Only apply smooth scrolling to internal links (starting with #)
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+                // External links will work normally
+            });
+        });
+
+        // Highlight active section in navigation
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.help-section');
+            const navLinks = document.querySelectorAll('.nav-item');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

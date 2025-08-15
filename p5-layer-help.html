@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P5 Layer Documentation - RGLR GNRTR</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: #1a1a1a;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1, h2, h3 {
+            color: #00aaff;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        
+        .highlight {
+            background: #2a2a2a;
+            border-left: 4px solid #00aaff;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .warning {
+            background: #2a1a1a;
+            border-left: 4px solid #ff6b35;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background: #1a2a1a;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        pre {
+            background: #0d1117;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        
+        code {
+            background: #2a2a2a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            color: #ff6b35;
+        }
+        
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: #e0e0e0;
+        }
+        
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .parameter-table th,
+        .parameter-table td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .parameter-table th {
+            background: #2a2a2a;
+            color: #00aaff;
+            font-weight: bold;
+        }
+        
+        .parameter-table tr:nth-child(even) {
+            background: #1e1e1e;
+        }
+        
+        .toc {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .toc ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .toc a {
+            color: #00aaff;
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        .example-section {
+            background: #1e1e2e;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .midi-indicator {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 P5 Layer Documentation</h1>
+        
+        <div class="highlight">
+            <strong>P5 Layer</strong> allows you to create interactive p5.js sketches that render as an overlay on top of the 3D scene. You can expose parameters from your sketches and control them in real-time with MIDI controllers.
+        </div>
+        
+        <div class="toc">
+            <h3>📋 Table of Contents</h3>
+            <ul>
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#parameter-system">Parameter System</a></li>
+                <li><a href="#parameter-types">Parameter Types</a></li>
+                <li><a href="#midi-mapping">MIDI Mapping</a></li>
+                <li><a href="#examples">Code Examples</a></li>
+                <li><a href="#best-practices">Best Practices</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+            </ul>
+        </div>
+        
+        <h2 id="getting-started">🚀 Getting Started</h2>
+        
+        <h3>1. Adding a P5 Layer</h3>
+        <ol>
+            <li>Open the <strong>Layer Panel</strong> in the left sidebar</li>
+            <li>Click <strong>"Add P5 Layer"</strong></li>
+            <li>The default sketch will start running immediately</li>
+            <li>Click <strong>"P5 Code"</strong> in the transport bar to edit the sketch</li>
+        </ol>
+        
+        <h3>2. Basic Sketch Structure</h3>
+        <pre><code>function setup() {
+    createCanvas(windowWidth, windowHeight);
+    // Your initialization code here
+}
+
+function draw() {
+    // Expose parameters for MIDI control
+    let speed = p5Param('speed', 1.0, { min: 0.1, max: 5.0, label: 'Animation Speed' });
+    let size = p5Param('size', 100, { min: 20, max: 300, label: 'Circle Size' });
+    
+    background(0);
+    
+    // Use the parameters in your sketch
+    let x = width/2 + cos(frameCount * 0.02 * speed) * 150;
+    let y = height/2 + sin(frameCount * 0.02 * speed) * 150;
+    circle(x, y, size);
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+}</code></pre>
+        
+        <h2 id="parameter-system">⚙️ Parameter System</h2>
+        
+        <h3>The <code>p5Param()</code> Function</h3>
+        
+        <div class="highlight">
+            <strong>Key Concept:</strong> Use <code>let</code> (not <code>const</code>) when storing parameter values, or call <code>p5Param()</code> directly in your code.
+        </div>
+        
+        <h4>Syntax:</h4>
+        <pre><code>let value = p5Param(name, defaultValue, options);</code></pre>
+        
+        <table class="parameter-table">
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Required</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>name</code></td>
+                    <td>String</td>
+                    <td>Unique identifier for the parameter</td>
+                    <td>✅ Yes</td>
+                </tr>
+                <tr>
+                    <td><code>defaultValue</code></td>
+                    <td>Number</td>
+                    <td>Initial value when no MIDI input</td>
+                    <td>✅ Yes</td>
+                </tr>
+                <tr>
+                    <td><code>options.min</code></td>
+                    <td>Number</td>
+                    <td>Minimum value for the parameter</td>
+                    <td>❌ No</td>
+                </tr>
+                <tr>
+                    <td><code>options.max</code></td>
+                    <td>Number</td>
+                    <td>Maximum value for the parameter</td>
+                    <td>❌ No</td>
+                </tr>
+                <tr>
+                    <td><code>options.step</code></td>
+                    <td>Number</td>
+                    <td>Step size for discrete values</td>
+                    <td>❌ No</td>
+                </tr>
+                <tr>
+                    <td><code>options.label</code></td>
+                    <td>String</td>
+                    <td>Human-readable name for UI display</td>
+                    <td>❌ No</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2 id="parameter-types">🎛️ Parameter Types</h2>
+        
+        <div class="example-section">
+            <h3>Continuous Values</h3>
+            <pre><code>// Speed control (0.1 to 5.0)
+let speed = p5Param('speed', 1.0, { 
+    min: 0.1, 
+    max: 5.0, 
+    label: 'Animation Speed' 
+});
+
+// Size with large range
+let size = p5Param('objectSize', 50, { 
+    min: 10, 
+    max: 500, 
+    label: 'Object Size' 
+});
+
+// Color hue (0-360 degrees)
+let hue = p5Param('hue', 180, { 
+    min: 0, 
+    max: 360, 
+    label: 'Color Hue' 
+});</code></pre>
+        </div>
+        
+        <div class="example-section">
+            <h3>Discrete Values</h3>
+            <pre><code>// Number of objects (integer steps)
+let count = p5Param('count', 10, { 
+    min: 1, 
+    max: 50, 
+    step: 1,
+    label: 'Object Count' 
+});
+
+// Use Math.floor() to ensure integer
+for (let i = 0; i &lt; Math.floor(count); i++) {
+    // Draw objects
+}</code></pre>
+        </div>
+        
+        <div class="example-section">
+            <h3>Boolean-like Values</h3>
+            <pre><code>// Toggle behavior (0-1 range, treat as boolean)
+let showTrails = p5Param('trails', 0, { 
+    min: 0, 
+    max: 1, 
+    step: 1,
+    label: 'Show Trails' 
+});
+
+if (showTrails &gt; 0.5) {
+    // Semi-transparent background for trails
+    background(0, 20);
+} else {
+    // Solid background
+    background(0);
+}</code></pre>
+        </div>
+        
+        <h2 id="midi-mapping">🎹 MIDI Mapping</h2>
+        
+        <h3>How to Map Parameters to MIDI</h3>
+        
+        <ol>
+            <li><strong>Expose Parameters:</strong> Use <code>p5Param()</code> in your sketch</li>
+            <li><strong>Add MIDI Control:</strong> Click "Add CC Control" in MIDI drawer</li>
+            <li><strong>Select P5 Parameter:</strong> Choose from the <span class="midi-indicator">P5</span> dropdown</li>
+            <li><strong>Learn MIDI:</strong> Click "Learn" and move your controller</li>
+            <li><strong>Test:</strong> Move the controller to see real-time changes</li>
+        </ol>
+        
+        <div class="success">
+            <strong>✅ Pro Tip:</strong> You can map the same MIDI controller to both a grid parameter AND a P5 parameter simultaneously for layered effects!
+        </div>
+        
+        <h3>Parameter Naming Best Practices</h3>
+        
+        <table class="parameter-table">
+            <thead>
+                <tr>
+                    <th>✅ Good Names</th>
+                    <th>❌ Avoid</th>
+                    <th>Why</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>'speed'</code></td>
+                    <td><code>'s'</code></td>
+                    <td>Descriptive names are easier to identify</td>
+                </tr>
+                <tr>
+                    <td><code>'particleCount'</code></td>
+                    <td><code>'particle count'</code></td>
+                    <td>No spaces in parameter names</td>
+                </tr>
+                <tr>
+                    <td><code>'colorHue'</code></td>
+                    <td><code>'color-hue'</code></td>
+                    <td>Use camelCase, not dashes</td>
+                </tr>
+                <tr>
+                    <td><code>'trailLength'</code></td>
+                    <td><code>'length'</code></td>
+                    <td>Specific names prevent conflicts</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2 id="examples">💡 Code Examples</h2>
+        
+        <div class="example-section">
+            <h3>Example 1: Animated Circles</h3>
+            <pre><code>function setup() {
+    createCanvas(windowWidth, windowHeight);
+    colorMode(HSB, 360, 100, 100);
+}
+
+function draw() {
+    // MIDI-controllable parameters
+    let speed = p5Param('speed', 1.0, { min: 0.1, max: 5.0, label: 'Speed' });
+    let size = p5Param('size', 100, { min: 20, max: 300, label: 'Size' });
+    let hue = p5Param('hue', 180, { min: 0, max: 360, label: 'Color' });
+    let trails = p5Param('trails', 0.1, { min: 0, max: 1, label: 'Trail Amount' });
+    
+    // Semi-transparent background for trails
+    background(0, 0, 0, 1 - trails);
+    
+    // Animated position
+    let x = width/2 + cos(frameCount * 0.02 * speed) * 150;
+    let y = height/2 + sin(frameCount * 0.02 * speed) * 150;
+    
+    // Draw circle with MIDI-controlled properties
+    fill(hue, 80, 100);
+    noStroke();
+    circle(x, y, size);
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+}</code></pre>
+        </div>
+        
+        <div class="example-section">
+            <h3>Example 2: Particle System</h3>
+            <pre><code>let particles = [];
+
+function setup() {
+    createCanvas(windowWidth, windowHeight);
+    
+    // Initialize particles
+    for (let i = 0; i &lt; 100; i++) {
+        particles.push({
+            x: random(width),
+            y: random(height),
+            vx: random(-2, 2),
+            vy: random(-2, 2),
+            life: random(100, 255)
+        });
+    }
+}
+
+function draw() {
+    // Expose parameters
+    let speed = p5Param('speed', 1.0, { min: 0.1, max: 3.0, label: 'Speed' });
+    let gravity = p5Param('gravity', 0.1, { min: -0.5, max: 0.5, label: 'Gravity' });
+    let particleSize = p5Param('size', 5, { min: 1, max: 20, label: 'Particle Size' });
+    let fadeRate = p5Param('fade', 2, { min: 1, max: 10, label: 'Fade Rate' });
+    
+    background(0, 20);
+    
+    // Update and draw particles
+    for (let p of particles) {
+        // Apply gravity and speed
+        p.vy += gravity;
+        p.x += p.vx * speed;
+        p.y += p.vy * speed;
+        
+        // Fade out
+        p.life -= fadeRate;
+        
+        // Reset if dead or off-screen
+        if (p.life &lt;= 0 || p.x &lt; 0 || p.x &gt; width || p.y &gt; height) {
+            p.x = random(width);
+            p.y = 0;
+            p.vx = random(-2, 2);
+            p.vy = random(-1, 1);
+            p.life = 255;
+        }
+        
+        // Draw particle
+        fill(255, p.life);
+        noStroke();
+        circle(p.x, p.y, particleSize);
+    }
+}</code></pre>
+        </div>
+        
+        <h2 id="best-practices">✅ Best Practices</h2>
+        
+        <div class="highlight">
+            <h4>Variable Declaration</h4>
+            <ul>
+                <li><strong>Use <code>let</code></strong> when storing parameter values</li>
+                <li><strong>Avoid <code>const</code></strong> - it prevents parameter updates</li>
+                <li><strong>Call <code>p5Param()</code> in <code>draw()</code></strong> for real-time updates</li>
+            </ul>
+        </div>
+        
+        <div class="highlight">
+            <h4>Parameter Ranges</h4>
+            <ul>
+                <li><strong>Always specify min/max</strong> for predictable behavior</li>
+                <li><strong>Use meaningful ranges</strong> - not just 0-1</li>
+                <li><strong>Consider the parameter's purpose</strong> when setting limits</li>
+            </ul>
+        </div>
+        
+        <div class="highlight">
+            <h4>Performance</h4>
+            <ul>
+                <li><strong>Limit parameter count</strong> - too many can clutter MIDI mappings</li>
+                <li><strong>Use efficient code</strong> - P5 layer runs on top of 3D scene</li>
+                <li><strong>Consider canvas size</strong> - full window can be performance-intensive</li>
+            </ul>
+        </div>
+        
+        <div class="highlight">
+            <h4>User Experience</h4>
+            <ul>
+                <li><strong>Provide good labels</strong> - they appear in MIDI mapping UI</li>
+                <li><strong>Use logical parameter names</strong> - easy to identify later</li>
+                <li><strong>Test with MIDI controllers</strong> - ensure smooth parameter response</li>
+            </ul>
+        </div>
+        
+        <h2 id="troubleshooting">🔧 Troubleshooting</h2>
+        
+        <div class="warning">
+            <h4>❌ Parameters not updating with MIDI</h4>
+            <ul>
+                <li><strong>Check variable declaration:</strong> Use <code>let</code> instead of <code>const</code></li>
+                <li><strong>Verify parameter names:</strong> Must match exactly in MIDI mapping</li>
+                <li><strong>Check MIDI mapping:</strong> Ensure P5 dropdown has correct parameter selected</li>
+                <li><strong>Look at console:</strong> Debug logs show parameter updates</li>
+            </ul>
+        </div>
+        
+        <div class="warning">
+            <h4>❌ Parameters not appearing in MIDI dropdown</h4>
+            <ul>
+                <li><strong>Run the sketch first:</strong> Parameters are registered when code runs</li>
+                <li><strong>Check for syntax errors:</strong> Broken sketches don't register parameters</li>
+                <li><strong>Refresh manually:</strong> Edit and re-run the sketch to refresh dropdowns</li>
+            </ul>
+        </div>
+        
+        <div class="warning">
+            <h4>❌ Sketch not visible</h4>
+            <ul>
+                <li><strong>Check layer visibility:</strong> Toggle in Layer Panel</li>
+                <li><strong>Verify canvas size:</strong> Use <code>windowWidth</code>, <code>windowHeight</code></li>
+                <li><strong>Check z-index:</strong> P5 layer renders over 3D scene</li>
+                <li><strong>Look for errors:</strong> Console shows compilation errors</li>
+            </ul>
+        </div>
+        
+        <div class="success">
+            <h4>✅ Debug Console Logs</h4>
+            <p>When MIDI controls work correctly, you'll see logs like:</p>
+            <pre><code>MIDIEventHandler: CC1 Raw=64
+→ P5 target: p5:speed
+→ P5 normalized: 0.504
+App: Routing P5 parameter speed = 0.504
+P5Layer p5 parameter speed set to 2.52 (from normalized 0.504)</code></pre>
+        </div>
+        
+        <hr style="margin: 40px 0; border: 1px solid #333;">
+        
+        <div class="highlight">
+            <h3>🎯 Next Steps</h3>
+            <p>Now that you understand P5 layer parameters, try:</p>
+            <ul>
+                <li><strong>Creating your own sketches</strong> with custom parameters</li>
+                <li><strong>Mapping multiple MIDI controllers</strong> to different parameters</li>
+                <li><strong>Combining P5 effects</strong> with the underlying 3D grid animation</li>
+                <li><strong>Experimenting with different parameter ranges</strong> for unique effects</li>
+            </ul>
+        </div>
+        
+        <p style="text-align: center; margin-top: 40px; color: #666;">
+            <strong>RGLR GNRTR</strong> - P5 Layer Documentation v1.0
+        </p>
+    </div>
+</body>
+</html>

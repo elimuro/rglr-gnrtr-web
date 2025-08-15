@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parameters Reference - RGLR GNRTR</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <style>
+        /* Help page specific styles that complement the main CSS */
+        .help-layout {
+            display: flex;
+            gap: 16px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .help-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .help-sidebar {
+            width: 280px;
+            background: var(--color-bg-overlay);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-primary);
+            height: 100vh;
+            position: sticky;
+            top: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .help-main-content {
+            flex: 1;
+            background: var(--color-bg-overlay);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-primary);
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .nav-section-title {
+            color: var(--color-primary);
+            font-weight: 600;
+            font-size: var(--text-lg);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--color-primary);
+        }
+
+        .nav-item {
+            display: block;
+            padding: var(--spacing-sm) var(--spacing-md);
+            margin: var(--spacing-xs) 0;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            font-size: var(--text-sm);
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--color-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(139, 92, 246, 0.3);
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        .parameter-table th,
+        .parameter-table td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .parameter-table th {
+            background: #2a2a2a;
+            color: #00aaff;
+            font-weight: bold;
+        }
+
+        .parameter-table tr:nth-child(even) {
+            background: #1e1e1e;
+        }
+
+        .parameter-name {
+            font-family: monospace;
+            color: #ff6b35;
+            font-weight: bold;
+        }
+
+        .parameter-range {
+            color: #4caf50;
+            font-family: monospace;
+        }
+
+        @media (max-width: 1024px) {
+            .help-layout {
+                flex-direction: column;
+            }
+
+            .help-sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body class="help-body">
+    <div class="help-container">
+        <div class="help-layout">
+            <!-- Sidebar Navigation -->
+            <div class="help-sidebar">
+                <h3 class="nav-section-title">Parameters Navigation</h3>
+
+                <div class="nav-section">
+                    <a href="#overview" class="nav-item">Overview</a>
+                    <a href="#grid-parameters" class="nav-item">Grid Parameters</a>
+                    <a href="#animation-parameters" class="nav-item">Animation Parameters</a>
+                    <a href="#center-scaling" class="nav-item">3D Center Scaling</a>
+                    <a href="#morphing-parameters" class="nav-item">Morphing Parameters</a>
+                    <a href="#material-parameters" class="nav-item">Material Parameters</a>
+                    <a href="#color-parameters" class="nav-item">Color Parameters</a>
+                    <a href="#lighting-parameters" class="nav-item">Lighting Parameters</a>
+                    <a href="#post-processing" class="nav-item">Post-Processing Effects</a>
+                    <a href="#layer-parameters" class="nav-item">Layer Parameters</a>
+                </div>
+
+                <div class="nav-section">
+                    <h4 class="nav-section-title">Other Help Pages</h4>
+                    <a href="midi-help.html" class="nav-item">← Main Help</a>
+                    <a href="general-setup-help.html" class="nav-item">General Setup</a>
+                    <a href="animations-help.html" class="nav-item">Animation Types</a>
+                    <a href="presets-scenes-help.html" class="nav-item">Presets & Scenes</a>
+                    <a href="p5-layer-help.html" class="nav-item">P5 Layer Guide</a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="help-main-content">
+                <h1 class="help-h1">📊 Complete Parameters Reference</h1>
+
+                <!-- Overview Section -->
+                <div id="overview" class="help-section">
+                    <h2 class="help-h2">Parameter Overview</h2>
+                    <p>This comprehensive reference covers every parameter available for MIDI and audio mapping. Each parameter includes its range, purpose, and practical usage tips for live performance and composition.</p>
+
+                    <div class="help-note">
+                        <strong>Parameter Format:</strong> 
+                        <ul>
+                            <li><span class="parameter-name">parameterName</span> - The exact name used in MIDI mappings</li>
+                            <li><span class="parameter-range">[min - max]</span> - The value range</li>
+                            <li><strong>Description</strong> - What the parameter controls and how it affects visuals</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Parameter Categories</h3>
+                    <ul>
+                        <li><strong>Grid Parameters:</strong> Control the basic structure and layout</li>
+                        <li><strong>Animation Parameters:</strong> Control movement, rotation, and timing</li>
+                        <li><strong>3D Center Scaling:</strong> Create depth effects and 3D illusions</li>
+                        <li><strong>Morphing Parameters:</strong> Control shape transformations</li>
+                        <li><strong>Material Parameters:</strong> Control sphere materials and physics</li>
+                        <li><strong>Color Parameters:</strong> Control overall color and appearance</li>
+                        <li><strong>Lighting Parameters:</strong> Control scene lighting</li>
+                        <li><strong>Post-Processing:</strong> Control visual effects and filters</li>
+                        <li><strong>Layer Parameters:</strong> Control multi-layer system (P5, Shader, etc.)</li>
+                    </ul>
+                </div>
+
+                <!-- Grid Parameters Section -->
+                <div id="grid-parameters" class="help-section">
+                    <h2 class="help-h2">🔲 Grid Parameters</h2>
+                    <p>These parameters control the fundamental structure of the visual grid - the foundation upon which all animations and effects are built.</p>
+
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Performance Tips</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">gridWidth</span></td>
+                                <td><span class="parameter-range">[1 - 30]</span></td>
+                                <td>Number of shapes horizontally across the grid</td>
+                                <td>Higher values create denser patterns but may impact performance</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">gridHeight</span></td>
+                                <td><span class="parameter-range">[1 - 30]</span></td>
+                                <td>Number of shapes vertically down the grid</td>
+                                <td>Balance with gridWidth for optimal performance</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">cellSize</span></td>
+                                <td><span class="parameter-range">[0.5 - 2.0]</span></td>
+                                <td>Size of individual grid cells/shapes</td>
+                                <td>Great for rhythmic scaling effects when mapped to audio</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">compositionWidth</span></td>
+                                <td><span class="parameter-range">[1 - 50]</span></td>
+                                <td>Overall width of the composition viewport</td>
+                                <td>Adjust for different screen sizes and aspect ratios</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">compositionHeight</span></td>
+                                <td><span class="parameter-range">[1 - 50]</span></td>
+                                <td>Overall height of the composition viewport</td>
+                                <td>Works well with compositionWidth for framing effects</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">randomness</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Amount of random variation in grid positioning</td>
+                                <td>Low values for structured patterns, high for organic chaos</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Grid Performance:</strong> Total shapes = gridWidth × gridHeight. Keep under 400 total shapes (20×20) for smooth 60fps performance on most systems.
+                    </div>
+                </div>
+
+                <!-- Animation Parameters Section -->
+                <div id="animation-parameters" class="help-section">
+                    <h2 class="help-h2">🎬 Animation Parameters</h2>
+                    <p>Animation parameters control how shapes move, rotate, scale, and change over time. All animations sync to musical timing based on the global BPM.</p>
+
+                    <h3 class="help-h3">Global Animation Controls</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Performance Tips</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">globalBPM</span></td>
+                                <td><span class="parameter-range">[60 - 300]</span></td>
+                                <td>Master tempo for all animations (beats per minute)</td>
+                                <td>Sync to your music's BPM or use MIDI clock for automatic sync</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">animationType</span></td>
+                                <td><span class="parameter-range">[0 - 127]</span></td>
+                                <td>Selects different animation styles and patterns</td>
+                                <td>Higher values select different animation algorithms</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Movement Animation</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Musical Timing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">movementAmplitude</span></td>
+                                <td><span class="parameter-range">[0.01 - 0.5]</span></td>
+                                <td>How far shapes move from their center position</td>
+                                <td>Amplitude scales with musical timing</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">movementDivision</span></td>
+                                <td><span class="parameter-range">Musical Divisions</span></td>
+                                <td>How often movement patterns change (32nd note to 8 bars)</td>
+                                <td>Quarter note = 1 beat, Half note = 2 beats, etc.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Rotation Animation</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Musical Timing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">rotationAmplitude</span></td>
+                                <td><span class="parameter-range">[0.01 - 2.0]</span></td>
+                                <td>How much shapes rotate around their center</td>
+                                <td>Full rotation = 2π radians ≈ 6.28</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">rotationDivision</span></td>
+                                <td><span class="parameter-range">Musical Divisions</span></td>
+                                <td>How often rotation patterns change</td>
+                                <td>Faster divisions create spinning effects</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Scale Animation</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Musical Timing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">scaleAmplitude</span></td>
+                                <td><span class="parameter-range">[0.01 - 2.0]</span></td>
+                                <td>How much shapes grow and shrink</td>
+                                <td>1.0 = normal size, 2.0 = double size</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">scaleDivision</span></td>
+                                <td><span class="parameter-range">Musical Divisions</span></td>
+                                <td>How often scaling patterns change</td>
+                                <td>Sync to kick drums with quarter notes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Shape Cycling</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Musical Timing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">shapeCyclingDivision</span></td>
+                                <td><span class="parameter-range">Musical Divisions</span></td>
+                                <td>How often shapes change type automatically</td>
+                                <td>Slower divisions (bars) work well for gradual changes</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">shapeCyclingPattern</span></td>
+                                <td><span class="parameter-range">[0 - 10]</span></td>
+                                <td>Pattern for how shapes cycle through types</td>
+                                <td>Different algorithms for shape selection</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">shapeCyclingDirection</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>Direction shapes cycle (forward, reverse, random)</td>
+                                <td>0=forward, 1=reverse, 2=random, 3=ping-pong</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">shapeCyclingSync</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Whether all shapes change together or individually</td>
+                                <td>0=individual timing, 1=synchronized changes</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">shapeCyclingIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 2]</span></td>
+                                <td>Strength of the cycling effect</td>
+                                <td>Higher values create more dramatic changes</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">shapeCyclingTrigger</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Manual trigger for shape cycling</td>
+                                <td>Use with MIDI notes for manual control</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Musical Divisions Available:</strong>
+                        <ul>
+                            <li><strong>32nd Note:</strong> Very fast (1/8 beat) - 0.0625s at 120 BPM</li>
+                            <li><strong>16th Note:</strong> Fast (1/4 beat) - 0.125s at 120 BPM</li>
+                            <li><strong>8th Note:</strong> Medium-fast (1/2 beat) - 0.25s at 120 BPM</li>
+                            <li><strong>Quarter Note:</strong> Medium (1 beat) - 0.5s at 120 BPM</li>
+                            <li><strong>Half Note:</strong> Slow (2 beats) - 1s at 120 BPM</li>
+                            <li><strong>Whole Note:</strong> Very slow (4 beats) - 2s at 120 BPM</li>
+                            <li><strong>1-8 Bars:</strong> Very long phrases for gradual changes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Center Scaling Section -->
+                <div id="center-scaling" class="help-section">
+                    <h2 class="help-h2">🎯 3D Center Scaling Parameters</h2>
+                    <p>Center scaling creates 3D depth effects by scaling shapes based on their distance from the grid center, creating dome or bowl-like visual effects.</p>
+
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Visual Effect</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">centerScalingEnabled</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Toggles the 3D center scaling effect</td>
+                                <td>0=off, 1=on - use with MIDI notes for toggle</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">centerScalingIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 2]</span></td>
+                                <td>Strength of the scaling effect</td>
+                                <td>Higher values create more dramatic 3D depth</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">centerScalingCurve</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>Mathematical curve for scaling calculation</td>
+                                <td>0=linear, 1=exponential, 2=logarithmic, 3=sine wave</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">centerScalingRadius</span></td>
+                                <td><span class="parameter-range">[0.1 - 5.0]</span></td>
+                                <td>Maximum distance where scaling applies</td>
+                                <td>Larger values affect more of the grid</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">centerScalingDirection</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Direction of scaling effect</td>
+                                <td>0=convex (dome), 1=concave (bowl)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">centerScalingAnimation</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Enables animated scaling effects</td>
+                                <td>Creates pulsing or breathing effects</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">centerScalingDivision</span></td>
+                                <td><span class="parameter-range">Musical Divisions</span></td>
+                                <td>Timing for center scaling animations</td>
+                                <td>Sync scaling pulses to musical beats</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">centerScalingAnimationSpeed</span></td>
+                                <td><span class="parameter-range">[0.1 - 5.0]</span></td>
+                                <td>Speed multiplier for scaling animations</td>
+                                <td>Higher values create faster pulsing</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">centerScalingAnimationType</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>Type of scaling animation pattern</td>
+                                <td>Different algorithms for animated scaling</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>3D Effect Tips:</strong>
+                        <ul>
+                            <li><strong>Convex (dome):</strong> Center shapes larger, edges smaller - creates rising effect</li>
+                            <li><strong>Concave (bowl):</strong> Center shapes smaller, edges larger - creates depth effect</li>
+                            <li><strong>Animated scaling:</strong> Great for bass-driven pulsing effects</li>
+                            <li><strong>Curve types:</strong> Exponential for sharp transitions, logarithmic for gradual, sine for smooth waves</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Morphing Parameters Section -->
+                <div id="morphing-parameters" class="help-section">
+                    <h2 class="help-h2">🔄 Morphing Parameters</h2>
+                    <p>Shape morphing creates smooth transitions between different shape types, adding dynamic variety to your compositions.</p>
+
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Usage Tips</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">morphingDivision</span></td>
+                                <td><span class="parameter-range">Musical Divisions</span></td>
+                                <td>Musical timing for morphing transitions</td>
+                                <td>Slower divisions (bars) work well for dramatic changes</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">morphingEasing</span></td>
+                                <td><span class="parameter-range">[0 - 15]</span></td>
+                                <td>Easing function for smooth morphing animations</td>
+                                <td>Different values provide different animation feels</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Available Easing Functions</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+                                <th>Easing Type</th>
+                                <th>Animation Feel</th>
+                                <th>Best Used For</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>0-2</td>
+                                <td>Power 2 In/Out/InOut</td>
+                                <td>Smooth acceleration/deceleration</td>
+                                <td>Natural, organic transitions</td>
+                            </tr>
+                            <tr>
+                                <td>3-5</td>
+                                <td>Power 3 In/Out/InOut</td>
+                                <td>More dramatic acceleration curves</td>
+                                <td>Emphatic, powerful changes</td>
+                            </tr>
+                            <tr>
+                                <td>6-8</td>
+                                <td>Back In/Out/InOut</td>
+                                <td>Overshoot effects</td>
+                                <td>Playful, bouncy transitions</td>
+                            </tr>
+                            <tr>
+                                <td>9-11</td>
+                                <td>Elastic In/Out/InOut</td>
+                                <td>Spring-like bouncing</td>
+                                <td>Energetic, dynamic effects</td>
+                            </tr>
+                            <tr>
+                                <td>12-14</td>
+                                <td>Bounce In/Out/InOut</td>
+                                <td>Ball-bouncing effect</td>
+                                <td>Fun, cartoon-like animations</td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>Linear</td>
+                                <td>Constant speed</td>
+                                <td>Mechanical, precise timing</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Morphing Triggers (MIDI Note Controls)</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Trigger Name</th>
+                                <th>MIDI Target</th>
+                                <th>Description</th>
+                                <th>Performance Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Random Morph</td>
+                                <td><span class="parameter-name">randomMorph</span></td>
+                                <td>Changes one random shape to a different type</td>
+                                <td>Subtle, organic variation</td>
+                            </tr>
+                            <tr>
+                                <td>Morph All Shapes</td>
+                                <td><span class="parameter-name">morphAllShapes</span></td>
+                                <td>Changes all shapes with staggered timing</td>
+                                <td>Dramatic, wave-like transitions</td>
+                            </tr>
+                            <tr>
+                                <td>Morph All to Same</td>
+                                <td><span class="parameter-name">morphAllToSame</span></td>
+                                <td>Changes all shapes to the same target type</td>
+                                <td>Unified, synchronized changes</td>
+                            </tr>
+                            <tr>
+                                <td>Morph All Simultaneously</td>
+                                <td><span class="parameter-name">morphAllSimultaneously</span></td>
+                                <td>Changes all shapes at exactly the same time</td>
+                                <td>Instant, dramatic transformations</td>
+                            </tr>
+                            <tr>
+                                <td>Morph All to Same Simultaneously</td>
+                                <td><span class="parameter-name">morphAllToSameSimultaneously</span></td>
+                                <td>Instant change of all shapes to same type</td>
+                                <td>Complete scene transformation</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Material Parameters Section -->
+                <div id="material-parameters" class="help-section">
+                    <h2 class="help-h2">💎 Material Parameters</h2>
+                    <p>Material parameters control the physical properties of refractive spheres, creating realistic glass, crystal, and liquid effects.</p>
+
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Visual Effect</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">sphereRefraction</span></td>
+                                <td><span class="parameter-range">[0 - 2]</span></td>
+                                <td>Light bending through sphere material</td>
+                                <td>1.0=glass, 1.33=water, 2.0=diamond-like</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereTransparency</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>How see-through the spheres are</td>
+                                <td>0=opaque, 1=fully transparent</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereTransmission</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Light transmission through the material</td>
+                                <td>Higher values allow more light through</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereRoughness</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Surface roughness of sphere material</td>
+                                <td>0=mirror smooth, 1=completely rough/matte</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereMetalness</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>How metallic the sphere surface appears</td>
+                                <td>0=dielectric (glass), 1=metallic (chrome)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereScale</span></td>
+                                <td><span class="parameter-range">[0.1 - 3.0]</span></td>
+                                <td>Overall size of refractive spheres</td>
+                                <td>Larger spheres have more dramatic refraction</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereClearcoat</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Clear protective coating over base material</td>
+                                <td>Creates car paint or lacquered wood effect</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereClearcoatRoughness</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Roughness of the clearcoat layer</td>
+                                <td>Independent roughness control for layered materials</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereEnvMapIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>Strength of environment map reflections</td>
+                                <td>Higher values create stronger reflections</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereDistortionStrength</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Amount of distortion effect in sphere refraction</td>
+                                <td>Creates water ripple or heat haze effects</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">sphereHighPerformanceMode</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Toggles performance optimization for spheres</td>
+                                <td>0=high quality, 1=optimized for performance</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Material Combinations:</strong>
+                        <ul>
+                            <li><strong>Glass:</strong> Refraction=1.5, Transparency=0.9, Transmission=1.0, Roughness=0.0</li>
+                            <li><strong>Water:</strong> Refraction=1.33, Transparency=0.8, Transmission=0.9, Roughness=0.1</li>
+                            <li><strong>Crystal:</strong> Refraction=2.0, Transparency=0.95, Transmission=0.8, Roughness=0.0</li>
+                            <li><strong>Chrome:</strong> Metalness=1.0, Roughness=0.1, Transparency=0.0</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Color Parameters Section -->
+                <div id="color-parameters" class="help-section">
+                    <h2 class="help-h2">🎨 Color Parameters</h2>
+                    <p>Color parameters control the overall color grading and appearance of the entire composition.</p>
+
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Performance Tips</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">colorHue</span></td>
+                                <td><span class="parameter-range">[0 - 360]</span></td>
+                                <td>Overall hue shift for the entire scene</td>
+                                <td>0=red, 120=green, 240=blue, 360=red again</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">colorSaturation</span></td>
+                                <td><span class="parameter-range">[0 - 2]</span></td>
+                                <td>Color intensity and vividness</td>
+                                <td>0=grayscale, 1=normal, 2=oversaturated</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">colorBrightness</span></td>
+                                <td><span class="parameter-range">[0 - 2]</span></td>
+                                <td>Overall brightness/exposure of the scene</td>
+                                <td>Great for creating fade-in/out effects</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">colorContrast</span></td>
+                                <td><span class="parameter-range">[0 - 2]</span></td>
+                                <td>Difference between light and dark areas</td>
+                                <td>Higher values create more dramatic lighting</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">shapeColor</span></td>
+                                <td><span class="parameter-range">[0 - 360]</span></td>
+                                <td>Base hue for shape colors</td>
+                                <td>Combined with global color grading</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">backgroundColor</span></td>
+                                <td><span class="parameter-range">[0 - 360]</span></td>
+                                <td>Background color hue</td>
+                                <td>Creates color contrast with shapes</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">gridColor</span></td>
+                                <td><span class="parameter-range">[0 - 360]</span></td>
+                                <td>Color of grid lines (when visible)</td>
+                                <td>Subtle accent color for grid structure</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Color Theory Tips:</strong>
+                        <ul>
+                            <li><strong>Complementary colors:</strong> Hues 180° apart (red/cyan, blue/orange)</li>
+                            <li><strong>Analogous colors:</strong> Hues close together (red/orange/yellow)</li>
+                            <li><strong>Monochromatic:</strong> Same hue with different saturation/brightness</li>
+                            <li><strong>Audio mapping:</strong> Map hue to frequency ranges for color-reactive visuals</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Lighting Parameters Section -->
+                <div id="lighting-parameters" class="help-section">
+                    <h2 class="help-h2">💡 Lighting Parameters</h2>
+                    <p>Lighting parameters control the 3D scene lighting, affecting how shapes appear and cast shadows.</p>
+
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Visual Effect</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">ambientLightIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 2]</span></td>
+                                <td>Overall ambient lighting level</td>
+                                <td>Base illumination that affects all surfaces equally</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">directionalLightIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>Main directional light (like sunlight)</td>
+                                <td>Creates strong shadows and highlights</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">pointLight1Intensity</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>First point light source intensity</td>
+                                <td>Localized lighting from specific position</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">pointLight2Intensity</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>Second point light source intensity</td>
+                                <td>Additional accent lighting</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">rimLightIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>Edge lighting that outlines shapes</td>
+                                <td>Creates dramatic silhouette effects</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">accentLightIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>Additional accent lighting</td>
+                                <td>Highlights specific areas or creates mood</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">lightColour</span></td>
+                                <td><span class="parameter-range">[0 - 360]</span></td>
+                                <td>Overall color temperature of lighting</td>
+                                <td>Warm (red) to cool (blue) lighting moods</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Lighting Setups:</strong>
+                        <ul>
+                            <li><strong>High Key:</strong> High ambient + low directional = soft, even lighting</li>
+                            <li><strong>Low Key:</strong> Low ambient + high directional = dramatic shadows</li>
+                            <li><strong>Rim Lighting:</strong> High rim + low ambient = silhouette effects</li>
+                            <li><strong>Reactive Lighting:</strong> Map light intensities to audio for pulsing effects</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Post-Processing Section -->
+                <div id="post-processing" class="help-section">
+                    <h2 class="help-h2">✨ Post-Processing Effects</h2>
+                    <p>Post-processing effects are applied after the 3D scene is rendered, adding cinematic and artistic effects.</p>
+
+                    <h3 class="help-h3">Bloom Effect</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Performance Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">bloomStrength</span></td>
+                                <td><span class="parameter-range">[0 - 3]</span></td>
+                                <td>Intensity of the glow effect</td>
+                                <td>Higher values = more GPU usage</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">bloomRadius</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Size/spread of the bloom glow</td>
+                                <td>Larger radius = more GPU usage</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">bloomThreshold</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Brightness level where bloom begins</td>
+                                <td>Lower threshold = more pixels affected</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Chromatic Aberration</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Visual Style</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">chromaticIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 0.1]</span></td>
+                                <td>Amount of color separation effect</td>
+                                <td>Creates vintage lens or VHS-style distortion</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Vignette Effect</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Cinematic Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">vignetteIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Darkness of edge vignetting</td>
+                                <td>Focuses attention toward center</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">vignetteRadius</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Size of the vignette area</td>
+                                <td>Smaller radius = more dramatic effect</td>
+                            </tr>
+                            <tr>
+                                <td><span class="parameter-name">vignetteSoftness</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Softness of vignette edges</td>
+                                <td>Higher values = more gradual transition</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Film Grain</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Aesthetic</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">grainIntensity</span></td>
+                                <td><span class="parameter-range">[0 - 1]</span></td>
+                                <td>Amount of film grain noise</td>
+                                <td>Creates vintage film or analog video look</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Performance Tips:</strong>
+                        <ul>
+                            <li><strong>Bloom:</strong> Most expensive effect - reduce strength/radius for better performance</li>
+                            <li><strong>Chromatic Aberration:</strong> Minimal performance impact</li>
+                            <li><strong>Vignette:</strong> Very lightweight effect</li>
+                            <li><strong>Film Grain:</strong> Lightweight but can cause visual noise at high settings</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Layer Parameters Section -->
+                <div id="layer-parameters" class="help-section">
+                    <h2 class="help-h2">🎭 Layer Parameters</h2>
+                    <p>Layer parameters control the multi-layer system, allowing different visual elements to be composited together.</p>
+
+                    <h3 class="help-h3">P5 Layer Parameters</h3>
+                    <p>P5 layer parameters are dynamically created by your p5.js sketches using the <code>p5Param()</code> function.</p>
+
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter Format</th>
+                                <th>Range</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="parameter-name">p5:parameterName</span></td>
+                                <td>Custom Range</td>
+                                <td>Parameters exposed by your p5.js sketch</td>
+                                <td>p5:speed, p5:size, p5:color</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>P5 Parameter Examples:</strong>
+                        <ul>
+                            <li><span class="parameter-name">p5:speed</span> - Animation speed in your sketch</li>
+                            <li><span class="parameter-name">p5:size</span> - Size of objects in your sketch</li>
+                            <li><span class="parameter-name">p5:color</span> - Color hue for sketch elements</li>
+                            <li><span class="parameter-name">p5:particleCount</span> - Number of particles in particle system</li>
+                        </ul>
+                        
+                        <p><strong>📖 <a href="p5-layer-help.html" style="color: #00aaff;">Complete P5 Layer Documentation</a></strong> - Learn how to create and expose parameters in your p5.js sketches.</p>
+                    </div>
+
+                    <h3 class="help-h3">Future Layer Types (Coming Soon)</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Layer Type</th>
+                                <th>Parameter Format</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Shader Layer</td>
+                                <td><span class="parameter-name">shader:uniformName</span></td>
+                                <td>GLSL shader uniform parameters</td>
+                                <td>Coming Soon</td>
+                            </tr>
+                            <tr>
+                                <td>Video Layer</td>
+                                <td><span class="parameter-name">video:playbackSpeed</span></td>
+                                <td>Video playback and effect parameters</td>
+                                <td>Coming Soon</td>
+                            </tr>
+                            <tr>
+                                <td>Particle Layer</td>
+                                <td><span class="parameter-name">particle:emissionRate</span></td>
+                                <td>GPU particle system parameters</td>
+                                <td>Coming Soon</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                
+                // Only apply smooth scrolling to internal links (starting with #)
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+                // External links will work normally
+            });
+        });
+
+        // Highlight active section in navigation
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.help-section');
+            const navLinks = document.querySelectorAll('.nav-item');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

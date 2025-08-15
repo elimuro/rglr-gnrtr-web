@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Setup Guide - RGLR GNRTR</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <style>
+        /* Help page specific styles that complement the main CSS */
+        .help-layout {
+            display: flex;
+            gap: 16px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .help-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .help-sidebar {
+            width: 280px;
+            background: var(--color-bg-overlay);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-primary);
+            height: 100vh;
+            position: sticky;
+            top: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .help-main-content {
+            flex: 1;
+            background: var(--color-bg-overlay);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-primary);
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .nav-section-title {
+            color: var(--color-primary);
+            font-weight: 600;
+            font-size: var(--text-lg);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--color-primary);
+        }
+
+        .nav-item {
+            display: block;
+            padding: var(--spacing-sm) var(--spacing-md);
+            margin: var(--spacing-xs) 0;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            font-size: var(--text-sm);
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--color-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(139, 92, 246, 0.3);
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .help-layout {
+                flex-direction: column;
+            }
+
+            .help-sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body class="help-body">
+    <div class="help-container">
+        <div class="help-layout">
+            <!-- Sidebar Navigation -->
+            <div class="help-sidebar">
+                <h3 class="nav-section-title">Setup Guide Navigation</h3>
+
+                <div class="nav-section">
+                    <a href="#getting-started" class="nav-item">Getting Started</a>
+                    <a href="#browser-requirements" class="nav-item">Browser Requirements</a>
+                    <a href="#midi-setup" class="nav-item">MIDI Setup</a>
+                    <a href="#audio-setup" class="nav-item">Audio Setup</a>
+                    <a href="#midi-learn" class="nav-item">MIDI Learn</a>
+                    <a href="#midi-clock" class="nav-item">MIDI Clock Sync</a>
+                    <a href="#troubleshooting" class="nav-item">Troubleshooting</a>
+                </div>
+
+                <div class="nav-section">
+                    <h4 class="nav-section-title">Other Help Pages</h4>
+                    <a href="midi-help.html" class="nav-item">← Main Help</a>
+                    <a href="parameters-help.html" class="nav-item">Parameters Reference</a>
+                    <a href="animations-help.html" class="nav-item">Animation Types</a>
+                    <a href="presets-scenes-help.html" class="nav-item">Presets & Scenes</a>
+                    <a href="p5-layer-help.html" class="nav-item">P5 Layer Guide</a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="help-main-content">
+                <h1 class="help-h1">🔧 General Setup Guide</h1>
+
+                <!-- Getting Started Section -->
+                <div id="getting-started" class="help-section">
+                    <h2 class="help-h2">Getting Started</h2>
+                    <p>This guide covers the essential setup steps to get your MIDI controllers and audio devices working with the visual generator. Follow these steps to connect your hardware and start creating responsive visuals.</p>
+
+                    <div class="help-note">
+                        <strong>Quick Start:</strong> Connect your MIDI controller → Click "Connect MIDI" → Add CC controls → Start creating!
+                    </div>
+                </div>
+
+                <!-- Browser Requirements Section -->
+                <div id="browser-requirements" class="help-section">
+                    <h2 class="help-h2">Browser Requirements</h2>
+                    
+                    <h3 class="help-h3">Supported Browsers</h3>
+                    <ul>
+                        <li><strong>✅ Chrome/Chromium</strong> - Best performance and full feature support</li>
+                        <li><strong>✅ Microsoft Edge</strong> - Excellent compatibility</li>
+                        <li><strong>✅ Firefox</strong> - Good support with some limitations</li>
+                        <li><strong>❌ Safari</strong> - Limited MIDI support</li>
+                        <li><strong>❌ Internet Explorer</strong> - Not supported</li>
+                    </ul>
+
+                    <h3 class="help-h3">Protocol Requirements</h3>
+                    <div class="help-warning">
+                        <strong>HTTPS Required:</strong> MIDI access requires a secure connection (HTTPS) or localhost. The app will not work over plain HTTP from a remote server.
+                    </div>
+
+                    <ul>
+                        <li><strong>✅ https://your-domain.com</strong> - Secure connection</li>
+                        <li><strong>✅ http://localhost</strong> - Local development</li>
+                        <li><strong>✅ http://127.0.0.1</strong> - Local IP</li>
+                        <li><strong>❌ http://your-domain.com</strong> - Insecure connection blocked</li>
+                    </ul>
+
+                    <h3 class="help-h3">Hardware Requirements</h3>
+                    <ul>
+                        <li><strong>MIDI Controller:</strong> Any USB MIDI device (keyboards, control surfaces, drum machines)</li>
+                        <li><strong>Audio Input:</strong> Built-in microphone, USB microphone, or audio interface</li>
+                        <li><strong>Graphics:</strong> WebGL-capable graphics card (most modern computers)</li>
+                        <li><strong>RAM:</strong> 4GB+ recommended for smooth performance</li>
+                    </ul>
+                </div>
+
+                <!-- MIDI Setup Section -->
+                <div id="midi-setup" class="help-section">
+                    <h2 class="help-h2">🎹 MIDI Controller Setup</h2>
+                    
+                    <h3 class="help-h3">Step 1: Connect Your MIDI Controller</h3>
+                    <ol>
+                        <li><strong>Physical Connection:</strong> Connect your MIDI controller to your computer via USB</li>
+                        <li><strong>Power On:</strong> Turn on your MIDI controller (if it has a power switch)</li>
+                        <li><strong>Driver Installation:</strong> Most USB MIDI controllers are plug-and-play, but check manufacturer instructions if needed</li>
+                        <li><strong>Verify Connection:</strong> Your operating system should recognize the device</li>
+                    </ol>
+
+                    <h3 class="help-h3">Step 2: Connect in the App</h3>
+                    <ol>
+                        <li><strong>Open MIDI Panel:</strong> Click the MIDI icon in the left sidebar to open the MIDI drawer</li>
+                        <li><strong>Click "Connect MIDI":</strong> This will request MIDI access from your browser</li>
+                        <li><strong>Grant Permission:</strong> Allow MIDI access when your browser prompts you</li>
+                        <li><strong>Select Device:</strong> If you have multiple MIDI devices, select your controller from the dropdown</li>
+                        <li><strong>Verify Connection:</strong> You should see a green "Connected" status</li>
+                    </ol>
+
+                    <div class="help-note">
+                        <strong>Device Selection:</strong> If you have multiple MIDI devices, the app will show a device selection dialog. Choose your main controller for the best experience.
+                    </div>
+
+                    <h3 class="help-h3">Step 3: Test Your Connection</h3>
+                    <ul>
+                        <li><strong>MIDI Activity:</strong> Move knobs or press keys - you should see activity in the MIDI activity stream</li>
+                        <li><strong>Test CC Values:</strong> Use the "Test CC Values" button to verify all your knobs are working</li>
+                        <li><strong>Check Channels:</strong> Make sure your controller is sending on the expected MIDI channels</li>
+                    </ul>
+
+                    <h3 class="help-h3">Common MIDI Controller Types</h3>
+                    
+                    <div class="help-section">
+                        <h4 class="help-h4">Control Surfaces</h4>
+                        <ul>
+                            <li><strong>Novation Launch Control XL:</strong> 8 rotary encoders, 16 buttons - excellent for live control</li>
+                            <li><strong>Arturia BeatStep Pro:</strong> 16 encoders, 16 pads - comprehensive control</li>
+                            <li><strong>Akai MPK Mini:</strong> 8 pads, 4 knobs - compact and portable</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h4 class="help-h4">MIDI Keyboards</h4>
+                        <ul>
+                            <li><strong>Keys:</strong> Use for triggering effects and toggles</li>
+                            <li><strong>Mod Wheel:</strong> Great for continuous control of effects</li>
+                            <li><strong>Pitch Bend:</strong> Can be mapped to any continuous parameter</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h4 class="help-h4">Drum Machines</h4>
+                        <ul>
+                            <li><strong>Pads:</strong> Perfect for triggering morphing and effects</li>
+                            <li><strong>Knobs:</strong> Use for real-time parameter control</li>
+                            <li><strong>Sequence Triggers:</strong> Can create rhythmic visual patterns</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Audio Setup Section -->
+                <div id="audio-setup" class="help-section">
+                    <h2 class="help-h2">🎤 Audio Input Setup</h2>
+                    
+                    <h3 class="help-h3">Step 1: Connect Your Audio Source</h3>
+                    <ul>
+                        <li><strong>Built-in Microphone:</strong> Most computers have a built-in mic that works immediately</li>
+                        <li><strong>USB Microphone:</strong> Plug in and select as your input device</li>
+                        <li><strong>Audio Interface:</strong> Connect your interface, then connect microphones or instruments</li>
+                        <li><strong>Line Input:</strong> Connect audio from mixers, DJ equipment, or other audio sources</li>
+                    </ul>
+
+                    <h3 class="help-h3">Step 2: Connect in the App</h3>
+                    <ol>
+                        <li><strong>Open Audio Panel:</strong> Click the audio icon in the left sidebar</li>
+                        <li><strong>Click "Connect Audio":</strong> This will request microphone access</li>
+                        <li><strong>Grant Permission:</strong> Allow microphone access when prompted</li>
+                        <li><strong>Select Input:</strong> Choose your preferred audio input device</li>
+                        <li><strong>Test Levels:</strong> Speak or play music - you should see audio levels responding</li>
+                    </ol>
+
+                    <h3 class="help-h3">Audio Interface Types</h3>
+                    
+                    <div class="help-section">
+                        <h4 class="help-h4">USB Audio Interfaces</h4>
+                        <ul>
+                            <li><strong>Focusrite Scarlett Series:</strong> Professional quality, multiple inputs</li>
+                            <li><strong>PreSonus AudioBox:</strong> Reliable, good for live performance</li>
+                            <li><strong>Behringer U-Phoria:</strong> Budget-friendly option</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h4 class="help-h4">USB Microphones</h4>
+                        <ul>
+                            <li><strong>Blue Yeti:</strong> Popular choice with good sensitivity</li>
+                            <li><strong>Audio-Technica ATR2100x:</strong> Dynamic mic, good for live environments</li>
+                            <li><strong>Rode PodMic:</strong> Excellent for voice and instruments</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Audio Mapping Setup</h3>
+                    <ol>
+                        <li><strong>Add Audio Control:</strong> Click "Add Audio Control" in the audio panel</li>
+                        <li><strong>Select Frequency Range:</strong> Choose which frequencies to monitor (bass, mids, highs)</li>
+                        <li><strong>Choose Target Parameter:</strong> Select what visual parameter the audio should control</li>
+                        <li><strong>Adjust Sensitivity:</strong> Fine-tune how responsive the visuals are to audio</li>
+                        <li><strong>Test Response:</strong> Play music or make noise to see the visual response</li>
+                    </ol>
+
+                    <div class="help-note">
+                        <strong>Frequency Tips:</strong>
+                        <ul>
+                            <li><strong>Bass (20-250Hz):</strong> Great for controlling movement and scale</li>
+                            <li><strong>Mids (250-2000Hz):</strong> Perfect for color and rotation control</li>
+                            <li><strong>Highs (2000-8000Hz):</strong> Excellent for effects and brightness</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- MIDI Learn Section -->
+                <div id="midi-learn" class="help-section">
+                    <h2 class="help-h2">🎯 MIDI Learn Functionality</h2>
+                    
+                    <p>MIDI Learn is the fastest way to map your controller knobs and buttons to visual parameters. Instead of manually entering CC numbers and channels, the app automatically detects your MIDI input.</p>
+
+                    <h3 class="help-h3">How MIDI Learn Works</h3>
+                    <ol>
+                        <li><strong>Add Control:</strong> Click "Add CC Control" or "Add Note Control"</li>
+                        <li><strong>Choose Parameter:</strong> Select what you want to control from the dropdown</li>
+                        <li><strong>Click "Learn":</strong> The learn button will start flashing yellow</li>
+                        <li><strong>Move Your Controller:</strong> Turn a knob or press a key on your MIDI controller</li>
+                        <li><strong>Automatic Detection:</strong> The app captures the CC number and MIDI channel</li>
+                        <li><strong>Confirmation:</strong> The button turns green briefly to confirm success</li>
+                    </ol>
+
+                    <h3 class="help-h3">MIDI Learn Best Practices</h3>
+                    
+                    <div class="help-section">
+                        <h4 class="help-h4">For CC Controls (Knobs/Sliders)</h4>
+                        <ul>
+                            <li><strong>Move Smoothly:</strong> Turn knobs slowly and smoothly during learn</li>
+                            <li><strong>Full Range:</strong> Move the control through its full range</li>
+                            <li><strong>One at a Time:</strong> Only move one control during learn mode</li>
+                            <li><strong>Avoid Jumping:</strong> Don't quickly snap between values</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h4 class="help-h4">For Note Controls (Keys/Pads)</h4>
+                        <ul>
+                            <li><strong>Press Firmly:</strong> Make sure the key/pad registers properly</li>
+                            <li><strong>Single Press:</strong> One clear press is better than multiple taps</li>
+                            <li><strong>Hold Briefly:</strong> Hold the key for a moment to ensure detection</li>
+                            <li><strong>Check Velocity:</strong> Make sure your controller sends note velocity</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Troubleshooting MIDI Learn</h3>
+                    
+                    <div class="help-warning">
+                        <strong>Learn Not Working?</strong>
+                        <ul>
+                            <li>Make sure MIDI is connected (green status)</li>
+                            <li>Check MIDI activity stream for incoming messages</li>
+                            <li>Try a different knob or key</li>
+                            <li>Verify your controller is sending on the right channel</li>
+                            <li>Click "Learn" again to restart the process</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Manual Entry:</strong> If MIDI Learn doesn't work, you can always manually enter the CC number and channel in the input fields.
+                    </div>
+                </div>
+
+                <!-- MIDI Clock Section -->
+                <div id="midi-clock" class="help-section">
+                    <h2 class="help-h2">⏰ MIDI Clock Synchronization</h2>
+                    
+                    <p>MIDI Clock allows you to synchronize the visual animations with external music equipment, DAWs, or other MIDI devices. This creates perfectly timed visuals that match your music.</p>
+
+                    <h3 class="help-h3">What is MIDI Clock?</h3>
+                    <ul>
+                        <li><strong>Timing Standard:</strong> MIDI Clock sends 24 pulses per quarter note</li>
+                        <li><strong>Tempo Sync:</strong> Automatically detects and matches external BPM</li>
+                        <li><strong>Transport Control:</strong> Start, Stop, and Continue commands control playback</li>
+                        <li><strong>Universal Standard:</strong> Works with all MIDI-compatible devices</li>
+                    </ul>
+
+                    <h3 class="help-h3">Setting Up MIDI Clock</h3>
+                    
+                    <div class="help-section">
+                        <h4 class="help-h4">From a DAW (Ableton, Logic, etc.)</h4>
+                        <ol>
+                            <li><strong>Enable MIDI Clock Output:</strong> In your DAW's MIDI settings, enable clock output</li>
+                            <li><strong>Select Output Device:</strong> Choose the same MIDI device connected to the app</li>
+                            <li><strong>Start Transport:</strong> Press play in your DAW</li>
+                            <li><strong>Verify Sync:</strong> Check the transport bar shows "External Clock" and correct BPM</li>
+                        </ol>
+                    </div>
+
+                    <div class="help-section">
+                        <h4 class="help-h4">From Hardware (Drum Machine, Sequencer)</h4>
+                        <ol>
+                            <li><strong>Find Clock Settings:</strong> Look for "MIDI Clock" or "Sync" in your device menu</li>
+                            <li><strong>Set to Send/Master:</strong> Configure your device to send MIDI clock</li>
+                            <li><strong>Connect MIDI Out:</strong> Connect MIDI OUT from your device to computer</li>
+                            <li><strong>Start Sequence:</strong> Start your pattern or sequence</li>
+                        </ol>
+                    </div>
+
+                    <h3 class="help-h3">MIDI Clock Messages</h3>
+                    <ul>
+                        <li><strong>Clock (0xF8):</strong> Timing pulses - 24 per quarter note</li>
+                        <li><strong>Start (0xFA):</strong> Starts playback from the beginning</li>
+                        <li><strong>Continue (0xFB):</strong> Continues playback from current position</li>
+                        <li><strong>Stop (0xFC):</strong> Stops playback</li>
+                    </ul>
+
+                    <h3 class="help-h3">Clock Status Indicators</h3>
+                    <p>The transport bar at the bottom shows your current clock status:</p>
+                    <ul>
+                        <li><strong>🟢 Green Dot:</strong> External MIDI clock active</li>
+                        <li><strong>🟡 Yellow Dot:</strong> Internal clock running</li>
+                        <li><strong>🔴 Red Dot:</strong> Clock stopped</li>
+                        <li><strong>BPM Display:</strong> Shows current tempo (updates in real-time)</li>
+                    </ul>
+
+                    <div class="help-note">
+                        <strong>Automatic Detection:</strong> The app automatically switches to external clock when MIDI clock messages are received, and falls back to internal clock when they stop.
+                    </div>
+                </div>
+
+                <!-- Troubleshooting Section -->
+                <div id="troubleshooting" class="help-section">
+                    <h2 class="help-h2">🔧 Troubleshooting</h2>
+                    
+                    <div class="help-warning">
+                        <strong>MIDI Controller Not Detected</strong>
+                        <ul>
+                            <li>Check USB connection - try a different USB port</li>
+                            <li>Make sure controller is powered on</li>
+                            <li>Refresh the page and try "Connect MIDI" again</li>
+                            <li>Check if controller needs drivers (consult manufacturer)</li>
+                            <li>Try the controller with other MIDI software to verify it works</li>
+                            <li>Make sure you're using Chrome, Edge, or Firefox</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-warning">
+                        <strong>MIDI Connected But No Response</strong>
+                        <ul>
+                            <li>Check MIDI activity stream for incoming messages</li>
+                            <li>Verify CC mappings are set up correctly</li>
+                            <li>Make sure target parameters are selected</li>
+                            <li>Check MIDI channel settings (most controllers default to channel 1)</li>
+                            <li>Try the "Test CC Values" button to verify controller output</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-warning">
+                        <strong>Audio Input Not Working</strong>
+                        <ul>
+                            <li>Check microphone permissions in your browser</li>
+                            <li>Verify microphone is not muted in system settings</li>
+                            <li>Try selecting a different audio input device</li>
+                            <li>Check audio levels in your operating system</li>
+                            <li>Make sure no other applications are using the microphone</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-warning">
+                        <strong>MIDI Clock Not Syncing</strong>
+                        <ul>
+                            <li>Verify your external device is sending MIDI clock</li>
+                            <li>Check MIDI connections and cables</li>
+                            <li>Look for clock messages in the MIDI activity stream</li>
+                            <li>Try restarting both the app and your external device</li>
+                            <li>Check if your DAW/device has clock output enabled</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Still Having Issues?</strong> Try these general solutions:
+                        <ul>
+                            <li>Refresh the page completely (Ctrl+F5 or Cmd+Shift+R)</li>
+                            <li>Close and reopen your browser</li>
+                            <li>Disconnect and reconnect your MIDI/audio devices</li>
+                            <li>Check for browser updates</li>
+                            <li>Try a different browser (Chrome is recommended)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                
+                // Only apply smooth scrolling to internal links (starting with #)
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+                // External links will work normally
+            });
+        });
+
+        // Highlight active section in navigation
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.help-section');
+            const navLinks = document.querySelectorAll('.nav-item');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

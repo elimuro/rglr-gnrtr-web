@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation Types Guide - RGLR GNRTR</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <style>
+        /* Help page specific styles that complement the main CSS */
+        .help-layout {
+            display: flex;
+            gap: 16px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .help-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .help-sidebar {
+            width: 280px;
+            background: var(--color-bg-overlay);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-primary);
+            height: 100vh;
+            position: sticky;
+            top: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .help-main-content {
+            flex: 1;
+            background: var(--color-bg-overlay);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-primary);
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .nav-section-title {
+            color: var(--color-primary);
+            font-weight: 600;
+            font-size: var(--text-lg);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--color-primary);
+        }
+
+        .nav-item {
+            display: block;
+            padding: var(--spacing-sm) var(--spacing-md);
+            margin: var(--spacing-xs) 0;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            font-size: var(--text-sm);
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--color-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(139, 92, 246, 0.3);
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .animation-demo {
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #1a1a1a;
+        }
+
+        .animation-demo h4 {
+            color: #00aaff;
+            margin-bottom: 10px;
+        }
+
+        .timing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        .timing-table th,
+        .timing-table td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .timing-table th {
+            background: #2a2a2a;
+            color: #00aaff;
+        }
+
+        .timing-value {
+            font-family: monospace;
+            color: #4caf50;
+        }
+
+        @media (max-width: 1024px) {
+            .help-layout {
+                flex-direction: column;
+            }
+
+            .help-sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body class="help-body">
+    <div class="help-container">
+        <div class="help-layout">
+            <!-- Sidebar Navigation -->
+            <div class="help-sidebar">
+                <h3 class="nav-section-title">Animation Guide</h3>
+
+                <div class="nav-section">
+                    <a href="#overview" class="nav-item">Animation Overview</a>
+                    <a href="#timing-system" class="nav-item">Musical Timing System</a>
+                    <a href="#animation-types" class="nav-item">Animation Types</a>
+                    <a href="#movement-animations" class="nav-item">Movement Animations</a>
+                    <a href="#rotation-animations" class="nav-item">Rotation Animations</a>
+                    <a href="#scale-animations" class="nav-item">Scale Animations</a>
+                    <a href="#shape-cycling" class="nav-item">Shape Cycling</a>
+                    <a href="#morphing-system" class="nav-item">Shape Morphing</a>
+                    <a href="#center-scaling" class="nav-item">3D Center Effects</a>
+                    <a href="#combining-animations" class="nav-item">Combining Animations</a>
+                    <a href="#performance-tips" class="nav-item">Performance Tips</a>
+                </div>
+
+                <div class="nav-section">
+                    <h4 class="nav-section-title">Other Help Pages</h4>
+                    <a href="midi-help.html" class="nav-item">← Main Help</a>
+                    <a href="general-setup-help.html" class="nav-item">General Setup</a>
+                    <a href="parameters-help.html" class="nav-item">Parameters Reference</a>
+                    <a href="presets-scenes-help.html" class="nav-item">Presets & Scenes</a>
+                    <a href="p5-layer-help.html" class="nav-item">P5 Layer Guide</a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="help-main-content">
+                <h1 class="help-h1">🎬 Animation Types & Systems</h1>
+
+                <!-- Overview Section -->
+                <div id="overview" class="help-section">
+                    <h2 class="help-h2">Animation System Overview</h2>
+                    <p>The RGLR GNRTR features a sophisticated animation system that synchronizes visual movement to musical timing. All animations are based on musical divisions (beats, bars, measures) rather than raw time, ensuring perfect synchronization with your music.</p>
+
+                    <div class="help-note">
+                        <strong>Key Concepts:</strong>
+                        <ul>
+                            <li><strong>Musical Timing:</strong> All animations sync to BPM (beats per minute)</li>
+                            <li><strong>Amplitude Control:</strong> How intense/large the animation effect is</li>
+                            <li><strong>Division Control:</strong> How often the animation cycles (32nd notes to 8 bars)</li>
+                            <li><strong>Layered System:</strong> Multiple animation types can run simultaneously</li>
+                            <li><strong>MIDI Control:</strong> Every parameter can be mapped to MIDI controllers</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Animation Categories</h3>
+                    <ul>
+                        <li><strong>Movement Animations:</strong> Translate shapes in X/Y space</li>
+                        <li><strong>Rotation Animations:</strong> Rotate shapes around their center</li>
+                        <li><strong>Scale Animations:</strong> Grow and shrink shapes rhythmically</li>
+                        <li><strong>Shape Cycling:</strong> Automatically change shape types over time</li>
+                        <li><strong>Shape Morphing:</strong> Smooth transitions between different shape types</li>
+                        <li><strong>3D Center Scaling:</strong> Create depth effects based on distance from center</li>
+                    </ul>
+                </div>
+
+                <!-- Timing System Section -->
+                <div id="timing-system" class="help-section">
+                    <h2 class="help-h2">🎵 Musical Timing System</h2>
+                    <p>Understanding the musical timing system is crucial for creating animations that feel musical and synchronized.</p>
+
+                    <h3 class="help-h3">BPM (Beats Per Minute)</h3>
+                    <p>The global BPM setting controls the speed of all animations. This can be set manually or automatically synchronized via MIDI clock from your DAW or hardware.</p>
+
+                    <div class="animation-demo">
+                        <h4>Common BPM Ranges:</h4>
+                        <ul>
+                            <li><strong>60-80 BPM:</strong> Slow ballads, ambient music</li>
+                            <li><strong>80-100 BPM:</strong> Hip-hop, downtempo</li>
+                            <li><strong>100-120 BPM:</strong> Pop, rock, funk</li>
+                            <li><strong>120-140 BPM:</strong> House, techno</li>
+                            <li><strong>140+ BPM:</strong> Drum & bass, hardcore</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Musical Divisions</h3>
+                    <p>Divisions determine how often animation cycles repeat. Each division represents a specific musical duration.</p>
+
+                    <table class="timing-table">
+                        <thead>
+                            <tr>
+                                <th>Division</th>
+                                <th>Duration (120 BPM)</th>
+                                <th>Best Used For</th>
+                                <th>Visual Effect</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="timing-value">32nd Note</span></td>
+                                <td>0.0625s</td>
+                                <td>Rapid flutter effects</td>
+                                <td>Very fast, almost vibration-like</td>
+                            </tr>
+                            <tr>
+                                <td><span class="timing-value">16th Note</span></td>
+                                <td>0.125s</td>
+                                <td>Hi-hat patterns, rapid movement</td>
+                                <td>Fast, energetic motion</td>
+                            </tr>
+                            <tr>
+                                <td><span class="timing-value">8th Note</span></td>
+                                <td>0.25s</td>
+                                <td>Snare patterns, medium movement</td>
+                                <td>Moderate speed, clear rhythm</td>
+                            </tr>
+                            <tr>
+                                <td><span class="timing-value">Quarter Note</span></td>
+                                <td>0.5s</td>
+                                <td>Kick drum, main beat</td>
+                                <td>Strong, clear pulses</td>
+                            </tr>
+                            <tr>
+                                <td><span class="timing-value">Half Note</span></td>
+                                <td>1.0s</td>
+                                <td>Slow pulses, breathing effects</td>
+                                <td>Relaxed, spacious timing</td>
+                            </tr>
+                            <tr>
+                                <td><span class="timing-value">Whole Note</span></td>
+                                <td>2.0s</td>
+                                <td>Very slow changes</td>
+                                <td>Meditative, ambient effects</td>
+                            </tr>
+                            <tr>
+                                <td><span class="timing-value">1 Bar</span></td>
+                                <td>2.0s (4/4 time)</td>
+                                <td>Phrase-based changes</td>
+                                <td>Structural, compositional timing</td>
+                            </tr>
+                            <tr>
+                                <td><span class="timing-value">2-8 Bars</span></td>
+                                <td>4-16s</td>
+                                <td>Section changes, builds</td>
+                                <td>Large-scale structural changes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Timing Tips:</strong>
+                        <ul>
+                            <li><strong>Layer Different Divisions:</strong> Use fast divisions for texture, slow for structure</li>
+                            <li><strong>Musical Relationships:</strong> Quarter notes feel strong, 8th notes feel active</li>
+                            <li><strong>BPM Scaling:</strong> Faster BPM makes all animations faster proportionally</li>
+                            <li><strong>MIDI Clock:</strong> Use external clock for perfect sync with your music</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Animation Types Section -->
+                <div id="animation-types" class="help-section">
+                    <h2 class="help-h2">🎨 Animation Type Selection</h2>
+                    <p>The <code>animationType</code> parameter selects different algorithmic approaches to animation. Each type creates distinctly different visual patterns.</p>
+
+                    <div class="animation-demo">
+                        <h4>Animation Type Values (0-127):</h4>
+                        <ul>
+                            <li><strong>0-15:</strong> Sine wave based animations (smooth, organic)</li>
+                            <li><strong>16-31:</strong> Linear animations (mechanical, precise)</li>
+                            <li><strong>32-47:</strong> Exponential curves (accelerating, dramatic)</li>
+                            <li><strong>48-63:</strong> Circular motion patterns</li>
+                            <li><strong>64-79:</strong> Random/noise-based animations</li>
+                            <li><strong>80-95:</strong> Step-based animations (digital, quantized)</li>
+                            <li><strong>96-111:</strong> Spiral and complex patterns</li>
+                            <li><strong>112-127:</strong> Experimental/hybrid algorithms</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Choosing Animation Types</h3>
+                    <ul>
+                        <li><strong>Organic Music:</strong> Use sine wave types (0-15) for natural flow</li>
+                        <li><strong>Electronic Music:</strong> Use step-based types (80-95) for digital aesthetics</li>
+                        <li><strong>Experimental Music:</strong> Try complex patterns (96-127) for unique visuals</li>
+                        <li><strong>Live Performance:</strong> Map animationType to a MIDI knob for real-time changes</li>
+                    </ul>
+                </div>
+
+                <!-- Movement Animations Section -->
+                <div id="movement-animations" class="help-section">
+                    <h2 class="help-h2">🏃 Movement Animations</h2>
+                    <p>Movement animations translate shapes in 2D space, creating flowing, dancing patterns across the grid.</p>
+
+                    <h3 class="help-h3">Movement Parameters</h3>
+                    <ul>
+                        <li><strong>movementAmplitude (0.01-0.5):</strong> How far shapes move from their home position</li>
+                        <li><strong>movementDivision:</strong> Musical timing for movement cycles</li>
+                    </ul>
+
+                    <div class="animation-demo">
+                        <h4>Movement Animation Patterns:</h4>
+                        <ul>
+                            <li><strong>Sine Wave Movement:</strong> Smooth, flowing motion in curves</li>
+                            <li><strong>Circular Motion:</strong> Shapes orbit around their center points</li>
+                            <li><strong>Linear Scanning:</strong> Shapes move in straight lines across the grid</li>
+                            <li><strong>Random Walk:</strong> Organic, unpredictable movement patterns</li>
+                            <li><strong>Wave Propagation:</strong> Movement spreads across the grid like ripples</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Movement Performance Tips</h3>
+                    <ul>
+                        <li><strong>Small Amplitudes:</strong> 0.01-0.1 for subtle texture effects</li>
+                        <li><strong>Medium Amplitudes:</strong> 0.1-0.3 for clear movement patterns</li>
+                        <li><strong>Large Amplitudes:</strong> 0.3-0.5 for dramatic, sweeping motions</li>
+                        <li><strong>Fast Divisions:</strong> 16th/8th notes for energetic movement</li>
+                        <li><strong>Slow Divisions:</strong> Half notes/bars for graceful, flowing motion</li>
+                    </ul>
+
+                    <div class="help-note">
+                        <strong>MIDI Mapping Ideas:</strong>
+                        <ul>
+                            <li><strong>Map amplitude to audio:</strong> Movement intensity follows music dynamics</li>
+                            <li><strong>Map division to tempo:</strong> Faster sections get faster movement</li>
+                            <li><strong>Use note triggers:</strong> Trigger movement bursts on accents</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Rotation Animations Section -->
+                <div id="rotation-animations" class="help-section">
+                    <h2 class="help-h2">🌀 Rotation Animations</h2>
+                    <p>Rotation animations spin shapes around their center points, creating hypnotic, mesmerizing effects.</p>
+
+                    <h3 class="help-h3">Rotation Parameters</h3>
+                    <ul>
+                        <li><strong>rotationAmplitude (0.01-2.0):</strong> How much shapes rotate per cycle</li>
+                        <li><strong>rotationDivision:</strong> Musical timing for rotation cycles</li>
+                    </ul>
+
+                    <div class="animation-demo">
+                        <h4>Rotation Effects:</h4>
+                        <ul>
+                            <li><strong>Gentle Wobble:</strong> Small amplitude (0.01-0.1) for subtle movement</li>
+                            <li><strong>Quarter Turns:</strong> Medium amplitude (0.5-1.0) for clear rotation</li>
+                            <li><strong>Full Spins:</strong> Large amplitude (1.5-2.0) for complete rotations</li>
+                            <li><strong>Oscillation:</strong> Shapes rotate back and forth</li>
+                            <li><strong>Continuous Spin:</strong> Shapes rotate continuously in one direction</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Rotation Timing Strategies</h3>
+                    <table class="timing-table">
+                        <thead>
+                            <tr>
+                                <th>Division</th>
+                                <th>Amplitude Range</th>
+                                <th>Visual Effect</th>
+                                <th>Musical Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>32nd-16th Notes</td>
+                                <td>0.01-0.1</td>
+                                <td>Rapid flutter, vibration</td>
+                                <td>High-energy sections, builds</td>
+                            </tr>
+                            <tr>
+                                <td>8th-Quarter Notes</td>
+                                <td>0.1-0.5</td>
+                                <td>Clear rhythmic rotation</td>
+                                <td>Main groove, steady patterns</td>
+                            </tr>
+                            <tr>
+                                <td>Half-Whole Notes</td>
+                                <td>0.5-1.5</td>
+                                <td>Slow, hypnotic spinning</td>
+                                <td>Ambient sections, breakdowns</td>
+                            </tr>
+                            <tr>
+                                <td>1+ Bars</td>
+                                <td>1.0-2.0</td>
+                                <td>Full rotations, major changes</td>
+                                <td>Section transitions, builds</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Creative Rotation Ideas:</strong>
+                        <ul>
+                            <li><strong>Counter-rotation:</strong> Use negative amplitude values for reverse rotation</li>
+                            <li><strong>Speed Builds:</strong> Gradually increase amplitude during musical builds</li>
+                            <li><strong>Stutter Effects:</strong> Use very fast divisions with small amplitudes</li>
+                            <li><strong>Sync to Melody:</strong> Map rotation to melodic instruments</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Scale Animations Section -->
+                <div id="scale-animations" class="help-section">
+                    <h2 class="help-h2">📏 Scale Animations</h2>
+                    <p>Scale animations make shapes grow and shrink rhythmically, perfect for creating pulsing effects that respond to musical dynamics.</p>
+
+                    <h3 class="help-h3">Scale Parameters</h3>
+                    <ul>
+                        <li><strong>scaleAmplitude (0.01-2.0):</strong> How much shapes change size</li>
+                        <li><strong>scaleDivision:</strong> Musical timing for scaling cycles</li>
+                    </ul>
+
+                    <div class="animation-demo">
+                        <h4>Scale Animation Effects:</h4>
+                        <ul>
+                            <li><strong>Subtle Breathing:</strong> Small amplitude (0.01-0.2) for gentle pulsing</li>
+                            <li><strong>Clear Pulsing:</strong> Medium amplitude (0.2-0.8) for obvious size changes</li>
+                            <li><strong>Dramatic Pumping:</strong> Large amplitude (0.8-2.0) for intense effects</li>
+                            <li><strong>Synchronized Scaling:</strong> All shapes pulse together</li>
+                            <li><strong>Wave Scaling:</strong> Scaling effect ripples across the grid</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Scale Animation Applications</h3>
+                    <table class="timing-table">
+                        <thead>
+                            <tr>
+                                <th>Musical Element</th>
+                                <th>Division</th>
+                                <th>Amplitude</th>
+                                <th>Visual Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Kick Drum</td>
+                                <td>Quarter Note</td>
+                                <td>0.3-0.8</td>
+                                <td>Strong, rhythmic pulsing</td>
+                            </tr>
+                            <tr>
+                                <td>Snare Drum</td>
+                                <td>Half Note</td>
+                                <td>0.2-0.5</td>
+                                <td>Accented pulses on backbeat</td>
+                            </tr>
+                            <tr>
+                                <td>Hi-Hats</td>
+                                <td>8th-16th Note</td>
+                                <td>0.05-0.2</td>
+                                <td>Rapid, textural pulsing</td>
+                            </tr>
+                            <tr>
+                                <td>Bass Line</td>
+                                <td>Varies with melody</td>
+                                <td>0.1-0.4</td>
+                                <td>Musical phrase following</td>
+                            </tr>
+                            <tr>
+                                <td>Ambient Pads</td>
+                                <td>1-4 Bars</td>
+                                <td>0.1-0.3</td>
+                                <td>Slow, breathing effects</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Scale Animation Tips:</strong>
+                        <ul>
+                            <li><strong>Audio Reactive:</strong> Map amplitude to audio analysis for dynamic response</li>
+                            <li><strong>Layered Scaling:</strong> Use multiple scale animations with different divisions</li>
+                            <li><strong>Negative Scaling:</strong> Values &lt; 1.0 make shapes smaller, &gt; 1.0 make them larger</li>
+                            <li><strong>Performance Impact:</strong> Scale animations are very efficient</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Shape Cycling Section -->
+                <div id="shape-cycling" class="help-section">
+                    <h2 class="help-h2">🔄 Shape Cycling System</h2>
+                    <p>Shape cycling automatically changes shape types over time, creating evolving compositions that transform throughout your performance.</p>
+
+                    <h3 class="help-h3">Shape Cycling Parameters</h3>
+                    <ul>
+                        <li><strong>shapeCyclingDivision:</strong> How often shapes change type</li>
+                        <li><strong>shapeCyclingPattern (0-10):</strong> Algorithm for selecting new shapes</li>
+                        <li><strong>shapeCyclingDirection (0-3):</strong> Forward, reverse, random, or ping-pong</li>
+                        <li><strong>shapeCyclingSync (0-1):</strong> Individual or synchronized timing</li>
+                        <li><strong>shapeCyclingIntensity (0-2):</strong> Strength of the effect</li>
+                        <li><strong>shapeCyclingTrigger:</strong> Manual trigger for immediate changes</li>
+                    </ul>
+
+                    <div class="animation-demo">
+                        <h4>Cycling Patterns (shapeCyclingPattern):</h4>
+                        <ul>
+                            <li><strong>0-2:</strong> Sequential cycling through shape types</li>
+                            <li><strong>3-4:</strong> Random selection from available shapes</li>
+                            <li><strong>5-6:</strong> Probability-based selection (some shapes more likely)</li>
+                            <li><strong>7-8:</strong> Clustering algorithms (nearby shapes influence each other)</li>
+                            <li><strong>9-10:</strong> Wave-based propagation across the grid</li>
+                        </ul>
+                    </div>
+
+                    <div class="animation-demo">
+                        <h4>Cycling Directions (shapeCyclingDirection):</h4>
+                        <ul>
+                            <li><strong>0 - Forward:</strong> Cycles through shapes in order (circle → square → triangle → ...)</li>
+                            <li><strong>1 - Reverse:</strong> Cycles backward through shape types</li>
+                            <li><strong>2 - Random:</strong> Randomly selects new shape types</li>
+                            <li><strong>3 - Ping-Pong:</strong> Forward then reverse, creating back-and-forth patterns</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Synchronized vs Individual Cycling</h3>
+                    <table class="timing-table">
+                        <thead>
+                            <tr>
+                                <th>Sync Mode</th>
+                                <th>Value</th>
+                                <th>Behavior</th>
+                                <th>Visual Effect</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Individual</td>
+                                <td>0</td>
+                                <td>Each shape changes on its own timing</td>
+                                <td>Organic, flowing transformations</td>
+                            </tr>
+                            <tr>
+                                <td>Synchronized</td>
+                                <td>1</td>
+                                <td>All shapes change at the same time</td>
+                                <td>Dramatic, unified transformations</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="help-note">
+                        <strong>Performance Applications:</strong>
+                        <ul>
+                            <li><strong>Verse/Chorus Changes:</strong> Use synchronized cycling for section changes</li>
+                            <li><strong>Build-ups:</strong> Increase cycling intensity during musical builds</li>
+                            <li><strong>Breakdowns:</strong> Slow cycling division for sparse, minimal sections</li>
+                            <li><strong>Manual Control:</strong> Use shapeCyclingTrigger with MIDI notes for precise timing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Morphing System Section -->
+                <div id="morphing-system" class="help-section">
+                    <h2 class="help-h2">🦋 Shape Morphing System</h2>
+                    <p>Shape morphing creates smooth, animated transitions between different shape types, providing cinematic quality transformations.</p>
+
+                    <h3 class="help-h3">Morphing Parameters</h3>
+                    <ul>
+                        <li><strong>morphingDivision:</strong> Musical timing for morphing animations</li>
+                        <li><strong>morphingEasing (0-15):</strong> Animation curve for smooth transitions</li>
+                    </ul>
+
+                    <div class="animation-demo">
+                        <h4>Morphing vs Cycling:</h4>
+                        <ul>
+                            <li><strong>Shape Cycling:</strong> Instant changes between shape types</li>
+                            <li><strong>Shape Morphing:</strong> Smooth, animated transitions with easing curves</li>
+                            <li><strong>Combined Use:</strong> Cycling determines when/what, morphing determines how</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Easing Functions</h3>
+                    <table class="timing-table">
+                        <thead>
+                            <tr>
+                                <th>Easing Range</th>
+                                <th>Type</th>
+                                <th>Animation Feel</th>
+                                <th>Best For</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>0-2</td>
+                                <td>Power 2 (Quad)</td>
+                                <td>Smooth, natural acceleration</td>
+                                <td>Organic, flowing music</td>
+                            </tr>
+                            <tr>
+                                <td>3-5</td>
+                                <td>Power 3 (Cubic)</td>
+                                <td>More dramatic curves</td>
+                                <td>Emphatic musical changes</td>
+                            </tr>
+                            <tr>
+                                <td>6-8</td>
+                                <td>Back</td>
+                                <td>Slight overshoot effect</td>
+                                <td>Playful, bouncy music</td>
+                            </tr>
+                            <tr>
+                                <td>9-11</td>
+                                <td>Elastic</td>
+                                <td>Spring-like bouncing</td>
+                                <td>Electronic, glitchy music</td>
+                            </tr>
+                            <tr>
+                                <td>12-14</td>
+                                <td>Bounce</td>
+                                <td>Ball-bouncing effect</td>
+                                <td>Fun, cartoon-like aesthetics</td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>Linear</td>
+                                <td>Constant speed</td>
+                                <td>Mechanical, precise timing</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Morphing Triggers</h3>
+                    <p>Morphing can be triggered manually using MIDI notes for precise control:</p>
+                    <ul>
+                        <li><strong>randomMorph:</strong> Changes one random shape</li>
+                        <li><strong>morphAllShapes:</strong> Changes all shapes with staggered timing</li>
+                        <li><strong>morphAllToSame:</strong> Changes all shapes to the same type</li>
+                        <li><strong>morphAllSimultaneously:</strong> Instant change of all shapes</li>
+                        <li><strong>morphAllToSameSimultaneously:</strong> Instant unified transformation</li>
+                    </ul>
+
+                    <div class="help-note">
+                        <strong>Creative Morphing Techniques:</strong>
+                        <ul>
+                            <li><strong>Musical Phrasing:</strong> Use bar-length divisions for phrase-based morphing</li>
+                            <li><strong>Build Effects:</strong> Trigger morphAllShapes during musical builds</li>
+                            <li><strong>Drop Effects:</strong> Use morphAllToSameSimultaneously for dramatic drops</li>
+                            <li><strong>Textural Changes:</strong> Random morphs for organic variation</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 3D Center Scaling Section -->
+                <div id="center-scaling" class="help-section">
+                    <h2 class="help-h2">🎯 3D Center Scaling Effects</h2>
+                    <p>Center scaling creates pseudo-3D depth effects by scaling shapes based on their distance from the grid center, simulating dome, bowl, or wave-like surfaces.</p>
+
+                    <h3 class="help-h3">Center Scaling Parameters</h3>
+                    <ul>
+                        <li><strong>centerScalingEnabled (0-1):</strong> Toggle the effect on/off</li>
+                        <li><strong>centerScalingIntensity (0-2):</strong> Strength of the scaling effect</li>
+                        <li><strong>centerScalingCurve (0-3):</strong> Mathematical curve type</li>
+                        <li><strong>centerScalingRadius (0.1-5.0):</strong> Effective range of scaling</li>
+                        <li><strong>centerScalingDirection (0-1):</strong> Convex (dome) or concave (bowl)</li>
+                    </ul>
+
+                    <div class="animation-demo">
+                        <h4>Scaling Curves (centerScalingCurve):</h4>
+                        <ul>
+                            <li><strong>0 - Linear:</strong> Straight line from center to edge</li>
+                            <li><strong>1 - Exponential:</strong> Sharp transition near center, gradual at edges</li>
+                            <li><strong>2 - Logarithmic:</strong> Gradual near center, sharp at edges</li>
+                            <li><strong>3 - Sine Wave:</strong> Smooth, natural curve</li>
+                        </ul>
+                    </div>
+
+                    <div class="animation-demo">
+                        <h4>Direction Effects:</h4>
+                        <ul>
+                            <li><strong>Convex (0):</strong> Center shapes larger, creates rising dome effect</li>
+                            <li><strong>Concave (1):</strong> Center shapes smaller, creates bowl/crater effect</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Animated Center Scaling</h3>
+                    <ul>
+                        <li><strong>centerScalingAnimation (0-1):</strong> Enable animated pulsing</li>
+                        <li><strong>centerScalingDivision:</strong> Musical timing for animations</li>
+                        <li><strong>centerScalingAnimationSpeed (0.1-5.0):</strong> Speed multiplier</li>
+                        <li><strong>centerScalingAnimationType (0-3):</strong> Different animation algorithms</li>
+                    </ul>
+
+                    <div class="help-note">
+                        <strong>Creative Applications:</strong>
+                        <ul>
+                            <li><strong>Bass Response:</strong> Map intensity to low frequencies for pumping dome effects</li>
+                            <li><strong>Build Effects:</strong> Gradually increase intensity during musical builds</li>
+                            <li><strong>Breathing Effects:</strong> Use slow divisions for organic pulsing</li>
+                            <li><strong>Impact Effects:</strong> Toggle enabled state with MIDI notes for sudden depth changes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Combining Animations Section -->
+                <div id="combining-animations" class="help-section">
+                    <h2 class="help-h2">🎭 Combining Multiple Animations</h2>
+                    <p>The real magic happens when you layer multiple animation types together. Each animation system runs independently and combines to create complex, rich visual patterns.</p>
+
+                    <h3 class="help-h3">Layering Strategies</h3>
+                    
+                    <div class="animation-demo">
+                        <h4>Common Combinations:</h4>
+                        <ul>
+                            <li><strong>Movement + Rotation:</strong> Shapes orbit while spinning</li>
+                            <li><strong>Scale + Movement:</strong> Pulsing shapes that also flow across the grid</li>
+                            <li><strong>All Three:</strong> Complex, organic motion with size changes</li>
+                            <li><strong>Morphing + Center Scaling:</strong> Shape changes with 3D depth effects</li>
+                            <li><strong>Cycling + Multiple Animations:</strong> Evolving patterns with rich motion</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="help-h3">Musical Layering Approaches</h3>
+                    <table class="timing-table">
+                        <thead>
+                            <tr>
+                                <th>Musical Element</th>
+                                <th>Animation Type</th>
+                                <th>Division</th>
+                                <th>Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Kick Drum</td>
+                                <td>Scale</td>
+                                <td>Quarter Note</td>
+                                <td>Strong rhythmic foundation</td>
+                            </tr>
+                            <tr>
+                                <td>Hi-Hats</td>
+                                <td>Rotation</td>
+                                <td>8th-16th Note</td>
+                                <td>Fast textural movement</td>
+                            </tr>
+                            <tr>
+                                <td>Bass Line</td>
+                                <td>Movement</td>
+                                <td>Varies</td>
+                                <td>Melodic flow patterns</td>
+                            </tr>
+                            <tr>
+                                <td>Pads/Strings</td>
+                                <td>Center Scaling</td>
+                                <td>1-2 Bars</td>
+                                <td>Slow, breathing depth</td>
+                            </tr>
+                            <tr>
+                                <td>Melody</td>
+                                <td>Shape Morphing</td>
+                                <td>Phrase-based</td>
+                                <td>Compositional changes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">Advanced Techniques</h3>
+                    
+                    <div class="animation-demo">
+                        <h4>Polyrhythmic Animation:</h4>
+                        <p>Use different divisions for each animation type to create complex, polyrhythmic visual patterns:</p>
+                        <ul>
+                            <li><strong>Movement:</strong> Quarter notes (1 beat)</li>
+                            <li><strong>Rotation:</strong> 8th notes (1/2 beat)</li>
+                            <li><strong>Scale:</strong> Half notes (2 beats)</li>
+                            <li><strong>Result:</strong> Rich, interlocking patterns that repeat every 4 beats</li>
+                        </ul>
+                    </div>
+
+                    <div class="animation-demo">
+                        <h4>Dynamic Intensity Control:</h4>
+                        <p>Map animation amplitudes to audio analysis or MIDI controllers:</p>
+                        <ul>
+                            <li><strong>Bass Frequencies → Scale Amplitude:</strong> Shapes pulse with bass</li>
+                            <li><strong>Mid Frequencies → Movement Amplitude:</strong> Flow follows melody</li>
+                            <li><strong>High Frequencies → Rotation Amplitude:</strong> Spinning follows percussion</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-note">
+                        <strong>Performance Tips:</strong>
+                        <ul>
+                            <li><strong>Start Simple:</strong> Begin with one or two animations, add complexity gradually</li>
+                            <li><strong>Musical Hierarchy:</strong> Match animation prominence to musical importance</li>
+                            <li><strong>Contrast:</strong> Use opposing movements (fast rotation + slow movement) for interest</li>
+                            <li><strong>Build and Release:</strong> Add/remove animations for dynamic contrast</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Performance Tips Section -->
+                <div id="performance-tips" class="help-section">
+                    <h2 class="help-h2">⚡ Performance Optimization Tips</h2>
+                    <p>Animations are generally very efficient, but here are tips for maintaining smooth 60fps performance:</p>
+
+                    <h3 class="help-h3">Animation Performance Impact</h3>
+                    <table class="timing-table">
+                        <thead>
+                            <tr>
+                                <th>Animation Type</th>
+                                <th>Performance Impact</th>
+                                <th>Optimization Tips</th>
+                                <th>Max Recommended</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Movement</td>
+                                <td>Very Low</td>
+                                <td>No special considerations</td>
+                                <td>No practical limit</td>
+                            </tr>
+                            <tr>
+                                <td>Rotation</td>
+                                <td>Very Low</td>
+                                <td>No special considerations</td>
+                                <td>No practical limit</td>
+                            </tr>
+                            <tr>
+                                <td>Scale</td>
+                                <td>Very Low</td>
+                                <td>No special considerations</td>
+                                <td>No practical limit</td>
+                            </tr>
+                            <tr>
+                                <td>Shape Cycling</td>
+                                <td>Low</td>
+                                <td>Avoid very fast divisions</td>
+                                <td>16th note minimum</td>
+                            </tr>
+                            <tr>
+                                <td>Shape Morphing</td>
+                                <td>Medium</td>
+                                <td>Use appropriate divisions</td>
+                                <td>8th note minimum</td>
+                            </tr>
+                            <tr>
+                                <td>Center Scaling</td>
+                                <td>Low-Medium</td>
+                                <td>Limit grid size if using animation</td>
+                                <td>20x20 grid max</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="help-h3">General Performance Guidelines</h3>
+                    <ul>
+                        <li><strong>Grid Size:</strong> Keep total shapes (width × height) under 400 for best performance</li>
+                        <li><strong>Animation Count:</strong> All basic animations (movement, rotation, scale) can run simultaneously</li>
+                        <li><strong>Fast Divisions:</strong> Very fast divisions (32nd notes) should be used sparingly</li>
+                        <li><strong>Complex Morphing:</strong> Avoid morphing all shapes simultaneously at very fast rates</li>
+                        <li><strong>Monitor Performance:</strong> Watch the FPS counter - aim for consistent 60fps</li>
+                    </ul>
+
+                    <div class="help-note">
+                        <strong>Troubleshooting Performance Issues:</strong>
+                        <ul>
+                            <li><strong>Reduce Grid Size:</strong> Lower gridWidth and gridHeight</li>
+                            <li><strong>Slow Fast Animations:</strong> Change 32nd notes to 16th notes or slower</li>
+                            <li><strong>Reduce Morphing Frequency:</strong> Use longer divisions for shape morphing</li>
+                            <li><strong>Disable Expensive Effects:</strong> Turn off post-processing if needed</li>
+                            <li><strong>Check Browser:</strong> Chrome generally has the best performance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                
+                // Only apply smooth scrolling to internal links (starting with #)
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+                // External links will work normally
+            });
+        });
+
+        // Highlight active section in navigation
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.help-section');
+            const navLinks = document.querySelectorAll('.nav-item');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
