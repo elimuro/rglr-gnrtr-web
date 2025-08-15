@@ -8,12 +8,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        'midi-green': '#0f0',
-        'midi-red': '#f00',
-        'midi-yellow': '#ff0',
         'midi-dark': '#333',
         'midi-darker': '#222',
         'midi-light': '#ccc',
+        'primary': '#ffffff',
+        'primary-light': '#cccccc',
+        'primary-dark': '#999999',
       },
       fontFamily: {
         'mono': ['Courier New', 'monospace'],

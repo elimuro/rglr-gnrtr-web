@@ -86,7 +86,7 @@ export class MIDIManager {
         
         let html = '<div class="mb-3">';
         html += '<h4 class="text-sm font-semibold text-white mb-2 flex items-center gap-1">';
-        html += '<div class="w-2 h-2 bg-midi-green rounded-full"></div>';
+        html += '<div class="w-2 h-2 bg-purple-500 rounded-full"></div>';
         html += 'Select MIDI Input Device</h4>';
         html += '</div>';
         
@@ -94,7 +94,7 @@ export class MIDIManager {
         if (inputs.length > 0) {
             html += '<div class="mb-3">';
             html += '<label class="block text-xs font-medium text-gray-300 mb-1">MIDI Input Device:</label>';
-            html += '<select id="midi-input-select" class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none">';
+            html += '<select id="midi-input-select" class="w-full px-2 py-1 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 focus:border-purple-500 focus:outline-none">';
             html += '<option value="">Auto-select first available</option>';
             inputs.forEach((input, index) => {
                 const isSelected = this.lastSelectedDevices.input === input.name;
@@ -106,8 +106,8 @@ export class MIDIManager {
         }
         
         html += '<div class="grid grid-cols-2 gap-2">';
-        html += '<button id="midi-connect-selected" class="px-2 py-1.5 bg-gradient-to-r from-midi-green to-green-500 text-black font-semibold rounded text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">Connect Selected</button>';
-        html += '<button id="midi-cancel-selection" class="px-2 py-1.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green">Cancel</button>';
+        html += '<button id="midi-connect-selected" class="btn btn-success btn-sm">Connect Selected</button>';
+        html += '<button id="midi-cancel-selection" class="btn btn-secondary btn-sm">Cancel</button>';
         html += '</div>';
         
         selectionContainer.innerHTML = html;
@@ -419,17 +419,17 @@ export class MIDIManager {
                 
                 // Reset all bars
                 bars.forEach(bar => {
-                    bar.classList.remove('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
+                    bar.classList.remove('bg-purple-500', 'shadow-lg', 'animate-pulse', 'scale-y-120');
                     bar.classList.add('bg-gray-600');
                 });
                 
                 // Activate random bar
                 randomBar.classList.remove('bg-gray-600');
-                randomBar.classList.add('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
+                randomBar.classList.add('bg-purple-500', 'shadow-lg', 'animate-pulse', 'scale-y-120');
                 
                 // Remove active class after animation
                 setTimeout(() => {
-                    randomBar.classList.remove('bg-midi-green', 'shadow-lg', 'animate-pulse', 'scale-y-120');
+                    randomBar.classList.remove('bg-purple-500', 'shadow-lg', 'animate-pulse', 'scale-y-120');
                     randomBar.classList.add('bg-gray-600');
                 }, 200);
             }

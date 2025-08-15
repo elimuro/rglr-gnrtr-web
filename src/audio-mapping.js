@@ -111,7 +111,7 @@ const AUDIO_MAPPING_TEMPLATES = {
             </div>
             
             <div class="flex items-center gap-1">
-                <button class="remove-button px-1 py-0.5 bg-red-600 bg-opacity-30 text-red-400 border border-red-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-red-400" data-drawer-interactive>×</button>
+                <button class="btn btn-danger btn-icon btn-xs" data-drawer-interactive>×</button>
             </div>
         </div>
     `

@@ -145,15 +145,15 @@ export class P5CodeEditor {
                     </div>
                     
                     <div class="flex items-center gap-2">
-                        <button id="p5-editor-run" class="px-3 py-1.5 bg-midi-green text-black font-semibold rounded text-sm transition-all duration-300 hover:bg-green-400">
-                            <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <button id="p5-editor-run" class="btn btn-success btn-sm">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polygon points="5,3 19,12 5,21"></polygon>
                             </svg>
                             Run
                         </button>
                         
-                        <button id="p5-editor-reset" class="px-3 py-1.5 bg-gray-600 text-white rounded text-sm transition-all duration-300 hover:bg-gray-500">
-                            <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <button id="p5-editor-reset" class="btn btn-secondary btn-sm">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
                                 <path d="M21 3v5h-5"/>
                                 <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
@@ -162,8 +162,8 @@ export class P5CodeEditor {
                             Reset
                         </button>
                         
-                        <button id="p5-editor-close" class="px-3 py-1.5 bg-red-600 text-white rounded text-sm transition-all duration-300 hover:bg-red-500">
-                            <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <button id="p5-editor-close" class="btn btn-danger btn-sm">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M18 6L6 18"/>
                                 <path d="M6 6l12 12"/>
                             </svg>

@@ -147,7 +147,7 @@ export class LayerPanel {
         visibilityToggle.style.marginLeft = '10px';
         visibilityToggle.onchange = (e) => {
             layer.visible = e.target.checked;
-            this.updatePanel();
+            this.updateLayerInfo(layer);
         };
 
         header.appendChild(name);
@@ -197,7 +197,7 @@ export class LayerPanel {
         `;
         opacitySlider.oninput = (e) => {
             layer.opacity = parseFloat(e.target.value);
-            this.updatePanel();
+            this.updateLayerInfo(layer);
         };
 
         opacityContainer.appendChild(opacityLabel);
@@ -361,21 +361,133 @@ export class LayerPanel {
     }
 
     /**
-     * Open P5 sketch editor (placeholder for now)
+     * Open P5 sketch editor using the P5CodeEditor
      * @param {P5Layer} layer - P5 layer instance
      */
     openP5Editor(layer) {
-        // For now, just show the code in a prompt
-        // In a full implementation, this would open a proper code editor
-        const code = layer.getSketchCode();
-        const newCode = prompt('Edit P5 Sketch Code:', code);
+        // Use the existing P5CodeEditor to edit the sketch
+        if (this.app.p5CodeEditor) {
+            this.app.p5CodeEditor.open();
+        } else {
+            console.error('P5CodeEditor not available');
+            // Fallback to prompt if P5CodeEditor is not available
+            const code = layer.getSketchCode();
+            const newCode = prompt('Edit P5 Sketch Code:', code);
+            
+            if (newCode && newCode !== code) {
+                layer.compileAndRun(newCode).then(() => {
+                    this.updatePanel(); // Refresh to show changes
+                }).catch(error => {
+                    alert(`Sketch error: ${error.message}`);
+                });
+            }
+        }
+    }
+
+    /**
+     * Update specific layer information without full re-render
+     * @param {LayerBase} layer - Layer to update
+     */
+    updateLayerInfo(layer) {
+        // Find the layer item in the DOM
+        const layerItems = this.layerList.querySelectorAll('.layer-item');
         
-        if (newCode && newCode !== code) {
-            layer.compileAndRun(newCode).then(() => {
-                this.updatePanel(); // Refresh to show changes
-            }).catch(error => {
-                alert(`Sketch error: ${error.message}`);
-            });
+        layerItems.forEach(item => {
+            const nameElement = item.querySelector('span');
+            if (nameElement && nameElement.textContent.includes(layer.id)) {
+                // Update layer info section
+                const infoElement = item.querySelector('div[style*="font-size: 10px"]');
+                if (infoElement) {
+                    infoElement.innerHTML = `
+                        Opacity: ${(layer.opacity * 100).toFixed(0)}%<br>
+                        Blend: ${layer.blendMode}<br>
+                        Status: ${layer.initialized ? 'Ready' : 'Initializing'}<br>
+                        Render time: ${layer.lastRenderTime.toFixed(2)}ms
+                    `;
+                }
+                
+                // Update opacity slider value
+                const opacitySlider = item.querySelector('input[type="range"]');
+                if (opacitySlider) {
+                    opacitySlider.value = layer.opacity;
+                }
+                
+                // Update visibility checkbox
+                const visibilityToggle = item.querySelector('input[type="checkbox"]');
+                if (visibilityToggle) {
+                    visibilityToggle.checked = layer.visible;
+                }
+                
+                // Update P5-specific controls if it's a P5 layer
+                if (layer.constructor.name === 'P5Layer') {
+                    this.updateP5LayerInfo(item, layer);
+                }
+            }
+        });
+        
+        // Update performance info only
+        this.updatePerformanceInfo();
+    }
+
+    /**
+     * Update P5-specific layer information
+     * @param {HTMLElement} layerItem - Layer item DOM element
+     * @param {P5Layer} layer - P5 layer instance
+     */
+    updateP5LayerInfo(layerItem, layer) {
+        // Update P5 status
+        const statusElement = layerItem.querySelector('div[style*="font-size: 10px"][style*="margin-bottom: 5px"]');
+        if (statusElement) {
+            if (layer.hasSketchError()) {
+                statusElement.innerHTML = `<span style="color: #ff6b6b;">❌ Error: ${layer.getLastError()}</span>`;
+            } else if (layer.isSketchRunning()) {
+                statusElement.innerHTML = `<span style="color: #51cf66;">✅ Running</span>`;
+            } else {
+                statusElement.innerHTML = `<span style="color: #ffd43b;">⏸️ Stopped</span>`;
+            }
+        }
+        
+        // Update parameters list if it exists
+        const paramsList = layerItem.querySelector('div[style*="margin-top: 5px"][style*="font-size: 10px"]');
+        if (paramsList) {
+            const params = layer.getAllParameters();
+            if (Object.keys(params).length > 0) {
+                // Find the parameters container (skip the title)
+                const paramsContainer = paramsList.children[1];
+                if (paramsContainer) {
+                    // Clear and rebuild parameters
+                    paramsContainer.innerHTML = '';
+                    
+                    Object.entries(params).forEach(([name, param]) => {
+                        const paramRow = document.createElement('div');
+                        paramRow.style.cssText = `
+                            display: flex;
+                            justify-content: between;
+                            align-items: center;
+                            margin-bottom: 3px;
+                            padding: 2px 5px;
+                            background: rgba(255, 255, 255, 0.05);
+                            border-radius: 3px;
+                        `;
+                        
+                        const paramInfo = document.createElement('span');
+                        paramInfo.textContent = `${param.label}: ${param.value.toFixed(2)}`;
+                        paramInfo.style.flex = '1';
+                        
+                        const midiTarget = document.createElement('span');
+                        midiTarget.textContent = `p5:${name}`;
+                        midiTarget.style.cssText = `
+                            font-family: monospace;
+                            font-size: 9px;
+                            color: #888;
+                        `;
+                        
+                        paramRow.appendChild(paramInfo);
+                        paramRow.appendChild(midiTarget);
+                        paramsContainer.appendChild(paramRow);
+                    });
+                }
+            }
         }
     }
 

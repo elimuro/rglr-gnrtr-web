@@ -495,15 +495,14 @@ export class DrawerManager {
                 
                 // Remove all state classes
                 button.classList.remove(
-                    'bg-midi-green', 'bg-opacity-20', 'text-midi-green', 'border-midi-green',
-                    'bg-black', 'bg-opacity-30', 'text-white', 'border-gray-600'
+                    'btn-success', 'btn-secondary'
                 );
                 
                 // Add appropriate classes
                 if (isActive) {
-                    button.classList.add('bg-midi-green', 'bg-opacity-20', 'text-midi-green', 'border-midi-green');
+                    button.classList.add('btn-success');
                 } else {
-                    button.classList.add('bg-black', 'bg-opacity-30', 'text-white', 'border-gray-600');
+                    button.classList.add('btn-secondary');
                 }
             }
         });

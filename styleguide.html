@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RGLR Generator - Styleguide</title>
+    <link href="./tailwind.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+        
+        body {
+            overflow-y: auto !important;
+            overflow-x: auto !important;
+        }
+        
+        .styleguide-section {
+            margin: 2rem 0;
+            padding: 2rem;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .styleguide-title {
+            color: #8b5cf6;
+            border-bottom: 2px solid #8b5cf6;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .styleguide-subtitle {
+            color: #a78bfa;
+            margin: 1rem 0 0.5rem 0;
+        }
+        
+        .component-demo {
+            margin: 1rem 0;
+            padding: 1rem;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .code-block {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        
+        .color-swatch {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            margin: 0.5rem;
+            border: 2px solid #333;
+            position: relative;
+        }
+        
+        .color-swatch::after {
+            content: attr(data-color);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: #ccc;
+            white-space: nowrap;
+        }
+        
+        .spacing-demo {
+            background: #8b5cf6;
+            margin: 0.5rem 0;
+            color: white;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+        
+        .typography-demo {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-left: 3px solid #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .grid-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+        
+        .toc {
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .toc li {
+            margin: 0.25rem 0;
+        }
+        
+        .toc a {
+            color: #a78bfa;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        
+        .toc a:hover {
+            color: #8b5cf6;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-purple-400 mb-4">RGLR Generator Styleguide</h1>
+            <p class="text-gray-400">Complete design system and component library</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Table of Contents -->
+            <div class="lg:col-span-1">
+                <div class="toc">
+                    <h3 class="text-purple-400 font-bold mb-4">Table of Contents</h3>
+                    <ul>
+                        <li><a href="#colors">Colors</a></li>
+                        <li><a href="#typography">Typography</a></li>
+                        <li><a href="#spacing">Spacing</a></li>
+                        <li><a href="#buttons">Buttons</a></li>
+                        <li><a href="#form-elements">Form Elements</a></li>
+                        <li><a href="#sliders">Sliders</a></li>
+                        <li><a href="#tabs">Tabs</a></li>
+                        <li><a href="#status-indicators">Status Indicators</a></li>
+                        <li><a href="#layout-components">Layout Components</a></li>
+                        <li><a href="#animations">Animations</a></li>
+                        <li><a href="#css-variables">CSS Variables</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="lg:col-span-3">
+                <!-- Colors Section -->
+                <section id="colors" class="styleguide-section">
+                    <h2 class="styleguide-title">🎨 Colors</h2>
+                    
+                    <h3 class="styleguide-subtitle">Primary Colors</h3>
+                    <div class="component-demo">
+                        <div class="color-swatch" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
+                        <div class="color-swatch" style="background: #a78bfa;" data-color="#a78bfa"></div>
+                        <div class="color-swatch" style="background: #7c3aed;" data-color="#7c3aed"></div>
+                        <div class="color-swatch" style="background: #c4b5fd;" data-color="#c4b5fd"></div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Status Colors</h3>
+                    <div class="component-demo">
+                        <div class="color-swatch" style="background: #10b981;" data-color="#10b981"></div>
+                        <div class="color-swatch" style="background: #ef4444;" data-color="#ef4444"></div>
+                        <div class="color-swatch" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                        <div class="color-swatch" style="background: #3b82f6;" data-color="#3b82f6"></div>
+                    </div>
+
+                    
+
+                    <h3 class="styleguide-subtitle">Neutral Colors</h3>
+                    <div class="component-demo">
+                        <div class="color-swatch" style="background: #000000;" data-color="#000000"></div>
+                        <div class="color-swatch" style="background: #333333;" data-color="#333333"></div>
+                        <div class="color-swatch" style="background: #666666;" data-color="#666666"></div>
+                        <div class="color-swatch" style="background: #cccccc;" data-color="#cccccc"></div>
+                        <div class="color-swatch" style="background: #ffffff;" data-color="#ffffff"></div>
+                    </div>
+                </section>
+
+                <!-- Typography Section -->
+                <section id="typography" class="styleguide-section">
+                    <h2 class="styleguide-title">📝 Typography</h2>
+                    
+                    <h3 class="styleguide-subtitle">Font Family</h3>
+                    <div class="component-demo">
+                        <p class="text-lg">Primary Font: 'Courier New', monospace</p>
+                        <p class="text-sm text-gray-400">Used for all text elements in the application</p>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Text Sizes</h3>
+                    <div class="component-demo">
+                        <div class="typography-demo">
+                            <p class="text-xs">Text XS (11px) - Small labels and metadata</p>
+                        </div>
+                        <div class="typography-demo">
+                            <p class="text-sm">Text SM (12px) - Secondary text and descriptions</p>
+                        </div>
+                        <div class="typography-demo">
+                            <p class="text-base">Text Base (14px) - Body text and main content</p>
+                        </div>
+                        <div class="typography-demo">
+                            <p class="text-lg">Text LG (16px) - Headings and important text</p>
+                        </div>
+                        <div class="typography-demo">
+                            <p class="text-xl">Text XL (18px) - Large headings</p>
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Line Heights</h3>
+                    <div class="component-demo">
+                        <p class="leading-tight">Leading Tight (1.25) - Compact text spacing</p>
+                        <p class="leading-normal">Leading Normal (1.6) - Standard text spacing</p>
+                        <p class="leading-relaxed">Leading Relaxed (1.8) - Comfortable reading spacing</p>
+                    </div>
+                </section>
+
+                <!-- Spacing Section -->
+                <section id="spacing" class="styleguide-section">
+                    <h2 class="styleguide-title">📏 Spacing</h2>
+                    
+                    <h3 class="styleguide-subtitle">Spacing Scale</h3>
+                    <div class="component-demo">
+                        <div class="spacing-demo" style="width: 2px; height: 20px;">XS (2px)</div>
+                        <div class="spacing-demo" style="width: 4px; height: 20px;">SM (4px)</div>
+                        <div class="spacing-demo" style="width: 8px; height: 20px;">MD (8px)</div>
+                        <div class="spacing-demo" style="width: 16px; height: 20px;">LG (16px)</div>
+                        <div class="spacing-demo" style="width: 20px; height: 20px;">XL (20px)</div>
+                        <div class="spacing-demo" style="width: 24px; height: 20px;">2XL (24px)</div>
+                        <div class="spacing-demo" style="width: 32px; height: 20px;">3XL (32px)</div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Border Radius</h3>
+                    <div class="component-demo">
+                        <div class="inline-block bg-purple-600 text-white p-4 m-2" style="border-radius: 3px;">SM (3px)</div>
+                        <div class="inline-block bg-purple-600 text-white p-4 m-2" style="border-radius: 4px;">MD (4px)</div>
+                        <div class="inline-block bg-purple-600 text-white p-4 m-2" style="border-radius: 8px;">LG (8px)</div>
+                        <div class="inline-block bg-purple-600 text-white p-4 m-2" style="border-radius: 12px;">XL (12px)</div>
+                    </div>
+                </section>
+
+                <!-- Buttons Section -->
+                <section id="buttons" class="styleguide-section">
+                    <h2 class="styleguide-title">🔘 Buttons</h2>
+                    
+                    <h3 class="styleguide-subtitle">Button Sizes</h3>
+                    <div class="component-demo">
+                        <button class="btn btn-primary btn-xs">Extra Small</button>
+                        <button class="btn btn-primary btn-sm">Small</button>
+                        <button class="btn btn-primary btn-md">Medium</button>
+                        <button class="btn btn-primary btn-lg">Large</button>
+                        <button class="btn btn-primary btn-xl">Extra Large</button>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Button Variants</h3>
+                    <div class="component-demo">
+                        <div class="grid-demo">
+                            <div>
+                                <h4 class="text-sm font-bold mb-2">Solid Buttons</h4>
+                                <button class="btn btn-primary btn-sm mb-2">Primary</button><br>
+                                <button class="btn btn-secondary btn-sm mb-2">Secondary</button><br>
+                                <button class="btn btn-success btn-sm mb-2">Success</button><br>
+                                <button class="btn btn-danger btn-sm mb-2">Danger</button><br>
+                                <button class="btn btn-warning btn-sm mb-2">Warning</button><br>
+                                <button class="btn btn-info btn-sm mb-2">Info</button>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold mb-2">Outline Buttons</h4>
+                                <button class="btn btn-outline-primary btn-sm mb-2">Primary</button><br>
+                                <button class="btn btn-outline-secondary btn-sm mb-2">Secondary</button><br>
+                                <button class="btn btn-outline-success btn-sm mb-2">Success</button><br>
+                                <button class="btn btn-outline-danger btn-sm mb-2">Danger</button><br>
+                                <button class="btn btn-outline-warning btn-sm mb-2">Warning</button><br>
+                                <button class="btn btn-outline-info btn-sm mb-2">Info</button>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold mb-2">Ghost Buttons</h4>
+                                <button class="btn btn-ghost-primary btn-sm mb-2">Primary</button><br>
+                                <button class="btn btn-ghost-secondary btn-sm mb-2">Secondary</button><br>
+                                <button class="btn btn-ghost-success btn-sm mb-2">Success</button><br>
+                                <button class="btn btn-ghost-danger btn-sm mb-2">Danger</button><br>
+                                <button class="btn btn-ghost-warning btn-sm mb-2">Warning</button><br>
+                                <button class="btn btn-ghost-info btn-sm mb-2">Info</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Icon Buttons</h3>
+                    <div class="component-demo">
+                        <button class="btn btn-primary btn-icon btn-xs">×</button>
+                        <button class="btn btn-secondary btn-icon btn-sm">+</button>
+                        <button class="btn btn-danger btn-icon btn-md">×</button>
+                        <button class="btn btn-success btn-icon btn-lg">✓</button>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Button Groups</h3>
+                    <div class="component-demo">
+                        <div class="btn-group">
+                            <button class="btn btn-secondary">Left</button>
+                            <button class="btn btn-secondary">Middle</button>
+                            <button class="btn btn-secondary">Right</button>
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Loading State</h3>
+                    <div class="component-demo">
+                        <button class="btn btn-primary btn-loading">Loading...</button>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Usage Examples</h3>
+                    <div class="code-block">
+&lt;!-- Basic button --&gt;
+&lt;button class="btn btn-primary btn-md"&gt;Primary Button&lt;/button&gt;
+
+&lt;!-- Outline button --&gt;
+&lt;button class="btn btn-outline-success btn-sm"&gt;Success Outline&lt;/button&gt;
+
+&lt;!-- Icon button --&gt;
+&lt;button class="btn btn-ghost-danger btn-icon btn-sm"&gt;×&lt;/button&gt;
+
+&lt;!-- Loading button --&gt;
+&lt;button class="btn btn-primary btn-loading"&gt;Loading...&lt;/button&gt;
+
+&lt;!-- Button group --&gt;
+&lt;div class="btn-group"&gt;
+  &lt;button class="btn btn-secondary"&gt;Left&lt;/button&gt;
+  &lt;button class="btn btn-secondary"&gt;Middle&lt;/button&gt;
+  &lt;button class="btn btn-secondary"&gt;Right&lt;/button&gt;
+&lt;/div&gt;
+                    </div>
+                </section>
+
+                <!-- Form Elements Section -->
+                <section id="form-elements" class="styleguide-section">
+                    <h2 class="styleguide-title">📝 Form Elements</h2>
+                    
+                    <h3 class="styleguide-subtitle">Input Fields</h3>
+                    <div class="component-demo">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Standard Input</label>
+                            <input type="text" class="w-full px-3 py-2 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-sm transition-all duration-300 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50" placeholder="Enter text...">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Number Input</label>
+                            <input type="number" class="w-24 px-2 py-1 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" value="42">
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Select Dropdowns</h3>
+                    <div class="component-demo">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Standard Select</label>
+                            <select class="w-full px-3 py-2 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-sm transition-all duration-300 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50">
+                                <option>Option 1</option>
+                                <option>Option 2</option>
+                                <option>Option 3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Checkboxes</h3>
+                    <div class="component-demo">
+                        <div class="flex items-center mb-2">
+                            <input type="checkbox" class="w-4 h-4 text-purple-600 bg-black bg-opacity-30 border border-gray-600 rounded focus:ring-purple-500 focus:ring-2">
+                            <label class="ml-2 text-sm">Standard Checkbox</label>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <input type="checkbox" class="w-3 h-3 text-purple-600 bg-black bg-opacity-30 border border-gray-600 rounded focus:ring-purple-500 focus:ring-2" checked>
+                            <label class="ml-2 text-sm">Small Checkbox (Checked)</label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sliders Section -->
+                <section id="sliders" class="styleguide-section">
+                    <h2 class="styleguide-title">🎚️ Sliders</h2>
+                    
+                    <h3 class="styleguide-subtitle">Standard Range Slider</h3>
+                    <div class="component-demo">
+                        <input type="range" min="0" max="100" value="50" class="w-full h-2 bg-gray-600 rounded appearance-none cursor-pointer slider">
+                    </div>
+
+                    <h3 class="styleguide-subtitle">MIDI Range Slider</h3>
+                    <div class="component-demo">
+                        <input type="range" min="0" max="127" value="64" class="midi-range">
+                        <div class="text-center text-sm text-purple-400 mt-2">Value: 64</div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Sensitivity Slider</h3>
+                    <div class="component-demo">
+                        <input type="range" min="0" max="100" value="75" class="sensitivity-slider w-32">
+                        <div class="sensitivity-value inline-block ml-2">75</div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">MIDI Slider</h3>
+                    <div class="component-demo">
+                        <input type="range" min="0" max="127" value="32" class="midi-slider">
+                    </div>
+                </section>
+
+                <!-- Tabs Section -->
+                <section id="tabs" class="styleguide-section">
+                    <h2 class="styleguide-title">📑 Tabs</h2>
+                    
+                    <div class="component-demo">
+                        <div class="tab-container">
+                            <button class="tab-button active">Active Tab</button>
+                            <button class="tab-button">Inactive Tab</button>
+                            <button class="tab-button">Another Tab</button>
+                        </div>
+                        <div class="mt-4 p-4 bg-black bg-opacity-20 rounded">
+                            <p class="text-sm">Tab content would appear here</p>
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Usage</h3>
+                    <div class="code-block">
+&lt;div class="tab-container"&gt;
+  &lt;button class="tab-button active"&gt;Active Tab&lt;/button&gt;
+  &lt;button class="tab-button"&gt;Inactive Tab&lt;/button&gt;
+&lt;/div&gt;
+&lt;div class="tab-section active"&gt;
+  Tab content here
+&lt;/div&gt;
+                    </div>
+                </section>
+
+                <!-- Status Indicators Section -->
+                <section id="status-indicators" class="styleguide-section">
+                    <h2 class="styleguide-title">🔍 Status Indicators</h2>
+                    
+                    <h3 class="styleguide-subtitle">Connection Status</h3>
+                    <div class="component-demo">
+                        <div class="status-indicator midi-connected">MIDI Connected</div>
+                        <div class="status-indicator midi-disconnected">MIDI Disconnected</div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Activity Bars</h3>
+                    <div class="component-demo">
+                        <div class="midi-activity-indicator">
+                            <div class="activity-bar active"></div>
+                            <div class="activity-bar"></div>
+                            <div class="activity-bar active"></div>
+                            <div class="activity-bar"></div>
+                            <div class="activity-bar active"></div>
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Status Dots</h3>
+                    <div class="component-demo">
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                <span class="text-sm">Offline</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-sm">Online</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                                <span class="text-sm">Connecting</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Layout Components Section -->
+                <section id="layout-components" class="styleguide-section">
+                    <h2 class="styleguide-title">🏗️ Layout Components</h2>
+                    
+                    <h3 class="styleguide-subtitle">MIDI Section</h3>
+                    <div class="component-demo">
+                        <div class="midi-section">
+                            <h4 class="flex items-center justify-between">
+                                MIDI Section Title
+                                <button class="midi-section-toggle">▼</button>
+                            </h4>
+                            <div class="midi-section-content">
+                                <p class="text-sm text-gray-400">Section content goes here</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">MIDI Control</h3>
+                    <div class="component-demo">
+                        <div class="midi-control">
+                            <label>Control Label</label>
+                            <div class="inputs">
+                                <input type="number" class="midi-channel-input" value="1">
+                                <input type="number" class="midi-cc-input" value="64">
+                                <span class="midi-value">64</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Drawer Content</h3>
+                    <div class="component-demo">
+                        <div class="drawer-content active">
+                            <p class="text-sm">Drawer content with fade-in animation</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Animations Section -->
+                <section id="animations" class="styleguide-section">
+                    <h2 class="styleguide-title">✨ Animations</h2>
+                    
+                    <h3 class="styleguide-subtitle">Fade In Animation</h3>
+                    <div class="component-demo">
+                        <div class="animate-pulse bg-purple-600 text-white p-4 rounded">
+                            Pulse Animation
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Slide In Animation</h3>
+                    <div class="component-demo">
+                        <div class="transform transition-transform duration-300 hover:translate-y-[-2px] bg-purple-600 text-white p-4 rounded cursor-pointer">
+                            Hover to slide up
+                        </div>
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Scale Animation</h3>
+                    <div class="component-demo">
+                        <div class="transform transition-transform duration-200 hover:scale-105 bg-purple-600 text-white p-4 rounded cursor-pointer">
+                            Hover to scale
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CSS Variables Section -->
+                <section id="css-variables" class="styleguide-section">
+                    <h2 class="styleguide-title">🎨 CSS Variables</h2>
+                    
+                    <h3 class="styleguide-subtitle">Color Variables</h3>
+                    <div class="code-block">
+/* Color Theme */
+--color-primary: #8b5cf6;
+--color-primary-light: #a78bfa;
+--color-primary-dark: #7c3aed;
+--color-secondary: #64748b;
+--color-accent: #f59e0b;
+--color-success: #10b981;
+--color-warning: #f59e0b;
+--color-danger: #ef4444;
+--color-bg-primary: #000000;
+--color-bg-secondary: rgba(0, 0, 0, 0.8);
+--color-text-primary: #ffffff;
+--color-text-secondary: #cccccc;
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Spacing Variables</h3>
+                    <div class="code-block">
+/* Spacing System */
+--spacing-xs: 2px;
+--spacing-sm: 4px;
+--spacing-md: 8px;
+--spacing-lg: 16px;
+--spacing-xl: 20px;
+--spacing-2xl: 24px;
+--spacing-3xl: 32px;
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Border Radius Variables</h3>
+                    <div class="code-block">
+/* Border Radius System */
+--radius-sm: 3px;
+--radius-md: 4px;
+--radius-lg: 8px;
+--radius-xl: 12px;
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Typography Variables</h3>
+                    <div class="code-block">
+/* Font Size System */
+--text-xs: 11px;
+--text-sm: 12px;
+--text-md: 14px;
+--text-lg: 16px;
+--text-xl: 18px;
+
+/* Line Height System */
+--leading-tight: 1.25;
+--leading-normal: 1.6;
+--leading-relaxed: 1.8;
+                    </div>
+
+                    <h3 class="styleguide-subtitle">Z-Index Variables</h3>
+                    <div class="code-block">
+/* Z-Index System */
+--z-dropdown: 1000;
+--z-sticky: 1020;
+--z-fixed: 1030;
+--z-modal-backdrop: 1040;
+--z-modal: 1050;
+--z-popover: 1060;
+--z-tooltip: 1070;
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <div class="back-to-top">
+        <button class="btn btn-primary btn-icon btn-sm" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            ↑
+        </button>
+    </div>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Update sensitivity slider value display
+        document.querySelector('.sensitivity-slider').addEventListener('input', function() {
+            document.querySelector('.sensitivity-value').textContent = this.value;
+        });
+
+        // Add some interactive demos
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // MIDI section toggle demo
+        document.querySelector('.midi-section-toggle').addEventListener('click', function() {
+            const content = this.closest('.midi-section').querySelector('.midi-section-content');
+            const isCollapsed = content.classList.contains('collapsed');
+            
+            if (isCollapsed) {
+                content.classList.remove('collapsed');
+                this.textContent = '▼';
+            } else {
+                content.classList.add('collapsed');
+                this.textContent = '▶';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RGLR Generator - Styleguide Test</title>
+    <link href="./tailwind.css" rel="stylesheet">
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+        }
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>RGLR Generator Styleguide Test</h1>
+    
+    <div class="test-section">
+        <h2>Basic Styling Test</h2>
+        <p>If you can see this text in white on a black background, basic styling is working.</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Button Test</h2>
+        <button class="btn btn-primary">Primary Button</button>
+        <button class="btn btn-secondary">Secondary Button</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Tailwind Classes Test</h2>
+        <div class="bg-purple-600 text-white p-4 rounded">
+            This should be a purple box with white text if Tailwind is loading correctly.
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>CSS Variables Test</h2>
+        <div style="background: var(--color-primary, #8b5cf6); color: white; padding: 10px; border-radius: 4px;">
+            This should be purple if CSS variables are working.
+        </div>
+    </div>
+    
+    <script>
+        console.log('Styleguide test page loaded successfully');
+        console.log('CSS file path:', document.querySelector('link[href="./tailwind.css"]')?.href);
+    </script>
+</body>
+</html>
