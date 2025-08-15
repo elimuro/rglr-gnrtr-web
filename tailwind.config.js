@@ -2,7 +2,7 @@
 export default {
   content: [
     "./index.html",
-    "./midi-help.html",
+    "./help/**/*.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
