@@ -36,7 +36,7 @@ export class LayerPanel {
         this.layerList = document.createElement('div');
         this.layerList.id = 'layer-list';
         this.layerList.style.cssText = `
-            max-height: 400px;
+            max-height: 300px;
             overflow-y: auto;
             margin-bottom: 15px;
         `;
@@ -64,9 +64,9 @@ export class LayerPanel {
         const layerItems = this.layerList.querySelectorAll('.layer-item');
         
         layerItems.forEach(item => {
-            const nameElement = item.querySelector('span');
+            const nameElement = item.querySelector('div[style*="font-weight: bold"]');
             if (nameElement) {
-                const layerId = nameElement.textContent.split(' ')[0]; // Extract layer ID from "id (ClassName)"
+                const layerId = nameElement.textContent; // Extract layer ID directly
                 const layer = layers.get(layerId);
                 
                 if (layer) {
@@ -153,30 +153,56 @@ export class LayerPanel {
         const item = document.createElement('div');
         item.className = 'layer-item';
         item.style.cssText = `
-            margin-bottom: 10px;
-            padding: 10px;
+            margin-bottom: 8px;
+            padding: 8px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         `;
 
-        // Layer header
-        const header = document.createElement('div');
-        header.style.cssText = `
+        // Main row with layer info and controls
+        const mainRow = document.createElement('div');
+        mainRow.style.cssText = `
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            gap: 12px;
         `;
 
-        const name = document.createElement('span');
-        name.textContent = `${layer.id} (${layer.constructor.name})`;
-        name.style.fontWeight = 'bold';
+        // Layer name and type
+        const nameSection = document.createElement('div');
+        nameSection.style.cssText = `
+            flex: 1;
+            min-width: 0;
+        `;
+        
+        const name = document.createElement('div');
+        name.textContent = layer.id;
+        name.style.cssText = `
+            font-weight: bold;
+            font-size: 12px;
+            color: white;
+            margin-bottom: 2px;
+        `;
+        
+        const type = document.createElement('div');
+        type.textContent = layer.constructor.name;
+        type.style.cssText = `
+            font-size: 10px;
+            color: #888;
+        `;
+        
+        nameSection.appendChild(name);
+        nameSection.appendChild(type);
 
+        // Visibility toggle
         const visibilityToggle = document.createElement('input');
         visibilityToggle.type = 'checkbox';
         visibilityToggle.checked = layer.visible;
-        visibilityToggle.style.marginLeft = '10px';
+        visibilityToggle.style.cssText = `
+            margin: 0;
+            cursor: pointer;
+        `;
+        visibilityToggle.title = 'Toggle visibility';
         visibilityToggle.onchange = (e) => {
             // Verify the layer still exists in the layer manager
             const currentLayer = this.app.layerManager.getLayer(layer.id);
@@ -192,13 +218,6 @@ export class LayerPanel {
             
             layer.visible = e.target.checked;
             
-            // Update test controls status text if it exists
-            const testStatusText = item.querySelector('span[style*="font-size: 10px"][style*="color"]');
-            if (testStatusText) {
-                testStatusText.textContent = `Current: ${layer.visible ? 'Visible' : 'Hidden'}`;
-                testStatusText.style.color = layer.visible ? '#51cf66' : '#ff6b6b';
-            }
-            
             // Force layer to update its internal state
             if (layer.onVisibilityChanged) {
                 layer.onVisibilityChanged(e.target.checked);
@@ -213,39 +232,32 @@ export class LayerPanel {
             }
         };
 
-        header.appendChild(name);
-        header.appendChild(visibilityToggle);
-        item.appendChild(header);
-
-        // Layer info
-        const info = document.createElement('div');
-        info.style.cssText = `
-            font-size: 10px;
-            opacity: 0.8;
-            margin-bottom: 8px;
+        // Status indicator
+        const statusIndicator = document.createElement('div');
+        statusIndicator.style.cssText = `
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: ${layer.initialized ? '#51cf66' : '#ffd43b'};
+            flex-shrink: 0;
         `;
-        info.innerHTML = `
-            Opacity: ${(layer.opacity * 100).toFixed(0)}%<br>
-            Blend: ${layer.blendMode}<br>
-            Status: ${layer.initialized ? 'Ready' : 'Initializing'}<br>
-            Render time: ${layer.lastRenderTime.toFixed(2)}ms
-        `;
-        item.appendChild(info);
+        statusIndicator.title = layer.initialized ? 'Ready' : 'Initializing';
 
-        // Opacity slider
+        // Opacity control
         const opacityContainer = document.createElement('div');
         opacityContainer.style.cssText = `
             display: flex;
             align-items: center;
-            margin-bottom: 5px;
+            gap: 6px;
+            min-width: 80px;
         `;
 
         const opacityLabel = document.createElement('span');
-        opacityLabel.textContent = 'Opacity:';
+        opacityLabel.textContent = 'Opacity';
         opacityLabel.style.cssText = `
-            font-size: 10px;
-            margin-right: 10px;
-            min-width: 50px;
+            font-size: 9px;
+            color: #888;
+            min-width: 45px;
         `;
 
         const opacitySlider = document.createElement('input');
@@ -255,98 +267,70 @@ export class LayerPanel {
         opacitySlider.step = '0.01';
         opacitySlider.value = layer.opacity;
         opacitySlider.style.cssText = `
-            flex: 1;
-            height: 4px;
+            width: 60px;
+            height: 3px;
+            cursor: pointer;
         `;
+        opacitySlider.title = `Opacity: ${(layer.opacity * 100).toFixed(0)}%`;
         opacitySlider.oninput = (e) => {
             layer.opacity = parseFloat(e.target.value);
+            opacitySlider.title = `Opacity: ${(layer.opacity * 100).toFixed(0)}%`;
             this.updateLayerInfo(layer);
         };
 
         opacityContainer.appendChild(opacityLabel);
         opacityContainer.appendChild(opacitySlider);
-        item.appendChild(opacityContainer);
 
-        // Add P5-specific controls
+        // Add all elements to main row
+        mainRow.appendChild(nameSection);
+        mainRow.appendChild(statusIndicator);
+        mainRow.appendChild(opacityContainer);
+        mainRow.appendChild(visibilityToggle);
+        item.appendChild(mainRow);
+
+        // Compact info row
+        const infoRow = document.createElement('div');
+        infoRow.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 6px;
+            font-size: 9px;
+            color: #888;
+        `;
+
+        const renderTime = document.createElement('span');
+        renderTime.textContent = `Render: ${layer.lastRenderTime.toFixed(1)}ms`;
+        
+        const blendMode = document.createElement('span');
+        blendMode.textContent = `Blend: ${layer.blendMode}`;
+
+        infoRow.appendChild(renderTime);
+        infoRow.appendChild(blendMode);
+
+        // Add P5-specific info if it's a P5 layer
         if (layer.constructor.name === 'P5Layer') {
-            const p5Controls = this.createP5Controls(layer);
+            const p5Status = document.createElement('span');
+            if (layer.hasSketchError && layer.hasSketchError()) {
+                p5Status.textContent = '❌ Error';
+                p5Status.style.color = '#ff6b6b';
+            } else if (layer.isSketchRunning && layer.isSketchRunning()) {
+                p5Status.textContent = '✅ Running';
+                p5Status.style.color = '#51cf66';
+            } else {
+                p5Status.textContent = '⏸️ Stopped';
+                p5Status.style.color = '#ffd43b';
+            }
+            infoRow.appendChild(p5Status);
+        }
+
+        item.appendChild(infoRow);
+
+        // Add P5-specific controls in a compact row
+        if (layer.constructor.name === 'P5Layer') {
+            const p5Controls = this.createCompactP5Controls(layer);
             item.appendChild(p5Controls);
         }
-        
-        // Add test controls for debugging
-        const testControls = document.createElement('div');
-        testControls.style.cssText = `
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        `;
-        
-        const testButton = document.createElement('button');
-        testButton.textContent = 'Test Visibility Toggle';
-        testButton.style.cssText = `
-            padding: 5px 10px;
-            background: rgba(255, 100, 100, 0.3);
-            border: 1px solid rgba(255, 100, 100, 0.5);
-            border-radius: 4px;
-            color: white;
-            font-size: 10px;
-            cursor: pointer;
-            margin-right: 5px;
-        `;
-        
-        testButton.onclick = () => {
-            layer.visible = !layer.visible;
-            visibilityToggle.checked = layer.visible;
-            const statusText = item.querySelector('span[style*="font-size: 10px"][style*="color"]');
-            if (statusText) {
-                statusText.textContent = `Current: ${layer.visible ? 'Visible' : 'Hidden'}`;
-                statusText.style.color = layer.visible ? '#51cf66' : '#ff6b6b';
-            }
-            
-            // Force update
-            this.updateLayerInfo(layer);
-            if (this.app.layerManager) {
-                this.app.layerManager.markLayerDirty(layer.id);
-            }
-        };
-        
-        // Add debug button for P5 layers
-        if (layer.constructor.name === 'P5Layer') {
-            const debugButton = document.createElement('button');
-            debugButton.textContent = 'Debug Canvas';
-            debugButton.style.cssText = `
-                padding: 5px 10px;
-                background: rgba(100, 100, 255, 0.3);
-                border: 1px solid rgba(100, 100, 255, 0.5);
-                border-radius: 4px;
-                color: white;
-                font-size: 10px;
-                cursor: pointer;
-                margin-right: 5px;
-            `;
-            
-            debugButton.onclick = () => {
-                if (layer.getCanvasVisibilityState) {
-                    const canvasState = layer.getCanvasVisibilityState();
-                    alert(`Canvas State:\n${JSON.stringify(canvasState, null, 2)}`);
-                } else {
-                    console.log(`P5Layer ${layer.id}: getCanvasVisibilityState method not available`);
-                }
-            };
-            
-            testControls.appendChild(debugButton);
-        }
-        
-        const statusText = document.createElement('span');
-        statusText.textContent = `Current: ${layer.visible ? 'Visible' : 'Hidden'}`;
-        statusText.style.cssText = `
-            font-size: 10px;
-            color: ${layer.visible ? '#51cf66' : '#ff6b6b'};
-        `;
-        
-        testControls.appendChild(testButton);
-        testControls.appendChild(statusText);
-        item.appendChild(testControls);
 
         return item;
     }
@@ -499,6 +483,113 @@ export class LayerPanel {
     }
 
     /**
+     * Create compact P5-specific controls
+     * @param {P5Layer} layer - P5 layer instance
+     * @returns {HTMLElement} Compact P5 controls element
+     */
+    createCompactP5Controls(layer) {
+        const controls = document.createElement('div');
+        controls.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        `;
+
+        // Status indicator
+        const statusIndicator = document.createElement('div');
+        statusIndicator.style.cssText = `
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: ${layer.hasSketchError() ? '#ff6b6b' : (layer.isSketchRunning() ? '#51cf66' : '#ffd43b')};
+            flex-shrink: 0;
+        `;
+        statusIndicator.title = layer.hasSketchError() ? 'Error' : (layer.isSketchRunning() ? 'Running' : 'Stopped');
+
+        // Status text
+        const statusText = document.createElement('span');
+        statusText.textContent = layer.hasSketchError() ? '❌ Error' : (layer.isSketchRunning() ? '✅ Running' : '⏸️ Stopped');
+        statusText.style.cssText = `
+            font-size: 9px;
+            color: ${layer.hasSketchError() ? '#ff6b6b' : (layer.isSketchRunning() ? '#51cf66' : '#ffd43b')};
+        `;
+
+        // Parameters list
+        const params = layer.getAllParameters();
+        if (Object.keys(params).length > 0) {
+            const paramsList = document.createElement('div');
+            paramsList.style.cssText = `
+                font-size: 9px;
+                color: #888;
+            `;
+            
+            const paramsTitle = document.createElement('div');
+            paramsTitle.textContent = 'P5 Params:';
+            paramsTitle.style.cssText = `
+                font-weight: bold;
+                margin-bottom: 3px;
+                color: #00aaff;
+            `;
+            paramsList.appendChild(paramsTitle);
+            
+            Object.entries(params).forEach(([name, param]) => {
+                const paramRow = document.createElement('div');
+                paramRow.style.cssText = `
+                    display: flex;
+                    justify-content: between;
+                    align-items: center;
+                    margin-bottom: 2px;
+                    padding: 1px 5px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 2px;
+                `;
+                
+                const paramInfo = document.createElement('span');
+                paramInfo.textContent = `${param.label}: ${param.value.toFixed(2)}`;
+                paramInfo.style.flex = '1';
+                
+                const midiTarget = document.createElement('span');
+                midiTarget.textContent = `p5:${name}`;
+                midiTarget.style.cssText = `
+                    font-family: monospace;
+                    font-size: 8px;
+                    color: #888;
+                `;
+                
+                paramRow.appendChild(paramInfo);
+                paramRow.appendChild(midiTarget);
+                paramsList.appendChild(paramRow);
+            });
+            
+            controls.appendChild(paramsList);
+        }
+
+        // Code editor button
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Edit Sketch';
+        editButton.style.cssText = `
+            padding: 3px 8px;
+            background: rgba(0, 150, 255, 0.3);
+            border: 1px solid rgba(0, 150, 255, 0.5);
+            border-radius: 3px;
+            color: white;
+            font-size: 9px;
+            cursor: pointer;
+        `;
+        
+        editButton.onclick = () => {
+            this.openP5Editor(layer);
+        };
+        
+        controls.appendChild(editButton);
+
+        return controls;
+    }
+
+    /**
      * Open P5 sketch editor using the P5CodeEditor
      * @param {P5Layer} layer - P5 layer instance
      */
@@ -531,23 +622,20 @@ export class LayerPanel {
         const layerItems = this.layerList.querySelectorAll('.layer-item');
         
         layerItems.forEach(item => {
-            const nameElement = item.querySelector('span');
-            if (nameElement && nameElement.textContent.includes(layer.id)) {
-                // Update layer info section
-                const infoElement = item.querySelector('div[style*="font-size: 10px"]');
-                if (infoElement) {
-                    infoElement.innerHTML = `
-                        Opacity: ${(layer.opacity * 100).toFixed(0)}%<br>
-                        Blend: ${layer.blendMode}<br>
-                        Status: ${layer.initialized ? 'Ready' : 'Initializing'}<br>
-                        Render time: ${layer.lastRenderTime.toFixed(2)}ms
-                    `;
+            const nameElement = item.querySelector('div[style*="font-weight: bold"]');
+            if (nameElement && nameElement.textContent === layer.id) {
+                // Update status indicator
+                const statusIndicator = item.querySelector('div[style*="border-radius: 50%"]');
+                if (statusIndicator) {
+                    statusIndicator.style.background = layer.initialized ? '#51cf66' : '#ffd43b';
+                    statusIndicator.title = layer.initialized ? 'Ready' : 'Initializing';
                 }
                 
                 // Update opacity slider value
                 const opacitySlider = item.querySelector('input[type="range"]');
                 if (opacitySlider) {
                     opacitySlider.value = layer.opacity;
+                    opacitySlider.title = `Opacity: ${(layer.opacity * 100).toFixed(0)}%`;
                 }
                 
                 // Update visibility checkbox to ensure it's in sync
@@ -556,9 +644,15 @@ export class LayerPanel {
                     visibilityToggle.checked = layer.visible;
                 }
                 
+                // Update render time and blend mode
+                const renderTimeElement = item.querySelector('span[style*="font-size: 9px"]');
+                if (renderTimeElement && renderTimeElement.textContent.startsWith('Render:')) {
+                    renderTimeElement.textContent = `Render: ${layer.lastRenderTime.toFixed(1)}ms`;
+                }
+                
                 // Update P5-specific controls if it's a P5 layer
                 if (layer.constructor.name === 'P5Layer') {
-                    this.updateP5LayerInfo(item, layer);
+                    this.updateCompactP5LayerInfo(item, layer);
                 }
             }
         });
@@ -572,58 +666,95 @@ export class LayerPanel {
      * @param {HTMLElement} layerItem - Layer item DOM element
      * @param {P5Layer} layer - P5 layer instance
      */
-    updateP5LayerInfo(layerItem, layer) {
-        // Update P5 status
-        const statusElement = layerItem.querySelector('div[style*="font-size: 10px"][style*="margin-bottom: 5px"]');
-        if (statusElement) {
+    updateCompactP5LayerInfo(layerItem, layer) {
+        // Update P5 status in the info row
+        const p5StatusElement = layerItem.querySelector('span[style*="font-size: 9px"][style*="color"]');
+        if (p5StatusElement && (p5StatusElement.textContent.includes('❌') || p5StatusElement.textContent.includes('✅') || p5StatusElement.textContent.includes('⏸️'))) {
             if (layer.hasSketchError()) {
-                statusElement.innerHTML = `<span style="color: #ff6b6b;">❌ Error: ${layer.getLastError()}</span>`;
+                p5StatusElement.innerHTML = '❌ Error';
+                p5StatusElement.style.color = '#ff6b6b';
             } else if (layer.isSketchRunning()) {
-                statusElement.innerHTML = `<span style="color: #51cf66;">✅ Running</span>`;
+                p5StatusElement.innerHTML = '✅ Running';
+                p5StatusElement.style.color = '#51cf66';
             } else {
-                statusElement.innerHTML = `<span style="color: #ffd43b;">⏸️ Stopped</span>`;
+                p5StatusElement.innerHTML = '⏸️ Stopped';
+                p5StatusElement.style.color = '#ffd43b';
             }
         }
         
-        // Update parameters list if it exists
-        const paramsList = layerItem.querySelector('div[style*="margin-top: 5px"][style*="font-size: 10px"]');
-        if (paramsList) {
-            const params = layer.getAllParameters();
-            if (Object.keys(params).length > 0) {
-                // Find the parameters container (skip the title)
-                const paramsContainer = paramsList.children[1];
-                if (paramsContainer) {
-                    // Clear and rebuild parameters
-                    paramsContainer.innerHTML = '';
-                    
-                    Object.entries(params).forEach(([name, param]) => {
-                        const paramRow = document.createElement('div');
-                        paramRow.style.cssText = `
-                            display: flex;
-                            justify-content: between;
-                            align-items: center;
-                            margin-bottom: 3px;
-                            padding: 2px 5px;
-                            background: rgba(255, 255, 255, 0.05);
-                            border-radius: 3px;
-                        `;
+        // Update P5 controls if they exist
+        const p5Controls = layerItem.querySelector('div[style*="border-top: 1px solid rgba(255, 255, 255, 0.1)"]');
+        if (p5Controls) {
+            // Update status indicator in P5 controls
+            const statusIndicator = p5Controls.querySelector('div[style*="border-radius: 50%"]');
+            if (statusIndicator) {
+                if (layer.hasSketchError()) {
+                    statusIndicator.style.background = '#ff6b6b';
+                    statusIndicator.title = 'Error';
+                } else if (layer.isSketchRunning()) {
+                    statusIndicator.style.background = '#51cf66';
+                    statusIndicator.title = 'Running';
+                } else {
+                    statusIndicator.style.background = '#ffd43b';
+                    statusIndicator.title = 'Stopped';
+                }
+            }
+            
+            // Update status text in P5 controls
+            const statusText = p5Controls.querySelector('span[style*="font-size: 9px"][style*="color"]');
+            if (statusText) {
+                if (layer.hasSketchError()) {
+                    statusText.textContent = '❌ Error';
+                    statusText.style.color = '#ff6b6b';
+                } else if (layer.isSketchRunning()) {
+                    statusText.textContent = '✅ Running';
+                    statusText.style.color = '#51cf66';
+                } else {
+                    statusText.textContent = '⏸️ Stopped';
+                    statusText.style.color = '#ffd43b';
+                }
+            }
+            
+            // Update parameters list if it exists
+            const paramsList = p5Controls.querySelector('div[style*="font-size: 9px"][style*="color: #888"]');
+            if (paramsList) {
+                const params = layer.getAllParameters();
+                if (Object.keys(params).length > 0) {
+                    // Find the parameters container (skip the title)
+                    const paramsContainer = paramsList.children[1];
+                    if (paramsContainer) {
+                        // Clear and rebuild parameters
+                        paramsContainer.innerHTML = '';
                         
-                        const paramInfo = document.createElement('span');
-                        paramInfo.textContent = `${param.label}: ${param.value.toFixed(2)}`;
-                        paramInfo.style.flex = '1';
-                        
-                        const midiTarget = document.createElement('span');
-                        midiTarget.textContent = `p5:${name}`;
-                        midiTarget.style.cssText = `
-                            font-family: monospace;
-                            font-size: 9px;
-                            color: #888;
-                        `;
-                        
-                        paramRow.appendChild(paramInfo);
-                        paramRow.appendChild(midiTarget);
-                        paramsContainer.appendChild(paramRow);
-                    });
+                        Object.entries(params).forEach(([name, param]) => {
+                            const paramRow = document.createElement('div');
+                            paramRow.style.cssText = `
+                                display: flex;
+                                justify-content: between;
+                                align-items: center;
+                                margin-bottom: 2px;
+                                padding: 1px 5px;
+                                background: rgba(255, 255, 255, 0.05);
+                                border-radius: 2px;
+                            `;
+                            
+                            const paramInfo = document.createElement('span');
+                            paramInfo.textContent = `${param.label}: ${param.value.toFixed(2)}`;
+                            paramInfo.style.flex = '1';
+                            
+                            const midiTarget = document.createElement('span');
+                            midiTarget.textContent = `p5:${name}`;
+                            midiTarget.style.cssText = `
+                                font-family: monospace;
+                                font-size: 8px;
+                                color: #888;
+                            `;
+                            
+                            paramRow.appendChild(paramInfo);
+                            paramRow.appendChild(midiTarget);
+                            paramsContainer.appendChild(paramRow);
+                        });
+                    }
                 }
             }
         }

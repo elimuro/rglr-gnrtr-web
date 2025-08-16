@@ -365,6 +365,13 @@ function draw() {
     }
 
     /**
+     * Handle window resize events (called by LayerManager)
+     */
+    onWindowResize() {
+        this.resizeCanvas();
+    }
+
+    /**
      * Stop the current sketch
      */
     stop() {

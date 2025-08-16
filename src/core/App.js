@@ -169,7 +169,14 @@ export class App {
             this.animationLoop.start();
             
             // Set up window resize handler
-            window.addEventListener('resize', () => this.onWindowResize());
+            window.addEventListener('resize', () => {
+                // Handle main scene resize
+                this.scene.onWindowResize();
+                // Handle layer resize coordination
+                if (this.layerManager) {
+                    this.layerManager.onWindowResize();
+                }
+            });
             
             // Set up keyboard shortcuts for testing
             window.addEventListener('keydown', (event) => this.handleKeyDown(event));

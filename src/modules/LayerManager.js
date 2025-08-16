@@ -433,6 +433,22 @@ export class LayerManager {
     }
 
     /**
+     * Handle window resize events for all layers
+     */
+    onWindowResize() {
+        // Notify all layers about the resize event
+        this.layers.forEach(layer => {
+            if (layer.onWindowResize && typeof layer.onWindowResize === 'function') {
+                try {
+                    layer.onWindowResize();
+                } catch (error) {
+                    console.warn(`Error in layer ${layer.id} resize handler:`, error);
+                }
+            }
+        });
+    }
+
+    /**
      * Dispose of the layer manager and all layers
      */
     dispose() {
