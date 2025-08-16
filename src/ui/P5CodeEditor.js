@@ -151,6 +151,22 @@ export class P5CodeEditor {
                     </div>
                     
                     <div class="flex items-center gap-2">
+                        <!-- Sketch Preset Selector -->
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-300">Sketch:</label>
+                            <select id="p5-sketch-selector" class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white">
+                                <option value="default-sketch.js">Default Sketch</option>
+                                <option value="flocking.js">Flocking</option>
+                            </select>
+                            <button id="p5-editor-load-sketch" class="btn btn-primary btn-sm">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 4h6a2 2 0 0 1 2 2v14"/>
+                                    <path d="M14 4h7a2 2 0 0 1 2 2v14"/>
+                                </svg>
+                                Load
+                            </button>
+                        </div>
+                        
                         <button id="p5-editor-run" class="btn btn-success btn-sm">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polygon points="5,3 19,12 5,21"></polygon>
@@ -161,7 +177,7 @@ export class P5CodeEditor {
                         <button id="p5-editor-reset" class="btn btn-secondary btn-sm">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                                <path d="M21 3v5h-5"/>
+                                <path d="M21 3v5h5"/>
                                 <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
                                 <path d="M3 21v-5h5"/>
                             </svg>
@@ -241,12 +257,16 @@ export class P5CodeEditor {
             const closeButton = document.getElementById('p5-editor-close');
             const runButton = document.getElementById('p5-editor-run');
             const resetButton = document.getElementById('p5-editor-reset');
+            const loadSketchButton = document.getElementById('p5-editor-load-sketch');
+            const sketchSelector = document.getElementById('p5-sketch-selector');
             
             console.log('P5CodeEditor: Setting up button event listeners...');
             console.log('P5CodeEditor: Buttons found:', {
                 close: !!closeButton,
                 run: !!runButton,
-                reset: !!resetButton
+                reset: !!resetButton,
+                loadSketch: !!loadSketchButton,
+                sketchSelector: !!sketchSelector
             });
             
             if (closeButton) {
@@ -262,9 +282,20 @@ export class P5CodeEditor {
                 });
             }
             if (resetButton) {
-                resetButton.addEventListener('click', () => {
+                resetButton.addEventListener('click', async () => {
                     console.log('P5CodeEditor: Reset button clicked');
-                    this.resetCode();
+                    await this.resetCode();
+                });
+            }
+            if (loadSketchButton) {
+                loadSketchButton.addEventListener('click', () => {
+                    console.log('P5CodeEditor: Load sketch button clicked');
+                    this.loadSelectedSketch();
+                });
+            }
+            if (sketchSelector) {
+                sketchSelector.addEventListener('change', () => {
+                    console.log('P5CodeEditor: Sketch selector changed to:', sketchSelector.value);
                 });
             }
         }, 10);
@@ -366,6 +397,9 @@ export class P5CodeEditor {
             
             // Update parameter list
             this.updateParameterList();
+            
+            // Populate sketch selector
+            this.populateSketchSelector();
             
             // Auto-save on changes (debounced)
             let saveTimeout;
@@ -475,12 +509,18 @@ export class P5CodeEditor {
     /**
      * Reset code to default
      */
-    resetCode() {
+    async resetCode() {
         if (!this.editor || !this.currentP5Layer) return;
         
-        const defaultCode = this.currentP5Layer.getDefaultSketch();
-        this.editor.setValue(defaultCode);
-        this.updateStatus('info', 'Code reset to default');
+        try {
+            this.updateStatus('info', 'Loading default sketch...');
+            const defaultCode = await this.currentP5Layer.getDefaultSketch();
+            this.editor.setValue(defaultCode);
+            this.updateStatus('success', 'Code reset to default');
+        } catch (error) {
+            console.error('P5CodeEditor: Failed to reset to default:', error);
+            this.updateStatus('error', 'Failed to load default sketch');
+        }
     }
     
     /**
@@ -513,5 +553,108 @@ export class P5CodeEditor {
                 <span class="${color.split(' ')[0]}">${message}</span>
             </div>
         `;
+    }
+    
+    /**
+     * Load the selected sketch from the dropdown
+     */
+    async loadSelectedSketch() {
+        const sketchSelector = document.getElementById('p5-sketch-selector');
+        if (!sketchSelector || !this.editor) return;
+        
+        const selectedSketch = sketchSelector.value;
+        console.log('P5CodeEditor: Loading sketch:', selectedSketch);
+        
+        try {
+            this.updateStatus('info', `Loading ${selectedSketch}...`);
+            
+            // Fetch the sketch file
+            const response = await fetch(`/sketches/${selectedSketch}`);
+            if (!response.ok) {
+                throw new Error(`Failed to load sketch: ${response.status}`);
+            }
+            
+            const sketchCode = await response.text();
+            
+            // Update the editor with the new code
+            this.editor.setValue(sketchCode);
+            
+            // Update the current layer's sketch code
+            if (this.currentP5Layer) {
+                this.currentP5Layer.sketchCode = sketchCode;
+            }
+            
+            // Update the sketch name display in the header
+            const sketchNameSpan = document.querySelector('.text-sm.text-gray-400');
+            if (sketchNameSpan) {
+                sketchNameSpan.textContent = `Layer: ${this.currentP5Layer.id} | Sketch: ${selectedSketch}`;
+            }
+            
+            this.updateStatus('success', `${selectedSketch} loaded successfully`);
+            console.log('P5CodeEditor: Sketch loaded:', selectedSketch);
+            
+            // Update parameter list after loading
+            setTimeout(() => {
+                this.updateParameterList();
+            }, 100);
+            
+        } catch (error) {
+            console.error('P5CodeEditor: Failed to load sketch:', error);
+            this.updateStatus('error', `Failed to load ${selectedSketch}: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Discover available sketches in the sketches folder
+     */
+    async discoverAvailableSketches() {
+        try {
+            // For now, we'll hardcode the known sketches
+            // In the future, this could be an API endpoint that scans the sketches folder
+            const availableSketches = [
+                { value: 'default-sketch.js', label: 'Default Sketch' },
+                { value: 'flocking.js', label: 'Flocking' }
+            ];
+            
+            return availableSketches;
+        } catch (error) {
+            console.error('P5CodeEditor: Failed to discover sketches:', error);
+            return [];
+        }
+    }
+    
+    /**
+     * Populate the sketch selector dropdown
+     */
+    async populateSketchSelector() {
+        const sketchSelector = document.getElementById('p5-sketch-selector');
+        if (!sketchSelector) return;
+        
+        try {
+            const sketches = await this.discoverAvailableSketches();
+            
+            // Clear existing options
+            sketchSelector.innerHTML = '';
+            
+            // Add new options
+            sketches.forEach(sketch => {
+                const option = document.createElement('option');
+                option.value = sketch.value;
+                option.textContent = sketch.label;
+                sketchSelector.appendChild(option);
+            });
+            
+            // Set current sketch as selected
+            if (this.currentP5Layer && this.currentP5Layer.sketchCode) {
+                // Try to determine which sketch is currently loaded
+                // For now, default to the first option
+                if (sketches.length > 0) {
+                    sketchSelector.value = sketches[0].value;
+                }
+            }
+            
+        } catch (error) {
+            console.error('P5CodeEditor: Failed to populate sketch selector:', error);
+        }
     }
 }

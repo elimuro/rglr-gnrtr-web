@@ -105,7 +105,29 @@
                     <li>Click <strong>"P5 Code"</strong> in the transport bar to edit the sketch</li>
                 </ol>
                 
-                <h3 class="help-h3">2. Basic Sketch Structure</h3>
+                <h3 class="help-h3">2. Using the Sketch Preset Manager</h3>
+                <div class="help-note">
+                    <strong>New Feature:</strong> The P5 Code Editor now includes a preset manager that lets you quickly switch between different sketch templates.
+                </div>
+                
+                <ol>
+                    <li><strong>Open the P5 Code Editor</strong> by clicking "P5 Code" in the transport bar</li>
+                    <li><strong>Select a sketch preset</strong> from the dropdown menu in the header</li>
+                    <li><strong>Click "Load"</strong> to load the selected sketch into the editor</li>
+                    <li><strong>Click "Run"</strong> to compile and run the loaded sketch</li>
+                </ol>
+                
+                <h4>Available Presets:</h4>
+                <ul>
+                    <li><strong>Default Sketch:</strong> Simple animated circle with basic parameters</li>
+                    <li><strong>Flocking:</strong> Advanced particle system with flocking behavior</li>
+                </ul>
+                
+                <div class="help-note">
+                    <strong>💡 Pro Tip:</strong> Use the preset manager to quickly experiment with different sketch styles, then customize them for your needs!
+                </div>
+                
+                <h3 class="help-h3">3. Basic Sketch Structure</h3>
                 <pre class="help-code"><code>function setup() {
     createCanvas(windowWidth, windowHeight);
     // Your initialization code here
@@ -127,6 +149,114 @@ function draw() {
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 }</code></pre>
+            </div>
+            
+            <div class="help-section">
+                <h2 class="help-h2" id="preset-manager">📚 Sketch Preset Manager</h2>
+                
+                <div class="help-note">
+                    <strong>Overview:</strong> The Sketch Preset Manager allows you to quickly load pre-built sketch templates and switch between different creative starting points without manually copying and pasting code.
+                </div>
+                
+                <h3 class="help-h3">How to Use the Preset Manager</h3>
+                
+                <div class="p5-example">
+                    <h4>Step-by-Step Workflow</h4>
+                    <ol>
+                        <li><strong>Open the P5 Code Editor</strong> from the transport bar</li>
+                        <li><strong>Locate the preset selector</strong> in the header (labeled "Sketch:")</li>
+                        <li><strong>Choose a preset</strong> from the dropdown menu</li>
+                        <li><strong>Click "Load"</strong> to fetch and load the sketch</li>
+                        <li><strong>Review the code</strong> in the editor</li>
+                        <li><strong>Click "Run"</strong> to test the sketch</li>
+                        <li><strong>Customize as needed</strong> for your project</li>
+                    </ol>
+                </div>
+                
+                <h3 class="help-h3">Available Sketch Presets</h3>
+                
+                <div class="p5-example">
+                    <h4>🎯 Default Sketch</h4>
+                    <p><strong>Purpose:</strong> Perfect starting point for beginners</p>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Simple animated circle with orbital motion</li>
+                        <li>Three exposed parameters: ballSize, speed, and color</li>
+                        <li>Basic p5.js structure with setup() and draw()</li>
+                        <li>Clear examples of p5Param() usage</li>
+                    </ul>
+                    <p><strong>Best for:</strong> Learning the basics, quick prototyping, understanding parameter exposure</p>
+                </div>
+                
+                <div class="p5-example">
+                    <h4>🦅 Flocking</h4>
+                    <p><strong>Purpose:</strong> Advanced particle system with emergent behavior</p>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Complex flocking algorithm with multiple forces</li>
+                        <li>Multiple exposed parameters for real-time control</li>
+                        <li>Advanced p5.js techniques and object-oriented design</li>
+                        <li>Performance-optimized particle management</li>
+                    </ul>
+                    <p><strong>Best for:</strong> Advanced users, complex animations, studying particle systems</p>
+                </div>
+                
+                <h3 class="help-h3">Preset Manager Benefits</h3>
+                
+                <table class="parameter-table">
+                    <thead>
+                        <tr>
+                            <th>Benefit</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>🚀 Quick Start</strong></td>
+                            <td>Jump into creative coding without starting from scratch</td>
+                        </tr>
+                        <tr>
+                            <td><strong>📖 Learning Examples</strong></td>
+                            <td>Study different coding patterns and techniques</td>
+                        </tr>
+                        <tr>
+                            <td><strong>🔄 Easy Experimentation</strong></td>
+                            <td>Try different styles without losing your current work</td>
+                        </tr>
+                        <tr>
+                            <td><strong>⚙️ Parameter Templates</strong></td>
+                            <td>See how to properly expose parameters for MIDI control</td>
+                        </tr>
+                        <tr>
+                            <td><strong>🎨 Creative Inspiration</strong></td>
+                            <td>Get ideas for your own custom sketches</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 class="help-h3">Customizing Preset Sketches</h3>
+                
+                <div class="help-note">
+                    <strong>Workflow:</strong> Load a preset → Study the code → Modify parameters → Add new features → Save your custom version
+                </div>
+                
+                <h4>Common Customizations:</h4>
+                <ul>
+                    <li><strong>Parameter ranges:</strong> Adjust min/max values for your MIDI controller</li>
+                    <li><strong>Visual elements:</strong> Change colors, shapes, and animation patterns</li>
+                    <li><strong>Performance:</strong> Modify particle counts, animation speeds, or complexity</li>
+                    <li><strong>Integration:</strong> Add effects that complement your 3D grid animations</li>
+                </ul>
+                
+                <div class="help-warning">
+                    <h4>⚠️ Important Notes</h4>
+                    <ul>
+                        <li><strong>Presets are templates:</strong> Changes are not automatically saved</li>
+                        <li><strong>Always test after loading:</strong> Click "Run" to ensure the sketch compiles</li>
+                        <li><strong>Backup your work:</strong> Copy custom code before loading new presets</li>
+                        <li><strong>Parameter names:</strong> Changing parameter names breaks existing MIDI mappings</li>
+                    </ul>
+                </div>
             </div>
             
             <div class="help-section">
@@ -469,6 +599,16 @@ function draw() {
                     </ul>
                 </div>
                 
+                <div class="help-warning">
+                    <h4>❌ Preset sketches not loading</h4>
+                    <ul>
+                        <li><strong>Check file paths:</strong> Ensure sketch files exist in <code>/sketches/</code> folder</li>
+                        <li><strong>Verify file extensions:</strong> Sketch files should have <code>.js</code> extension</li>
+                        <li><strong>Check network:</strong> Look for fetch errors in browser console</li>
+                        <li><strong>Try refreshing:</strong> Reload the page and try again</li>
+                    </ul>
+                </div>
+                
                 <div class="help-note">
                     <h4>✅ Debug Console Logs</h4>
                     <p>When MIDI controls work correctly, you'll see logs like:</p>
@@ -484,8 +624,10 @@ P5Layer p5 parameter speed set to 2.52 (from normalized 0.504)</code></pre>
             
             <div class="help-note">
                 <h3>🎯 Next Steps</h3>
-                <p>Now that you understand P5 layer parameters, try:</p>
+                <p>Now that you understand P5 layer parameters and the preset manager, try:</p>
                 <ul>
+                    <li><strong>Exploring preset sketches</strong> to understand different coding patterns</li>
+                    <li><strong>Customizing preset sketches</strong> with your own parameters and effects</li>
                     <li><strong>Creating your own sketches</strong> with custom parameters</li>
                     <li><strong>Mapping multiple MIDI controllers</strong> to different parameters</li>
                     <li><strong>Combining P5 effects</strong> with the underlying 3D grid animation</li>
@@ -505,6 +647,7 @@ P5Layer p5 parameter speed set to 2.52 (from normalized 0.504)</code></pre>
             // Define the sections for this page
             const pageSections = [
                 { id: 'getting-started', title: 'Getting Started' },
+                { id: 'preset-manager', title: 'Sketch Preset Manager' },
                 { id: 'parameter-system', title: 'Parameter System' },
                 { id: 'parameter-types', title: 'Parameter Types' },
                 { id: 'midi-mapping', title: 'MIDI Mapping' },

@@ -20,7 +20,7 @@ export class P5Layer extends LayerBase {
         this.exposedParameters = {}; // for LayerBase compatibility
         
         // Sketch code and state
-        this.sketchCode = config.code || this.getDefaultSketch();
+        this.sketchCode = config.code || '';
         this.isRunning = false;
         this.hasError = false;
         this.lastError = null;
@@ -35,45 +35,28 @@ export class P5Layer extends LayerBase {
 
     /**
      * Get default p5 sketch code
-     * @returns {string} Default sketch code
+     * @returns {Promise<string>} Default sketch code loaded from file
      */
-    getDefaultSketch() {
-        return `function setup() {
+    async getDefaultSketch() {
+        try {
+            const response = await fetch('/sketches/default-sketch.js');
+            if (!response.ok) {
+                throw new Error(`Failed to load default sketch: ${response.status}`);
+            }
+            return await response.text();
+        } catch (error) {
+            console.warn('Failed to load default sketch file, using fallback:', error);
+            // Fallback to a minimal sketch if file loading fails
+            return `function setup() {
   createCanvas(windowWidth, windowHeight);
-  console.log('P5 sketch setup complete, canvas size:', width, 'x', height);
 }
 
 function draw() {
-  // Semi-transparent black background for trails
   background(0, 20);
-  
-  // Expose parameters using p5Param helper
-  const size = p5Param('ballSize', 80, { min: 20, max: 200, label: 'Ball Size' });
-  const speed = p5Param('speed', 1, { min: 0.1, max: 5, label: 'Animation Speed' });
-  const hue = p5Param('color', 180, { min: 0, max: 360, label: 'Color Hue' });
-  
-  // Simple bright circle that should be very visible
-  fill(255, 0, 0); // Bright red
-  stroke(255, 255, 0); // Yellow stroke
-  strokeWeight(4);
-  
-  const x = width/2 + cos(frameCount * 0.02 * speed) * 150;
-  const y = height/2 + sin(frameCount * 0.02 * speed) * 150;
-  
-  circle(x, y, size);
-  
-  // Static elements for debugging
-  fill(0, 255, 0); // Bright green
-  noStroke();
-  circle(width/2, height/2, 30);
-  
-  // Text
-  fill(255, 255, 0); // Yellow
-  textSize(32);
-  textAlign(CENTER);
-  text('P5 LAYER WORKING!', width/2, height/2 + 150);
-  text('Frame: ' + frameCount, width/2, height/2 + 200);
+  fill(255, 0, 0);
+  circle(width/2, height/2, 100);
 }`;
+        }
     }
 
     /**
@@ -92,6 +75,12 @@ function draw() {
             // Create the p5Param helper
             console.log(`P5Layer ${this.id}: Creating p5Param helper...`);
             this.createP5ParamHelper();
+            
+            // Load default sketch if none provided
+            if (!this.sketchCode) {
+                console.log(`P5Layer ${this.id}: Loading default sketch...`);
+                this.sketchCode = await this.getDefaultSketch();
+            }
             
             // Compile and run the initial sketch
             console.log(`P5Layer ${this.id}: Compiling initial sketch...`);
@@ -470,7 +459,14 @@ function draw() {
      * Get sketch code
      */
     getSketchCode() {
-        return this.sketchCode || this.getDefaultSketch();
+        return this.sketchCode || '';
+    }
+    
+    /**
+     * Get default sketch code (async version)
+     */
+    async getDefaultSketchCode() {
+        return await this.getDefaultSketch();
     }
     
     /**
@@ -478,6 +474,16 @@ function draw() {
      */
     getCurrentSketchCode() {
         return this.getSketchCode();
+    }
+    
+    /**
+     * Get current sketch code (async version that loads default if needed)
+     */
+    async getCurrentSketchCodeAsync() {
+        if (!this.sketchCode) {
+            return await this.getDefaultSketch();
+        }
+        return this.sketchCode;
     }
 
     /**
