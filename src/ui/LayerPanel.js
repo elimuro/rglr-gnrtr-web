@@ -40,6 +40,20 @@ export class LayerPanel {
             overflow-y: auto;
             margin-bottom: 15px;
         `;
+        
+        // Add reordering instructions
+        const reorderInstructions = document.createElement('div');
+        reorderInstructions.style.cssText = `
+            font-size: 9px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 8px;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        `;
+        reorderInstructions.textContent = 'Use ↑↓ buttons to reorder layers (z-distance controls coming soon)';
+        this.layerList.appendChild(reorderInstructions);
         this.container.appendChild(this.layerList);
 
         // Create performance info
@@ -158,7 +172,18 @@ export class LayerPanel {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
         `;
+        
+        // Add hover effects
+        item.addEventListener('mouseenter', () => {
+            item.style.background = 'rgba(255, 255, 255, 0.15)';
+            item.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        });
+        item.addEventListener('mouseleave', () => {
+            item.style.background = 'rgba(255, 255, 255, 0.1)';
+            item.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        });
 
         // Main row with layer info and controls
         const mainRow = document.createElement('div');
@@ -286,6 +311,11 @@ export class LayerPanel {
         mainRow.appendChild(statusIndicator);
         mainRow.appendChild(opacityContainer);
         mainRow.appendChild(visibilityToggle);
+        
+        // Add reorder buttons for all layers
+        const reorderButtons = this.createReorderButtons(layer);
+        mainRow.appendChild(reorderButtons);
+        
         item.appendChild(mainRow);
 
         // Compact info row
@@ -330,6 +360,12 @@ export class LayerPanel {
         if (layer.constructor.name === 'P5Layer') {
             const p5Controls = this.createCompactP5Controls(layer);
             item.appendChild(p5Controls);
+        }
+        
+        // Add grid-specific controls
+        if (layer.constructor.name === 'GridLayer') {
+            const gridControls = this.createGridControls(layer);
+            item.appendChild(gridControls);
         }
 
         return item;
@@ -590,6 +626,96 @@ export class LayerPanel {
     }
 
     /**
+     * Create grid-specific controls
+     * @param {GridLayer} layer - Grid layer instance
+     * @returns {HTMLElement} Grid controls element
+     */
+    createGridControls(layer) {
+        const controls = document.createElement('div');
+        controls.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        `;
+
+        // Grid info display
+        const gridInfo = document.createElement('div');
+        gridInfo.style.cssText = `
+            font-size: 9px;
+            color: #888;
+            flex: 1;
+        `;
+        
+        const gridMetrics = layer.getGridMetrics();
+        const gridComposition = layer.getGridInfo();
+        
+        gridInfo.innerHTML = `
+            <div style="font-weight: bold; color: #00aaff; margin-bottom: 3px;">Grid Info:</div>
+            <div>Shapes: ${gridMetrics.shapeCount || 0}</div>
+            <div>Size: ${gridComposition.compositionWidth || 0}×${gridComposition.compositionHeight || 0}</div>
+            <div>Cell: ${gridComposition.cellSize || 0}</div>
+        `;
+        
+        controls.appendChild(gridInfo);
+
+        // Toggle buttons
+        const toggleContainer = document.createElement('div');
+        toggleContainer.style.cssText = `
+            display: flex;
+            gap: 4px;
+        `;
+
+        // Toggle shapes button
+        const toggleShapesButton = document.createElement('button');
+        toggleShapesButton.textContent = layer.shapesVisible ? 'Hide Shapes' : 'Show Shapes';
+        toggleShapesButton.style.cssText = `
+            padding: 3px 6px;
+            background: ${layer.shapesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)'};
+            border: 1px solid ${layer.shapesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'};
+            border-radius: 3px;
+            color: white;
+            font-size: 8px;
+            cursor: pointer;
+        `;
+        
+        toggleShapesButton.onclick = () => {
+            layer.toggleShapes();
+            toggleShapesButton.textContent = layer.shapesVisible ? 'Hide Shapes' : 'Show Shapes';
+            toggleShapesButton.style.background = layer.shapesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
+            toggleShapesButton.style.borderColor = layer.shapesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
+        };
+        
+        // Toggle grid lines button
+        const toggleGridLinesButton = document.createElement('button');
+        toggleGridLinesButton.textContent = layer.gridLinesVisible ? 'Hide Lines' : 'Show Lines';
+        toggleGridLinesButton.style.cssText = `
+            padding: 3px 6px;
+            background: ${layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)'};
+            border: 1px solid ${layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'};
+            border-radius: 3px;
+            color: white;
+            font-size: 8px;
+            cursor: pointer;
+        `;
+        
+        toggleGridLinesButton.onclick = () => {
+            layer.toggleGridLines();
+            toggleGridLinesButton.textContent = layer.gridLinesVisible ? 'Hide Lines' : 'Show Lines';
+            toggleGridLinesButton.style.background = layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
+            toggleGridLinesButton.style.borderColor = layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
+        };
+        
+        toggleContainer.appendChild(toggleShapesButton);
+        toggleContainer.appendChild(toggleGridLinesButton);
+        controls.appendChild(toggleContainer);
+
+        return controls;
+    }
+
+    /**
      * Open P5 sketch editor using the P5CodeEditor
      * @param {P5Layer} layer - P5 layer instance
      */
@@ -653,6 +779,11 @@ export class LayerPanel {
                 // Update P5-specific controls if it's a P5 layer
                 if (layer.constructor.name === 'P5Layer') {
                     this.updateCompactP5LayerInfo(item, layer);
+                }
+                
+                // Update grid-specific controls if it's a grid layer
+                if (layer.constructor.name === 'GridLayer') {
+                    this.updateGridLayerInfo(item, layer);
                 }
             }
         });
@@ -761,6 +892,44 @@ export class LayerPanel {
     }
 
     /**
+     * Update grid-specific layer information
+     * @param {HTMLElement} layerItem - Layer item DOM element
+     * @param {GridLayer} layer - Grid layer instance
+     */
+    updateGridLayerInfo(layerItem, layer) {
+        // Update grid info display
+        const gridInfo = layerItem.querySelector('div[style*="font-size: 9px"][style*="color: #888"]');
+        if (gridInfo) {
+            const gridMetrics = layer.getGridMetrics();
+            const gridComposition = layer.getGridInfo();
+            gridInfo.innerHTML = `
+                <div style="font-weight: bold; color: #00aaff; margin-bottom: 3px;">Grid Info:</div>
+                <div>Shapes: ${gridMetrics.shapeCount || 0}</div>
+                <div>Size: ${gridComposition.compositionWidth || 0}×${gridComposition.compositionHeight || 0}</div>
+                <div>Cell: ${gridComposition.cellSize || 0}</div>
+            `;
+        }
+
+        // Update toggle buttons
+        const toggleContainer = layerItem.querySelector('div[style*="display: flex"][style*="gap: 4px"]');
+        if (toggleContainer) {
+            const toggleShapesButton = toggleContainer.querySelector('button:first-child');
+            const toggleGridLinesButton = toggleContainer.querySelector('button:last-child');
+
+            if (toggleShapesButton) {
+                toggleShapesButton.textContent = layer.shapesVisible ? 'Hide Shapes' : 'Show Shapes';
+                toggleShapesButton.style.background = layer.shapesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
+                toggleShapesButton.style.borderColor = layer.shapesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
+            }
+            if (toggleGridLinesButton) {
+                toggleGridLinesButton.textContent = layer.gridLinesVisible ? 'Hide Lines' : 'Show Lines';
+                toggleGridLinesButton.style.background = layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
+                toggleGridLinesButton.style.borderColor = layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
+            }
+        }
+    }
+
+    /**
      * Update performance information
      */
     updatePerformanceInfo() {
@@ -809,5 +978,141 @@ export class LayerPanel {
             this.container.innerHTML = '';
         }
         this.container = null;
+    }
+
+    /**
+     * Create reorder buttons for a layer
+     * @param {LayerBase} layer - Layer instance
+     * @returns {HTMLElement} Reorder buttons container
+     */
+    createReorderButtons(layer) {
+        const container = document.createElement('div');
+        container.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-left: 8px;
+        `;
+
+        // Up button
+        const upButton = document.createElement('button');
+        upButton.innerHTML = '↑';
+        upButton.title = 'Move layer up';
+        upButton.style.cssText = `
+            width: 20px;
+            height: 16px;
+            padding: 0;
+            background: rgba(0, 150, 255, 0.3);
+            border: 1px solid rgba(0, 150, 255, 0.5);
+            border-radius: 2px;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        `;
+        
+        upButton.addEventListener('mouseenter', () => {
+            upButton.style.background = 'rgba(0, 150, 255, 0.5)';
+            upButton.style.borderColor = 'rgba(0, 150, 255, 0.8)';
+        });
+        
+        upButton.addEventListener('mouseleave', () => {
+            upButton.style.background = 'rgba(0, 150, 255, 0.3)';
+            upButton.style.borderColor = 'rgba(0, 150, 255, 0.5)';
+        });
+        
+        upButton.onclick = () => {
+            this.moveLayerUp(layer.id);
+        };
+
+        // Down button
+        const downButton = document.createElement('button');
+        downButton.innerHTML = '↓';
+        downButton.title = 'Move layer down';
+        downButton.style.cssText = `
+            width: 20px;
+            height: 16px;
+            padding: 0;
+            background: rgba(0, 150, 255, 0.3);
+            border: 1px solid rgba(0, 150, 255, 0.5);
+            border-radius: 2px;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        `;
+        
+        downButton.addEventListener('mouseenter', () => {
+            downButton.style.background = 'rgba(0, 150, 255, 0.5)';
+            downButton.style.borderColor = 'rgba(0, 150, 255, 0.8)';
+        });
+        
+        downButton.addEventListener('mouseleave', () => {
+            downButton.style.background = 'rgba(0, 150, 255, 0.3)';
+            downButton.style.borderColor = 'rgba(0, 150, 255, 0.5)';
+        });
+        
+        downButton.onclick = () => {
+            this.moveLayerDown(layer.id);
+        };
+
+        container.appendChild(upButton);
+        container.appendChild(downButton);
+
+        return container;
+    }
+
+    /**
+     * Move a layer up in the order
+     * @param {string} layerId - ID of the layer to move up
+     */
+    moveLayerUp(layerId) {
+        if (!this.app.layerManager) return;
+        
+        const currentOrder = this.app.layerManager.getLayerOrder();
+        const currentIndex = currentOrder.indexOf(layerId);
+        
+        // Can't move up if already at the top
+        if (currentIndex <= 0) return;
+        
+        // Swap with the layer above
+        const newOrder = [...currentOrder];
+        [newOrder[currentIndex], newOrder[currentIndex - 1]] = [newOrder[currentIndex - 1], newOrder[currentIndex]];
+        
+        // Update layer order
+        this.app.layerManager.setLayerOrder(newOrder);
+        
+        // Refresh the panel to show new order
+        this.updatePanel();
+    }
+
+    /**
+     * Move a layer down in the order
+     * @param {string} layerId - ID of the layer to move down
+     */
+    moveLayerDown(layerId) {
+        if (!this.app.layerManager) return;
+        
+        const currentOrder = this.app.layerManager.getLayerOrder();
+        const currentIndex = currentOrder.indexOf(layerId);
+        
+        // Can't move down if already at the bottom
+        if (currentIndex === currentOrder.length - 1) return;
+        
+        // Swap with the layer below
+        const newOrder = [...currentOrder];
+        [newOrder[currentIndex], newOrder[currentIndex + 1]] = [newOrder[currentIndex + 1], newOrder[currentIndex]];
+        
+        // Update layer order
+        this.app.layerManager.setLayerOrder(newOrder);
+        
+        // Refresh the panel to show new order
+        this.updatePanel();
     }
 }

@@ -44,11 +44,22 @@ export class LayerManager {
     async initialize(context) {
         this.context = context;
         
+        // Add app reference to context for layers that need it
+        this.context.app = this.app;
+        
         // Initialize compositor for layer blending
         this.initializeCompositor();
         
         // Initialize layer-specific systems (grid is handled separately)
         await this.initializeLayerSystems();
+        
+        // Initialize all layers
+        await Promise.all(Array.from(this.layers.values()).map(layer => 
+            layer.initialize(this.context)
+        ));
+        
+        // Set initial z-positions
+        this.updateLayerZPositions();
         
         // Set up state listeners
         this.setupStateListeners();
@@ -77,8 +88,30 @@ export class LayerManager {
      * Initialize layer-specific systems (no grid layer needed)
      */
     async initializeLayerSystems() {
-        // GridManager is handled separately as the foundation
-        // This method is reserved for initializing additional layer types
+        // Create the grid layer automatically
+        await this.createGridLayer();
+    }
+
+    /**
+     * Create the grid layer automatically
+     */
+    async createGridLayer() {
+        if (this.layers.has('grid')) return; // Already exists
+        
+        const { GridLayer } = await import('./layers/GridLayer.js');
+        
+        const gridLayer = new GridLayer('grid', {
+            visible: true,
+            opacity: 1.0,
+            blendMode: 'normal',
+            gridVisible: true,
+            shapesVisible: true,
+            gridLinesVisible: true
+        });
+        
+        await this.addLayer(gridLayer);
+        
+        // Grid layer is added to the end by default, but can be reordered
     }
 
     /**
@@ -183,6 +216,9 @@ export class LayerManager {
         });
         
         this.layerOrder = validOrder;
+        
+        // Update z-positions based on new order
+        this.updateLayerZPositions();
         
         // Only update state if we're not in the middle of setConfig to prevent infinite recursion
         if (!this.isSettingConfig) {
@@ -474,5 +510,52 @@ export class LayerManager {
             }
         });
         this.eventListeners = [];
+    }
+
+    /**
+     * Update z-positions of all layers based on their order
+     * This ensures proper depth separation and prevents z-fighting
+     */
+    updateLayerZPositions() {
+        const baseZSpacing = 10; // Distance between layers in z-space
+        
+        this.layerOrder.forEach((layerId, index) => {
+            const layer = this.layers.get(layerId);
+            if (layer) {
+                // Calculate z-position: first layer is closest, last layer is farthest
+                const zPosition = index * baseZSpacing;
+                layer.setZOffset(zPosition);
+                
+                // Update 3D objects if this is a grid layer
+                if (layerId === 'grid' && this.app.scene && this.app.scene.gridManager) {
+                    this.updateGridZPosition(zPosition);
+                }
+            }
+        });
+    }
+
+    /**
+     * Update grid objects z-positions
+     * @param {number} zPosition - New z-position for grid
+     */
+    updateGridZPosition(zPosition) {
+        const gridManager = this.app.scene.gridManager;
+        if (!gridManager) return;
+        
+        // Update all grid shapes
+        const shapes = gridManager.getAllShapes();
+        shapes.forEach(mesh => {
+            if (mesh && mesh.position) {
+                mesh.position.z = zPosition;
+            }
+        });
+        
+        // Update grid lines
+        const gridLines = gridManager.getAllGridLines();
+        gridLines.forEach(line => {
+            if (line && line.position) {
+                line.position.z = zPosition;
+            }
+        });
     }
 }

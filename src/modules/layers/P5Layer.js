@@ -294,7 +294,7 @@ function draw() {
         this.canvasElement.style.left = '0';
         this.canvasElement.style.width = '100vw';
         this.canvasElement.style.height = '100vh';
-        this.canvasElement.style.zIndex = '10'; // Under UI (which uses z-40, z-50)
+        this.canvasElement.style.zIndex = (10 + this.zOffset).toString(); // Use z-offset for layering
         this.canvasElement.style.pointerEvents = 'none'; // Allow clicks to pass through
         this.canvasElement.style.opacity = this.opacity;
         
@@ -343,6 +343,7 @@ function draw() {
             this.canvasElement.style.setProperty('position', 'fixed', 'important');
             this.canvasElement.style.setProperty('left', '0', 'important');
             this.canvasElement.style.setProperty('top', '0', 'important');
+            this.canvasElement.style.setProperty('z-index', (10 + this.zOffset).toString(), 'important');
         } else {
             this.canvasElement.style.setProperty('display', 'none', 'important');
             this.canvasElement.style.setProperty('visibility', 'hidden', 'important');
@@ -595,6 +596,19 @@ function draw() {
      */
     isSketchRunning() {
         return this.isRunning;
+    }
+
+    /**
+     * Set z-offset value
+     * @param {number} zOffset - New z-offset value
+     */
+    setZOffset(zOffset) {
+        this.zOffset = zOffset;
+        
+        // Update canvas z-index if canvas exists
+        if (this.canvasElement) {
+            this.canvasElement.style.zIndex = (10 + this.zOffset).toString();
+        }
     }
 }
 

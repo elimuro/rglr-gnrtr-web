@@ -13,6 +13,7 @@ export class LayerBase {
         this.visible = config.visible !== undefined ? config.visible : true;
         this.opacity = config.opacity !== undefined ? config.opacity : 1.0;
         this.blendMode = config.blendMode || 'normal';
+        this.zOffset = config.zOffset !== undefined ? config.zOffset : 0; // Z-space distance from camera
         this.renderTarget = null;
         
         // Layer state
@@ -165,7 +166,22 @@ export class LayerBase {
      * @param {*} value - Parameter value
      */
     onSetParameter(name, value) {
-        // Optional override
+        // Handle common parameters
+        switch (name) {
+            case 'visible':
+                this.visible = Boolean(value);
+                this.onVisibilityChanged(this.visible);
+                break;
+            case 'opacity':
+                this.opacity = Math.max(0.0, Math.min(1.0, Number(value)));
+                break;
+            case 'blendMode':
+                this.blendMode = String(value);
+                break;
+            case 'zOffset':
+                this.zOffset = Number(value);
+                break;
+        }
     }
 
     /**
@@ -190,8 +206,19 @@ export class LayerBase {
      * @returns {*} Parameter value
      */
     onGetParameter(name) {
-        // Optional override
-        return this.parameterCache.get(name);
+        // Handle common parameters
+        switch (name) {
+            case 'visible':
+                return this.visible;
+            case 'opacity':
+                return this.opacity;
+            case 'blendMode':
+                return this.blendMode;
+            case 'zOffset':
+                return this.zOffset;
+            default:
+                return this.parameterCache.get(name);
+        }
     }
 
     /**
@@ -214,7 +241,39 @@ export class LayerBase {
      * @returns {Object} Object with parameter names as keys and metadata as values
      */
     onGetExposedParameters() {
-        return {};
+        return {
+            visible: {
+                type: 'boolean',
+                label: 'Visible',
+                description: 'Show or hide this layer',
+                default: true
+            },
+            opacity: {
+                type: 'number',
+                label: 'Opacity',
+                description: 'Layer transparency (0.0 to 1.0)',
+                min: 0.0,
+                max: 1.0,
+                step: 0.01,
+                default: 1.0
+            },
+            blendMode: {
+                type: 'select',
+                label: 'Blend Mode',
+                description: 'How this layer blends with layers below',
+                options: ['normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten'],
+                default: 'normal'
+            },
+            zOffset: {
+                type: 'number',
+                label: 'Z Offset',
+                description: 'Distance from camera in 3D space',
+                min: -1000,
+                max: 1000,
+                step: 1,
+                default: 0
+            }
+        };
     }
 
     /**
@@ -252,6 +311,7 @@ export class LayerBase {
             visible: this.visible,
             opacity: this.opacity,
             blendMode: this.blendMode,
+            zOffset: this.zOffset,
             ...this.onGetConfig()
         };
     }
@@ -272,6 +332,7 @@ export class LayerBase {
         if (config.visible !== undefined) this.visible = config.visible;
         if (config.opacity !== undefined) this.opacity = config.opacity;
         if (config.blendMode !== undefined) this.blendMode = config.blendMode;
+        if (config.zOffset !== undefined) this.zOffset = config.zOffset;
         
         this.onSetConfig(config);
     }
@@ -298,6 +359,22 @@ export class LayerBase {
             initialized: this.initialized,
             disposed: this.disposed
         };
+    }
+
+    /**
+     * Get z-offset value
+     * @returns {number} Z-offset value
+     */
+    getZOffset() {
+        return this.zOffset;
+    }
+
+    /**
+     * Set z-offset value
+     * @param {number} zOffset - New z-offset value
+     */
+    setZOffset(zOffset) {
+        this.zOffset = zOffset;
     }
 
     /**
