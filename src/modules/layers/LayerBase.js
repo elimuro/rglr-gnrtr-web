@@ -61,7 +61,9 @@ export class LayerBase {
      * @param {number} deltaTime - Time since last frame
      */
     render2D(renderer, camera, deltaTime) {
-        if (!this.visible || !this.initialized || this.disposed) return;
+        if (!this.visible || !this.initialized || this.disposed) {
+            return;
+        }
         
         const startTime = performance.now();
         
@@ -213,6 +215,30 @@ export class LayerBase {
      */
     onGetExposedParameters() {
         return {};
+    }
+
+    /**
+     * Handle visibility changes
+     * @param {boolean} isVisible - New visibility state
+     */
+    onVisibilityChanged(isVisible) {
+        if (isVisible && !this.initialized) {
+            // Re-initialize if becoming visible and not initialized
+            this.initialize(this.context).catch(error => {
+                console.error(`Failed to initialize layer ${this.id} on visibility change:`, error);
+            });
+        }
+        
+        // Update any internal state that depends on visibility
+        this.updateVisibilityState(isVisible);
+    }
+    
+    /**
+     * Update internal state based on visibility
+     * @param {boolean} isVisible - Current visibility state
+     */
+    updateVisibilityState(isVisible) {
+        // Override in subclasses if needed
     }
 
     /**

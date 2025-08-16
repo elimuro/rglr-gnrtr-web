@@ -55,6 +55,31 @@ export class LayerPanel {
     }
 
     /**
+     * Refresh all layer checkbox states to ensure synchronization
+     */
+    refreshCheckboxStates() {
+        if (!this.container || !this.app.layerManager) return;
+        
+        const layers = this.app.layerManager.getAllLayers();
+        const layerItems = this.layerList.querySelectorAll('.layer-item');
+        
+        layerItems.forEach(item => {
+            const nameElement = item.querySelector('span');
+            if (nameElement) {
+                const layerId = nameElement.textContent.split(' ')[0]; // Extract layer ID from "id (ClassName)"
+                const layer = layers.get(layerId);
+                
+                if (layer) {
+                    const visibilityToggle = item.querySelector('input[type="checkbox"]');
+                    if (visibilityToggle && visibilityToggle.checked !== layer.visible) {
+                        visibilityToggle.checked = layer.visible;
+                    }
+                }
+            }
+        });
+    }
+
+    /**
      * Set up event listeners
      */
     setupEventListeners() {
@@ -78,6 +103,13 @@ export class LayerPanel {
                 setTimeout(() => this.updatePanel(), 100);
             });
         }
+        
+        // Periodically refresh checkbox states to ensure synchronization
+        setInterval(() => {
+            if (this.isVisible && this.container) {
+                this.refreshCheckboxStates();
+            }
+        }, 2000); // Refresh every 2 seconds when visible
     }
 
     /**
@@ -146,8 +178,39 @@ export class LayerPanel {
         visibilityToggle.checked = layer.visible;
         visibilityToggle.style.marginLeft = '10px';
         visibilityToggle.onchange = (e) => {
+            // Verify the layer still exists in the layer manager
+            const currentLayer = this.app.layerManager.getLayer(layer.id);
+            if (!currentLayer) {
+                console.error(`LayerPanel: Layer ${layer.id} no longer exists in layer manager!`);
+                return;
+            }
+            
+            if (currentLayer !== layer) {
+                console.warn(`LayerPanel: Layer object reference changed for ${layer.id}, using current reference`);
+                layer = currentLayer;
+            }
+            
             layer.visible = e.target.checked;
+            
+            // Update test controls status text if it exists
+            const testStatusText = item.querySelector('span[style*="font-size: 10px"][style*="color"]');
+            if (testStatusText) {
+                testStatusText.textContent = `Current: ${layer.visible ? 'Visible' : 'Hidden'}`;
+                testStatusText.style.color = layer.visible ? '#51cf66' : '#ff6b6b';
+            }
+            
+            // Force layer to update its internal state
+            if (layer.onVisibilityChanged) {
+                layer.onVisibilityChanged(e.target.checked);
+            }
+            
+            // Update the layer info display
             this.updateLayerInfo(layer);
+            
+            // Force a re-render by updating the layer manager
+            if (this.app.layerManager) {
+                this.app.layerManager.markLayerDirty(layer.id);
+            }
         };
 
         header.appendChild(name);
@@ -209,6 +272,81 @@ export class LayerPanel {
             const p5Controls = this.createP5Controls(layer);
             item.appendChild(p5Controls);
         }
+        
+        // Add test controls for debugging
+        const testControls = document.createElement('div');
+        testControls.style.cssText = `
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        `;
+        
+        const testButton = document.createElement('button');
+        testButton.textContent = 'Test Visibility Toggle';
+        testButton.style.cssText = `
+            padding: 5px 10px;
+            background: rgba(255, 100, 100, 0.3);
+            border: 1px solid rgba(255, 100, 100, 0.5);
+            border-radius: 4px;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            margin-right: 5px;
+        `;
+        
+        testButton.onclick = () => {
+            layer.visible = !layer.visible;
+            visibilityToggle.checked = layer.visible;
+            const statusText = item.querySelector('span[style*="font-size: 10px"][style*="color"]');
+            if (statusText) {
+                statusText.textContent = `Current: ${layer.visible ? 'Visible' : 'Hidden'}`;
+                statusText.style.color = layer.visible ? '#51cf66' : '#ff6b6b';
+            }
+            
+            // Force update
+            this.updateLayerInfo(layer);
+            if (this.app.layerManager) {
+                this.app.layerManager.markLayerDirty(layer.id);
+            }
+        };
+        
+        // Add debug button for P5 layers
+        if (layer.constructor.name === 'P5Layer') {
+            const debugButton = document.createElement('button');
+            debugButton.textContent = 'Debug Canvas';
+            debugButton.style.cssText = `
+                padding: 5px 10px;
+                background: rgba(100, 100, 255, 0.3);
+                border: 1px solid rgba(100, 100, 255, 0.5);
+                border-radius: 4px;
+                color: white;
+                font-size: 10px;
+                cursor: pointer;
+                margin-right: 5px;
+            `;
+            
+            debugButton.onclick = () => {
+                if (layer.getCanvasVisibilityState) {
+                    const canvasState = layer.getCanvasVisibilityState();
+                    alert(`Canvas State:\n${JSON.stringify(canvasState, null, 2)}`);
+                } else {
+                    console.log(`P5Layer ${layer.id}: getCanvasVisibilityState method not available`);
+                }
+            };
+            
+            testControls.appendChild(debugButton);
+        }
+        
+        const statusText = document.createElement('span');
+        statusText.textContent = `Current: ${layer.visible ? 'Visible' : 'Hidden'}`;
+        statusText.style.cssText = `
+            font-size: 10px;
+            color: ${layer.visible ? '#51cf66' : '#ff6b6b'};
+        `;
+        
+        testControls.appendChild(testButton);
+        testControls.appendChild(statusText);
+        item.appendChild(testControls);
 
         return item;
     }
@@ -412,9 +550,9 @@ export class LayerPanel {
                     opacitySlider.value = layer.opacity;
                 }
                 
-                // Update visibility checkbox
+                // Update visibility checkbox to ensure it's in sync
                 const visibilityToggle = item.querySelector('input[type="checkbox"]');
-                if (visibilityToggle) {
+                if (visibilityToggle && visibilityToggle.checked !== layer.visible) {
                     visibilityToggle.checked = layer.visible;
                 }
                 

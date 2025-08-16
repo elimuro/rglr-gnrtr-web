@@ -72,16 +72,16 @@ export class PresetManager {
      * Handle preset file loading with format detection
      * @param {File} file - The file to load
      */
-    handlePresetFileLoad(file) {
+    async handlePresetFileLoad(file) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const data = JSON.parse(e.target.result);
                 
                 // Check if it's a scene file (has settings property)
                 if (data.settings) {
                     // Delegate to scene management (App.js for now)
-                    this.app.loadSceneFile(data);
+                    await this.app.loadSceneFile(data);
                 } else {
                     // Assume it's a MIDI preset
                     this.loadPreset(file);

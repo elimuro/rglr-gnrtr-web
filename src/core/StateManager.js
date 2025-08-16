@@ -557,11 +557,28 @@ export class StateManager {
                 enableSizeAnimation: this.state.enableSizeAnimation
             }
         };
+
+        console.log('🔍 exportScene called, checking for layers...');
+        console.log('- this.state:', Object.keys(this.state));
+        console.log('- this.state.layerManager:', this.state.layerManager);
+        
+        // Add layer configuration if layerManager exists
+        if (this.state.layerManager && typeof this.state.layerManager.getConfig === 'function') {
+            console.log('✅ LayerManager found, getting config...');
+            const layerConfig = this.state.layerManager.getConfig();
+            console.log('✅ Layer config retrieved:', layerConfig);
+            sceneData.layers = layerConfig;
+            console.log('✅ Layer config added to scene:', sceneData.layers);
+        } else {
+            console.log('❌ LayerManager not found or getConfig not available:');
+            console.log('- this.state.layerManager:', this.state.layerManager);
+            console.log('- typeof getConfig:', this.state.layerManager ? typeof this.state.layerManager.getConfig : 'undefined');
+        }
         
         return sceneData;
     }
     
-    importScene(sceneData) {
+    async importScene(sceneData) {
         try {
             if (!sceneData || !sceneData.settings) {
                 throw new Error('Invalid scene data format');
@@ -575,7 +592,7 @@ export class StateManager {
         }
     }
 
-    importSceneWithInterpolation(sceneData, duration = 2.0, easing = "power2.inOut") {
+    async importSceneWithInterpolation(sceneData, duration = 2.0, easing = "power2.inOut") {
         try {
             if (!sceneData || !sceneData.settings) {
                 throw new Error('Invalid scene data format');
@@ -765,9 +782,22 @@ export class StateManager {
             // Sphere distortion parameter
             addInterpolation('sphereDistortionStrength', settings.sphereDistortionStrength, currentState.sphereDistortionStrength);
             
-
+            // Load layer configuration if present
+            if (sceneData.layers && this.state.layerManager && typeof this.state.layerManager.setConfig === 'function') {
+                try {
+                    console.log('Loading layer configuration:', sceneData.layers);
+                    await this.state.layerManager.setConfig(sceneData.layers);
+                } catch (error) {
+                    console.warn('Failed to load layer configuration:', error);
+                }
+            }
             
             // Create the interpolation animation
+            if (!this.interpolationTimeline) {
+                console.warn('Interpolation timeline is null, creating a new one');
+                this.interpolationTimeline = gsap.timeline();
+            }
+            
             this.interpolationTimeline.to(this.state, {
                 ...interpolationTargets,
                 duration: duration,
@@ -828,6 +858,12 @@ export class StateManager {
     }
 
     interpolateColor(key, fromColor, toColor, duration, easing = "power2.inOut") {
+        // Ensure timeline exists
+        if (!this.interpolationTimeline) {
+            console.warn('Interpolation timeline is null in interpolateColor, creating a new one');
+            this.interpolationTimeline = gsap.timeline();
+        }
+        
         // Convert hex colors to RGB for interpolation
         const fromRGB = this.hexToRgb(fromColor);
         const toRGB = this.hexToRgb(toColor);

@@ -107,7 +107,7 @@ export class SceneManager {
      * Load scene from file data
      * @param {Object} sceneData - The scene data to load
      */
-    loadSceneFile(sceneData) {
+    async loadSceneFile(sceneData) {
         try {
             // Get interpolation duration from UI
             const interpolationDurationInput = this.domCache.getElement('interpolation-duration');
@@ -117,7 +117,7 @@ export class SceneManager {
             const interpolationEasingSelect = this.domCache.getElement('interpolation-easing');
             const easing = interpolationEasingSelect ? interpolationEasingSelect.value : 'power2.inOut';
             
-            const success = this.state.importSceneWithInterpolation(sceneData, duration, easing);
+            const success = await this.state.importSceneWithInterpolation(sceneData, duration, easing);
             
             if (!success) {
                 console.error('Error loading scene. Please check the file format.');
@@ -532,13 +532,13 @@ export class SceneManager {
     /**
      * Import scene from JSON string
      * @param {string} jsonString - JSON string of scene data
-     * @returns {boolean} True if import was successful
+     * @returns {Promise<boolean>} True if import was successful
      */
-    importSceneFromString(jsonString) {
+    async importSceneFromString(jsonString) {
         try {
             const sceneData = JSON.parse(jsonString);
             if (this.validateScenePreset(sceneData)) {
-                this.loadSceneFile(sceneData);
+                await this.loadSceneFile(sceneData);
                 return true;
             }
             return false;

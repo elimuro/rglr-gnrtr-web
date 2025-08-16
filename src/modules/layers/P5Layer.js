@@ -29,8 +29,9 @@ export class P5Layer extends LayerBase {
         this.p5ParamHelper = null;
         
         // Performance settings
-        this.targetFPS = 60;
-        this.pauseWhenHidden = true;
+        this.targetFPS = config.targetFPS || 60;
+        this.pauseWhenHidden = config.pauseWhenHidden !== undefined ? config.pauseWhenHidden : true;
+        
     }
 
     /**
@@ -65,28 +66,20 @@ function draw() {
      */
     async onInitialize(context) {
         try {
-            console.log(`P5Layer ${this.id}: Starting initialization...`);
-            
             // Load p5.js if not already loaded
-            console.log(`P5Layer ${this.id}: Loading p5.js...`);
             await this.loadP5();
-            console.log(`P5Layer ${this.id}: p5.js loaded successfully`);
             
             // Create the p5Param helper
-            console.log(`P5Layer ${this.id}: Creating p5Param helper...`);
             this.createP5ParamHelper();
             
             // Load default sketch if none provided
             if (!this.sketchCode) {
-                console.log(`P5Layer ${this.id}: Loading default sketch...`);
                 this.sketchCode = await this.getDefaultSketch();
             }
             
             // Compile and run the initial sketch
-            console.log(`P5Layer ${this.id}: Compiling initial sketch...`);
             await this.compileAndRun(this.sketchCode);
             
-            console.log(`P5Layer ${this.id} initialized successfully`);
         } catch (error) {
             console.error(`Failed to initialize P5Layer ${this.id}:`, error);
             this.hasError = true;
@@ -216,7 +209,6 @@ function draw() {
             this.p5Instance = new window.p5(sketchFunction);
             
             this.isRunning = true;
-            console.log(`P5Layer ${this.id} sketch compiled and running`);
             
             // Refresh MIDI parameter dropdowns after compilation
             this.refreshMIDIControls();
@@ -236,8 +228,6 @@ function draw() {
      */
     createSketchFunction(code) {
         return (p) => {
-            console.log('P5 sketch function called with p:', p);
-            
             // Store reference to p5 instance
             this.p5Canvas = p;
             
@@ -246,8 +236,6 @@ function draw() {
             window.p5Param = this.p5ParamHelper;
             
             try {
-                console.log('Creating sketch function from code...');
-                
                 // Create a function that properly defines setup and draw on the p5 instance
                 const sketchFunc = new Function('p', 'p5Param', `
                     // Execute the user's sketch code within the p5 context
@@ -265,18 +253,14 @@ function draw() {
                 // Execute the sketch function
                 sketchFunc.call(this, p, this.p5ParamHelper);
                 
-                console.log('Sketch functions defined, setup:', typeof p.setup, 'draw:', typeof p.draw);
-                
                 // Set up canvas positioning after setup
                 const originalSetup = p.setup;
                 p.setup = () => {
-                    console.log('P5 setup() called, canvas will be created...');
                     if (originalSetup) {
                         originalSetup.call(p);
                     }
                     // Delay canvas setup to ensure canvas is created
                     setTimeout(() => {
-                        console.log('Setting up canvas overlay...');
                         this.setupCanvasOverlay();
                     }, 100);
                 };
@@ -314,11 +298,61 @@ function draw() {
         this.canvasElement.style.pointerEvents = 'none'; // Allow clicks to pass through
         this.canvasElement.style.opacity = this.opacity;
         
-        console.log('P5 Canvas overlay positioned:', this.canvasElement);
+        // Ensure initial visibility state is correct
+        this.forceCanvasVisibility(this.visible);
         
         // Make canvas responsive
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
+    }
+
+    /**
+     * Check the actual computed visibility state of the canvas
+     * @returns {Object} Object with computed visibility properties
+     */
+    getCanvasVisibilityState() {
+        if (!this.canvasElement) return { error: 'Canvas element not available' };
+        
+        const computedStyle = window.getComputedStyle(this.canvasElement);
+        return {
+            display: computedStyle.display,
+            visibility: computedStyle.visibility,
+            opacity: computedStyle.opacity,
+            width: computedStyle.width,
+            height: computedStyle.height,
+            position: computedStyle.position,
+            left: computedStyle.left,
+            top: computedStyle.top,
+            zIndex: computedStyle.zIndex
+        };
+    }
+
+    /**
+     * Force canvas visibility to match layer visibility state
+     * @param {boolean} isVisible - Whether the canvas should be visible
+     */
+    forceCanvasVisibility(isVisible) {
+        if (!this.canvasElement) return;
+        
+        if (isVisible) {
+            this.canvasElement.style.setProperty('display', 'block', 'important');
+            this.canvasElement.style.setProperty('visibility', 'visible', 'important');
+            this.canvasElement.style.setProperty('opacity', this.opacity.toString(), 'important');
+            this.canvasElement.style.setProperty('width', '100vw', 'important');
+            this.canvasElement.style.setProperty('height', '100vh', 'important');
+            this.canvasElement.style.setProperty('position', 'fixed', 'important');
+            this.canvasElement.style.setProperty('left', '0', 'important');
+            this.canvasElement.style.setProperty('top', '0', 'important');
+        } else {
+            this.canvasElement.style.setProperty('display', 'none', 'important');
+            this.canvasElement.style.setProperty('visibility', 'hidden', 'important');
+            this.canvasElement.style.setProperty('opacity', '0', 'important');
+            this.canvasElement.style.setProperty('width', '0px', 'important');
+            this.canvasElement.style.setProperty('height', '0px', 'important');
+            this.canvasElement.style.setProperty('position', 'absolute', 'important');
+            this.canvasElement.style.setProperty('left', '-9999px', 'important');
+            this.canvasElement.style.setProperty('top', '-9999px', 'important');
+        }
     }
 
     /**
@@ -355,8 +389,8 @@ function draw() {
         // P5 handles its own rendering loop
         // We just need to update visibility and opacity
         if (this.canvasElement) {
-            this.canvasElement.style.display = this.visible ? 'block' : 'none';
-            this.canvasElement.style.opacity = this.opacity;
+            // Force visibility state to match layer visibility with aggressive styling
+            this.forceCanvasVisibility(this.visible);
         }
     }
 
@@ -366,6 +400,54 @@ function draw() {
     onUpdate(deltaTime) {
         // P5 handles its own update loop
         // We could add performance monitoring here if needed
+    }
+
+    /**
+     * Handle visibility changes for P5 layer
+     * @param {boolean} isVisible - New visibility state
+     */
+    onVisibilityChanged(isVisible) {
+        // Immediately update canvas visibility with aggressive hiding
+        this.forceCanvasVisibility(isVisible);
+        
+        if (this.pauseWhenHidden) {
+            if (isVisible) {
+                // Resume the sketch when becoming visible
+                if (this.p5Instance && this.isRunning) {
+                    this.resumeSketch();
+                }
+            } else {
+                // Pause the sketch when becoming hidden
+                if (this.p5Instance && this.isRunning) {
+                    this.pauseSketch();
+                }
+            }
+        }
+        
+        // Call parent method
+        super.onVisibilityChanged(isVisible);
+    }
+
+    /**
+     * Pause the P5 sketch
+     */
+    pauseSketch() {
+        if (this.p5Instance && typeof this.p5Instance.noLoop === 'function') {
+            this.p5Instance.noLoop();
+        } else {
+            console.warn(`P5Layer ${this.id}: p5Instance or noLoop not available to pause sketch.`);
+        }
+    }
+
+    /**
+     * Resume the P5 sketch
+     */
+    resumeSketch() {
+        if (this.p5Instance && typeof this.p5Instance.loop === 'function') {
+            this.p5Instance.loop();
+        } else {
+            console.warn(`P5Layer ${this.id}: p5Instance or loop not available to resume sketch.`);
+        }
     }
 
     /**
@@ -386,7 +468,6 @@ function draw() {
             if (param.max !== undefined && actualValue > param.max) actualValue = param.max;
             
             param.value = actualValue;
-            console.log(`P5Layer ${this.id} parameter ${name} set to ${actualValue} (from normalized ${value})`);
         } else {
             console.warn(`P5Layer ${this.id}: Parameter ${name} not found`);
         }
@@ -411,12 +492,14 @@ function draw() {
      * Get layer configuration
      */
     onGetConfig() {
-        return {
+        const config = {
             code: this.sketchCode,
             targetFPS: this.targetFPS,
             pauseWhenHidden: this.pauseWhenHidden,
             parameters: Object.fromEntries(this.parameters)
         };
+        
+        return config;
     }
 
     /**
@@ -507,3 +590,4 @@ function draw() {
         return this.isRunning;
     }
 }
+

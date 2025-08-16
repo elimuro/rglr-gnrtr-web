@@ -32,6 +32,9 @@ export class LayerManager {
         
         // State change tracking
         this.lastStateHash = null;
+        
+        // Flag to prevent recursive calls during setConfig
+        this.isSettingConfig = false;
     }
 
     /**
@@ -49,8 +52,6 @@ export class LayerManager {
         
         // Set up state listeners
         this.setupStateListeners();
-        
-        console.log('LayerManager initialized with', this.layers.size, 'layers');
     }
 
     /**
@@ -78,7 +79,6 @@ export class LayerManager {
     async initializeLayerSystems() {
         // GridManager is handled separately as the foundation
         // This method is reserved for initializing additional layer types
-        console.log('LayerManager ready for additional layers (P5, Shader, Video, etc.)');
     }
 
     /**
@@ -87,6 +87,7 @@ export class LayerManager {
      * @param {Object} config - Layer configuration
      */
     async addP5Layer(layerId = 'p5', config = {}) {
+        
         const { P5Layer } = await import('./layers/P5Layer.js');
         
         const p5Layer = new P5Layer(layerId, {
@@ -97,6 +98,7 @@ export class LayerManager {
         });
         
         await this.addLayer(p5Layer);
+        
         return p5Layer;
     }
 
@@ -130,8 +132,6 @@ export class LayerManager {
         
         // Set up parameter routing
         this.setupLayerParameterRouting(layer);
-        
-        console.log(`Added layer: ${layer.id} (${layer.constructor.name})`);
     }
 
     /**
@@ -160,8 +160,6 @@ export class LayerManager {
             renderTarget.dispose();
             this.renderTargets.delete(layerId);
         }
-        
-        console.log(`Removed layer: ${layerId}`);
     }
 
     /**
@@ -186,8 +184,10 @@ export class LayerManager {
         
         this.layerOrder = validOrder;
         
-        // Update state
-        this.state.set('layerOrder', [...this.layerOrder]);
+        // Only update state if we're not in the middle of setConfig to prevent infinite recursion
+        if (!this.isSettingConfig) {
+            this.state.set('layerOrder', [...this.layerOrder]);
+        }
     }
 
     /**
@@ -320,6 +320,23 @@ export class LayerManager {
     }
 
     /**
+     * Mark a layer as dirty (needs re-render)
+     * @param {string} layerId - Layer ID to mark as dirty
+     */
+    markLayerDirty(layerId) {
+        const layer = this.layers.get(layerId);
+        if (layer) {
+            // Force a re-render by updating the layer's last render time
+            layer.lastRenderTime = 0;
+            
+            // Trigger a re-render if the app is running
+            if (this.app.animationLoop && this.app.animationLoop.isRunning) {
+                // The animation loop will pick up the change on the next frame
+            }
+        }
+    }
+
+    /**
      * Get layer by ID
      * @param {string} layerId - Layer ID
      * @returns {LayerBase|null} Layer instance or null
@@ -376,19 +393,43 @@ export class LayerManager {
      * @param {Object} config - Layer system configuration
      */
     async setConfig(config) {
+        if (this.isSettingConfig) {
+            console.warn('Skipping state update during setConfig to prevent infinite recursion.');
+            return;
+        }
+        this.isSettingConfig = true;
+
         if (config.layerOrder) {
             this.setLayerOrder(config.layerOrder);
         }
         
         if (config.layers) {
-            // Update existing layers
-            Object.entries(config.layers).forEach(([layerId, layerConfig]) => {
-                const layer = this.layers.get(layerId);
+            // Update existing layers or create new ones
+            for (const [layerId, layerConfig] of Object.entries(config.layers)) {
+                let layer = this.layers.get(layerId);
+                
                 if (layer) {
+                    // Layer exists, update its configuration
                     layer.setConfig(layerConfig);
+                } else {
+                    // Layer doesn't exist, create it based on type
+                    if (layerConfig.type === 'P5Layer' || layerId === 'p5') {
+                        try {
+                            layer = await this.addP5Layer(layerId, layerConfig);
+                            // After creating the layer, call setConfig to restore the full configuration
+                            if (layer) {
+                                layer.setConfig(layerConfig);
+                            }
+                        } catch (error) {
+                            console.error(`Failed to create P5 layer ${layerId}:`, error);
+                        }
+                    }
+                    // Add other layer types here as they're implemented
+                    // else if (layerConfig.type === 'ShaderLayer') { ... }
                 }
-            });
+            }
         }
+        this.isSettingConfig = false;
     }
 
     /**
@@ -417,7 +458,5 @@ export class LayerManager {
             }
         });
         this.eventListeners = [];
-        
-        console.log('LayerManager disposed');
     }
 }
