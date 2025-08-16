@@ -157,6 +157,7 @@ export class P5CodeEditor {
                             <select id="p5-sketch-selector" class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white">
                                 <option value="default-sketch.js">Default Sketch</option>
                                 <option value="flocking.js">Flocking</option>
+                                <option value="grid-lines-animation.js">Grid Lines Animation</option>
                             </select>
                             <button id="p5-editor-load-sketch" class="btn btn-primary btn-sm">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -613,7 +614,11 @@ export class P5CodeEditor {
             // In the future, this could be an API endpoint that scans the sketches folder
             const availableSketches = [
                 { value: 'default-sketch.js', label: 'Default Sketch' },
-                { value: 'flocking.js', label: 'Flocking' }
+                { value: 'flocking.js', label: 'Flocking' },
+                { value: 'grid-lines-animation.js', label: 'Grid Lines Animation' },
+                { value: 'physarum-emergent.js', label: 'Physarum Emergent' },
+                { value: 'physarum-advanced.js', label: 'Physarum Advanced' },
+                { value: 'flocking-emergent.js', label: 'Flocking Emergent' }
             ];
             
             return availableSketches;

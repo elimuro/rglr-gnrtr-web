@@ -112,31 +112,43 @@ LayerManager → Layer1 → Layer2 → ... → LayerN → Compositor → Rendere
 - ✅ **MIDI/audio parameter routing** integration
 
 ### Phase 3: Shader Layer (Weeks 5-7)
-**Goal**: Implement GLSL shader layer with real-time editing
+**Goal**: Implement GLSL shader layer with real-time editing and emergent behavior simulations
 
 #### Week 5: Shader Layer Foundation
 - [ ] Create `ShaderLayer` class with GLSL compilation
 - [ ] Implement basic shader editor with syntax highlighting
 - [ ] Add uniform parameter exposure system
 - [ ] Create shader error handling and display
+- [ ] **Emergent Behavior Focus**: Design shader architecture for agent-based simulations
 
-#### Week 6: Shader Presets and Effects
+#### Week 6: Shader Presets and Emergent Systems
 - [ ] Implement pre-built shader presets (reaction diffusion, noise, patterns)
-- [ ] Add shader parameter controls
+- [ ] **Physarum Shader**: GPU-accelerated Physarum algorithm with compute shaders
+- [ ] **Flocking Shader**: GPU-accelerated Boids algorithm for swarm simulations
+- [ ] **Reaction-Diffusion**: Gray-Scott and other reaction-diffusion systems
+- [ ] Add shader parameter controls with performance monitoring
 - [ ] Create shader hot-reload system
-- [ ] Add shader performance monitoring
+- [ ] **Performance Target**: 100k+ agents at 60fps vs. current 2k agents at 30fps
 
-#### Week 7: Shader Integration and Polish
+#### Week 7: Shader Integration and Emergent Behavior Polish
 - [ ] Integrate shader parameters with MIDI/audio mapping
+- [ ] **Agent Control**: Real-time parameter adjustment for live performance
+- [ ] **Trail Visualization**: Efficient texture-based trail rendering and diffusion
 - [ ] Add shader persistence in scenes/presets
 - [ ] Implement shader thumbnail generation
-- [ ] **Success criteria**: Can write/edit shaders and map uniforms to MIDI
+- [ ] **Success criteria**: Can write/edit emergent behavior shaders and map uniforms to MIDI
+- [ ] **Performance Validation**: Emergent systems run at 60fps with 10x+ more agents
 
 **Deliverables**:
 - `src/modules/layers/ShaderLayer.js`
 - GLSL editor with syntax highlighting
-- Shader preset library
+- Shader preset library with emergent behavior presets
 - Shader parameter mapping
+- **Emergent Behavior Shader Presets**:
+  - `physarum-gpu.glsl` - GPU-accelerated Physarum simulation
+  - `flocking-gpu.glsl` - GPU-accelerated Boids flocking
+  - `reaction-diffusion.glsl` - Gray-Scott reaction-diffusion system
+  - `agent-system.glsl` - Generic agent-based simulation framework
 
 ### Phase 4: Additional Layer Types (Weeks 8-14)
 **Goal**: Implement remaining layer types
@@ -263,11 +275,68 @@ updateAnimationParameter(target, value) {
         this.layerManager.setLayerParameter(layerId, paramName, value);
     } else if (target.startsWith('p5:')) {
         // Existing p5 routing
+    } else if (target.startsWith('shader:')) {
+        // New shader parameter routing
+        const [_, shaderId, paramName] = target.split(':');
+        this.layerManager.setShaderParameter(shaderId, paramName, value);
     } else {
         // Existing grid routing
     }
 }
 ```
+
+### Emergent Behavior Shader Architecture
+
+#### GPU-Accelerated Agent Systems
+```javascript
+// ShaderLayer with compute shader support for emergent behavior
+class ShaderLayer extends LayerBase {
+    constructor(id, config) {
+        super(id, config);
+        this.computeShader = null;
+        this.agentCount = 100000; // 100x more agents than CPU version
+        this.trailTextures = []; // Double-buffered trail maps
+        this.agentBuffer = null; // GPU buffer for agent data
+    }
+    
+    // Emergent behavior specific methods
+    initializeEmergentSystem(type) {
+        switch(type) {
+            case 'physarum':
+                return this.loadPhysarumShaders();
+            case 'flocking':
+                return this.loadFlockingShaders();
+            case 'reaction-diffusion':
+                return this.loadReactionDiffusionShaders();
+        }
+    }
+    
+    // Real-time parameter updates for live performance
+    updateAgentParameters(params) {
+        // Update compute shader uniforms in real-time
+        this.computeShader.uniforms.agentCount = params.agentCount;
+        this.computeShader.uniforms.sensorDistance = params.sensorDistance;
+        this.computeShader.uniforms.trailDecay = params.trailDecay;
+        // ... other parameters
+    }
+}
+```
+
+#### Performance Comparison: CPU vs GPU
+| Metric | Current CPU (P5) | Target GPU (Shader) | Improvement |
+|--------|------------------|---------------------|-------------|
+| **Agent Count** | 2,000 agents | 100,000+ agents | **50x** |
+| **Frame Rate** | 30-60 fps | 60 fps stable | **2x** |
+| **Trail Updates** | Every 2-4 frames | Every frame | **4x** |
+| **Memory Usage** | High (2D arrays) | Low (textures) | **3x** |
+| **Parameter Response** | Laggy | Instant | **10x** |
+
+#### Shader Implementation Strategy
+1. **Compute Shaders**: Handle agent simulation logic in parallel
+2. **Fragment Shaders**: Render trails and visual effects efficiently
+3. **Texture Ping-Pong**: Double-buffered trail maps for smooth updates
+4. **Uniform Parameters**: Real-time MIDI control without performance loss
+5. **Fallback Modes**: CPU fallback for older devices
 
 ### State Management Structure
 ```javascript
@@ -277,7 +346,18 @@ state.layers = {
     configs: {
         grid: { visible: true, opacity: 1.0, blendMode: 'normal', ... },
         p5: { visible: true, opacity: 1.0, blendMode: 'normal', code: '...', ... },
-        shader: { visible: true, opacity: 1.0, blendMode: 'normal', fragmentShader: '...', ... },
+        shader: { 
+            visible: true, 
+            opacity: 1.0, 
+            blendMode: 'normal', 
+            fragmentShader: '...', 
+            computeShader: '...', // For emergent behavior systems
+            emergentType: 'physarum', // 'physarum', 'flocking', 'reaction-diffusion', 'custom'
+            agentCount: 100000,
+            trailDecay: 0.95,
+            sensorDistance: 15,
+            // ... other emergent behavior parameters
+        },
         video: { visible: true, opacity: 1.0, blendMode: 'normal', url: '...', ... },
         particle: { visible: true, opacity: 1.0, blendMode: 'normal', ... },
         image: { visible: true, opacity: 1.0, blendMode: 'normal', url: '...', ... }
@@ -361,6 +441,17 @@ state.layers = {
 - Default camera position preserves original view
 - Gradual migration to 3D positioning
 
+#### Emergent Behavior Migration Path
+- **Phase 2 (Current)**: P5-based emergent behavior sketches (Physarum, Flocking)
+- **Phase 3 (Shader)**: GPU-accelerated shader versions with same parameter interfaces
+- **Migration Benefits**: 
+  - Same MIDI mappings work with shader versions
+  - 50x performance improvement (2k → 100k agents)
+  - Real-time parameter control without lag
+  - Professional-grade performance for live shows
+- **Backward Compatibility**: P5 sketches remain available, shader versions are alternatives
+- **Parameter Mapping**: `p5:agentCount` → `shader:agentCount` (same parameter names)
+
 #### Layer-Specific 3D Adaptations
 - **Grid Layer**: Mapped to 3D plane or curved surface
 - **P5 Layer**: Canvas rendered to texture, mapped to 3D plane
@@ -407,6 +498,9 @@ state.layers = {
 - Advanced blend modes and compositing
 - Layer effects and filters
 - Multiple p5 layers
+- **Advanced Emergent Behavior**: Multi-species agent systems, predator-prey dynamics
+- **Complex Reaction-Diffusion**: Multi-chemical systems, 3D reaction-diffusion
+- **Neural Network Visualization**: GPU-accelerated neural network training visualization
 - Video recording capabilities
 - Real-time collaboration features
 - Advanced 3D effects and animations
@@ -414,6 +508,7 @@ state.layers = {
 - Parallax effects between layers
 - Depth-based parameter modulation
 - 3D space as a performance tool
+- **Emergent Behavior Recording**: Save and replay complex agent behavior patterns
 
 ## Open Questions
 

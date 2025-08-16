@@ -121,6 +121,10 @@
                 <ul>
                     <li><strong>Default Sketch:</strong> Simple animated circle with basic parameters</li>
                     <li><strong>Flocking:</strong> Advanced particle system with flocking behavior</li>
+                    <li><strong>Grid Lines Animation:</strong> Grid-based line animation with center scaling effects</li>
+                                         <li><strong>Physarum Emergent:</strong> Classic Physarum algorithm for organic networks (with performance controls)</li>
+                     <li><strong>Physarum Advanced:</strong> Enhanced Physarum with 36 Points techniques (with performance controls)</li>
+                     <li><strong>Flocking Emergent:</strong> Boids algorithm for natural flocking behavior (with performance controls)</li>
                 </ul>
                 
                 <div class="help-note">
@@ -201,7 +205,89 @@ function windowResized() {
                     <p><strong>Best for:</strong> Advanced users, complex animations, studying particle systems</p>
                 </div>
                 
-                <h3 class="help-h3">Preset Manager Benefits</h3>
+                <div class="p5-example">
+                    <h4>🔲 Grid Lines Animation</h4>
+                    <p><strong>Purpose:</strong> Grid-based line animation system with center scaling effects</p>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Configurable grid of animated vertical and horizontal lines</li>
+                        <li>Center scaling effects similar to the main grid layer system</li>
+                        <li>Multiple animation types: Complex Wave, Radial Pulse, Spiral, Chaos</li>
+                        <li>Curve falloff patterns: Linear, Exponential, Logarithmic, Sine</li>
+                        <li>Color variation based on scaling and position</li>
+                        <li>Glow effects for intense scaling</li>
+                        <li>Interactive controls: mouse click to add lines, keyboard shortcuts</li>
+                    </ul>
+                    <p><strong>Best for:</strong> Grid-based visual effects, center-focused animations, studying scaling algorithms, creating rhythmic patterns</p>
+                </div>
+                
+                <div class="p5-example">
+                    <h4>🌱 Physarum Emergent</h4>
+                    <p><strong>Purpose:</strong> Classic Physarum polycephalum algorithm for organic network formation</p>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Agent-based movement with trail deposition and diffusion</li>
+                        <li>Organic network formation through emergent behavior</li>
+                        <li>Configurable sensing, movement, and trail parameters</li>
+                        <li>Real-time parameter adjustment for live performance</li>
+                        <li>Efficient pixel-based trail rendering</li>
+                        <li>Life cycle management with agent respawning</li>
+                    </ul>
+                    <p><strong>Best for:</strong> Organic animations, network patterns, studying emergent behavior, live visual performance</p>
+                </div>
+                
+                <div class="p5-example">
+                    <h4>🌀 Physarum Advanced</h4>
+                    <p><strong>Purpose:</strong> Enhanced Physarum with 36 Points techniques and dynamic parameter variation</p>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Dynamic parameter variation based on local trail values</li>
+                        <li>Multiple behavior presets: Classic, Branching, Swirling, Chaotic</li>
+                        <li>Enhanced trail system with delayed maps for color variation</li>
+                        <li>Velocity effects and center attraction</li>
+                        <li>Advanced emergent behaviors and complex patterns</li>
+                        <li>Professional-grade parameter control system</li>
+                    </ul>
+                    <p><strong>Best for:</strong> Advanced emergent systems, complex organic patterns, research and experimentation, professional installations</p>
+                </div>
+                
+                <div class="p5-example">
+                    <h4>🦅 Flocking Emergent</h4>
+                    <p><strong>Purpose:</strong> Craig Reynolds' Boids algorithm for natural flocking behavior</p>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Three core flocking rules: separation, alignment, and cohesion</li>
+                        <li>Obstacle avoidance and environmental interaction</li>
+                        <li>Swarm intelligence and collective behavior</li>
+                        <li>Configurable behavior weights and perception ranges</li>
+                        <li>Directional visualization with velocity-based coloring</li>
+                        <li>Dynamic group formation and navigation</li>
+                    </ul>
+                                         <p><strong>Best for:</strong> Natural movement patterns, swarm simulations, studying collective behavior, creating organic motion</p>
+                 </div>
+                 
+                 <h3 class="help-h3">Performance Optimization</h3>
+                 
+                 <div class="help-note">
+                     <strong>Performance Mode Control:</strong> All emergent behavior sketches now include performance controls to balance quality vs. speed.
+                 </div>
+                 
+                 <h4>Performance Modes:</h4>
+                 <ul>
+                     <li><strong>Mode 0 (Full Quality):</strong> 60fps updates, full trail effects, maximum detail</li>
+                     <li><strong>Mode 1 (Medium Quality):</strong> 30fps updates, reduced trail updates, balanced performance</li>
+                     <li><strong>Mode 2 (Ultra Performance):</strong> 15fps updates, minimal trail effects, maximum speed</li>
+                 </ul>
+                 
+                 <h4>Performance Tips:</h4>
+                 <ul>
+                     <li><strong>Reduce Agent Count:</strong> Lower agent/boid counts for better performance</li>
+                     <li><strong>Use Performance Mode:</strong> Switch to Mode 1 or 2 for live performance</li>
+                     <li><strong>Monitor FPS:</strong> Watch the FPS counter in the sketch info</li>
+                     <li><strong>Close Other Tabs:</strong> Free up system resources for better performance</li>
+                 </ul>
+                 
+                 <h3 class="help-h3">Preset Manager Benefits</h3>
                 
                 <table class="parameter-table">
                     <thead>
