@@ -1,8 +1,8 @@
 /**
- * LayerBase.js - Abstract Base Class for All Layers
+ * LayerBase.js - Enhanced Abstract Base Class for All Layers
  * This module provides the foundation for all layer types in the layer system.
- * It defines the common interface, lifecycle methods, and state management
- * that all layers must implement.
+ * Enhanced to support Three.js mesh integration, 3D positioning, and advanced layer management.
+ * It defines the common interface, lifecycle methods, and state management that all layers must implement.
  */
 
 import * as THREE from 'three';
@@ -15,6 +15,17 @@ export class LayerBase {
         this.blendMode = config.blendMode || 'normal';
         this.zOffset = config.zOffset !== undefined ? config.zOffset : 0; // Z-space distance from camera
         this.renderTarget = null;
+        
+        // Enhanced: Three.js integration
+        this.mesh = null; // THREE.Mesh for this layer
+        this.geometry = null; // THREE.Geometry for this layer
+        this.material = null; // THREE.Material for this layer
+        this.texture = null; // THREE.Texture for this layer (if applicable)
+        
+        // 3D transformation properties
+        this.position = new THREE.Vector3(0, 0, 0);
+        this.rotation = new THREE.Euler(0, 0, 0);
+        this.scale = new THREE.Vector3(1, 1, 1);
         
         // Layer state
         this.initialized = false;
@@ -29,6 +40,9 @@ export class LayerBase {
         
         // Event listeners
         this.eventListeners = [];
+        
+        // Layer manager reference (set by LayerManager)
+        this.layerManager = null;
     }
 
     /**
@@ -111,13 +125,32 @@ export class LayerBase {
     }
 
     /**
-     * Dispose of the layer and clean up resources
+     * Dispose of the layer and clean up resources (enhanced with Three.js cleanup)
      */
     dispose() {
         if (this.disposed) return;
         
         try {
             this.onDispose();
+            
+            // Enhanced: Clean up Three.js resources
+            if (this.texture) {
+                this.texture.dispose();
+                this.texture = null;
+            }
+            
+            if (this.material) {
+                this.material.dispose();
+                this.material = null;
+            }
+            
+            if (this.geometry) {
+                this.geometry.dispose();
+                this.geometry = null;
+            }
+            
+            // Note: mesh cleanup is handled by LayerManager when removing from scene
+            this.mesh = null;
             
             // Clean up event listeners
             this.eventListeners.forEach(({ element, event, handler }) => {
@@ -132,6 +165,8 @@ export class LayerBase {
             
             this.disposed = true;
             this.initialized = false;
+            
+            console.log(`LayerBase: Disposed layer ${this.id} with Three.js cleanup`);
         } catch (error) {
             console.error(`Error disposing layer ${this.id}:`, error);
         }
@@ -370,11 +405,119 @@ export class LayerBase {
     }
 
     /**
-     * Set z-offset value
+     * Set z-offset value (enhanced with mesh support)
      * @param {number} zOffset - New z-offset value
      */
     setZOffset(zOffset) {
         this.zOffset = zOffset;
+        
+        // Enhanced: Update mesh position if available
+        if (this.mesh) {
+            // Note: LayerManager handles z-positioning, this is for manual override
+            this.mesh.position.z = -zOffset; // Negative for proper depth ordering
+        }
+    }
+
+    /**
+     * Set 3D position for this layer
+     * @param {number|Object} x - X position or position object {x, y, z}
+     * @param {number} y - Y position (if x is number)
+     * @param {number} z - Z position (if x is number)
+     */
+    setPosition(x, y, z) {
+        if (typeof x === 'object') {
+            // Object notation: setPosition({x: 1, y: 2, z: 3})
+            if (x.x !== undefined) this.position.x = x.x;
+            if (x.y !== undefined) this.position.y = x.y;
+            if (x.z !== undefined) this.position.z = x.z;
+        } else {
+            // Individual parameters: setPosition(1, 2, 3)
+            if (x !== undefined) this.position.x = x;
+            if (y !== undefined) this.position.y = y;
+            if (z !== undefined) this.position.z = z;
+        }
+        
+        // Update mesh if available
+        if (this.mesh) {
+            this.mesh.position.copy(this.position);
+        }
+    }
+
+    /**
+     * Set 3D rotation for this layer
+     * @param {number|Object} x - X rotation or rotation object {x, y, z}
+     * @param {number} y - Y rotation (if x is number)
+     * @param {number} z - Z rotation (if x is number)
+     */
+    setRotation(x, y, z) {
+        if (typeof x === 'object') {
+            // Object notation: setRotation({x: 0, y: Math.PI/2, z: 0})
+            if (x.x !== undefined) this.rotation.x = x.x;
+            if (x.y !== undefined) this.rotation.y = x.y;
+            if (x.z !== undefined) this.rotation.z = x.z;
+        } else {
+            // Individual parameters: setRotation(0, Math.PI/2, 0)
+            if (x !== undefined) this.rotation.x = x;
+            if (y !== undefined) this.rotation.y = y;
+            if (z !== undefined) this.rotation.z = z;
+        }
+        
+        // Update mesh if available
+        if (this.mesh) {
+            this.mesh.rotation.copy(this.rotation);
+        }
+    }
+
+    /**
+     * Set 3D scale for this layer
+     * @param {number|Object} x - X scale or scale object {x, y, z}
+     * @param {number} y - Y scale (if x is number)
+     * @param {number} z - Z scale (if x is number)
+     */
+    setScale(x, y, z) {
+        if (typeof x === 'object') {
+            // Object notation: setScale({x: 2, y: 2, z: 1})
+            if (x.x !== undefined) this.scale.x = x.x;
+            if (x.y !== undefined) this.scale.y = x.y;
+            if (x.z !== undefined) this.scale.z = x.z;
+        } else if (typeof x === 'number' && y === undefined && z === undefined) {
+            // Uniform scale: setScale(2)
+            this.scale.set(x, x, x);
+        } else {
+            // Individual parameters: setScale(2, 2, 1)
+            if (x !== undefined) this.scale.x = x;
+            if (y !== undefined) this.scale.y = y;
+            if (z !== undefined) this.scale.z = z;
+        }
+        
+        // Update mesh if available
+        if (this.mesh) {
+            this.mesh.scale.copy(this.scale);
+        }
+    }
+
+    /**
+     * Get current 3D position
+     * @returns {THREE.Vector3} Current position
+     */
+    getPosition() {
+        return this.position.clone();
+    }
+
+    /**
+     * Get current 3D rotation
+     * @returns {THREE.Euler} Current rotation
+     */
+    getRotation() {
+        return this.rotation.clone();
+    }
+
+    /**
+     * Get current 3D scale
+     * @returns {THREE.Vector3} Current scale
+     */
+    getScale() {
+        return this.scale.clone();
     }
 
     /**

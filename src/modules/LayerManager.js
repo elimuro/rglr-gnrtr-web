@@ -1,10 +1,11 @@
 /**
- * LayerManager.js - Layer System Coordinator
- * This module manages the layer system, handling layer ordering, rendering sequence,
- * visibility, performance, and providing a unified parameter interface for all layers.
- * It coordinates between the existing grid system and new layer types.
+ * LayerManager.js - Enhanced Layer System Coordinator
+ * This module manages the layer system with Three.js native integration, handling layer ordering, 
+ * rendering sequence, visibility, performance, and providing a unified parameter interface for all layers.
+ * Enhanced to support both P5.js texture layers and GLSL shader layers with 3D positioning.
  */
 
+import * as THREE from 'three';
 import { LayerBase } from './layers/LayerBase.js';
 
 export class LayerManager {
@@ -12,33 +13,41 @@ export class LayerManager {
         this.app = app;
         this.state = app.state;
         
-        // Layer registry
+        // Layer registry (existing)
         this.layers = new Map();
         this.layerOrder = [];
         
-        // Rendering state
+        // Enhanced Three.js integration
+        this.layerScene = null; // THREE.Group container for all layers
+        this.layerSpacing = 0.1; // Z-spacing between layers for 2D-like appearance
+        this.maxLayers = 32; // Three.js layer limit
+        
+        // Rendering state (existing)
         this.renderTargets = new Map();
         this.compositor = null;
         
-        // Performance tracking
+        // Performance tracking (existing)
         this.totalRenderTime = 0;
         this.layerRenderTimes = new Map();
         
-        // Context for layer initialization
+        // Context for layer initialization (existing)
         this.context = null;
         
-        // Event listeners
+        // Event listeners (existing)
         this.eventListeners = [];
         
-        // State change tracking
+        // State change tracking (existing)
         this.lastStateHash = null;
         
-        // Flag to prevent recursive calls during setConfig
+        // Flag to prevent recursive calls during setConfig (existing)
         this.isSettingConfig = false;
+        
+        // Layer type registry for dynamic creation
+        this.layerTypes = new Map();
     }
 
     /**
-     * Initialize the layer manager
+     * Initialize the enhanced layer manager
      * @param {Object} context - Context object with scene, renderer, etc.
      */
     async initialize(context) {
@@ -46,6 +55,12 @@ export class LayerManager {
         
         // Add app reference to context for layers that need it
         this.context.app = this.app;
+        
+        // Initialize Three.js layer scene container
+        this.initializeLayerScene();
+        
+        // Register available layer types
+        this.registerLayerTypes();
         
         // Initialize compositor for layer blending
         this.initializeCompositor();
@@ -58,11 +73,44 @@ export class LayerManager {
             layer.initialize(this.context)
         ));
         
-        // Set initial z-positions
+        // Set initial 3D z-positions
         this.updateLayerZPositions();
         
         // Set up state listeners
         this.setupStateListeners();
+    }
+
+    /**
+     * Initialize Three.js layer scene container
+     */
+    initializeLayerScene() {
+        // Create a THREE.Group to contain all layers
+        this.layerScene = new THREE.Group();
+        this.layerScene.name = 'LayerScene';
+        
+        // Add to main scene if available
+        if (this.context && this.context.scene) {
+            this.context.scene.add(this.layerScene);
+            console.log('LayerManager: Layer scene container added to main scene');
+        } else if (this.app.scene && this.app.scene.scene) {
+            this.app.scene.scene.add(this.layerScene);
+            console.log('LayerManager: Layer scene container added to app scene');
+        } else {
+            console.warn('LayerManager: No scene available for layer container');
+        }
+    }
+
+    /**
+     * Register available layer types for dynamic creation
+     */
+    registerLayerTypes() {
+        // Register layer types that can be dynamically created
+        this.layerTypes.set('P5Layer', () => import('./layers/P5Layer.js'));
+        this.layerTypes.set('P5TextureLayer', () => import('./layers/P5TextureLayer.js'));
+        this.layerTypes.set('ShaderLayer', () => import('./layers/ShaderLayer.js'));
+        this.layerTypes.set('GridLayer', () => import('./layers/GridLayer.js'));
+        
+        console.log('LayerManager: Registered layer types:', Array.from(this.layerTypes.keys()));
     }
 
     /**
@@ -115,12 +163,11 @@ export class LayerManager {
     }
 
     /**
-     * Add a P5 layer
+     * Add a P5 layer (legacy DOM overlay - will be deprecated)
      * @param {string} layerId - Layer ID
      * @param {Object} config - Layer configuration
      */
     async addP5Layer(layerId = 'p5', config = {}) {
-        
         const { P5Layer } = await import('./layers/P5Layer.js');
         
         const p5Layer = new P5Layer(layerId, {
@@ -131,12 +178,94 @@ export class LayerManager {
         });
         
         await this.addLayer(p5Layer);
-        
         return p5Layer;
     }
 
     /**
-     * Add a layer to the system
+     * Add a P5 Texture layer (Three.js integrated)
+     * @param {string} layerId - Layer ID
+     * @param {Object} config - Layer configuration
+     */
+    async addP5TextureLayer(layerId = 'p5texture', config = {}) {
+        try {
+            const { P5TextureLayer } = await import('./layers/P5TextureLayer.js');
+            
+            const p5TextureLayer = new P5TextureLayer(layerId, {
+                visible: true,
+                opacity: 1.0,
+                blendMode: 'normal',
+                width: config.width || window.innerWidth,
+                height: config.height || window.innerHeight,
+                ...config
+            });
+            
+            await this.addLayer(p5TextureLayer);
+            return p5TextureLayer;
+        } catch (error) {
+            console.error(`Failed to create P5TextureLayer ${layerId}:`, error);
+            // Fallback to regular P5Layer
+            console.log('Falling back to regular P5Layer');
+            return this.addP5Layer(layerId, config);
+        }
+    }
+
+    /**
+     * Add a Shader layer
+     * @param {string} layerId - Layer ID
+     * @param {Object} config - Layer configuration
+     */
+    async addShaderLayer(layerId = 'shader', config = {}) {
+        try {
+            const { ShaderLayer } = await import('./layers/ShaderLayer.js');
+            
+            const shaderLayer = new ShaderLayer(layerId, {
+                visible: true,
+                opacity: 1.0,
+                blendMode: 'normal',
+                ...config
+            });
+            
+            await this.addLayer(shaderLayer);
+            return shaderLayer;
+        } catch (error) {
+            console.error(`Failed to create ShaderLayer ${layerId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Add a layer by type name (dynamic layer creation)
+     * @param {string} layerType - Type of layer to create
+     * @param {string} layerId - Layer ID
+     * @param {Object} config - Layer configuration
+     */
+    async addLayerByType(layerType, layerId, config = {}) {
+        const layerImport = this.layerTypes.get(layerType);
+        if (!layerImport) {
+            throw new Error(`Unknown layer type: ${layerType}`);
+        }
+
+        try {
+            const module = await layerImport();
+            const LayerClass = module[layerType];
+            
+            const layer = new LayerClass(layerId, {
+                visible: true,
+                opacity: 1.0,
+                blendMode: 'normal',
+                ...config
+            });
+            
+            await this.addLayer(layer);
+            return layer;
+        } catch (error) {
+            console.error(`Failed to create ${layerType} layer ${layerId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Add a layer to the system (enhanced with Three.js integration)
      * @param {LayerBase} layer - Layer instance
      */
     async addLayer(layer) {
@@ -163,17 +292,37 @@ export class LayerManager {
             this.layerOrder.push(layer.id);
         }
         
+        // Enhanced: Add layer mesh to Three.js scene if available
+        if (layer.mesh && this.layerScene) {
+            this.layerScene.add(layer.mesh);
+            console.log(`LayerManager: Added ${layer.id} mesh to layer scene`);
+        }
+        
+        // Update 3D positioning for all layers
+        this.updateLayerZPositions();
+        
         // Set up parameter routing
         this.setupLayerParameterRouting(layer);
+        
+        // Update state if not in config setting mode
+        if (!this.isSettingConfig) {
+            this.state.set('layerOrder', [...this.layerOrder]);
+        }
     }
 
     /**
-     * Remove a layer from the system
+     * Remove a layer from the system (enhanced with Three.js cleanup)
      * @param {string} layerId - Layer ID
      */
     async removeLayer(layerId) {
         const layer = this.layers.get(layerId);
         if (!layer) return;
+        
+        // Enhanced: Remove layer mesh from Three.js scene
+        if (layer.mesh && this.layerScene) {
+            this.layerScene.remove(layer.mesh);
+            console.log(`LayerManager: Removed ${layerId} mesh from layer scene`);
+        }
         
         // Dispose the layer
         layer.dispose();
@@ -187,11 +336,19 @@ export class LayerManager {
             this.layerOrder.splice(orderIndex, 1);
         }
         
+        // Update 3D positioning for remaining layers
+        this.updateLayerZPositions();
+        
         // Clean up render target
         if (this.renderTargets.has(layerId)) {
             const renderTarget = this.renderTargets.get(layerId);
             renderTarget.dispose();
             this.renderTargets.delete(layerId);
+        }
+        
+        // Update state if not in config setting mode
+        if (!this.isSettingConfig) {
+            this.state.set('layerOrder', [...this.layerOrder]);
         }
     }
 
@@ -513,25 +670,98 @@ export class LayerManager {
     }
 
     /**
-     * Update z-positions of all layers based on their order
-     * This ensures proper depth separation and prevents z-fighting
+     * Update 3D z-positions of all layers based on their order
+     * Enhanced for Three.js integration with proper depth separation and z-fighting prevention
      */
     updateLayerZPositions() {
-        const baseZSpacing = 10; // Distance between layers in z-space
+        console.log(`LayerManager: Updating z-positions for ${this.layerOrder.length} layers`);
         
         this.layerOrder.forEach((layerId, index) => {
             const layer = this.layers.get(layerId);
             if (layer) {
-                // Calculate z-position: first layer is closest, last layer is farthest
-                const zPosition = index * baseZSpacing;
-                layer.setZOffset(zPosition);
+                // Calculate z-position: first layer (index 0) is closest to camera (z = 0)
+                // Each subsequent layer is further away (negative z)
+                const zPosition = -index * this.layerSpacing;
                 
-                // Update 3D objects if this is a grid layer
+                // Set layer's internal z-offset (for compatibility)
+                layer.setZOffset(Math.abs(zPosition));
+                
+                // Enhanced: Update Three.js mesh position if available
+                if (layer.mesh) {
+                    layer.mesh.position.z = zPosition;
+                    layer.mesh.renderOrder = this.layerOrder.length - index; // Higher render order = rendered last
+                    
+                    // Set Three.js layer for advanced culling (optional)
+                    if (index < this.maxLayers) {
+                        layer.mesh.layers.set(index);
+                    }
+                    
+                    console.log(`LayerManager: ${layerId} positioned at z=${zPosition}, renderOrder=${layer.mesh.renderOrder}`);
+                }
+                
+                // Legacy: Update 3D objects if this is a grid layer
                 if (layerId === 'grid' && this.app.scene && this.app.scene.gridManager) {
-                    this.updateGridZPosition(zPosition);
+                    this.updateGridZPosition(Math.abs(zPosition));
                 }
             }
         });
+    }
+
+    /**
+     * Set 3D position for a specific layer (advanced positioning)
+     * @param {string} layerId - Layer ID
+     * @param {Object} position - Position object {x, y, z}
+     */
+    setLayer3DPosition(layerId, position) {
+        const layer = this.layers.get(layerId);
+        if (!layer || !layer.mesh) {
+            console.warn(`LayerManager: Cannot set 3D position for layer ${layerId} - no mesh available`);
+            return;
+        }
+
+        if (position.x !== undefined) layer.mesh.position.x = position.x;
+        if (position.y !== undefined) layer.mesh.position.y = position.y;
+        if (position.z !== undefined) layer.mesh.position.z = position.z;
+        
+        console.log(`LayerManager: Set 3D position for ${layerId}:`, layer.mesh.position);
+    }
+
+    /**
+     * Set 3D rotation for a specific layer (advanced positioning)
+     * @param {string} layerId - Layer ID  
+     * @param {Object} rotation - Rotation object {x, y, z} in radians
+     */
+    setLayer3DRotation(layerId, rotation) {
+        const layer = this.layers.get(layerId);
+        if (!layer || !layer.mesh) {
+            console.warn(`LayerManager: Cannot set 3D rotation for layer ${layerId} - no mesh available`);
+            return;
+        }
+
+        if (rotation.x !== undefined) layer.mesh.rotation.x = rotation.x;
+        if (rotation.y !== undefined) layer.mesh.rotation.y = rotation.y;
+        if (rotation.z !== undefined) layer.mesh.rotation.z = rotation.z;
+        
+        console.log(`LayerManager: Set 3D rotation for ${layerId}:`, layer.mesh.rotation);
+    }
+
+    /**
+     * Set 3D scale for a specific layer (advanced positioning)
+     * @param {string} layerId - Layer ID
+     * @param {Object} scale - Scale object {x, y, z}
+     */
+    setLayer3DScale(layerId, scale) {
+        const layer = this.layers.get(layerId);
+        if (!layer || !layer.mesh) {
+            console.warn(`LayerManager: Cannot set 3D scale for layer ${layerId} - no mesh available`);
+            return;
+        }
+
+        if (scale.x !== undefined) layer.mesh.scale.x = scale.x;
+        if (scale.y !== undefined) layer.mesh.scale.y = scale.y;
+        if (scale.z !== undefined) layer.mesh.scale.z = scale.z;
+        
+        console.log(`LayerManager: Set 3D scale for ${layerId}:`, layer.mesh.scale);
     }
 
     /**
