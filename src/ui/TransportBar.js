@@ -112,6 +112,13 @@ export class TransportBar {
                         <span>P5 Code</span>
                     </button>
                     
+                    <button id="shader-code-editor" class="btn btn-secondary btn-sm">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span>Shader Code</span>
+                    </button>
+                    
                     <button id="midi-help" class="btn btn-secondary btn-sm">
                         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/>
@@ -166,6 +173,19 @@ export class TransportBar {
                 this.midiClockManager.app.p5CodeEditor.toggle();
             } else {
                 console.error('TransportBar: P5CodeEditor not available');
+            }
+        });
+        
+        // Shader Code Editor button - delegate to ShaderCodeEditor component
+        document.getElementById('shader-code-editor').addEventListener('click', (event) => {
+            console.log('TransportBar: Shader Code Editor button clicked');
+            event.preventDefault();
+            event.stopPropagation();
+            if (this.midiClockManager.app.shaderCodeEditor) {
+                console.log('TransportBar: Calling ShaderCodeEditor.toggle()');
+                this.midiClockManager.app.shaderCodeEditor.toggle();
+            } else {
+                console.error('TransportBar: ShaderCodeEditor not available');
             }
         });
         

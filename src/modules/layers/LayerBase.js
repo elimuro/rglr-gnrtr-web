@@ -39,6 +39,8 @@ export class LayerBase {
         if (this.initialized || this.disposed) return;
         
         try {
+            // Store context so subclasses can access renderer/scene/camera
+            this.context = context;
             await this.onInitialize(context);
             this.initialized = true;
         } catch (error) {

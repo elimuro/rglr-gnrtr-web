@@ -154,6 +154,12 @@ export class LayerPanel {
             this.layerList.appendChild(addP5Button);
         }
 
+        // Add button to create shader layer if none exists
+        if (!layers.has('shader')) {
+            const addShaderButton = this.createAddShaderButton();
+            this.layerList.appendChild(addShaderButton);
+        }
+
         // Update performance info
         this.updatePerformanceInfo();
     }
@@ -354,12 +360,34 @@ export class LayerPanel {
             infoRow.appendChild(p5Status);
         }
 
+        // Add shader-specific info if it's a shader layer
+        if (layer.constructor.name === 'ShaderLayer') {
+            const shaderStatus = document.createElement('span');
+            if (layer.hasShaderError && layer.hasShaderError()) {
+                shaderStatus.textContent = '❌ Error';
+                shaderStatus.style.color = '#ff6b6b';
+            } else if (layer.isShaderCompiled && layer.isShaderCompiled()) {
+                shaderStatus.textContent = '✅ Compiled';
+                shaderStatus.style.color = '#51cf66';
+            } else {
+                shaderStatus.textContent = '⏸️ Stopped';
+                shaderStatus.style.color = '#ffd43b';
+            }
+            infoRow.appendChild(shaderStatus);
+        }
+
         item.appendChild(infoRow);
 
         // Add P5-specific controls in a compact row
         if (layer.constructor.name === 'P5Layer') {
             const p5Controls = this.createCompactP5Controls(layer);
             item.appendChild(p5Controls);
+        }
+        
+        // Add shader-specific controls in a compact row
+        if (layer.constructor.name === 'ShaderLayer') {
+            const shaderControls = this.createCompactShaderControls(layer);
+            item.appendChild(shaderControls);
         }
         
         // Add grid-specific controls
@@ -410,6 +438,68 @@ export class LayerPanel {
             } catch (error) {
                 console.error('Failed to add P5 layer:', error);
                 alert('Failed to add P5 layer. Check console for details.');
+            }
+        };
+        
+        return button;
+    }
+
+    /**
+     * Create button to add shader layer
+     * @returns {HTMLElement} Add shader button element
+     */
+    createAddShaderButton() {
+        const button = document.createElement('button');
+        button.className = 'add-shader-layer-btn';
+        button.style.cssText = `
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 100, 0, 0.2);
+            border: 2px dashed rgba(255, 100, 0, 0.5);
+            border-radius: 8px;
+            color: #ff6600;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        `;
+        button.textContent = '+ Add Shader Layer';
+        
+        button.addEventListener('mouseover', () => {
+            button.style.background = 'rgba(255, 100, 0, 0.3)';
+            button.style.borderColor = 'rgba(255, 100, 0, 0.8)';
+        });
+        
+        button.addEventListener('mouseout', () => {
+            button.style.background = 'rgba(255, 100, 0, 0.2)';
+            button.style.borderColor = 'rgba(255, 100, 0, 0.5)';
+        });
+        
+        button.onclick = async () => {
+            try {
+                // Check if LayerManager is ready
+                if (!this.app.layerManager || !this.app.layerManager.context) {
+                    alert('Please wait for the application to fully load before adding layers.');
+                    return;
+                }
+                
+                await this.app.addShaderLayer();
+                this.updatePanel(); // Refresh to show new layer
+            } catch (error) {
+                console.error('Failed to add shader layer:', error);
+                
+                // Provide user-friendly error message
+                let userMessage = 'Failed to add shader layer. ';
+                if (error.message.includes('not ready')) {
+                    userMessage += 'Please wait for the application to fully load and try again.';
+                } else if (error.message.includes('Three.js not ready')) {
+                    userMessage += 'Please wait for the 3D scene to initialize and try again.';
+                } else {
+                    userMessage += 'Check console for details.';
+                }
+                
+                alert(userMessage);
             }
         };
         
@@ -626,6 +716,113 @@ export class LayerPanel {
     }
 
     /**
+     * Create compact shader-specific controls
+     * @param {ShaderLayer} layer - Shader layer instance
+     * @returns {HTMLElement} Compact shader controls element
+     */
+    createCompactShaderControls(layer) {
+        const controls = document.createElement('div');
+        controls.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        `;
+
+        // Status indicator
+        const statusIndicator = document.createElement('div');
+        statusIndicator.style.cssText = `
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: ${layer.hasShaderError() ? '#ff6b6b' : (layer.isShaderCompiled() ? '#51cf66' : '#ffd43b')};
+            flex-shrink: 0;
+        `;
+        statusIndicator.title = layer.hasShaderError() ? 'Error' : (layer.isShaderCompiled() ? 'Compiled' : 'Not Compiled');
+
+        // Status text
+        const statusText = document.createElement('span');
+        statusText.textContent = layer.hasShaderError() ? '❌ Error' : (layer.isShaderCompiled() ? '✅ Compiled' : '⏸️ Not Compiled');
+        statusText.style.cssText = `
+            font-size: 9px;
+            color: ${layer.hasShaderError() ? '#ff6b6b' : (layer.isShaderCompiled() ? '#51cf66' : '#ffd43b')};
+        `;
+
+        // Parameters list
+        const params = layer.getExposedParameters();
+        if (Object.keys(params).length > 0) {
+            const paramsList = document.createElement('div');
+            paramsList.style.cssText = `
+                font-size: 9px;
+                color: #888;
+            `;
+            
+            const paramsTitle = document.createElement('div');
+            paramsTitle.textContent = 'Shader Params:';
+            paramsTitle.style.cssText = `
+                font-weight: bold;
+                margin-bottom: 3px;
+                color: #ff6600;
+            `;
+            paramsList.appendChild(paramsTitle);
+            
+            Object.entries(params).forEach(([name, param]) => {
+                const paramRow = document.createElement('div');
+                paramRow.style.cssText = `
+                    display: flex;
+                    justify-content: between;
+                    align-items: center;
+                    margin-bottom: 2px;
+                    padding: 1px 5px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 2px;
+                `;
+                
+                const paramInfo = document.createElement('span');
+                paramInfo.textContent = `${param.label || name}: ${param.default}`;
+                paramInfo.style.flex = '1';
+                
+                const midiTarget = document.createElement('span');
+                midiTarget.textContent = `shader:${name}`;
+                midiTarget.style.cssText = `
+                    font-family: monospace;
+                    font-size: 8px;
+                    color: #888;
+                `;
+                
+                paramRow.appendChild(paramInfo);
+                paramRow.appendChild(midiTarget);
+                paramsList.appendChild(paramRow);
+            });
+            
+            controls.appendChild(paramsList);
+        }
+
+        // Code editor button
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Edit Shader';
+        editButton.style.cssText = `
+            padding: 3px 8px;
+            background: rgba(255, 100, 0, 0.3);
+            border: 1px solid rgba(255, 100, 0, 0.5);
+            border-radius: 3px;
+            color: white;
+            font-size: 9px;
+            cursor: pointer;
+        `;
+        
+        editButton.onclick = () => {
+            this.openShaderEditor(layer);
+        };
+        
+        controls.appendChild(editButton);
+
+        return controls;
+    }
+
+    /**
      * Create grid-specific controls
      * @param {GridLayer} layer - Grid layer instance
      * @returns {HTMLElement} Grid controls element
@@ -734,6 +931,30 @@ export class LayerPanel {
                     this.updatePanel(); // Refresh to show changes
                 }).catch(error => {
                     alert(`Sketch error: ${error.message}`);
+                });
+            }
+        }
+    }
+
+    /**
+     * Open shader editor using the ShaderCodeEditor
+     * @param {ShaderLayer} layer - Shader layer instance
+     */
+    openShaderEditor(layer) {
+        // Use the existing ShaderCodeEditor to edit the shader
+        if (this.app.shaderCodeEditor) {
+            this.app.shaderCodeEditor.open();
+        } else {
+            console.error('ShaderCodeEditor not available');
+            // Fallback to prompt if ShaderCodeEditor is not available
+            const code = layer.getShaderCode();
+            const newCode = prompt('Edit Shader Code:', code);
+            
+            if (newCode && newCode !== code) {
+                layer.compileShader(newCode).then(() => {
+                    this.updatePanel(); // Refresh to show changes
+                }).catch(error => {
+                    alert(`Shader error: ${error.message}`);
                 });
             }
         }

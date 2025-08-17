@@ -193,6 +193,12 @@ const CONTROL_TEMPLATES = {
                     {p5TargetOptions}
                 </select>
             </div>
+            <div class="flex items-center gap-2 ml-10">
+                <label class="text-xs font-medium text-orange-300 min-w-8 flex-shrink-0">Shader:</label>
+                <select id="midi-{controlId}-shader-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-orange-600 border-opacity-30 text-white rounded text-xs transition-all duration-300 focus:border-orange-400 focus:outline-none" data-drawer-interactive>
+                    {shaderTargetOptions}
+                </select>
+            </div>
         </div>
     `,
     note: `
@@ -259,6 +265,7 @@ export class MIDIControl {
                 .join('');
         
         const p5TargetOptions = this.generateP5Options();
+        const shaderTargetOptions = this.generateShaderOptions();
         
         // Determine min/max values based on control type
         const minValue = this.type === 'cc' ? MIDI_CONSTANTS.ranges.controllers.min : MIDI_CONSTANTS.ranges.notes.min;
@@ -272,7 +279,8 @@ export class MIDIControl {
             .replace(/{minValue}/g, minValue)
             .replace(/{maxValue}/g, maxValue)
             .replace(/{targetOptions}/g, targetOptions)
-            .replace(/{p5TargetOptions}/g, p5TargetOptions);
+            .replace(/{p5TargetOptions}/g, p5TargetOptions)
+            .replace(/{shaderTargetOptions}/g, shaderTargetOptions);
     }
     
     generateP5Options() {
@@ -296,6 +304,36 @@ export class MIDIControl {
             return '<option value="">P5 Error</option>';
         }
     }
+
+    generateShaderOptions() {
+        try {
+            const shaderLayer = this.app.layerManager?.getLayer('shader');
+            if (!shaderLayer) {
+                return '<option value="">No Shader Layer</option>';
+            }
+            const params = shaderLayer.getExposedParameters();
+            const keys = Object.keys(params || {});
+            if (keys.length === 0) {
+                return '<option value="">No Shader Parameters</option>';
+            }
+            return '<option value="">No Shader Parameter</option>' + 
+                   keys.map(name => {
+                       const meta = params[name] || {};
+                       const label = meta.label || name;
+                       if (meta.type === 'vector2') {
+                           return [
+                               `<option value="shader:${name}.x">${label}.x</option>`,
+                               `<option value="shader:${name}.y">${label}.y</option>`,
+                               `<option value="shader:${name}.both">${label} (both)</option>`
+                           ].join('');
+                       }
+                       return `<option value="shader:${name}">${label}</option>`;
+                   }).join('');
+        } catch (error) {
+            console.warn('Error generating Shader options:', error);
+            return '<option value="">Shader Error</option>';
+        }
+    }
     
     createElement(html) {
         const div = document.createElement('div');
@@ -311,6 +349,7 @@ export class MIDIControl {
         const valueInput = document.getElementById(`midi-${this.controlId}-value`);
         const targetSelect = document.getElementById(`midi-${this.controlId}-target`);
         const p5TargetSelect = document.getElementById(`midi-${this.controlId}-p5-target`);
+        const shaderTargetSelect = document.getElementById(`midi-${this.controlId}-shader-target`);
         const learnButton = document.getElementById(`midi-${this.controlId}-learn`);
         const removeButton = document.getElementById(`midi-${this.controlId}-remove`);
         
@@ -327,6 +366,10 @@ export class MIDIControl {
         // Set P5 target if available
         if (p5TargetSelect) {
             p5TargetSelect.value = mapping.p5Target || '';
+        }
+        // Set Shader target if available
+        if (shaderTargetSelect) {
+            shaderTargetSelect.value = mapping.shaderTarget || '';
         }
         
         // Event listeners
@@ -346,6 +389,12 @@ export class MIDIControl {
         if (p5TargetSelect) {
             p5TargetSelect.addEventListener('change', (e) => {
                 this.updateMapping({ p5Target: e.target.value });
+            });
+        }
+        // Shader target listener
+        if (shaderTargetSelect) {
+            shaderTargetSelect.addEventListener('change', (e) => {
+                this.updateMapping({ shaderTarget: e.target.value });
             });
         }
         
@@ -396,7 +445,8 @@ export class MIDIControl {
             const mapping = this.getMapping();
             const normalizedValue = this.normalizeValue(midiValue);
             
-            console.log(`MIDI CC${this.controlId}: Raw=${midiValue}, Normalized=${normalizedValue.toFixed(3)}`);
+            console.log(`MIDI CC ${this.controlId}: ch=${mapping.channel+1} ctrl=${mapping.value} Raw=${midiValue} → Norm=${normalizedValue.toFixed(3)} target=${mapping.target||'-'} p5=${mapping.p5Target||'-'} shader=${mapping.shaderTarget||'-'}`);
+            console.log('Full mapping object:', JSON.stringify(mapping, null, 2));
             
             // Route to primary target
             if (mapping.target && mapping.target.trim() !== '') {
@@ -408,6 +458,13 @@ export class MIDIControl {
             if (mapping.p5Target && mapping.p5Target.trim() !== '') {
                 console.log(`→ P5 target: ${mapping.p5Target}`);
                 this.app.updateAnimationParameter(mapping.p5Target, normalizedValue);
+            }
+            // Route to Shader target
+            if (mapping.shaderTarget && mapping.shaderTarget.trim() !== '') {
+                console.log(`→ Shader target: ${mapping.shaderTarget}`);
+                this.app.updateAnimationParameter(mapping.shaderTarget, normalizedValue);
+            } else {
+                console.log('No shader target set or empty shader target');
             }
         }, 16); // ~60fps debouncing
     }
@@ -547,7 +604,8 @@ export class MIDIControl {
             channel: 0,
             value: this.config.defaultValue,
             target: '', // Always start with empty target
-            p5Target: '' // Always start with empty P5 target
+            p5Target: '', // Always start with empty P5 target
+            shaderTarget: '' // Always start with empty Shader target
         };
         
         // If there's an existing mapping, use it but ensure targets are empty if not explicitly set
@@ -556,7 +614,8 @@ export class MIDIControl {
             return {
                 ...existingMapping,
                 target: existingMapping.target || '', // Ensure target is empty if not set
-                p5Target: existingMapping.p5Target || '' // Ensure P5 target is empty if not set
+                p5Target: existingMapping.p5Target || '', // Ensure P5 target is empty if not set
+                shaderTarget: existingMapping.shaderTarget || '' // Ensure Shader target is empty if not set
             };
         }
         
@@ -773,6 +832,30 @@ export class MIDIControlManager {
                         // Parameter no longer exists, clear the mapping
                         console.log(`P5 parameter ${currentValue} no longer exists, clearing mapping`);
                         control.updateMapping({ p5Target: '' });
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Refresh Shader parameter dropdowns when shader uniforms change
+     */
+    refreshShaderParameters() {
+        console.log('Refreshing Shader parameters in MIDI controls...');
+        this.controls.forEach(control => {
+            if (control.type === 'cc') {
+                const selectId = `midi-${control.controlId}-shader-target`;
+                const shaderTargetSelect = document.getElementById(selectId);
+                if (shaderTargetSelect) {
+                    const currentValue = shaderTargetSelect.value;
+                    const newOptions = control.generateShaderOptions();
+                    shaderTargetSelect.innerHTML = newOptions;
+                    // Restore if still present; otherwise clear mapping
+                    if (currentValue && shaderTargetSelect.querySelector(`option[value="${currentValue}"]`)) {
+                        shaderTargetSelect.value = currentValue;
+                    } else if (currentValue) {
+                        control.updateMapping({ shaderTarget: '' });
                     }
                 }
             }

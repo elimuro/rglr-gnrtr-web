@@ -16,6 +16,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Make app globally available for debugging
         window.app = app;
         
+        // Make test methods globally available for development
+        window.testP5Layer = () => app.testP5Layer();
+        window.testShaderLayer = () => app.testShaderLayer();
+        
     } catch (error) {
         console.error('Failed to initialize application:', error);
     }

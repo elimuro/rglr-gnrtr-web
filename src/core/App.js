@@ -26,6 +26,7 @@ import { SceneManager } from '../modules/SceneManager.js';
 import { LayerManager } from '../modules/LayerManager.js';
 import { LayerPanel } from '../ui/LayerPanel.js';
 import { P5CodeEditor } from '../ui/P5CodeEditor.js';
+import { ShaderCodeEditor } from '../ui/ShaderCodeEditor.js';
 
 export class App {
     constructor() {
@@ -92,8 +93,14 @@ export class App {
         // Initialize P5 Code Editor
         this.p5CodeEditor = new P5CodeEditor(this);
         
+        // Initialize Shader Code Editor
+        this.shaderCodeEditor = new ShaderCodeEditor(this);
+        
         this.init();
     }
+
+    // App readiness state
+    isReady = false;
 
     async init() {
         try {
@@ -167,6 +174,10 @@ export class App {
             
             // Start animation loop
             this.animationLoop.start();
+            
+            // Mark app as ready
+            this.isReady = true;
+            console.log('App initialization completed, ready for user interaction');
             
             // Set up window resize handler
             window.addEventListener('resize', () => {
@@ -400,6 +411,39 @@ export class App {
             return;
         }
         
+        // Handle shader layer parameters
+        if (target.startsWith('shader:')) {
+            const raw = target.substring(7); // Remove 'shader:' prefix
+            // Support component addressing: uniform.x / uniform.y / uniform.both
+            let paramName = raw;
+            let component = null;
+            if (raw.endsWith('.x')) { paramName = raw.slice(0, -2); component = 'x'; }
+            else if (raw.endsWith('.y')) { paramName = raw.slice(0, -2); component = 'y'; }
+            else if (raw.endsWith('.both')) { paramName = raw.slice(0, -5); component = 'both'; }
+            console.log(`App: Routing shader parameter ${paramName}${component?'.'+component:''} = ${value}`);
+            const shaderLayer = this.layerManager.getLayer('shader');
+            if (shaderLayer) {
+                console.log(`App: Found shader layer, setting parameter (normalized=${value.toFixed ? value.toFixed(3) : value})`);
+                if (component === 'x' || component === 'y') {
+                    const current = shaderLayer.getParameter(paramName) || { x: 0, y: 0 };
+                    current[component] = value;
+                    shaderLayer.setParameter(paramName, current);
+                } else if (component === 'both') {
+                    const current = shaderLayer.getParameter(paramName) || { x: 0, y: 0 };
+                    current.x = value;
+                    current.y = value;
+                    shaderLayer.setParameter(paramName, current);
+                } else {
+                    shaderLayer.setParameter(paramName, value);
+                }
+                // Ensure visual update if animation is paused
+                this.forceRenderWhenPaused();
+            } else {
+                console.warn(`App: Shader layer not found`);
+            }
+            return;
+        }
+        
         // Use the unified ParameterMapper to handle all other parameter updates
         ParameterMapper.handleParameterUpdate(target, value, this.state, this.scene, 'animation');
         
@@ -424,6 +468,20 @@ export class App {
     }
 
     /**
+     * Add a shader layer to the layer system
+     * @param {Object} config - Shader layer configuration
+     * @returns {Promise<ShaderLayer>} The created shader layer
+     */
+    async addShaderLayer(config = {}) {
+        if (!this.isReady) {
+            throw new Error('Application not ready. Please wait for initialization to complete.');
+        }
+        
+        console.log('App: Adding shader layer...');
+        return await this.layerManager.addShaderLayer('shader', config);
+    }
+
+    /**
      * Get P5 layer parameters for MIDI/audio mapping
      * @returns {Array} Array of P5 parameter targets
      */
@@ -434,6 +492,23 @@ export class App {
         const params = p5Layer.getAllParameters();
         return Object.keys(params).map(name => ({
             target: `p5:${name}`,
+            label: params[name].label || name,
+            min: params[name].min,
+            max: params[name].max
+        }));
+    }
+
+    /**
+     * Get shader layer parameters for MIDI/audio mapping
+     * @returns {Array} Array of shader parameter targets
+     */
+    getShaderParameters() {
+        const shaderLayer = this.layerManager.getLayer('shader');
+        if (!shaderLayer) return [];
+        
+        const params = shaderLayer.getExposedParameters();
+        return Object.keys(params).map(name => ({
+            target: `shader:${name}`,
             label: params[name].label || name,
             min: params[name].min,
             max: params[name].max
@@ -515,6 +590,71 @@ export class App {
             
         } catch (error) {
             console.error('❌ P5 Layer test failed:', error);
+            console.error('Full error:', error);
+        }
+    }
+
+    /**
+     * Test shader layer functionality (for development)
+     */
+    async testShaderLayer() {
+        console.log('🧪 Testing Shader Layer...');
+        
+        try {
+            // Check if shader layer already exists
+            let shaderLayer = this.layerManager.getLayer('shader');
+            
+            if (!shaderLayer) {
+                console.log('➕ Creating shader layer...');
+                shaderLayer = await this.addShaderLayer();
+                console.log('✅ Shader Layer created successfully');
+            } else {
+                console.log('ℹ️ Shader Layer already exists');
+            }
+            
+            // Wait a moment for initialization
+            console.log('⏳ Waiting for initialization...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Debug layer state
+            console.log('🔍 Shader Layer state:');
+            console.log('- ID:', shaderLayer.id);
+            console.log('- Visible:', shaderLayer.visible);
+            console.log('- Opacity:', shaderLayer.opacity);
+            console.log('- Compiled:', shaderLayer.isShaderCompiled());
+            console.log('- Has Error:', shaderLayer.hasShaderError());
+            if (shaderLayer.hasShaderError()) {
+                console.log('- Error:', shaderLayer.getLastShaderError());
+            }
+            console.log('- Material:', shaderLayer.material);
+            console.log('- Mesh:', shaderLayer.mesh);
+            
+            // Check LayerManager state
+            console.log('🔍 LayerManager state:');
+            console.log('- Layer count:', this.layerManager.layers.size);
+            console.log('- Layer order:', this.layerManager.getLayerOrder());
+            
+            // Test parameter setting
+            console.log('⚙️ Testing parameters...');
+            shaderLayer.setParameter('agentCount', 5000);
+            shaderLayer.setParameter('trailDecay', 0.98);
+            shaderLayer.setParameter('sensorDistance', 20);
+            console.log('✅ Parameters set successfully');
+            
+            // Test MIDI routing
+            console.log('🎛️ Testing MIDI routing...');
+            this.updateAnimationParameter('shader:agentCount', 10000);
+            this.updateAnimationParameter('shader:trailDecay', 0.99);
+            console.log('✅ MIDI routing works');
+            
+            // Get parameters for mapping
+            const params = this.getShaderParameters();
+            console.log('✅ Available shader parameters:', params);
+            
+            console.log('🎉 Shader Layer test completed!');
+            
+        } catch (error) {
+            console.error('❌ Shader Layer test failed:', error);
             console.error('Full error:', error);
         }
     }

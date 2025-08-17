@@ -155,6 +155,18 @@ export class MIDIEventHandler {
                 this.app.updateAnimationParameter(mapping.p5Target, normalizedP5Value);
             }
 
+            // Handle Shader target
+            if (mapping.shaderTarget && mapping.shaderTarget.trim() !== '') {
+                console.log(`→ Shader target: ${mapping.shaderTarget}`);
+                
+                // Simple 0-1 normalization for Shader parameters
+                const normalizedShaderValue = midiValue / MIDI_CONSTANTS.ranges.controllers.max;
+                console.log(`→ Shader normalized: ${normalizedShaderValue.toFixed(3)}`);
+                
+                // Use App's updateAnimationParameter for Shader parameters
+                this.app.updateAnimationParameter(mapping.shaderTarget, normalizedShaderValue);
+            }
+
             // Ensure changes are visible even when animation is paused
             if (this.app.scene && !this.app.animationLoop.getRunningState()) {
                 this.app.scene.render();

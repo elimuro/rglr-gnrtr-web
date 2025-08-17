@@ -136,12 +136,61 @@ export class LayerManager {
     }
 
     /**
+     * Add a shader layer
+     * @param {string} layerId - Layer ID
+     * @param {Object} config - Layer configuration
+     */
+    async addShaderLayer(layerId = 'shader', config = {}) {
+        // Check if LayerManager is ready
+        if (!this.context) {
+            throw new Error('LayerManager not initialized. Please wait for the application to fully load.');
+        }
+        
+        if (!this.context.renderer || !this.context.scene) {
+            throw new Error('Three.js not ready. Please wait for the scene to initialize.');
+        }
+        
+        console.log('LayerManager: Adding shader layer with context:', {
+            hasRenderer: !!this.context.renderer,
+            hasScene: !!this.context.scene,
+            hasCamera: !!this.context.camera
+        });
+        
+        const { ShaderLayer } = await import('./layers/ShaderLayer.js');
+        
+        const shaderLayer = new ShaderLayer(layerId, {
+            visible: true,
+            opacity: 1.0,
+            blendMode: 'normal',
+            emergentType: 'custom',
+            agentCount: 1000,
+            trailDecay: 0.95,
+            sensorDistance: 15,
+            ...config
+        });
+        
+        await this.addLayer(shaderLayer);
+        
+        return shaderLayer;
+    }
+
+    /**
      * Add a layer to the system
      * @param {LayerBase} layer - Layer instance
      */
     async addLayer(layer) {
         if (!(layer instanceof LayerBase)) {
             throw new Error('Layer must extend LayerBase');
+        }
+        
+        // Check if LayerManager is initialized
+        if (!this.context) {
+            throw new Error('LayerManager not initialized. Call initialize() first.');
+        }
+        
+        // Check if required context properties are available
+        if (!this.context.renderer || !this.context.scene) {
+            throw new Error('LayerManager context missing required properties (renderer, scene). Ensure Three.js is initialized.');
         }
         
         if (this.layers.has(layer.id)) {
