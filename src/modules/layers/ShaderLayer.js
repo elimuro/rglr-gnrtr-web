@@ -221,9 +221,11 @@ export class ShaderLayer extends LayerBase {
             });
             
             // Set material properties
-            this.material.blending = THREE.NormalBlending;
             this.material.opacity = this.opacity;
             this.material.toneMapped = false; // avoid post tone-mapping dimming the shader
+            
+            // Apply initial blend mode
+            this.applyBlendModeToMaterial();
             
         } catch (error) {
             console.error('Failed to create shader material:', error);
@@ -801,6 +803,10 @@ export class ShaderLayer extends LayerBase {
      * Set parameter value
      */
     onSetParameter(name, value) {
+        // First handle common parameters from LayerBase
+        super.onSetParameter(name, value);
+        
+        // Then handle shader-specific parameters
         const uniform = this.uniforms.get(name);
         if (uniform) {
             // Convert normalized value (0-1) to parameter range if min/max are specified
@@ -834,8 +840,27 @@ export class ShaderLayer extends LayerBase {
 
             // Keep internal uniforms in sync for frames where onUpdate is not called
             this.updateMaterialUniforms();
-        } else {
+        } else if (!['visible', 'opacity', 'blendMode', 'zOffset'].includes(name)) {
+            // Only warn for non-common parameters that aren't found
             console.warn(`ShaderLayer ${this.id}: Uniform ${name} not found`);
+        }
+    }
+
+    /**
+     * Handle opacity changes for shader layer
+     * @param {number} newOpacity - New opacity value (0.0 to 1.0)
+     */
+    updateOpacityState(newOpacity) {
+        // Update shader uniform for opacity
+        if (this.material && this.material.uniforms.opacity) {
+            this.material.uniforms.opacity.value = newOpacity;
+        }
+        
+        // Also update material opacity for proper blending
+        if (this.material) {
+            this.material.opacity = newOpacity;
+            this.material.transparent = newOpacity < 1.0;
+            this.material.needsUpdate = true;
         }
     }
 
@@ -1245,5 +1270,44 @@ export class ShaderLayer extends LayerBase {
         if (this.mesh) {
             this.mesh.position.z = zOffset;
         }
+    }
+
+    /**
+     * Handle blend mode changes for shader layer
+     * @param {string} newBlendMode - The new blend mode
+     */
+    onBlendModeChanged(newBlendMode) {
+        super.onBlendModeChanged(newBlendMode);
+        
+        // For shader layers that require custom blend modes,
+        // we might need to recompile the shader with blend functions
+        if (this.requiresCustomShaderBlending()) {
+            console.log(`ShaderLayer ${this.id}: Custom shader blending required for ${newBlendMode}`);
+            // Future enhancement: inject blend function into shader code
+            this.injectBlendFunctionIntoShader(newBlendMode);
+        }
+    }
+
+    /**
+     * Inject blend function into shader code (future enhancement)
+     * @param {string} blendMode - Blend mode to inject
+     */
+    injectBlendFunctionIntoShader(blendMode) {
+        // This is a placeholder for future enhancement
+        // We could modify the fragment shader to include blend functions
+        // and apply them in the final color output
+        
+        if (!this.fragmentShader) return;
+        
+        const blendFunction = this.getBlendShaderCode();
+        
+        // For now, just log that this feature could be implemented
+        console.log(`ShaderLayer ${this.id}: Would inject blend function:`, blendFunction);
+        
+        // Future implementation:
+        // 1. Parse the current fragment shader
+        // 2. Inject the blend function before main()
+        // 3. Modify the gl_FragColor assignment to use the blend function
+        // 4. Recompile the shader
     }
 }

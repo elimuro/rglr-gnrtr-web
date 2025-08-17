@@ -4,6 +4,8 @@
  * It displays layer information, controls, and allows layer manipulation.
  */
 
+import { getBlendModeOptions, THREE_BLEND_MAPPING } from '../config/BlendModeConstants.js';
+
 export class LayerPanel {
     constructor(app) {
         this.app = app;
@@ -127,6 +129,15 @@ export class LayerPanel {
                 }
             }
         });
+    }
+
+    /**
+     * Check if a blend mode is supported by Three.js
+     * @param {string} blendMode - Blend mode to check
+     * @returns {boolean} True if supported
+     */
+    isBlendModeSupported(blendMode) {
+        return THREE_BLEND_MAPPING.hasOwnProperty(blendMode);
     }
 
     /**
@@ -345,18 +356,126 @@ export class LayerPanel {
         `;
         opacitySlider.title = `Opacity: ${(layer.opacity * 100).toFixed(0)}%`;
         opacitySlider.oninput = (e) => {
-            layer.opacity = parseFloat(e.target.value);
-            opacitySlider.title = `Opacity: ${(layer.opacity * 100).toFixed(0)}%`;
+            const newOpacity = parseFloat(e.target.value);
+            // Use the proper parameter system instead of direct assignment
+            layer.setParameter('opacity', newOpacity);
+            opacitySlider.title = `Opacity: ${(newOpacity * 100).toFixed(0)}%`;
+            
+            // Force layer to update its rendering
+            if (this.app.layerManager) {
+                this.app.layerManager.markLayerDirty(layer.id);
+            }
+            
             this.updateLayerInfo(layer);
         };
 
         opacityContainer.appendChild(opacityLabel);
         opacityContainer.appendChild(opacitySlider);
 
+        // Blend mode control
+        const blendModeContainer = document.createElement('div');
+        blendModeContainer.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 100px;
+        `;
+
+        const blendModeLabel = document.createElement('span');
+        blendModeLabel.textContent = 'Blend';
+        blendModeLabel.style.cssText = `
+            font-size: 9px;
+            color: #888;
+            min-width: 30px;
+        `;
+
+        const blendModeSelect = document.createElement('select');
+        blendModeSelect.style.cssText = `
+            background: var(--color-input-bg);
+            border: 1px solid var(--color-input-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text-primary);
+            font-size: 9px;
+            padding: 2px 4px;
+            cursor: pointer;
+            width: 70px;
+            transition: all 0.2s ease;
+        `;
+        
+        // Add focus and hover effects
+        blendModeSelect.addEventListener('focus', () => {
+            blendModeSelect.style.borderColor = 'var(--color-primary)';
+            blendModeSelect.style.boxShadow = '0 0 0 2px rgba(255, 255, 255, 0.1)';
+        });
+        
+        blendModeSelect.addEventListener('blur', () => {
+            blendModeSelect.style.borderColor = 'var(--color-input-border)';
+            blendModeSelect.style.boxShadow = 'none';
+        });
+        
+        blendModeSelect.addEventListener('mouseenter', () => {
+            blendModeSelect.style.borderColor = 'var(--color-border-quaternary)';
+        });
+        
+        blendModeSelect.addEventListener('mouseleave', () => {
+            if (document.activeElement !== blendModeSelect) {
+                blendModeSelect.style.borderColor = 'var(--color-input-border)';
+            }
+        });
+        
+        // Get blend mode options
+        const blendModeOptions = getBlendModeOptions();
+        
+        // Add options grouped by category
+        const categories = {};
+        blendModeOptions.forEach(option => {
+            if (!categories[option.category]) {
+                categories[option.category] = [];
+            }
+            categories[option.category].push(option);
+        });
+        
+        // Add options to select
+        Object.entries(categories).forEach(([category, options]) => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = category.charAt(0).toUpperCase() + category.slice(1);
+            optgroup.style.cssText = `
+                background: var(--color-input-bg);
+                color: var(--color-text-secondary);
+                font-weight: bold;
+            `;
+            
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.label;
+                optionElement.title = option.description;
+                optionElement.style.cssText = `
+                    background: var(--color-input-bg-dark);
+                    color: var(--color-text-primary);
+                `;
+                if (option.value === layer.blendMode) {
+                    optionElement.selected = true;
+                }
+                optgroup.appendChild(optionElement);
+            });
+            
+            blendModeSelect.appendChild(optgroup);
+        });
+        
+        blendModeSelect.onchange = (e) => {
+            layer.setBlendMode(e.target.value);
+            this.updateLayerInfo(layer);
+        };
+
+        blendModeContainer.appendChild(blendModeLabel);
+        blendModeContainer.appendChild(blendModeSelect);
+
         // Add all elements to main row
         mainRow.appendChild(nameSection);
         mainRow.appendChild(statusIndicator);
         mainRow.appendChild(opacityContainer);
+        mainRow.appendChild(blendModeContainer);
         mainRow.appendChild(visibilityToggle);
         
         // Add reorder buttons for all layers
@@ -380,7 +499,13 @@ export class LayerPanel {
         renderTime.textContent = `Render: ${layer.lastRenderTime.toFixed(1)}ms`;
         
         const blendMode = document.createElement('span');
-        blendMode.textContent = `Blend: ${layer.blendMode}`;
+        // Add visual indicator for blend mode support
+        const isSupported = this.isBlendModeSupported(layer.blendMode);
+        const indicator = isSupported ? '✅' : '⚠️';
+        blendMode.textContent = `${indicator} Blend: ${layer.blendMode}`;
+        blendMode.title = isSupported ? 
+            'This blend mode is fully supported' : 
+            'This blend mode requires custom shader (fallback to normal)';
 
         infoRow.appendChild(renderTime);
         infoRow.appendChild(blendMode);
@@ -906,56 +1031,7 @@ export class LayerPanel {
         
         controls.appendChild(gridInfo);
 
-        // Toggle buttons
-        const toggleContainer = document.createElement('div');
-        toggleContainer.style.cssText = `
-            display: flex;
-            gap: 4px;
-        `;
 
-        // Toggle shapes button
-        const toggleShapesButton = document.createElement('button');
-        toggleShapesButton.textContent = layer.shapesVisible ? 'Hide Shapes' : 'Show Shapes';
-        toggleShapesButton.style.cssText = `
-            padding: 3px 6px;
-            background: ${layer.shapesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)'};
-            border: 1px solid ${layer.shapesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'};
-            border-radius: 3px;
-            color: white;
-            font-size: 8px;
-            cursor: pointer;
-        `;
-        
-        toggleShapesButton.onclick = () => {
-            layer.toggleShapes();
-            toggleShapesButton.textContent = layer.shapesVisible ? 'Hide Shapes' : 'Show Shapes';
-            toggleShapesButton.style.background = layer.shapesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
-            toggleShapesButton.style.borderColor = layer.shapesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
-        };
-        
-        // Toggle grid lines button
-        const toggleGridLinesButton = document.createElement('button');
-        toggleGridLinesButton.textContent = layer.gridLinesVisible ? 'Hide Lines' : 'Show Lines';
-        toggleGridLinesButton.style.cssText = `
-            padding: 3px 6px;
-            background: ${layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)'};
-            border: 1px solid ${layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'};
-            border-radius: 3px;
-            color: white;
-            font-size: 8px;
-            cursor: pointer;
-        `;
-        
-        toggleGridLinesButton.onclick = () => {
-            layer.toggleGridLines();
-            toggleGridLinesButton.textContent = layer.gridLinesVisible ? 'Hide Lines' : 'Show Lines';
-            toggleGridLinesButton.style.background = layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
-            toggleGridLinesButton.style.borderColor = layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
-        };
-        
-        toggleContainer.appendChild(toggleShapesButton);
-        toggleContainer.appendChild(toggleGridLinesButton);
-        controls.appendChild(toggleContainer);
 
         return controls;
     }
@@ -1179,23 +1255,7 @@ export class LayerPanel {
             `;
         }
 
-        // Update toggle buttons
-        const toggleContainer = layerItem.querySelector('div[style*="display: flex"][style*="gap: 4px"]');
-        if (toggleContainer) {
-            const toggleShapesButton = toggleContainer.querySelector('button:first-child');
-            const toggleGridLinesButton = toggleContainer.querySelector('button:last-child');
 
-            if (toggleShapesButton) {
-                toggleShapesButton.textContent = layer.shapesVisible ? 'Hide Shapes' : 'Show Shapes';
-                toggleShapesButton.style.background = layer.shapesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
-                toggleShapesButton.style.borderColor = layer.shapesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
-            }
-            if (toggleGridLinesButton) {
-                toggleGridLinesButton.textContent = layer.gridLinesVisible ? 'Hide Lines' : 'Show Lines';
-                toggleGridLinesButton.style.background = layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
-                toggleGridLinesButton.style.borderColor = layer.gridLinesVisible ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
-            }
-        }
     }
 
     /**

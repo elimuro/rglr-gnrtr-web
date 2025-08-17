@@ -20,6 +20,16 @@ import { LIGHTING_PRESETS } from './LightingPresets.js';
 import { DEFAULT_SCENE_CONFIG } from './DefaultSceneConfig.js';
 import { MIDI_CONSTANTS } from './MidiConstants.js';
 import { MATERIAL_CONSTANTS } from './MaterialConstants.js';
+import { 
+    BLEND_MODES, 
+    BLEND_MODE_INFO, 
+    THREE_BLEND_MAPPING,
+    getBlendModeOptions,
+    applyBlendModeToMaterial,
+    createCustomBlendMaterial,
+    requiresCustomShader,
+    generateBlendShaderCode
+} from './BlendModeConstants.js';
 
 // Re-export all constants
 export { 
@@ -31,7 +41,15 @@ export {
     LIGHTING_PRESETS,
     DEFAULT_SCENE_CONFIG,
     MIDI_CONSTANTS,
-    MATERIAL_CONSTANTS
+    MATERIAL_CONSTANTS,
+    BLEND_MODES,
+    BLEND_MODE_INFO,
+    THREE_BLEND_MAPPING,
+    getBlendModeOptions,
+    applyBlendModeToMaterial,
+    createCustomBlendMaterial,
+    requiresCustomShader,
+    generateBlendShaderCode
 };
 
 /**

@@ -96,14 +96,18 @@ export class LayerManager {
      * Initialize the compositor for layer blending
      */
     initializeCompositor() {
-        // For now, we'll use a simple compositor
-        // In the future, this could be enhanced with advanced blending modes
+        // Enhanced compositor with proper blend mode support
         this.compositor = {
             blendLayers: (layers, renderer, camera) => {
-                // Simple alpha blending for additional layers only
+                // Render each layer with its specific blend mode
                 // (Main scene with grid is rendered separately by Scene.render())
                 layers.forEach(layer => {
                     if (layer.visible && layer.opacity > 0) {
+                        // Ensure blend mode is applied to material before rendering
+                        if (layer.needsBlendModeUpdate) {
+                            layer.applyBlendModeToMaterial();
+                        }
+                        
                         layer.render2D(renderer, camera, this.app.animationLoop.deltaTime);
                     }
                 });

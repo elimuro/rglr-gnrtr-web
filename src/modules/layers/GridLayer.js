@@ -129,6 +129,15 @@ export class GridLayer extends LayerBase {
     }
 
     /**
+     * Handle opacity changes for grid layer
+     * @param {number} newOpacity - New opacity value (0.0 to 1.0)
+     */
+    updateOpacityState(newOpacity) {
+        // Update grid visibility immediately to apply new opacity
+        this.updateGridVisibility();
+    }
+
+    /**
      * Get grid-specific configuration
      * @returns {Object} Grid-specific configuration
      */

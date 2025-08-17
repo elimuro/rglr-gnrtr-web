@@ -189,6 +189,9 @@ function draw() {
                 // color: 0xff0000 
             });
             
+            // Apply initial blend mode
+            this.applyBlendModeToMaterial();
+            
             // Create geometry sized to camera viewport
             let geometry;
             if (this.context && this.context.camera && this.context.camera.isOrthographicCamera) {
@@ -409,6 +412,11 @@ function draw() {
             this.material.opacity = this.opacity;
         }
         
+        // Apply blend mode if it needs updating
+        if (this.needsBlendModeUpdate) {
+            this.applyBlendModeToMaterial();
+        }
+        
         // P5 instance handles its own animation loop
         // Texture is updated in the draw function
     }
@@ -431,6 +439,24 @@ function draw() {
         if (this.material) {
             this.material.opacity = this.opacity;
             this.material.visible = this.visible;
+        }
+        
+        // Apply blend mode if it needs updating
+        if (this.needsBlendModeUpdate) {
+            this.applyBlendModeToMaterial();
+        }
+    }
+
+    /**
+     * Handle opacity changes for P5 texture layer
+     * @param {number} newOpacity - New opacity value (0.0 to 1.0)
+     */
+    updateOpacityState(newOpacity) {
+        // Update material opacity immediately
+        if (this.material) {
+            this.material.opacity = newOpacity;
+            this.material.transparent = newOpacity < 1.0;
+            this.material.needsUpdate = true;
         }
     }
 

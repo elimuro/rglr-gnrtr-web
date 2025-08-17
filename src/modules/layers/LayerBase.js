@@ -6,13 +6,20 @@
  */
 
 import * as THREE from 'three';
+import { 
+    BLEND_MODES, 
+    getBlendModeOptions, 
+    applyBlendModeToMaterial,
+    requiresCustomShader,
+    generateBlendShaderCode
+} from '../../config/BlendModeConstants.js';
 
 export class LayerBase {
     constructor(id, config = {}) {
         this.id = id;
         this.visible = config.visible !== undefined ? config.visible : true;
         this.opacity = config.opacity !== undefined ? config.opacity : 1.0;
-        this.blendMode = config.blendMode || 'normal';
+        this.blendMode = config.blendMode || BLEND_MODES.NORMAL;
         this.zOffset = config.zOffset !== undefined ? config.zOffset : 0; // Z-space distance from camera
         this.renderTarget = null;
         
@@ -32,6 +39,9 @@ export class LayerBase {
         
         // Event listeners
         this.eventListeners = [];
+        
+        // Blend mode state
+        this.needsBlendModeUpdate = true;
     }
 
     /**
@@ -179,9 +189,10 @@ export class LayerBase {
                 break;
             case 'opacity':
                 this.opacity = Math.max(0.0, Math.min(1.0, Number(value)));
+                this.onOpacityChanged(this.opacity);
                 break;
             case 'blendMode':
-                this.blendMode = String(value);
+                this.setBlendMode(String(value));
                 break;
             case 'zOffset':
                 this.zOffset = Number(value);
@@ -266,8 +277,8 @@ export class LayerBase {
                 type: 'select',
                 label: 'Blend Mode',
                 description: 'How this layer blends with layers below',
-                options: ['normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten'],
-                default: 'normal'
+                options: getBlendModeOptions(),
+                default: BLEND_MODES.NORMAL
             },
             zOffset: {
                 type: 'number',
@@ -302,6 +313,36 @@ export class LayerBase {
      * @param {boolean} isVisible - Current visibility state
      */
     updateVisibilityState(isVisible) {
+        // Override in subclasses if needed
+    }
+
+    /**
+     * Handle opacity changes
+     * @param {number} newOpacity - New opacity value (0.0 to 1.0)
+     */
+    onOpacityChanged(newOpacity) {
+        // Update material opacity if available
+        if (this.mesh && this.mesh.material) {
+            const material = Array.isArray(this.mesh.material) 
+                ? this.mesh.material[0] 
+                : this.mesh.material;
+                
+            if (material) {
+                material.opacity = newOpacity;
+                material.transparent = newOpacity < 1.0;
+                material.needsUpdate = true;
+            }
+        }
+        
+        // Override in subclasses for additional opacity handling
+        this.updateOpacityState(newOpacity);
+    }
+    
+    /**
+     * Update internal state based on opacity - override in subclasses
+     * @param {number} newOpacity - Current opacity value
+     */
+    updateOpacityState(newOpacity) {
         // Override in subclasses if needed
     }
 
@@ -380,6 +421,64 @@ export class LayerBase {
      */
     setZOffset(zOffset) {
         this.zOffset = zOffset;
+    }
+
+    /**
+     * Set blend mode and update material if available
+     * @param {string} blendMode - New blend mode
+     */
+    setBlendMode(blendMode) {
+        if (this.blendMode === blendMode) return;
+        
+        this.blendMode = blendMode;
+        this.needsBlendModeUpdate = true;
+        
+        // Apply to material immediately if available
+        this.applyBlendModeToMaterial();
+        
+        // Notify subclasses of blend mode change
+        this.onBlendModeChanged(blendMode);
+    }
+
+    /**
+     * Apply current blend mode to the layer's material
+     */
+    applyBlendModeToMaterial() {
+        if (!this.mesh || !this.mesh.material) return;
+        
+        const material = Array.isArray(this.mesh.material) 
+            ? this.mesh.material[0] 
+            : this.mesh.material;
+            
+        if (material) {
+            applyBlendModeToMaterial(material, this.blendMode);
+            this.needsBlendModeUpdate = false;
+        }
+    }
+
+    /**
+     * Check if current blend mode requires custom shader implementation
+     * @returns {boolean} True if custom shader is needed
+     */
+    requiresCustomShaderBlending() {
+        return requiresCustomShader(this.blendMode);
+    }
+
+    /**
+     * Get GLSL blend function code for current blend mode
+     * @returns {string} GLSL code for blend function
+     */
+    getBlendShaderCode() {
+        return generateBlendShaderCode(this.blendMode);
+    }
+
+    /**
+     * Called when blend mode changes - override in subclasses
+     * @param {string} newBlendMode - The new blend mode
+     */
+    onBlendModeChanged(newBlendMode) {
+        // Override in subclasses if needed
+        console.log(`LayerBase ${this.id}: Blend mode changed to ${newBlendMode}`);
     }
 
     /**
