@@ -16,6 +16,9 @@ export class LayerBase {
         this.zOffset = config.zOffset !== undefined ? config.zOffset : 0; // Z-space distance from camera
         this.renderTarget = null;
         
+        // Three.js mesh for 3D positioning (will be set by subclasses)
+        this.mesh = null;
+        
         // Layer state
         this.initialized = false;
         this.disposed = false;

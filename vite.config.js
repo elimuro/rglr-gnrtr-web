@@ -3,6 +3,9 @@ import { resolve } from 'path'
 import { copyFileSync, existsSync } from 'fs'
 
 export default defineConfig({
+  optimizeDeps: {
+    include: ['p5', 'three', 'gsap']
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

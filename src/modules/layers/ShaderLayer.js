@@ -248,7 +248,7 @@ export class ShaderLayer extends LayerBase {
     }
 
     /**
-     * Create full-screen quad mesh
+     * Create layer mesh as 3D plane
      */
     createMesh() {
         if (!this.material) {
@@ -257,7 +257,8 @@ export class ShaderLayer extends LayerBase {
         }
         
         try {
-            // Calculate viewport size in world units from the orthographic camera
+            // Create a standard plane geometry for the layer
+            // Size will be determined by the camera viewport, but positioned as a layer
             let geometry;
             if (this.context && this.context.camera && this.context.camera.isOrthographicCamera) {
                 const cam = this.context.camera;
@@ -265,25 +266,17 @@ export class ShaderLayer extends LayerBase {
                 const heightWorld = Math.abs(cam.top - cam.bottom);
                 geometry = new THREE.PlaneGeometry(widthWorld, heightWorld);
             } else {
-                // Fallback geometry (will likely not fill screen)
+                // Fallback geometry for perspective cameras
                 geometry = new THREE.PlaneGeometry(2, 2);
             }
             
             // Create mesh with shader material
             this.mesh = new THREE.Mesh(geometry, this.material);
             
-            // Position in front of camera
-            // Keep at z=0; we disable depth test and force render order, so it draws on top
-            this.mesh.position.z = 0;
-            this.mesh.renderOrder = 999;
+            // The LayerManager will handle positioning this mesh in 3D space
+            // No need to set position.z or renderOrder here
             
-            // Add to scene
-            if (this.context && this.context.scene) {
-                this.context.scene.add(this.mesh);
-                console.log('ShaderLayer: Mesh added to scene');
-            } else {
-                console.warn('ShaderLayer: No scene in context, cannot add mesh');
-            }
+            console.log('ShaderLayer: Mesh created for layer positioning');
         } catch (error) {
             console.error('ShaderLayer: Failed to create mesh:', error);
         }

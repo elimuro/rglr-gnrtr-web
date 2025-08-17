@@ -6,6 +6,7 @@
  */
 
 import { LayerBase } from './layers/LayerBase.js';
+import * as THREE from 'three';
 
 export class LayerManager {
     constructor(app) {
@@ -15,6 +16,10 @@ export class LayerManager {
         // Layer registry
         this.layers = new Map();
         this.layerOrder = [];
+        
+        // Three.js layer container
+        this.layerScene = new THREE.Group(); // Container for all layers
+        this.layerSpacing = 0.1; // Z-spacing between layers
         
         // Rendering state
         this.renderTargets = new Map();
@@ -46,6 +51,14 @@ export class LayerManager {
         
         // Add app reference to context for layers that need it
         this.context.app = this.app;
+        
+        // Add layer scene to main scene
+        if (this.context.scene) {
+            this.context.scene.add(this.layerScene);
+            console.log('LayerManager: Layer scene added to main scene');
+        } else {
+            console.warn('LayerManager: No scene in context, cannot add layer scene');
+        }
         
         // Initialize compositor for layer blending
         this.initializeCompositor();
@@ -111,19 +124,20 @@ export class LayerManager {
         
         await this.addLayer(gridLayer);
         
-        // Grid layer is added to the end by default, but can be reordered
+        // Ensure grid layer is at the back of the layer order
+        this.setLayerOrder(['grid', ...this.layerOrder.filter(id => id !== 'grid')]);
     }
 
     /**
-     * Add a P5 layer
+     * Add a P5 texture layer
      * @param {string} layerId - Layer ID
      * @param {Object} config - Layer configuration
      */
     async addP5Layer(layerId = 'p5', config = {}) {
         
-        const { P5Layer } = await import('./layers/P5Layer.js');
+        const { P5TextureLayer } = await import('./layers/P5TextureLayer.js');
         
-        const p5Layer = new P5Layer(layerId, {
+        const p5Layer = new P5TextureLayer(layerId, {
             visible: true,
             opacity: 1.0,
             blendMode: 'normal',
@@ -208,9 +222,24 @@ export class LayerManager {
         this.layers.set(layer.id, layer);
         
         // Add to order if not already present
+        // New layers should appear on top (at the beginning of the array)
         if (!this.layerOrder.includes(layer.id)) {
-            this.layerOrder.push(layer.id);
+            // Special handling for grid layer - always keep it at the back
+            if (layer.id === 'grid') {
+                this.layerOrder.push(layer.id); // Grid goes to the end (back)
+            } else {
+                this.layerOrder.unshift(layer.id); // Other layers go to the beginning (front)
+            }
         }
+        
+        // Add layer mesh to layer scene if it exists
+        if (layer.mesh && this.layerScene) {
+            this.layerScene.add(layer.mesh);
+            console.log(`LayerManager: Added layer ${layer.id} mesh to layer scene`);
+        }
+        
+        // Update z-positions after adding layer
+        this.updateLayerZPositions();
         
         // Set up parameter routing
         this.setupLayerParameterRouting(layer);
@@ -224,6 +253,12 @@ export class LayerManager {
         const layer = this.layers.get(layerId);
         if (!layer) return;
         
+        // Remove layer mesh from layer scene if it exists
+        if (layer.mesh && this.layerScene) {
+            this.layerScene.remove(layer.mesh);
+            console.log(`LayerManager: Removed layer ${layerId} mesh from layer scene`);
+        }
+        
         // Dispose the layer
         layer.dispose();
         
@@ -235,6 +270,9 @@ export class LayerManager {
         if (orderIndex !== -1) {
             this.layerOrder.splice(orderIndex, 1);
         }
+        
+        // Update z-positions after removing layer
+        this.updateLayerZPositions();
         
         // Clean up render target
         if (this.renderTargets.has(layerId)) {
@@ -313,6 +351,78 @@ export class LayerManager {
         }
         
         return layer.getParameter(paramName);
+    }
+
+    /**
+     * Set 3D position for a layer (advanced feature)
+     * @param {string} layerId - Layer ID
+     * @param {Object} position - Position object {x, y, z}
+     */
+    setLayer3DPosition(layerId, position) {
+        const layer = this.layers.get(layerId);
+        if (!layer) {
+            console.warn(`Layer ${layerId} not found for 3D positioning`);
+            return;
+        }
+        
+        if (!layer.mesh) {
+            console.warn(`Layer ${layerId} has no mesh for 3D positioning`);
+            return;
+        }
+        
+        if (position.x !== undefined) layer.mesh.position.x = position.x;
+        if (position.y !== undefined) layer.mesh.position.y = position.y;
+        if (position.z !== undefined) layer.mesh.position.z = position.z;
+        
+        console.log(`LayerManager: Set 3D position for layer ${layerId}:`, layer.mesh.position);
+    }
+
+    /**
+     * Set 3D rotation for a layer (advanced feature)
+     * @param {string} layerId - Layer ID
+     * @param {Object} rotation - Rotation object {x, y, z} in radians
+     */
+    setLayer3DRotation(layerId, rotation) {
+        const layer = this.layers.get(layerId);
+        if (!layer) {
+            console.warn(`Layer ${layerId} not found for 3D rotation`);
+            return;
+        }
+        
+        if (!layer.mesh) {
+            console.warn(`Layer ${layerId} has no mesh for 3D rotation`);
+            return;
+        }
+        
+        if (rotation.x !== undefined) layer.mesh.rotation.x = rotation.x;
+        if (rotation.y !== undefined) layer.mesh.rotation.y = rotation.y;
+        if (rotation.z !== undefined) layer.mesh.rotation.z = rotation.z;
+        
+        console.log(`LayerManager: Set 3D rotation for layer ${layerId}:`, layer.mesh.rotation);
+    }
+
+    /**
+     * Set 3D scale for a layer (advanced feature)
+     * @param {string} layerId - Layer ID
+     * @param {Object} scale - Scale object {x, y, z}
+     */
+    setLayer3DScale(layerId, scale) {
+        const layer = this.layers.get(layerId);
+        if (!layer) {
+            console.warn(`Layer ${layerId} not found for 3D scaling`);
+            return;
+        }
+        
+        if (!layer.mesh) {
+            console.warn(`Layer ${layerId} has no mesh for 3D scaling`);
+            return;
+        }
+        
+        if (scale.x !== undefined) layer.mesh.scale.x = scale.x;
+        if (scale.y !== undefined) layer.mesh.scale.y = scale.y;
+        if (scale.z !== undefined) layer.mesh.scale.z = scale.z;
+        
+        console.log(`LayerManager: Set 3D scale for layer ${layerId}:`, layer.mesh.scale);
     }
 
     /**
@@ -498,7 +608,7 @@ export class LayerManager {
                     await layer.setConfig(layerConfig);
                 } else {
                     // Layer doesn't exist, create it based on type
-                    if (layerConfig.type === 'P5Layer' || layerId === 'p5') {
+                    if (layerConfig.type === 'P5TextureLayer' || layerConfig.type === 'P5Layer' || layerId === 'p5') {
                         try {
                             layer = await this.addP5Layer(layerId, layerConfig);
                             // After creating the layer, call setConfig to restore the full configuration
@@ -556,6 +666,16 @@ export class LayerManager {
         this.layers.clear();
         this.layerOrder = [];
         
+        // Remove layer scene from main scene
+        if (this.layerScene && this.context && this.context.scene) {
+            this.context.scene.remove(this.layerScene);
+        }
+        
+        // Clear layer scene
+        if (this.layerScene) {
+            this.layerScene.clear();
+        }
+        
         // Dispose render targets
         this.renderTargets.forEach(renderTarget => {
             renderTarget.dispose();
@@ -572,17 +692,22 @@ export class LayerManager {
     }
 
     /**
-     * Update z-positions of all layers based on their order
-     * This ensures proper depth separation and prevents z-fighting
+     * Update 3D positions of all layers based on their order
+     * This ensures proper depth separation and layer ordering
      */
     updateLayerZPositions() {
-        const baseZSpacing = 10; // Distance between layers in z-space
-        
         this.layerOrder.forEach((layerId, index) => {
             const layer = this.layers.get(layerId);
-            if (layer) {
-                // Calculate z-position: first layer is closest, last layer is farthest
-                const zPosition = index * baseZSpacing;
+            if (layer && layer.mesh) {
+                // Calculate z-position: first layer is closest (0), subsequent layers go back
+                layer.mesh.position.z = -index * this.layerSpacing;
+                layer.mesh.renderOrder = this.layerOrder.length - index;
+                layer.mesh.layers.set(index);
+                
+                console.log(`LayerManager: Updated layer ${layerId} position.z = ${layer.mesh.position.z}, renderOrder = ${layer.mesh.renderOrder}`);
+            } else if (layer) {
+                // Fallback for layers without mesh (like grid layer)
+                const zPosition = -index * this.layerSpacing;
                 layer.setZOffset(zPosition);
                 
                 // Update 3D objects if this is a grid layer
