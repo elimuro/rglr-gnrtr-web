@@ -21,6 +21,42 @@ export class LayerPanel {
     }
 
     /**
+     * Get layer icon for display
+     * @param {string} layerType - Layer class name
+     * @returns {string} Icon emoji
+     */
+    getLayerIcon(layerType) {
+        switch (layerType) {
+            case 'P5TextureLayer':
+                return '🎨';
+            case 'ShaderLayer':
+                return '⚡';
+            case 'GridLayer':
+                return '📐';
+            default:
+                return '🔷';
+        }
+    }
+
+    /**
+     * Get friendly layer type name for display
+     * @param {string} layerType - Layer class name
+     * @returns {string} Friendly name
+     */
+    getLayerTypeName(layerType) {
+        switch (layerType) {
+            case 'P5TextureLayer':
+                return 'P5.js Sketch';
+            case 'ShaderLayer':
+                return 'GLSL Shader';
+            case 'GridLayer':
+                return 'Grid System';
+            default:
+                return layerType;
+        }
+    }
+
+    /**
      * Create the layer panel DOM elements
      */
     createPanel() {
@@ -148,11 +184,11 @@ export class LayerPanel {
             }
         });
         
-        // Add button to create P5 layer if none exists
-        if (!layers.has('p5')) {
-            const addP5Button = this.createAddP5Button();
-            this.layerList.appendChild(addP5Button);
-        }
+        // P5 layer creation temporarily hidden - functionality preserved in code
+        // if (!layers.has('p5')) {
+        //     const addP5Button = this.createAddP5Button();
+        //     this.layerList.appendChild(addP5Button);
+        // }
 
         // Add button to create shader layer if none exists
         if (!layers.has('shader')) {
@@ -216,10 +252,15 @@ export class LayerPanel {
         `;
         
         const type = document.createElement('div');
-        type.textContent = layer.constructor.name;
+        const layerIcon = this.getLayerIcon(layer.constructor.name);
+        const layerType = this.getLayerTypeName(layer.constructor.name);
+        type.innerHTML = `${layerIcon} ${layerType}`;
         type.style.cssText = `
             font-size: 10px;
             color: #888;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         `;
         
         nameSection.appendChild(name);
@@ -345,7 +386,7 @@ export class LayerPanel {
         infoRow.appendChild(blendMode);
 
         // Add P5-specific info if it's a P5 layer
-        if (layer.constructor.name === 'P5Layer') {
+        if (layer.constructor.name === 'P5TextureLayer') {
             const p5Status = document.createElement('span');
             if (layer.hasSketchError && layer.hasSketchError()) {
                 p5Status.textContent = '❌ Error';
@@ -379,7 +420,7 @@ export class LayerPanel {
         item.appendChild(infoRow);
 
         // Add P5-specific controls in a compact row
-        if (layer.constructor.name === 'P5Layer') {
+        if (layer.constructor.name === 'P5TextureLayer') {
             const p5Controls = this.createCompactP5Controls(layer);
             item.appendChild(p5Controls);
         }
@@ -419,7 +460,7 @@ export class LayerPanel {
             transition: all 0.3s ease;
             margin-bottom: 10px;
         `;
-        button.textContent = '+ Add P5.js Layer';
+        button.innerHTML = '🎨 + Add P5.js Sketch Layer';
         
         button.addEventListener('mouseover', () => {
             button.style.background = 'rgba(0, 150, 255, 0.3)';
@@ -464,7 +505,7 @@ export class LayerPanel {
             transition: all 0.3s ease;
             margin-bottom: 10px;
         `;
-        button.textContent = '+ Add Shader Layer';
+        button.innerHTML = '⚡ + Add GLSL Shader Layer';
         
         button.addEventListener('mouseover', () => {
             button.style.background = 'rgba(255, 100, 0, 0.3)';
@@ -508,7 +549,7 @@ export class LayerPanel {
 
     /**
      * Create P5-specific controls
-     * @param {P5Layer} layer - P5 layer instance
+     * @param {P5TextureLayer} layer - P5 layer instance
      * @returns {HTMLElement} P5 controls element
      */
     createP5Controls(layer) {
@@ -610,7 +651,7 @@ export class LayerPanel {
 
     /**
      * Create compact P5-specific controls
-     * @param {P5Layer} layer - P5 layer instance
+     * @param {P5TextureLayer} layer - P5 layer instance
      * @returns {HTMLElement} Compact P5 controls element
      */
     createCompactP5Controls(layer) {
@@ -624,24 +665,31 @@ export class LayerPanel {
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         `;
 
-        // Status indicator
+        // Status indicator for P5TextureLayer
+        const hasError = layer.hasError;
+        const isRunning = layer.isRunning;
+        
         const statusIndicator = document.createElement('div');
         statusIndicator.style.cssText = `
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: ${layer.hasSketchError() ? '#ff6b6b' : (layer.isSketchRunning() ? '#51cf66' : '#ffd43b')};
+            background: ${hasError ? '#ff6b6b' : (isRunning ? '#51cf66' : '#ffd43b')};
             flex-shrink: 0;
         `;
-        statusIndicator.title = layer.hasSketchError() ? 'Error' : (layer.isSketchRunning() ? 'Running' : 'Stopped');
+        statusIndicator.title = hasError ? 'Error' : (isRunning ? 'Running' : 'Stopped');
 
         // Status text
         const statusText = document.createElement('span');
-        statusText.textContent = layer.hasSketchError() ? '❌ Error' : (layer.isSketchRunning() ? '✅ Running' : '⏸️ Stopped');
+        statusText.textContent = hasError ? '❌ Error' : (isRunning ? '✅ Running' : '⏸️ Stopped');
         statusText.style.cssText = `
             font-size: 9px;
-            color: ${layer.hasSketchError() ? '#ff6b6b' : (layer.isSketchRunning() ? '#51cf66' : '#ffd43b')};
+            color: ${hasError ? '#ff6b6b' : (isRunning ? '#51cf66' : '#ffd43b')};
         `;
+
+        // Add status indicator and text
+        controls.appendChild(statusIndicator);
+        controls.appendChild(statusText);
 
         // Parameters list
         const params = layer.getAllParameters();
@@ -998,7 +1046,7 @@ export class LayerPanel {
                 }
                 
                 // Update P5-specific controls if it's a P5 layer
-                if (layer.constructor.name === 'P5Layer') {
+                if (layer.constructor.name === 'P5TextureLayer') {
                     this.updateCompactP5LayerInfo(item, layer);
                 }
                 
@@ -1016,16 +1064,16 @@ export class LayerPanel {
     /**
      * Update P5-specific layer information
      * @param {HTMLElement} layerItem - Layer item DOM element
-     * @param {P5Layer} layer - P5 layer instance
+     * @param {P5TextureLayer} layer - P5 layer instance
      */
     updateCompactP5LayerInfo(layerItem, layer) {
         // Update P5 status in the info row
         const p5StatusElement = layerItem.querySelector('span[style*="font-size: 9px"][style*="color"]');
         if (p5StatusElement && (p5StatusElement.textContent.includes('❌') || p5StatusElement.textContent.includes('✅') || p5StatusElement.textContent.includes('⏸️'))) {
-            if (layer.hasSketchError()) {
+            if (layer.hasError) {
                 p5StatusElement.innerHTML = '❌ Error';
                 p5StatusElement.style.color = '#ff6b6b';
-            } else if (layer.isSketchRunning()) {
+            } else if (layer.isRunning) {
                 p5StatusElement.innerHTML = '✅ Running';
                 p5StatusElement.style.color = '#51cf66';
             } else {
@@ -1040,10 +1088,10 @@ export class LayerPanel {
             // Update status indicator in P5 controls
             const statusIndicator = p5Controls.querySelector('div[style*="border-radius: 50%"]');
             if (statusIndicator) {
-                if (layer.hasSketchError()) {
+                if (layer.hasError) {
                     statusIndicator.style.background = '#ff6b6b';
                     statusIndicator.title = 'Error';
-                } else if (layer.isSketchRunning()) {
+                } else if (layer.isRunning) {
                     statusIndicator.style.background = '#51cf66';
                     statusIndicator.title = 'Running';
                 } else {
@@ -1055,10 +1103,10 @@ export class LayerPanel {
             // Update status text in P5 controls
             const statusText = p5Controls.querySelector('span[style*="font-size: 9px"][style*="color"]');
             if (statusText) {
-                if (layer.hasSketchError()) {
+                if (layer.hasError) {
                     statusText.textContent = '❌ Error';
                     statusText.style.color = '#ff6b6b';
-                } else if (layer.isSketchRunning()) {
+                } else if (layer.isRunning) {
                     statusText.textContent = '✅ Running';
                     statusText.style.color = '#51cf66';
                 } else {

@@ -8,7 +8,7 @@ export class P5CodeEditor {
         this.app = app;
         this.isOpen = false;
         this.editor = null;
-        this.currentP5Layer = null;
+        this.currentP5Layer = null; // Will be a P5TextureLayer instance
         
         // Editor configuration
         this.editorConfig = {
@@ -69,16 +69,11 @@ export class P5CodeEditor {
         console.log('P5CodeEditor: Current P5 layer:', this.currentP5Layer);
         
         if (!this.currentP5Layer) {
-            // Create a P5 layer if none exists
-            console.log('P5CodeEditor: No P5 layer found, creating one...');
-            try {
-                await this.app.addP5Layer();
-                this.currentP5Layer = this.app.layerManager.getLayer('p5');
-                console.log('P5CodeEditor: P5 layer created:', this.currentP5Layer);
-            } catch (error) {
-                console.error('P5CodeEditor: Failed to create P5 layer:', error);
-                return;
-            }
+            // P5 layer creation is currently disabled - only edit existing P5 layers
+            console.log('P5CodeEditor: No P5 layer found. P5 layer creation is currently disabled.');
+            console.log('P5CodeEditor: Only existing P5 layers can be edited.');
+            alert('No P5 layer found to edit. P5 layer creation is currently disabled.');
+            return;
         }
         
         if (!this.currentP5Layer) {

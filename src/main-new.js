@@ -17,7 +17,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.app = app;
         
         // Make test methods globally available for development
-        window.testP5Layer = () => app.testP5Layer();
+        // P5 layer testing temporarily disabled
+        // window.testP5Layer = () => app.testP5Layer();
         window.testShaderLayer = () => app.testShaderLayer();
         
     } catch (error) {

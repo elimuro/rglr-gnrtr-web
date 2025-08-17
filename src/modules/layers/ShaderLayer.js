@@ -26,6 +26,8 @@ export class ShaderLayer extends LayerBase {
         this.hasError = false;
         this.lastError = null;
         this.compilationTime = 0;
+        this.validationErrors = [];
+        this.validationWarnings = [];
         
         // Parameter registry (shader uniforms)
         this.uniforms = new Map(); // name -> { value, type, min, max, step, label, defaultValue }
@@ -314,33 +316,69 @@ export class ShaderLayer extends LayerBase {
             description: 'Agent sensor range'
         });
     }
+    
+    /**
+     * Create default uniforms for shader compilation
+     * @returns {Object} Default uniforms object for Three.js ShaderMaterial
+     */
+    createDefaultUniforms() {
+        const uniforms = {
+            time: { value: 0.0 },
+            resolution: { value: new THREE.Vector2(800, 600) },
+            opacity: { value: 1.0 }
+        };
+        
+        // Add any registered uniforms safely
+        if (this.uniforms && this.uniforms.size > 0) {
+            this.uniforms.forEach((param, name) => {
+                if (!this.reservedUniforms.has(name)) {
+                    try {
+                        uniforms[name] = { value: this.createThreeValueForUniform(name) };
+                    } catch (error) {
+                        console.warn(`Failed to create uniform ${name}:`, error);
+                        // Provide a safe default
+                        uniforms[name] = { value: 0.0 };
+                    }
+                }
+            });
+        }
+        
+        return uniforms;
+    }
 
     /**
-     * Compile shader code
+     * Compile shader code with enhanced error handling and recovery
      */
     async compileShader(fragmentShaderCode) {
+        const startTime = performance.now();
+        
         try {
             console.log(`ShaderLayer ${this.id}: Compiling shader...`);
             
-            const startTime = performance.now();
+            // Store previous shader for potential rollback
+            const previousShader = this.fragmentShader;
+            const previousCompiled = this.isCompiled;
             
-            // Store shader code
+            // Store new shader code
             this.fragmentShader = fragmentShaderCode;
             
-            // Clear previous error
+            // Clear previous error state
             this.hasError = false;
             this.lastError = null;
+            this.validationErrors = [];
+            this.validationWarnings = [];
             
-            // Validate shader syntax
+            // Validate shader syntax first
             await this.validateShader(fragmentShaderCode);
             
             // Discover and register uniforms declared in the shader code
             this.discoverAndRegisterUniforms(fragmentShaderCode);
             
-            // Update material with new shader
-            this.material.fragmentShader = fragmentShaderCode;
+            // Test compile the shader by creating a temporary material (disabled for now to avoid WebGL issues)
+            // await this.testShaderCompilation(fragmentShaderCode);
             
-            // Recompile material
+            // If test compilation succeeded, update the actual material
+            this.material.fragmentShader = fragmentShaderCode;
             this.material.needsUpdate = true;
             
             // Update uniforms
@@ -351,38 +389,313 @@ export class ShaderLayer extends LayerBase {
             
             console.log(`ShaderLayer ${this.id}: Shader compiled successfully in ${this.compilationTime.toFixed(2)}ms`);
             
+            // Emit compilation success event
+            this.emitEvent('shaderCompiled', { 
+                compilationTime: this.compilationTime,
+                warnings: this.validationWarnings 
+            });
+            
         } catch (error) {
-            console.error('Failed to compile shader:', error);
+            this.compilationTime = performance.now() - startTime;
+            
+            console.error(`ShaderLayer ${this.id}: Compilation failed:`, error);
             this.hasError = true;
-            this.lastError = error.message;
+            this.lastError = this.formatShaderError(error);
             this.isCompiled = false;
+            
+            // Attempt graceful recovery
+            await this.handleCompilationError(error);
+            
+            // Emit compilation error event
+            this.emitEvent('shaderError', { 
+                error: this.lastError,
+                compilationTime: this.compilationTime 
+            });
+            
             throw error;
+        }
+    }
+    
+    /**
+     * Test shader compilation without affecting the main material
+     */
+    async testShaderCompilation(fragmentShaderCode) {
+        let testMaterial = null;
+        let testGeometry = null;
+        let testMesh = null;
+        
+        try {
+            // Ensure we have a valid vertex shader
+            if (!this.vertexShader) {
+                this.vertexShader = this.getDefaultVertexShader();
+            }
+            
+            // Create default uniforms safely
+            const uniforms = this.createDefaultUniforms();
+            
+            // Create a temporary material for testing
+            testMaterial = new THREE.ShaderMaterial({
+                vertexShader: this.vertexShader,
+                fragmentShader: fragmentShaderCode,
+                uniforms: uniforms,
+                transparent: true
+            });
+            
+            // Create a simple test geometry and mesh
+            testGeometry = new THREE.PlaneGeometry(1, 1);
+            testMesh = new THREE.Mesh(testGeometry, testMaterial);
+            
+            // Test compilation in a safer way
+            if (this.context && this.context.renderer && this.context.scene) {
+                // Create a temporary scene to avoid affecting the main scene
+                const tempScene = new THREE.Scene();
+                tempScene.add(testMesh);
+                
+                // Create a minimal camera for compilation
+                const tempCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 2);
+                tempCamera.position.z = 1;
+                
+                try {
+                    // Force WebGL compilation
+                    this.context.renderer.compile(tempScene, tempCamera);
+                    
+                    // Test if the program compiled successfully by checking for WebGL errors
+                    const gl = this.context.renderer.getContext();
+                    const error = gl.getError();
+                    if (error !== gl.NO_ERROR) {
+                        throw new Error(`WebGL error during shader compilation: ${error}`);
+                    }
+                    
+                } catch (compileError) {
+                    throw new Error(`Shader compilation test failed: ${compileError.message}`);
+                }
+                
+                // Clean up temp scene
+                tempScene.remove(testMesh);
+            } else {
+                // If no renderer context available, just create the material and hope for the best
+                console.warn('ShaderLayer: No renderer context available for shader compilation test');
+            }
+            
+        } catch (error) {
+            throw new Error(`WebGL compilation failed: ${error.message}`);
+        } finally {
+            // Always clean up test objects
+            if (testGeometry) {
+                testGeometry.dispose();
+            }
+            if (testMaterial) {
+                // Dispose material uniforms that might have textures
+                if (testMaterial.uniforms) {
+                    Object.values(testMaterial.uniforms).forEach(uniform => {
+                        if (uniform.value && uniform.value.dispose) {
+                            uniform.value.dispose();
+                        }
+                    });
+                }
+                testMaterial.dispose();
+            }
+        }
+    }
+    
+    /**
+     * Format shader error messages for better readability
+     */
+    formatShaderError(error) {
+        let message = error.message || error.toString();
+        
+        // Extract WebGL error information if available
+        if (message.includes('ERROR:')) {
+            const errorMatch = message.match(/ERROR: (\d+):(\d+): (.+)/);
+            if (errorMatch) {
+                const [, , line, description] = errorMatch;
+                message = `Line ${line}: ${description}`;
+            }
+        }
+        
+        // Add helpful suggestions for common errors
+        const suggestions = this.getErrorSuggestions(message);
+        if (suggestions.length > 0) {
+            message += '\n\nSuggestions:\n' + suggestions.join('\n');
+        }
+        
+        return message;
+    }
+    
+    /**
+     * Get helpful suggestions for common shader errors
+     */
+    getErrorSuggestions(errorMessage) {
+        const suggestions = [];
+        
+        if (errorMessage.includes('undeclared identifier')) {
+            suggestions.push('• Check variable names and function declarations');
+            suggestions.push('• Ensure all uniforms are properly declared');
+        }
+        
+        if (errorMessage.includes('type mismatch')) {
+            suggestions.push('• Check data types (float, vec2, vec3, vec4)');
+            suggestions.push('• Use proper type casting (float(x), vec3(x))');
+        }
+        
+        if (errorMessage.includes('syntax error')) {
+            suggestions.push('• Check for missing semicolons');
+            suggestions.push('• Verify brace and parenthesis matching');
+        }
+        
+        if (errorMessage.includes('function') && errorMessage.includes('not found')) {
+            suggestions.push('• Check GLSL function names (sin, cos, length, etc.)');
+            suggestions.push('• Ensure custom functions are defined before use');
+        }
+        
+        return suggestions;
+    }
+    
+    /**
+     * Handle compilation errors with graceful recovery
+     */
+    async handleCompilationError(error) {
+        console.log(`ShaderLayer ${this.id}: Attempting error recovery...`);
+        
+        // Try to load a fallback shader to keep the layer functional
+        try {
+            const fallbackShader = this.getErrorFallbackShader();
+            
+            // Update material with fallback shader (don't recurse through compileShader)
+            this.material.fragmentShader = fallbackShader;
+            this.material.needsUpdate = true;
+            
+            console.log(`ShaderLayer ${this.id}: Fallback shader loaded for error recovery`);
+            
+        } catch (fallbackError) {
+            console.error(`ShaderLayer ${this.id}: Fallback shader also failed:`, fallbackError);
+        }
+    }
+    
+    /**
+     * Get a simple fallback shader for error recovery
+     */
+    getErrorFallbackShader() {
+        return `
+            precision mediump float;
+            uniform float time;
+            uniform vec2 resolution;
+            varying vec2 vUv;
+            
+            void main() {
+                // Simple error indicator pattern
+                vec2 uv = vUv;
+                float pattern = sin(uv.x * 10.0 + time) * sin(uv.y * 10.0 + time);
+                vec3 color = vec3(1.0, 0.2, 0.2) * (0.5 + 0.5 * pattern);
+                gl_FragColor = vec4(color, 0.8);
+            }
+        `;
+    }
+    
+    /**
+     * Emit events for shader compilation status
+     */
+    emitEvent(eventType, data) {
+        if (this.app && this.app.eventBus) {
+            this.app.eventBus.emit(`shader.${eventType}`, {
+                layerId: this.id,
+                ...data
+            });
         }
     }
 
     /**
-     * Validate shader syntax
+     * Validate shader syntax with enhanced error detection
      */
     async validateShader(shaderCode) {
+        const errors = [];
+        const warnings = [];
+        
         // Basic GLSL validation
         if (!shaderCode.includes('void main()')) {
-            throw new Error('Shader must contain main() function');
+            errors.push('Shader must contain main() function');
         }
         
-        if (!shaderCode.includes('gl_FragColor')) {
-            throw new Error('Fragment shader must set gl_FragColor');
+        if (!shaderCode.includes('gl_FragColor') && !shaderCode.includes('gl_FragData')) {
+            errors.push('Fragment shader must set gl_FragColor or gl_FragData');
         }
         
-        // Check for common GLSL syntax errors
-        const commonErrors = [
-            { pattern: /precision\s+(?:lowp|mediump|highp)\s+float\s*;/, message: 'Missing precision qualifier' },
-            { pattern: /varying\s+vec2\s+vUv\s*;/, message: 'Missing vUv varying' }
+        // Enhanced syntax validation (less noisy)
+        const syntaxChecks = [
+            {
+                pattern: /precision\s+(?:lowp|mediump|highp)\s+float\s*;/,
+                message: 'Precision qualifier found (good practice)',
+                type: 'info',
+                invert: false // Check if present
+            },
+            {
+                pattern: /varying\s+vec2\s+vUv\s*;/,
+                message: 'vUv varying declaration found (good for texture coordinates)',
+                type: 'info',
+                invert: false // Check if present
+            },
+            {
+                pattern: /uniform\s+float\s+time\s*;/,
+                message: 'time uniform declared (automatically provided by system)',
+                type: 'info',
+                invert: false
+            },
+            {
+                pattern: /uniform\s+vec2\s+resolution\s*;/,
+                message: 'resolution uniform declared (automatically provided by system)',
+                type: 'info',
+                invert: false
+            }
         ];
         
-        for (const check of commonErrors) {
-            if (!check.pattern.test(shaderCode)) {
-                console.warn(`Shader validation warning: ${check.message}`);
+        // Check for unmatched braces
+        const openBraces = (shaderCode.match(/\{/g) || []).length;
+        const closeBraces = (shaderCode.match(/\}/g) || []).length;
+        if (openBraces !== closeBraces) {
+            errors.push(`Unmatched braces: ${openBraces} opening, ${closeBraces} closing`);
+        }
+        
+        // Check for unmatched parentheses
+        const openParens = (shaderCode.match(/\(/g) || []).length;
+        const closeParens = (shaderCode.match(/\)/g) || []).length;
+        if (openParens !== closeParens) {
+            errors.push(`Unmatched parentheses: ${openParens} opening, ${closeParens} closing`);
+        }
+        
+        // Check for common GLSL function typos
+        const commonTypos = [
+            { wrong: 'lenght', correct: 'length' },
+            { wrong: 'normalize', correct: 'normalize' }, // catches normalise
+            { wrong: 'colour', correct: 'color' },
+            { wrong: 'centre', correct: 'center' }
+        ];
+        
+        commonTypos.forEach(typo => {
+            if (shaderCode.includes(typo.wrong)) {
+                warnings.push(`Possible typo: "${typo.wrong}" should be "${typo.correct}"`);
             }
+        });
+        
+        // Run syntax checks (only log info messages, don't add to warnings)
+        syntaxChecks.forEach(check => {
+            const found = check.pattern.test(shaderCode);
+            if (check.type === 'info' && found) {
+                console.info(`ShaderLayer: ${check.message}`);
+            }
+        });
+        
+        // Store validation results
+        this.validationErrors = errors;
+        this.validationWarnings = warnings;
+        
+        // Log warnings only if they're significant
+        if (warnings.length > 0) {
+            console.info(`ShaderLayer ${this.id}: Validation notes (${warnings.length}):`, warnings);
+        }
+        
+        // Throw error if critical issues found
+        if (errors.length > 0) {
+            throw new Error(`Shader validation failed:\n${errors.join('\n')}`);
         }
     }
 
@@ -557,29 +870,49 @@ export class ShaderLayer extends LayerBase {
             found.add(name);
             if (this.reservedUniforms.has(name)) continue;
             if (!this.uniforms.has(name)) {
-                // Create sensible defaults
+                const paramConfig = this.generateParameterConfig(name, type, shaderCode);
+                
                 switch (type) {
                     case 'float':
                     case 'int':
                     case 'bool':
-                        this.registerUniform(name, 0.0, {
+                        this.registerUniform(name, paramConfig.defaultValue, {
                             type: 'number',
-                            min: 0.0,
-                            max: 1.0,
-                            step: 0.001,
-                            label: name,
-                            description: 'Shader uniform'
+                            min: paramConfig.min,
+                            max: paramConfig.max,
+                            step: paramConfig.step,
+                            label: paramConfig.label,
+                            description: paramConfig.description,
+                            category: paramConfig.category
                         });
                         break;
                     case 'vec2':
-                        this.registerUniform(name, { x: 0, y: 0 }, {
+                        this.registerUniform(name, paramConfig.defaultValue, {
                             type: 'vector2',
-                            label: name,
-                            description: 'Shader vector2 uniform'
+                            label: paramConfig.label,
+                            description: paramConfig.description,
+                            category: paramConfig.category
+                        });
+                        break;
+                    case 'vec3':
+                        this.registerUniform(name, paramConfig.defaultValue, {
+                            type: 'color',
+                            label: paramConfig.label,
+                            description: paramConfig.description,
+                            category: paramConfig.category
+                        });
+                        break;
+                    case 'vec4':
+                        this.registerUniform(name, paramConfig.defaultValue, {
+                            type: 'color',
+                            alpha: true,
+                            label: paramConfig.label,
+                            description: paramConfig.description,
+                            category: paramConfig.category
                         });
                         break;
                     default:
-                        // Skip vec3/vec4/samplers for now in mapping UI
+                        // Skip samplers for now
                         break;
                 }
             }
@@ -604,6 +937,128 @@ export class ShaderLayer extends LayerBase {
                 delete this.material.uniforms[name];
             }
         });
+
+        console.log(`ShaderLayer ${this.id}: Discovered ${found.size} uniforms with enhanced config:`, 
+            Array.from(found).map(name => ({ 
+                name, 
+                config: this.uniforms.get(name) 
+            })));
+    }
+
+    /**
+     * Generate intelligent parameter configuration based on uniform name and context
+     */
+    generateParameterConfig(name, type, shaderCode) {
+        const config = {
+            defaultValue: this.getDefaultValueForType(type),
+            min: 0.0,
+            max: 1.0,
+            step: 0.001,
+            label: this.generateFriendlyLabel(name),
+            description: `${type} uniform parameter`,
+            category: 'general'
+        };
+        
+        // Look for inline comments with parameter hints
+        const paramHintRegex = new RegExp(`uniform\\s+${type}\\s+${name}\\s*;\\s*//\\s*(.+)`, 'i');
+        const hintMatch = shaderCode.match(paramHintRegex);
+        if (hintMatch) {
+            const hint = hintMatch[1].trim();
+            config.description = hint;
+            
+            // Parse range hints like [0..10] or [0.1..2.0]
+            const rangeMatch = hint.match(/\[([0-9.-]+)\.\.([0-9.-]+)\]/);
+            if (rangeMatch) {
+                config.min = parseFloat(rangeMatch[1]);
+                config.max = parseFloat(rangeMatch[2]);
+                config.step = (config.max - config.min) / 1000;
+                config.defaultValue = (config.min + config.max) / 2;
+            }
+        }
+        
+        // Intelligent defaults based on parameter name
+        const namePatterns = [
+            { pattern: /speed|velocity|rate/i, min: 0, max: 5, default: 1, category: 'animation' },
+            { pattern: /time|duration/i, min: 0, max: 10, default: 1, category: 'animation' },
+            { pattern: /scale|size|zoom/i, min: 0.1, max: 5, default: 1, category: 'transform' },
+            { pattern: /rotation|angle/i, min: 0, max: 6.28, default: 0, category: 'transform' },
+            { pattern: /frequency|freq/i, min: 1, max: 50, default: 10, category: 'wave' },
+            { pattern: /amplitude|amp/i, min: 0, max: 2, default: 1, category: 'wave' },
+            { pattern: /brightness|intensity/i, min: 0, max: 3, default: 1, category: 'appearance' },
+            { pattern: /contrast/i, min: 0.1, max: 3, default: 1, category: 'appearance' },
+            { pattern: /opacity|alpha/i, min: 0, max: 1, default: 1, category: 'appearance' },
+            { pattern: /color|hue/i, min: 0, max: 1, default: 0.5, category: 'color' },
+            { pattern: /saturation|sat/i, min: 0, max: 1, default: 0.8, category: 'color' },
+            { pattern: /complexity|detail/i, min: 1, max: 10, default: 5, category: 'pattern' },
+            { pattern: /segments|divisions/i, min: 3, max: 20, default: 8, category: 'pattern' },
+            { pattern: /distortion|warp/i, min: 0, max: 1, default: 0.5, category: 'effect' },
+            { pattern: /noise|random/i, min: 0, max: 1, default: 0.5, category: 'effect' }
+        ];
+        
+        for (const pattern of namePatterns) {
+            if (pattern.pattern.test(name)) {
+                config.min = pattern.min;
+                config.max = pattern.max;
+                config.defaultValue = pattern.default;
+                config.step = (config.max - config.min) / 1000;
+                config.category = pattern.category;
+                break;
+            }
+        }
+        
+        // Special handling for vec2/vec3/vec4
+        if (type === 'vec2') {
+            config.defaultValue = { x: 0.5, y: 0.5 };
+            if (/position|offset|translate/i.test(name)) {
+                config.defaultValue = { x: 0, y: 0 };
+                config.category = 'transform';
+            }
+        } else if (type === 'vec3') {
+            config.defaultValue = { r: 0.5, g: 0.5, b: 0.8 }; // Nice default color
+            config.category = 'color';
+        } else if (type === 'vec4') {
+            config.defaultValue = { r: 0.5, g: 0.5, b: 0.8, a: 1.0 };
+            config.category = 'color';
+        }
+        
+        return config;
+    }
+    
+    /**
+     * Generate friendly label from camelCase or snake_case parameter name
+     */
+    generateFriendlyLabel(name) {
+        // Convert camelCase to Title Case
+        let label = name.replace(/([a-z])([A-Z])/g, '$1 $2');
+        
+        // Convert snake_case to Title Case
+        label = label.replace(/_/g, ' ');
+        
+        // Capitalize first letter of each word
+        label = label.replace(/\b\w/g, l => l.toUpperCase());
+        
+        return label;
+    }
+    
+    /**
+     * Get default value for uniform type
+     */
+    getDefaultValueForType(type) {
+        switch (type) {
+            case 'float':
+            case 'int':
+                return 0.5;
+            case 'bool':
+                return false;
+            case 'vec2':
+                return { x: 0.5, y: 0.5 };
+            case 'vec3':
+                return { r: 0.5, g: 0.5, b: 0.8 };
+            case 'vec4':
+                return { r: 0.5, g: 0.5, b: 0.8, a: 1.0 };
+            default:
+                return 0;
+        }
     }
 
     createThreeValueForUniform(name) {

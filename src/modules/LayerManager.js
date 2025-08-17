@@ -40,6 +40,20 @@ export class LayerManager {
         
         // Flag to prevent recursive calls during setConfig
         this.isSettingConfig = false;
+        
+        // Performance optimization caches
+        this.cachedVisibleLayers = [];
+        this.cachedLayerOrder = [];
+        this.lastOrderUpdate = 0;
+        this.lastVisibilityCheck = 0;
+        
+        // Render optimization flags
+        this.needsOrderUpdate = true;
+        this.needsVisibilityUpdate = true;
+        
+        // Batch operations queue
+        this.batchedOperations = [];
+        this.batchTimer = null;
     }
 
     /**
@@ -283,10 +297,20 @@ export class LayerManager {
     }
 
     /**
-     * Set layer order (for front-to-back rendering)
+     * Set layer order (for front-to-back rendering) with optimization
      * @param {string[]} order - Array of layer IDs in desired order
+     * @param {boolean} immediate - Whether to apply changes immediately or batch them
      */
-    setLayerOrder(order) {
+    setLayerOrder(order, immediate = true) {
+        // If not immediate, queue the operation for batching
+        if (!immediate) {
+            this.queueBatchedOperation({
+                type: 'orderChanges',
+                order: order
+            });
+            return;
+        }
+        
         // Validate that all layers exist
         const validOrder = order.filter(id => this.layers.has(id));
         const missingLayers = order.filter(id => !this.layers.has(id));
@@ -294,6 +318,10 @@ export class LayerManager {
         if (missingLayers.length > 0) {
             console.warn('Attempted to set order for non-existent layers:', missingLayers);
         }
+        
+        // Check if order actually changed to avoid unnecessary work
+        const orderChanged = !this.arraysEqual(this.layerOrder, validOrder);
+        if (!orderChanged) return;
         
         // Add any layers that weren't in the order
         this.layerOrder.forEach(id => {
@@ -303,6 +331,8 @@ export class LayerManager {
         });
         
         this.layerOrder = validOrder;
+        this.needsOrderUpdate = true;
+        this.needsVisibilityUpdate = true;
         
         // Update z-positions based on new order
         this.updateLayerZPositions();
@@ -311,6 +341,65 @@ export class LayerManager {
         if (!this.isSettingConfig) {
             this.state.set('layerOrder', [...this.layerOrder]);
         }
+    }
+    
+    /**
+     * Queue a batched operation for later processing
+     * @param {Object} operation - Operation to queue
+     */
+    queueBatchedOperation(operation) {
+        this.batchedOperations.push(operation);
+        
+        // Set up batch timer if not already set
+        if (!this.batchTimer) {
+            this.batchTimer = setTimeout(() => {
+                this.processBatchedOperations();
+                this.batchTimer = null;
+            }, 16); // Process at ~60fps
+        }
+    }
+    
+    /**
+     * Optimized parameter setting with batching support
+     * @param {string} layerId - Layer ID
+     * @param {string} paramName - Parameter name
+     * @param {*} value - Parameter value
+     * @param {boolean} immediate - Whether to apply immediately or batch
+     */
+    setLayerParameterOptimized(layerId, paramName, value, immediate = false) {
+        if (!immediate) {
+            this.queueBatchedOperation({
+                type: 'parameterUpdates',
+                layerId,
+                paramName,
+                value
+            });
+            return;
+        }
+        
+        const layer = this.layers.get(layerId);
+        if (layer) {
+            layer.setParameter(paramName, value);
+            
+            // Mark visibility update needed if it's a visibility-related parameter
+            if (paramName === 'visible' || paramName === 'opacity') {
+                this.needsVisibilityUpdate = true;
+            }
+        }
+    }
+    
+    /**
+     * Check if two arrays are equal
+     * @param {Array} a - First array
+     * @param {Array} b - Second array
+     * @returns {boolean} Whether arrays are equal
+     */
+    arraysEqual(a, b) {
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
     }
 
     /**
@@ -440,29 +529,151 @@ export class LayerManager {
     }
 
     /**
-     * Render all layers in order
+     * Render all layers in order with performance optimizations
      * @param {THREE.WebGLRenderer} renderer - Three.js renderer
      * @param {THREE.Camera} camera - Three.js camera
      */
     render(renderer, camera) {
         const startTime = performance.now();
         
-        // Get layers in order
-        const layersToRender = this.layerOrder
-            .map(id => this.layers.get(id))
-            .filter(layer => layer && layer.visible && layer.opacity > 0);
+        // Process any batched operations first
+        this.processBatchedOperations();
         
-        // Update all layers first
-        layersToRender.forEach(layer => {
-            layer.update(this.app.animationLoop.deltaTime);
-        });
+        // Get layers to render using cached results when possible
+        const layersToRender = this.getCachedVisibleLayers();
         
-        // Render additional layers using compositor
-        // (Main scene is already rendered by Scene.render())
+        if (layersToRender.length === 0) {
+            this.totalRenderTime = performance.now() - startTime;
+            return;
+        }
+        
+        // Update only layers that need updating
+        const deltaTime = this.app.animationLoop.deltaTime;
+        for (let i = 0; i < layersToRender.length; i++) {
+            const layer = layersToRender[i];
+            if (layer.needsUpdate || layer.isAnimated) {
+                layer.update(deltaTime);
+            }
+        }
+        
+        // Render layers using optimized compositor
         this.compositor.blendLayers(layersToRender, renderer, camera);
         
-        // Track performance
-        this.totalRenderTime = performance.now() - startTime;
+        // Track performance with moving average
+        const renderTime = performance.now() - startTime;
+        this.totalRenderTime = this.totalRenderTime * 0.9 + renderTime * 0.1;
+    }
+    
+    /**
+     * Get visible layers with caching for performance
+     * @returns {Array} Array of visible layers to render
+     */
+    getCachedVisibleLayers() {
+        const now = performance.now();
+        
+        // Invalidate cache if order changed or enough time passed
+        if (this.needsOrderUpdate || this.needsVisibilityUpdate || 
+            now - this.lastVisibilityCheck > 100) { // Check every 100ms
+            
+            this.cachedVisibleLayers = this.layerOrder
+                .map(id => this.layers.get(id))
+                .filter(layer => layer && layer.visible && layer.opacity > 0);
+            
+            this.lastVisibilityCheck = now;
+            this.needsVisibilityUpdate = false;
+        }
+        
+        return this.cachedVisibleLayers;
+    }
+    
+    /**
+     * Process batched operations to reduce overhead
+     */
+    processBatchedOperations() {
+        if (this.batchedOperations.length === 0) return;
+        
+        const operations = this.batchedOperations.splice(0);
+        
+        // Group operations by type for efficient batch processing
+        const groups = {
+            parameterUpdates: [],
+            visibilityChanges: [],
+            orderChanges: []
+        };
+        
+        operations.forEach(op => {
+            if (groups[op.type]) {
+                groups[op.type].push(op);
+            }
+        });
+        
+        // Process parameter updates in batch
+        if (groups.parameterUpdates.length > 0) {
+            this.processBatchedParameterUpdates(groups.parameterUpdates);
+        }
+        
+        // Process visibility changes
+        if (groups.visibilityChanges.length > 0) {
+            this.processBatchedVisibilityChanges(groups.visibilityChanges);
+        }
+        
+        // Process order changes
+        if (groups.orderChanges.length > 0) {
+            this.processBatchedOrderChanges(groups.orderChanges);
+        }
+    }
+    
+    /**
+     * Process batched parameter updates efficiently
+     */
+    processBatchedParameterUpdates(updates) {
+        const layerUpdates = new Map();
+        
+        // Group updates by layer
+        updates.forEach(({ layerId, paramName, value }) => {
+            if (!layerUpdates.has(layerId)) {
+                layerUpdates.set(layerId, {});
+            }
+            layerUpdates.get(layerId)[paramName] = value;
+        });
+        
+        // Apply all updates for each layer at once
+        layerUpdates.forEach((params, layerId) => {
+            const layer = this.layers.get(layerId);
+            if (layer) {
+                layer.setBatchParameters(params);
+            }
+        });
+    }
+    
+    /**
+     * Process batched visibility changes
+     */
+    processBatchedVisibilityChanges(changes) {
+        let needsUpdate = false;
+        
+        changes.forEach(({ layerId, visible }) => {
+            const layer = this.layers.get(layerId);
+            if (layer && layer.visible !== visible) {
+                layer.visible = visible;
+                needsUpdate = true;
+            }
+        });
+        
+        if (needsUpdate) {
+            this.needsVisibilityUpdate = true;
+        }
+    }
+    
+    /**
+     * Process batched order changes
+     */
+    processBatchedOrderChanges(changes) {
+        // Take the most recent order change
+        const lastChange = changes[changes.length - 1];
+        if (lastChange) {
+            this.setLayerOrder(lastChange.order);
+        }
     }
 
     /**
@@ -608,7 +819,7 @@ export class LayerManager {
                     await layer.setConfig(layerConfig);
                 } else {
                     // Layer doesn't exist, create it based on type
-                    if (layerConfig.type === 'P5TextureLayer' || layerConfig.type === 'P5Layer' || layerId === 'p5') {
+                    if (layerConfig.type === 'P5TextureLayer' || layerId === 'p5') {
                         try {
                             layer = await this.addP5Layer(layerId, layerConfig);
                             // After creating the layer, call setConfig to restore the full configuration
@@ -654,41 +865,170 @@ export class LayerManager {
     }
 
     /**
-     * Dispose of the layer manager and all layers
+     * Dispose of the layer manager and all layers with enhanced memory management
      */
     dispose() {
-        // Dispose all layers
-        this.layers.forEach(layer => {
-            layer.dispose();
+        // Clear any pending batch operations
+        if (this.batchTimer) {
+            clearTimeout(this.batchTimer);
+            this.batchTimer = null;
+        }
+        this.batchedOperations = [];
+        
+        // Dispose all layers with error handling
+        this.layers.forEach((layer, layerId) => {
+            try {
+                layer.dispose();
+            } catch (error) {
+                console.warn(`Error disposing layer ${layerId}:`, error);
+            }
         });
         
         // Clear registries
         this.layers.clear();
         this.layerOrder = [];
         
+        // Clear performance tracking
+        this.layerRenderTimes.clear();
+        this.totalRenderTime = 0;
+        
+        // Clear caches
+        this.cachedVisibleLayers = [];
+        this.cachedLayerOrder = [];
+        
         // Remove layer scene from main scene
         if (this.layerScene && this.context && this.context.scene) {
             this.context.scene.remove(this.layerScene);
         }
         
-        // Clear layer scene
+        // Clear layer scene with proper disposal
         if (this.layerScene) {
+            // Recursively dispose all children
+            this.layerScene.traverse((child) => {
+                if (child.geometry) {
+                    child.geometry.dispose();
+                }
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(material => this.disposeMaterial(material));
+                    } else {
+                        this.disposeMaterial(child.material);
+                    }
+                }
+            });
             this.layerScene.clear();
+            this.layerScene = null;
         }
         
-        // Dispose render targets
-        this.renderTargets.forEach(renderTarget => {
-            renderTarget.dispose();
+        // Dispose render targets with error handling
+        this.renderTargets.forEach((renderTarget, key) => {
+            try {
+                renderTarget.dispose();
+            } catch (error) {
+                console.warn(`Error disposing render target ${key}:`, error);
+            }
         });
         this.renderTargets.clear();
         
         // Clean up event listeners
         this.eventListeners.forEach(({ element, event, handler }) => {
-            if (element && element.removeEventListener) {
-                element.removeEventListener(event, handler);
+            try {
+                if (element && element.removeEventListener) {
+                    element.removeEventListener(event, handler);
+                }
+            } catch (error) {
+                console.warn('Error removing event listener:', error);
             }
         });
         this.eventListeners = [];
+        
+        // Clear context reference
+        this.context = null;
+        
+        // Clear app reference to prevent memory leaks
+        this.app = null;
+        this.state = null;
+    }
+    
+    /**
+     * Dispose a Three.js material properly
+     * @param {THREE.Material} material - Material to dispose
+     */
+    disposeMaterial(material) {
+        if (!material) return;
+        
+        // Dispose textures
+        if (material.map) material.map.dispose();
+        if (material.normalMap) material.normalMap.dispose();
+        if (material.bumpMap) material.bumpMap.dispose();
+        if (material.roughnessMap) material.roughnessMap.dispose();
+        if (material.metalnessMap) material.metalnessMap.dispose();
+        if (material.alphaMap) material.alphaMap.dispose();
+        if (material.envMap) material.envMap.dispose();
+        if (material.lightMap) material.lightMap.dispose();
+        if (material.aoMap) material.aoMap.dispose();
+        if (material.emissiveMap) material.emissiveMap.dispose();
+        if (material.displacementMap) material.displacementMap.dispose();
+        
+        // Dispose the material itself
+        material.dispose();
+    }
+    
+    /**
+     * Get memory usage statistics
+     * @returns {Object} Memory usage information
+     */
+    getMemoryUsage() {
+        const stats = {
+            layerCount: this.layers.size,
+            renderTargetCount: this.renderTargets.size,
+            cachedLayerCount: this.cachedVisibleLayers.length,
+            batchedOperationCount: this.batchedOperations.length,
+            eventListenerCount: this.eventListeners.length,
+            totalRenderTime: this.totalRenderTime,
+            layers: {}
+        };
+        
+        // Get memory usage from each layer
+        this.layers.forEach((layer, layerId) => {
+            if (layer.getMemoryUsage) {
+                stats.layers[layerId] = layer.getMemoryUsage();
+            }
+        });
+        
+        return stats;
+    }
+    
+    /**
+     * Perform garbage collection and optimization
+     */
+    performMaintenance() {
+        // Clear old cached data
+        const now = performance.now();
+        if (now - this.lastVisibilityCheck > 1000) { // 1 second old
+            this.needsVisibilityUpdate = true;
+        }
+        
+        // Process any pending batched operations
+        this.processBatchedOperations();
+        
+        // Clean up performance tracking data
+        if (this.layerRenderTimes.size > 100) {
+            // Keep only recent entries
+            const entries = Array.from(this.layerRenderTimes.entries());
+            entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
+            this.layerRenderTimes.clear();
+            entries.slice(0, 50).forEach(([key, value]) => {
+                this.layerRenderTimes.set(key, value);
+            });
+        }
+        
+        // Trigger layer-specific maintenance
+        this.layers.forEach(layer => {
+            if (layer.performMaintenance) {
+                layer.performMaintenance();
+            }
+        });
     }
 
     /**

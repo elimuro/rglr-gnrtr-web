@@ -19,35 +19,68 @@ export class ShaderCodeEditor {
         
         // Shader presets (served from public/shaders). Fallbacks keep editor usable offline.
         this.shaderPresets = {
+            'default': {
+                name: 'Default Pattern',
+                description: 'Animated wave pattern with parameters',
+                url: '/shaders/default.frag',
+                fallback: this.getDefaultShader(),
+                category: 'basic'
+            },
             'noise': {
                 name: 'Animated Noise',
                 description: 'Simple animated noise pattern',
                 url: '/shaders/noise.frag',
-                fallback: this.getNoiseShader()
+                fallback: this.getNoiseShader(),
+                category: 'basic'
+            },
+            'plasma': {
+                name: 'Plasma Effects',
+                description: 'Colorful plasma waves with distortion',
+                url: '/shaders/plasma.frag',
+                fallback: this.getPlasmaShader(),
+                category: 'visual'
+            },
+            'kaleidoscope': {
+                name: 'Kaleidoscope',
+                description: 'Symmetrical kaleidoscope patterns',
+                url: '/shaders/kaleidoscope.frag',
+                fallback: this.getKaleidoscopeShader(),
+                category: 'visual'
+            },
+            'mandala': {
+                name: 'Mandala Patterns',
+                description: 'Radial mandala with pulsing animation',
+                url: '/shaders/mandala.frag',
+                fallback: this.getMandalaShader(),
+                category: 'visual'
+            },
+            'voronoi': {
+                name: 'Voronoi Cells',
+                description: 'Animated cellular Voronoi diagram',
+                url: '/shaders/voronoi.frag',
+                fallback: this.getVoronoiShader(),
+                category: 'generative'
             },
             'physarum': {
                 name: 'Physarum Simulation',
                 description: 'GPU-accelerated Physarum algorithm',
                 url: '/shaders/physarum.frag',
-                fallback: this.getPhysarumShader()
+                fallback: this.getPhysarumShader(),
+                category: 'simulation'
             },
             'flocking': {
                 name: 'Flocking Behavior',
                 description: 'GPU-accelerated flocking simulation',
                 url: '/shaders/flocking.frag',
-                fallback: this.getFlockingShader()
+                fallback: this.getFlockingShader(),
+                category: 'simulation'
             },
             'reaction-diffusion': {
                 name: 'Reaction-Diffusion',
                 description: 'Chemical reaction-diffusion system',
                 url: '/shaders/reaction-diffusion.frag',
-                fallback: this.getReactionDiffusionShader()
-            },
-            'custom': {
-                name: 'Custom Shader',
-                description: 'Start with a blank shader',
-                url: '/shaders/default.frag',
-                fallback: this.getDefaultShader()
+                fallback: this.getReactionDiffusionShader(),
+                category: 'simulation'
             }
         };
         
@@ -1117,6 +1150,188 @@ void main() {
     pattern += spots * 0.2;
     
     vec3 color = vec3(pattern * 0.5 + 0.5);
+    
+    gl_FragColor = vec4(color, opacity);
+}`;
+    }
+
+    /**
+     * Get plasma shader preset
+     */
+    getPlasmaShader() {
+        return `precision mediump float;
+
+uniform float time;
+uniform vec2 resolution;
+uniform float opacity;
+uniform float frequency;
+uniform float amplitude;
+uniform float speed;
+uniform float distortion;
+uniform float colorSpeed;
+
+varying vec2 vUv;
+
+vec3 palette(float t) {
+    vec3 a = vec3(0.5, 0.5, 0.5);
+    vec3 b = vec3(0.5, 0.5, 0.5);
+    vec3 c = vec3(1.0, 1.0, 1.0);
+    vec3 d = vec3(0.263, 0.416, 0.557);
+    return a + b * cos(6.28318 * (c * t + d));
+}
+
+void main() {
+    vec2 uv = vUv;
+    
+    float freq = mix(5.0, 15.0, clamp(frequency, 0.0, 1.0));
+    float amp = mix(0.3, 1.0, clamp(amplitude, 0.0, 1.0));
+    float spd = mix(1.0, 3.0, clamp(speed, 0.0, 1.0));
+    
+    float plasma = 0.0;
+    plasma += sin(uv.x * freq + time * spd) * amp;
+    plasma += sin(uv.y * freq * 1.2 + time * spd * 0.8) * amp;
+    plasma += sin((uv.x + uv.y) * freq * 0.8 + time * spd * 1.2) * amp;
+    
+    plasma = plasma * 0.25 + 0.5;
+    vec3 color = palette(plasma + time * 0.1);
+    
+    gl_FragColor = vec4(color, opacity);
+}`;
+    }
+
+    /**
+     * Get kaleidoscope shader preset
+     */
+    getKaleidoscopeShader() {
+        return `precision mediump float;
+
+uniform float time;
+uniform vec2 resolution;
+uniform float opacity;
+uniform float segments;
+uniform float rotation;
+uniform float zoom;
+
+varying vec2 vUv;
+
+void main() {
+    vec2 uv = (vUv - 0.5) * 2.0;
+    
+    float segs = mix(6.0, 12.0, clamp(segments, 0.0, 1.0));
+    float rotSpeed = mix(-1.0, 1.0, clamp(rotation, 0.0, 1.0));
+    float zoomLevel = mix(0.5, 2.0, clamp(zoom, 0.0, 1.0));
+    
+    float angle = atan(uv.y, uv.x) + time * rotSpeed;
+    float radius = length(uv);
+    
+    angle = mod(angle, 2.0 * 3.14159 / segs);
+    if (mod(floor(angle / (3.14159 / segs)), 2.0) == 1.0) {
+        angle = (3.14159 / segs) - mod(angle, 3.14159 / segs);
+    }
+    
+    vec2 pos = vec2(cos(angle), sin(angle)) * radius * zoomLevel;
+    
+    float pattern = sin(pos.x * 8.0 + time * 0.5) * cos(pos.y * 8.0 + time * 0.3);
+    vec3 color = vec3(0.5 + 0.5 * pattern, 0.3 + 0.7 * abs(pattern), 0.8);
+    
+    gl_FragColor = vec4(color, opacity);
+}`;
+    }
+
+    /**
+     * Get mandala shader preset
+     */
+    getMandalaShader() {
+        return `precision mediump float;
+
+uniform float time;
+uniform vec2 resolution;
+uniform float opacity;
+uniform float complexity;
+uniform float pulseSpeed;
+uniform float innerRadius;
+
+varying vec2 vUv;
+
+void main() {
+    vec2 uv = vUv - 0.5;
+    float angle = atan(uv.y, uv.x);
+    float radius = length(uv);
+    
+    float comp = mix(3.0, 8.0, clamp(complexity, 0.0, 1.0));
+    float pulse = mix(0.5, 2.0, clamp(pulseSpeed, 0.0, 1.0));
+    float innerR = mix(0.1, 0.6, clamp(innerRadius, 0.0, 1.0));
+    
+    float mandala = 0.0;
+    for (float i = 1.0; i <= 6.0; i++) {
+        if (i > comp) break;
+        
+        float petals = sin(angle * i + time * pulse * 0.5) * 0.5 + 0.5;
+        float waves = sin(radius * 10.0 - time * pulse) * 0.5 + 0.5;
+        float layer = petals * waves * (1.0 / i);
+        
+        layer *= smoothstep(innerR, innerR + 0.1, radius);
+        layer *= 1.0 - smoothstep(0.3, 0.5, radius);
+        
+        mandala += layer;
+    }
+    
+    vec3 color = vec3(mandala * 0.8, mandala * 0.6, mandala);
+    gl_FragColor = vec4(color, opacity);
+}`;
+    }
+
+    /**
+     * Get voronoi shader preset
+     */
+    getVoronoiShader() {
+        return `precision mediump float;
+
+uniform float time;
+uniform vec2 resolution;
+uniform float opacity;
+uniform float cellCount;
+uniform float animSpeed;
+
+varying vec2 vUv;
+
+vec2 hash22(vec2 p) {
+    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+    return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+}
+
+void main() {
+    vec2 uv = vUv;
+    float cells = mix(6.0, 15.0, clamp(cellCount, 0.0, 1.0));
+    float speed = mix(0.5, 1.5, clamp(animSpeed, 0.0, 1.0));
+    
+    vec2 scaledUV = uv * cells;
+    vec2 gridPos = floor(scaledUV);
+    vec2 localPos = fract(scaledUV);
+    
+    float minDist = 2.0;
+    vec2 closestPoint;
+    
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            vec2 neighbor = vec2(float(x), float(y));
+            vec2 cellCenter = neighbor + gridPos;
+            
+            vec2 offset = hash22(cellCenter);
+            offset += 0.3 * sin(time * speed + cellCenter.x * 2.0);
+            
+            vec2 cellPos = neighbor + 0.5 + offset * 0.4;
+            float dist = length(localPos - cellPos);
+            
+            if (dist < minDist) {
+                minDist = dist;
+                closestPoint = cellCenter;
+            }
+        }
+    }
+    
+    float cellHash = fract(sin(dot(closestPoint, vec2(127.1, 311.7))) * 43758.5453);
+    vec3 color = vec3(0.3 + 0.7 * cellHash, 0.5 + 0.5 * sin(cellHash * 6.28), 0.8);
     
     gl_FragColor = vec4(color, opacity);
 }`;

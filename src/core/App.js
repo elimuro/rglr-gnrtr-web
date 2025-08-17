@@ -461,7 +461,7 @@ export class App {
     /**
      * Add a P5 layer to the layer system
      * @param {Object} config - P5 layer configuration
-     * @returns {Promise<P5Layer>} The created P5 layer
+     * @returns {Promise<P5TextureLayer>} The created P5 layer
      */
     async addP5Layer(config = {}) {
         return await this.layerManager.addP5Layer('p5', config);
@@ -499,20 +499,164 @@ export class App {
     }
 
     /**
-     * Get shader layer parameters for MIDI/audio mapping
-     * @returns {Array} Array of shader parameter targets
+     * Get shader layer parameters for MIDI/audio mapping with enhanced categorization
+     * @returns {Array} Array of shader parameter targets organized by category
      */
     getShaderParameters() {
         const shaderLayer = this.layerManager.getLayer('shader');
         if (!shaderLayer) return [];
         
         const params = shaderLayer.getExposedParameters();
-        return Object.keys(params).map(name => ({
-            target: `shader:${name}`,
-            label: params[name].label || name,
-            min: params[name].min,
-            max: params[name].max
-        }));
+        const categorizedParams = {};
+        
+        // Group parameters by category
+        Object.keys(params).forEach(name => {
+            const param = params[name];
+            const category = param.category || 'general';
+            
+            if (!categorizedParams[category]) {
+                categorizedParams[category] = [];
+            }
+            
+            categorizedParams[category].push({
+                target: `shader:${name}`,
+                label: param.label || this.generateFriendlyLabel(name),
+                description: param.description || `${name} parameter`,
+                min: param.min || 0,
+                max: param.max || 1,
+                defaultValue: param.defaultValue || 0.5,
+                category: category,
+                type: param.type || 'number'
+            });
+        });
+        
+        // Return flattened array with category information preserved
+        const result = [];
+        Object.keys(categorizedParams).sort().forEach(category => {
+            // Add category header
+            result.push({
+                isCategory: true,
+                category: category,
+                label: this.formatCategoryLabel(category),
+                count: categorizedParams[category].length
+            });
+            
+            // Add parameters in this category
+            categorizedParams[category]
+                .sort((a, b) => a.label.localeCompare(b.label))
+                .forEach(param => result.push(param));
+        });
+        
+        return result;
+    }
+    
+    /**
+     * Get all layer parameters for MIDI/audio mapping
+     * @returns {Array} Array of all available parameter targets
+     */
+    getAllLayerParameters() {
+        const allParams = [];
+        
+        // Add shader parameters
+        const shaderParams = this.getShaderParameters();
+        if (shaderParams.length > 0) {
+            allParams.push({
+                isSection: true,
+                label: '⚡ Shader Layer Parameters',
+                icon: '⚡'
+            });
+            allParams.push(...shaderParams);
+        }
+        
+        // Add P5 parameters (if any exist)
+        const p5Params = this.getP5Parameters();
+        if (p5Params.length > 0) {
+            allParams.push({
+                isSection: true,
+                label: '🎨 P5.js Layer Parameters',
+                icon: '🎨'
+            });
+            allParams.push(...p5Params);
+        }
+        
+        // Add grid parameters
+        const gridParams = this.getGridParameters();
+        if (gridParams.length > 0) {
+            allParams.push({
+                isSection: true,
+                label: '📐 Grid Layer Parameters',
+                icon: '📐'
+            });
+            allParams.push(...gridParams);
+        }
+        
+        return allParams;
+    }
+    
+    /**
+     * Get grid layer parameters for MIDI mapping
+     * @returns {Array} Array of grid parameter targets
+     */
+    getGridParameters() {
+        const gridLayer = this.layerManager.getLayer('grid');
+        if (!gridLayer) return [];
+        
+        // Return common grid parameters that can be MIDI mapped
+        return [
+            {
+                target: 'grid:visible',
+                label: 'Grid Visibility',
+                description: 'Show/hide grid layer',
+                min: 0,
+                max: 1,
+                type: 'boolean',
+                category: 'appearance'
+            },
+            {
+                target: 'grid:opacity',
+                label: 'Grid Opacity',
+                description: 'Grid transparency level',
+                min: 0,
+                max: 1,
+                defaultValue: 1,
+                type: 'number',
+                category: 'appearance'
+            }
+        ];
+    }
+    
+    /**
+     * Generate friendly label from camelCase or snake_case parameter name
+     */
+    generateFriendlyLabel(name) {
+        // Convert camelCase to Title Case
+        let label = name.replace(/([a-z])([A-Z])/g, '$1 $2');
+        
+        // Convert snake_case to Title Case
+        label = label.replace(/_/g, ' ');
+        
+        // Capitalize first letter of each word
+        label = label.replace(/\b\w/g, l => l.toUpperCase());
+        
+        return label;
+    }
+    
+    /**
+     * Format category label for display
+     */
+    formatCategoryLabel(category) {
+        const categoryIcons = {
+            'animation': '🎬 Animation',
+            'transform': '🔄 Transform',
+            'wave': '〰️ Wave',
+            'appearance': '🎨 Appearance',
+            'color': '🌈 Color',
+            'pattern': '🔶 Pattern',
+            'effect': '✨ Effect',
+            'general': '⚙️ General'
+        };
+        
+        return categoryIcons[category] || `📋 ${this.generateFriendlyLabel(category)}`;
     }
 
     /**
@@ -542,12 +686,12 @@ export class App {
             console.log('- ID:', p5Layer.id);
             console.log('- Visible:', p5Layer.visible);
             console.log('- Opacity:', p5Layer.opacity);
-            console.log('- Running:', p5Layer.isSketchRunning());
-            console.log('- Has Error:', p5Layer.hasSketchError());
-            if (p5Layer.hasSketchError()) {
-                console.log('- Error:', p5Layer.getLastError());
+            console.log('- Running:', p5Layer.isRunning);
+            console.log('- Has Error:', p5Layer.hasError);
+            if (p5Layer.hasError) {
+                console.log('- Error:', p5Layer.lastError);
             }
-            console.log('- Canvas Element:', p5Layer.canvasElement);
+            console.log('- Off-screen Canvas:', p5Layer.offscreenCanvas);
             console.log('- P5 Instance:', p5Layer.p5Instance);
             
             // Check LayerManager state
