@@ -495,7 +495,7 @@ export class LayerManager {
                 
                 if (layer) {
                     // Layer exists, update its configuration
-                    layer.setConfig(layerConfig);
+                    await layer.setConfig(layerConfig);
                 } else {
                     // Layer doesn't exist, create it based on type
                     if (layerConfig.type === 'P5Layer' || layerId === 'p5') {
@@ -503,10 +503,20 @@ export class LayerManager {
                             layer = await this.addP5Layer(layerId, layerConfig);
                             // After creating the layer, call setConfig to restore the full configuration
                             if (layer) {
-                                layer.setConfig(layerConfig);
+                                await layer.setConfig(layerConfig);
                             }
                         } catch (error) {
                             console.error(`Failed to create P5 layer ${layerId}:`, error);
+                        }
+                    } else if (layerConfig.type === 'ShaderLayer' || layerId === 'shader') {
+                        try {
+                            layer = await this.addShaderLayer(layerId, layerConfig);
+                            // After creating the layer, call setConfig to restore the full configuration
+                            if (layer) {
+                                await layer.setConfig(layerConfig);
+                            }
+                        } catch (error) {
+                            console.error(`Failed to create Shader layer ${layerId}:`, error);
                         }
                     }
                     // Add other layer types here as they're implemented

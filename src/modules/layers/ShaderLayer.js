@@ -643,6 +643,7 @@ export class ShaderLayer extends LayerBase {
      */
     onGetConfig() {
         return {
+            type: 'ShaderLayer',
             fragmentShader: this.fragmentShader,
             vertexShader: this.vertexShader,
             computeShader: this.computeShader,
@@ -659,11 +660,8 @@ export class ShaderLayer extends LayerBase {
     /**
      * Set layer configuration
      */
-    onSetConfig(config) {
-        if (config.fragmentShader && config.fragmentShader !== this.fragmentShader) {
-            this.compileShader(config.fragmentShader);
-        }
-        
+    async onSetConfig(config) {
+        // Set basic properties first
         if (config.vertexShader) this.vertexShader = config.vertexShader;
         if (config.computeShader) this.computeShader = config.computeShader;
         if (config.emergentType) this.emergentType = config.emergentType;
@@ -673,13 +671,58 @@ export class ShaderLayer extends LayerBase {
         if (config.targetFPS) this.targetFPS = config.targetFPS;
         if (config.useComputeShaders !== undefined) this.useComputeShaders = config.useComputeShaders;
         
+        // Compile shader if provided (this will discover uniforms)
+        if (config.fragmentShader && config.fragmentShader !== this.fragmentShader) {
+            await this.compileShader(config.fragmentShader);
+        }
+        
+        // Restore uniform values after shader compilation
         if (config.uniforms) {
             Object.entries(config.uniforms).forEach(([name, uniformConfig]) => {
                 if (uniformConfig && typeof uniformConfig === 'object') {
-                    this.uniforms.set(name, uniformConfig);
+                    // Restore the uniform configuration
+                    this.uniforms.set(name, { ...uniformConfig });
+                    
+                    // Update the material uniform if it exists
+                    if (this.material && this.material.uniforms[name]) {
+                        const materialUniform = this.material.uniforms[name];
+                        if (uniformConfig.type === 'vector2') {
+                            const value = uniformConfig.value || { x: 0, y: 0 };
+                            if (!(materialUniform.value instanceof THREE.Vector2)) {
+                                materialUniform.value = new THREE.Vector2();
+                            }
+                            materialUniform.value.set(value.x, value.y);
+                        } else {
+                            materialUniform.value = uniformConfig.value;
+                        }
+                    }
                 }
             });
+            
+            // Update exposed parameters for UI
+            this.updateExposedParameters();
         }
+        
+        console.log(`ShaderLayer ${this.id}: Configuration restored with ${Object.keys(config.uniforms || {}).length} uniforms`);
+    }
+    
+    /**
+     * Update exposed parameters from uniforms
+     */
+    updateExposedParameters() {
+        this.exposedParameters = {};
+        this.uniforms.forEach((uniform, name) => {
+            this.exposedParameters[name] = {
+                type: uniform.type,
+                min: uniform.min,
+                max: uniform.max,
+                step: uniform.step,
+                default: uniform.defaultValue,
+                value: uniform.value,
+                label: uniform.label,
+                description: uniform.description
+            };
+        });
     }
 
     /**
