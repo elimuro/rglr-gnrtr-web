@@ -311,6 +311,7 @@ export class ShaderCodeEditor {
     async loadMonaco() {
         if (window.monaco) {
             this.isMonacoLoaded = true;
+            this.setupGLSLLanguage();
             return;
         }
         
@@ -335,12 +336,151 @@ export class ShaderCodeEditor {
                 // Load Monaco Editor
                 window.require(['vs/editor/editor.main'], () => {
                     this.isMonacoLoaded = true;
+                    this.setupGLSLLanguage();
                     resolve();
                 });
             };
             script.onerror = () => reject(new Error('Failed to load Monaco Editor'));
             document.head.appendChild(script);
         });
+    }
+
+    /**
+     * Set up GLSL language definition and syntax highlighting
+     */
+    setupGLSLLanguage() {
+        if (!window.monaco) return;
+        
+        // Register GLSL language if not already registered
+        const languages = window.monaco.languages.getLanguages();
+        const glslExists = languages.some(lang => lang.id === 'glsl');
+        
+        if (!glslExists) {
+            // Register GLSL language
+            window.monaco.languages.register({ id: 'glsl' });
+            
+            // Define GLSL tokens and syntax highlighting
+            window.monaco.languages.setMonarchTokensProvider('glsl', {
+                tokenizer: {
+                    root: [
+                        // Keywords
+                        [/\b(attribute|const|uniform|varying|layout|centroid|flat|smooth|noperspective|patch|sample)\b/, 'keyword'],
+                        [/\b(break|continue|do|for|while|switch|case|default|if|else|subroutine|in|out|inout|true|false|invariant|discard|return|lowp|mediump|highp|precision)\b/, 'keyword'],
+                        
+                        // Storage qualifiers
+                        [/\b(const|attribute|uniform|varying|in|out|inout|centroid|patch|sample|buffer|shared|coherent|volatile|restrict|readonly|writeonly)\b/, 'keyword.storage'],
+                        
+                        // Types
+                        [/\b(void|bool|int|uint|float|double|vec[234]|dvec[234]|bvec[234]|ivec[234]|uvec[234]|mat[234]|mat[234]x[234]|dmat[234]|dmat[234]x[234]|sampler[12]D|sampler3D|samplerCube|sampler[12]DArray|samplerCubeArray|samplerBuffer|sampler2DMS|sampler2DMSArray|samplerCubeShadow|sampler[12]DShadow|sampler[12]DArrayShadow|samplerCubeArrayShadow|isampler[12]D|isampler3D|isamplerCube|isampler[12]DArray|isamplerCubeArray|isamplerBuffer|isampler2DMS|isampler2DMSArray|usampler[12]D|usampler3D|usamplerCube|usampler[12]DArray|usamplerCubeArray|usamplerBuffer|usampler2DMS|usampler2DMSArray|image[12]D|image3D|imageCube|image[12]DArray|imageCubeArray|imageBuffer|image2DMS|image2DMSArray|iimage[12]D|iimage3D|iimageCube|iimage[12]DArray|iimageCubeArray|iimageBuffer|iimage2DMS|iimage2DMSArray|uimage[12]D|uimage3D|uimageCube|uimage[12]DArray|uimageCubeArray|uimageBuffer|uimage2DMS|uimage2DMSArray|atomic_uint)\b/, 'type'],
+                        
+                        // Built-in functions
+                        [/\b(radians|degrees|sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|asinh|acosh|atanh|pow|exp|log|exp2|log2|sqrt|inversesqrt|abs|sign|floor|trunc|round|roundEven|ceil|fract|mod|modf|min|max|clamp|mix|step|smoothstep|isnan|isinf|floatBitsToInt|floatBitsToUint|intBitsToFloat|uintBitsToFloat|fma|frexp|ldexp|packUnorm2x16|packSnorm2x16|packUnorm4x8|packSnorm4x8|unpackUnorm2x16|unpackSnorm2x16|unpackUnorm4x8|unpackSnorm4x8|packDouble2x32|unpackDouble2x32|packHalf2x16|unpackHalf2x16|length|distance|dot|cross|normalize|faceforward|reflect|refract|matrixCompMult|outerProduct|transpose|determinant|inverse|lessThan|lessThanEqual|greaterThan|greaterThanEqual|equal|notEqual|any|all|not|uaddCarry|usubBorrow|umulExtended|imulExtended|bitfieldExtract|bitfieldInsert|bitfieldReverse|bitCount|findLSB|findMSB|textureSize|textureQueryLod|textureQueryLevels|texture|textureProj|textureLod|textureOffset|texelFetch|texelFetchOffset|textureProjOffset|textureLodOffset|textureProjLod|textureProjLodOffset|textureGrad|textureGradOffset|textureProjGrad|textureProjGradOffset|textureGather|textureGatherOffset|textureGatherOffsets|texture2D|texture2DProj|texture2DLod|texture2DProjLod|textureCube|textureCubeLod|dFdx|dFdy|dFdxFine|dFdyFine|dFdxCoarse|dFdyCoarse|fwidth|fwidthFine|fwidthCoarse|interpolateAtCentroid|interpolateAtSample|interpolateAtOffset|noise1|noise2|noise3|noise4|EmitStreamVertex|EndStreamPrimitive|EmitVertex|EndPrimitive|barrier|memoryBarrier|memoryBarrierAtomicCounter|memoryBarrierBuffer|memoryBarrierShared|memoryBarrierImage|groupMemoryBarrier|atomicAdd|atomicMin|atomicMax|atomicAnd|atomicOr|atomicXor|atomicExchange|atomicCompSwap|imageLoad|imageStore|imageAtomicAdd|imageAtomicMin|imageAtomicMax|imageAtomicAnd|imageAtomicOr|imageAtomicXor|imageAtomicExchange|imageAtomicCompSwap|imageSize|imageSamples)\b/, 'predefined'],
+                        
+                        // Built-in variables
+                        [/\b(gl_VertexID|gl_InstanceID|gl_DrawID|gl_BaseVertex|gl_BaseInstance|gl_Position|gl_PointSize|gl_ClipDistance|gl_CullDistance|gl_PrimitiveIDIn|gl_InvocationID|gl_PrimitiveID|gl_Layer|gl_ViewportIndex|gl_PatchVerticesIn|gl_TessLevelOuter|gl_TessLevelInner|gl_TessCoord|gl_FragCoord|gl_FrontFacing|gl_ClipDistance|gl_CullDistance|gl_PointCoord|gl_PrimitiveID|gl_SampleID|gl_SamplePosition|gl_SampleMaskIn|gl_Layer|gl_ViewportIndex|gl_FragColor|gl_FragData|gl_FragDepth|gl_SampleMask|gl_ClipVertex|gl_FrontColor|gl_BackColor|gl_FrontSecondaryColor|gl_BackSecondaryColor|gl_TexCoord|gl_FogFragCoord|gl_Color|gl_SecondaryColor|gl_Normal|gl_Vertex|gl_MultiTexCoord0|gl_MultiTexCoord1|gl_MultiTexCoord2|gl_MultiTexCoord3|gl_MultiTexCoord4|gl_MultiTexCoord5|gl_MultiTexCoord6|gl_MultiTexCoord7|gl_FogCoord|gl_ModelViewMatrix|gl_ProjectionMatrix|gl_ModelViewProjectionMatrix|gl_TextureMatrix|gl_NormalMatrix|gl_ModelViewMatrixInverse|gl_ProjectionMatrixInverse|gl_ModelViewProjectionMatrixInverse|gl_TextureMatrixInverse|gl_ModelViewMatrixTranspose|gl_ProjectionMatrixTranspose|gl_ModelViewProjectionMatrixTranspose|gl_TextureMatrixTranspose|gl_ModelViewMatrixInverseTranspose|gl_ProjectionMatrixInverseTranspose|gl_ModelViewProjectionMatrixInverseTranspose|gl_TextureMatrixInverseTranspose|gl_NormalScale|gl_DepthRange|gl_ClipPlane|gl_Point|gl_FrontMaterial|gl_BackMaterial|gl_LightSource|gl_LightModel|gl_FrontLightModelProduct|gl_BackLightModelProduct|gl_FrontLightProduct|gl_BackLightProduct|gl_TextureEnvColor|gl_EyePlaneS|gl_EyePlaneT|gl_EyePlaneR|gl_EyePlaneQ|gl_ObjectPlaneS|gl_ObjectPlaneT|gl_ObjectPlaneR|gl_ObjectPlaneQ|gl_Fog|gl_MaxLights|gl_MaxClipPlanes|gl_MaxTextureUnits|gl_MaxTextureCoords|gl_MaxVertexAttribs|gl_MaxVertexUniformComponents|gl_MaxVaryingFloats|gl_MaxVertexTextureImageUnits|gl_MaxTextureImageUnits|gl_MaxFragmentUniformComponents|gl_MaxCombinedTextureImageUnits|gl_MaxDrawBuffers|gl_MaxVertexUniformVectors|gl_MaxFragmentUniformVectors|gl_MaxVaryingVectors|gl_NumWorkGroups|gl_WorkGroupSize|gl_WorkGroupID|gl_LocalInvocationID|gl_GlobalInvocationID|gl_LocalInvocationIndex)\b/, 'variable.predefined'],
+                        
+                        // Numbers
+                        [/\d*\.\d+([eE][\-+]?\d+)?[fFhH]?/, 'number.float'],
+                        [/0[xX][0-9a-fA-F]+[uU]?/, 'number.hex'],
+                        [/\d+[uU]?/, 'number'],
+                        
+                        // Strings
+                        [/"([^"\\]|\\.)*$/, 'string.invalid'],
+                        [/"/, 'string', '@string'],
+                        
+                        // Comments
+                        [/\/\*/, 'comment', '@comment'],
+                        [/\/\/.*$/, 'comment'],
+                        
+                        // Preprocessor
+                        [/#\s*\w+/, 'keyword.preprocessor'],
+                        
+                        // Delimiters and operators
+                        [/[{}()\[\]]/, '@brackets'],
+                        [/[<>](?!@symbols)/, '@brackets'],
+                        [/@symbols/, 'delimiter'],
+                        
+                        // Identifiers
+                        [/[a-zA-Z_]\w*/, 'identifier']
+                    ],
+                    
+                    comment: [
+                        [/[^\/*]+/, 'comment'],
+                        [/\*\//, 'comment', '@pop'],
+                        [/[\/*]/, 'comment']
+                    ],
+                    
+                    string: [
+                        [/[^\\"]+/, 'string'],
+                        [/\\./, 'string.escape.invalid'],
+                        [/"/, 'string', '@pop']
+                    ]
+                },
+                
+                symbols: /[=><!~?:&|+\-*\/\^%]+/
+            });
+            
+            // Define custom theme for GLSL
+            window.monaco.editor.defineTheme('glsl-dark', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'keyword', foreground: '569cd6', fontStyle: 'bold' },
+                    { token: 'keyword.storage', foreground: '569cd6', fontStyle: 'bold' },
+                    { token: 'keyword.preprocessor', foreground: '9b9b9b' },
+                    { token: 'type', foreground: '4ec9b0', fontStyle: 'bold' },
+                    { token: 'predefined', foreground: 'dcdcaa' },
+                    { token: 'variable.predefined', foreground: '9cdcfe' },
+                    { token: 'number', foreground: 'b5cea8' },
+                    { token: 'number.float', foreground: 'b5cea8' },
+                    { token: 'number.hex', foreground: 'b5cea8' },
+                    { token: 'string', foreground: 'ce9178' },
+                    { token: 'comment', foreground: '6a9955', fontStyle: 'italic' },
+                    { token: 'delimiter', foreground: 'dcdcdc' },
+                    { token: 'identifier', foreground: 'd4d4d4' }
+                ],
+                colors: {
+                    'editor.background': '#1e1e1e',
+                    'editor.foreground': '#d4d4d4',
+                    'editorLineNumber.foreground': '#858585',
+                    'editorCursor.foreground': '#aeafad',
+                    'editor.selectionBackground': '#264f78',
+                    'editor.inactiveSelectionBackground': '#3a3d41'
+                }
+            });
+            
+            // Configure language features
+            window.monaco.languages.setLanguageConfiguration('glsl', {
+                comments: {
+                    lineComment: '//',
+                    blockComment: ['/*', '*/']
+                },
+                brackets: [
+                    ['{', '}'],
+                    ['[', ']'],
+                    ['(', ')']
+                ],
+                autoClosingPairs: [
+                    { open: '{', close: '}' },
+                    { open: '[', close: ']' },
+                    { open: '(', close: ')' },
+                    { open: '"', close: '"', notIn: ['string'] },
+                    { open: '/*', close: ' */', notIn: ['string'] }
+                ],
+                surroundingPairs: [
+                    { open: '{', close: '}' },
+                    { open: '[', close: ']' },
+                    { open: '(', close: ')' },
+                    { open: '"', close: '"' }
+                ],
+                folding: {
+                    markers: {
+                        start: new RegExp('^\\s*//\\s*#?region\\b'),
+                        end: new RegExp('^\\s*//\\s*#?endregion\\b')
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -610,7 +750,7 @@ export class ShaderCodeEditor {
         this.editor = window.monaco.editor.create(editorContainer, {
             value: '',
             language: 'glsl',
-            theme: 'vs-dark',
+            theme: 'glsl-dark',
             automaticLayout: true,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
@@ -622,7 +762,20 @@ export class ShaderCodeEditor {
                 horizontal: 'visible'
             },
             folding: true,
-            wordWrap: 'on'
+            wordWrap: 'on',
+            tabSize: 4,
+            insertSpaces: true,
+            detectIndentation: false,
+            renderWhitespace: 'selection',
+            renderControlCharacters: false,
+            fontFamily: '"Fira Code", "JetBrains Mono", "Consolas", "Monaco", monospace',
+            fontLigatures: true,
+            cursorStyle: 'line',
+            cursorBlinking: 'blink',
+            matchBrackets: 'always',
+            autoIndent: 'advanced',
+            formatOnPaste: true,
+            formatOnType: true
         });
         
         // Set up change listener
