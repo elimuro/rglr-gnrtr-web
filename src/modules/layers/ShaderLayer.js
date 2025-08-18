@@ -809,17 +809,25 @@ export class ShaderLayer extends LayerBase {
         // Then handle shader-specific parameters
         const uniform = this.uniforms.get(name);
         if (uniform) {
-            // Convert normalized value (0-1) to parameter range if min/max are specified
+            // For shader parameters, we want to preserve the normalized 0-1 range
+            // since most shaders remap internally. Only apply min/max remapping
+            // if explicitly requested via a special flag or for specific parameters.
             let actualValue = value;
-            if (uniform.min !== undefined && uniform.max !== undefined) {
+            
+            // Check if this parameter should use the full range remapping
+            // (only for parameters that don't remap internally in the shader)
+            if (uniform.useRangeRemapping && uniform.min !== undefined && uniform.max !== undefined) {
                 actualValue = uniform.min + (value * (uniform.max - uniform.min));
+                
+                // Clamp value to range if specified
+                if (actualValue < uniform.min) actualValue = uniform.min;
+                if (actualValue > uniform.max) actualValue = uniform.max;
+            } else {
+                // For most shader parameters, just clamp to 0-1 range
+                actualValue = Math.max(0, Math.min(1, value));
             }
             
-            // Clamp value to range if specified
-            if (uniform.min !== undefined && actualValue < uniform.min) actualValue = uniform.min;
-            if (uniform.max !== undefined && actualValue > uniform.max) actualValue = uniform.max;
-            
-            console.log(`ShaderLayer ${this.id}: setParameter ${name} ->`, value, 'actual:', actualValue, 'type:', uniform.type);
+            console.log(`ShaderLayer ${this.id}: setParameter ${name} ->`, value, 'actual:', actualValue, 'type:', uniform.type, 'useRangeRemapping:', uniform.useRangeRemapping, 'min:', uniform.min, 'max:', uniform.max);
             uniform.value = actualValue;
             
             // Update material uniform without replacing vector objects
@@ -903,12 +911,16 @@ export class ShaderLayer extends LayerBase {
                     case 'bool':
                         this.registerUniform(name, paramConfig.defaultValue, {
                             type: 'number',
-                            min: paramConfig.min,
-                            max: paramConfig.max,
-                            step: paramConfig.step,
+                            // For shader parameters, use 0-1 range by default
+                            // Only set min/max if explicitly specified in shader comments
+                            min: paramConfig.min !== undefined ? paramConfig.min : 0,
+                            max: paramConfig.max !== undefined ? paramConfig.max : 1,
+                            step: paramConfig.step || 0.001,
                             label: paramConfig.label,
                             description: paramConfig.description,
-                            category: paramConfig.category
+                            category: paramConfig.category,
+                            // Flag to indicate if this parameter should use range remapping
+                            useRangeRemapping: paramConfig.min !== undefined && paramConfig.max !== undefined
                         });
                         break;
                     case 'vec2':
@@ -1001,32 +1013,34 @@ export class ShaderLayer extends LayerBase {
             }
         }
         
-        // Intelligent defaults based on parameter name
+        // For shader parameters, we generally want to use 0-1 normalized ranges
+        // since most shaders remap internally. Only set specific ranges for
+        // parameters that are explicitly designed to work with direct values.
         const namePatterns = [
-            { pattern: /speed|velocity|rate/i, min: 0, max: 5, default: 1, category: 'animation' },
-            { pattern: /time|duration/i, min: 0, max: 10, default: 1, category: 'animation' },
-            { pattern: /scale|size|zoom/i, min: 0.1, max: 5, default: 1, category: 'transform' },
-            { pattern: /rotation|angle/i, min: 0, max: 6.28, default: 0, category: 'transform' },
-            { pattern: /frequency|freq/i, min: 1, max: 50, default: 10, category: 'wave' },
-            { pattern: /amplitude|amp/i, min: 0, max: 2, default: 1, category: 'wave' },
-            { pattern: /brightness|intensity/i, min: 0, max: 3, default: 1, category: 'appearance' },
-            { pattern: /contrast/i, min: 0.1, max: 3, default: 1, category: 'appearance' },
-            { pattern: /opacity|alpha/i, min: 0, max: 1, default: 1, category: 'appearance' },
-            { pattern: /color|hue/i, min: 0, max: 1, default: 0.5, category: 'color' },
-            { pattern: /saturation|sat/i, min: 0, max: 1, default: 0.8, category: 'color' },
-            { pattern: /complexity|detail/i, min: 1, max: 10, default: 5, category: 'pattern' },
-            { pattern: /segments|divisions/i, min: 3, max: 20, default: 8, category: 'pattern' },
-            { pattern: /distortion|warp/i, min: 0, max: 1, default: 0.5, category: 'effect' },
-            { pattern: /noise|random/i, min: 0, max: 1, default: 0.5, category: 'effect' }
+            // Most parameters should use 0-1 range and let shader remap internally
+            { pattern: /speed|velocity|rate/i, default: 0.5, category: 'animation' },
+            { pattern: /time|duration/i, default: 0.5, category: 'animation' },
+            { pattern: /scale|size|zoom/i, default: 0.5, category: 'transform' },
+            { pattern: /rotation|angle/i, default: 0.5, category: 'transform' },
+            { pattern: /frequency|freq/i, default: 0.5, category: 'wave' },
+            { pattern: /amplitude|amp/i, default: 0.5, category: 'wave' },
+            { pattern: /brightness|intensity/i, default: 0.5, category: 'appearance' },
+            { pattern: /contrast/i, default: 0.5, category: 'appearance' },
+            { pattern: /opacity|alpha/i, default: 1.0, category: 'appearance' },
+            { pattern: /color|hue/i, default: 0.5, category: 'color' },
+            { pattern: /saturation|sat/i, default: 0.8, category: 'color' },
+            { pattern: /complexity|detail/i, default: 0.5, category: 'pattern' },
+            { pattern: /segments|divisions/i, default: 0.5, category: 'pattern' },
+            { pattern: /distortion|warp/i, default: 0.5, category: 'effect' },
+            { pattern: /noise|random/i, default: 0.5, category: 'effect' }
         ];
         
         for (const pattern of namePatterns) {
             if (pattern.pattern.test(name)) {
-                config.min = pattern.min;
-                config.max = pattern.max;
                 config.defaultValue = pattern.default;
-                config.step = (config.max - config.min) / 1000;
                 config.category = pattern.category;
+                // Don't set min/max for shader parameters - let them use 0-1 range
+                // and remap internally in the shader code
                 break;
             }
         }

@@ -5,10 +5,10 @@ uniform vec2 resolution;
 uniform float opacity;
 
 // Exposed parameters (0..1 sliders in UI)
-uniform float scaleParam;   // remapped to [8, 24]
-uniform float speedParam;   // remapped to [0.5, 3.0]
-uniform float contrastParam; // remapped to [0.8, 2.0]
-uniform vec2 warp;          // remapped to [-0.4, 0.4]
+uniform float scaleParam;   // [0..1] remapped to [8, 24] in shader
+uniform float speedParam;   // [0..1] remapped to [0.5, 3.0] in shader  
+uniform float contrastParam; // [0..1] remapped to [0.8, 2.0] in shader
+uniform vec2 warp;          // [0..1] remapped to [-0.4, 0.4] in shader
 
 varying vec2 vUv;
 

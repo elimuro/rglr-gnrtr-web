@@ -1043,10 +1043,12 @@ export class ShaderCodeEditor {
                 const value = parseFloat(e.target.value);
                 this.updateParameterValue(name, value);
                 
-                // Update display value
+                // Update display value with normalized value
                 const valueSpan = e.target.parentNode.querySelector('.param-value');
                 if (valueSpan) {
-                    valueSpan.textContent = value;
+                    // For shader parameters, we want to show the normalized 0-1 value
+                    const normalizedValue = Math.max(0, Math.min(1, value));
+                    valueSpan.textContent = normalizedValue.toFixed(3);
                 }
             });
         });
@@ -1075,8 +1077,19 @@ export class ShaderCodeEditor {
                 currentValue[component] = value;
                 this.shaderLayer.setParameter(name, currentValue);
             } else {
-                // Scalar update
-                this.shaderLayer.setParameter(name, value);
+                // Scalar update - ensure value is in 0-1 range for shader parameters
+                const normalizedValue = Math.max(0, Math.min(1, value));
+                this.shaderLayer.setParameter(name, normalizedValue);
+                
+                // Update the slider display to show the normalized value
+                const slider = document.querySelector(`input[data-param-name="${name}"]`);
+                if (slider && !slider.hasAttribute('data-param-component')) {
+                    slider.value = normalizedValue;
+                    const valueSpan = slider.parentNode.querySelector('.param-value');
+                    if (valueSpan) {
+                        valueSpan.textContent = normalizedValue.toFixed(3);
+                    }
+                }
             }
         } catch (error) {
             console.error(`Failed to update parameter ${name}:`, error);
