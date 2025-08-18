@@ -471,6 +471,146 @@ export class ParameterMapper {
             },
             requiresScene: true
         }],
+        
+        // Boolean Parameters
+        ['showGrid', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('showGrid', boolValue);
+                scene?.updateGridLines();
+            },
+            requiresScene: true
+        }],
+        ['postProcessingEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value) => {
+                const boolValue = value > 0.5;
+                state.set('postProcessingEnabled', boolValue);
+            },
+            requiresScene: false
+        }],
+        ['bloomEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('bloomEnabled', boolValue);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true
+        }],
+        ['chromaticAberrationEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('chromaticAberrationEnabled', boolValue);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true
+        }],
+        ['vignetteEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('vignetteEnabled', boolValue);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true
+        }],
+        ['grainEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('grainEnabled', boolValue);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true
+        }],
+        ['colorGradingEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('colorGradingEnabled', boolValue);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true
+        }],
+        ['fxaaEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('fxaaEnabled', boolValue);
+                scene?.updatePostProcessing();
+            },
+            requiresScene: true
+        }],
+        ['sphereWaterDistortion', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('sphereWaterDistortion', boolValue);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true
+        }],
+        ['sphereHighPerformanceMode', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('sphereHighPerformanceMode', boolValue);
+                scene?.updateSphereMaterials();
+            },
+            requiresScene: true
+        }],
+        ['enableShapeCycling', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value) => {
+                const boolValue = value > 0.5;
+                state.set('enableShapeCycling', boolValue);
+            },
+            requiresScene: false
+        }],
+        ['enableSizeAnimation', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value) => {
+                const boolValue = value > 0.5;
+                state.set('enableSizeAnimation', boolValue);
+            },
+            requiresScene: false
+        }],
+        ['enableMovementAnimation', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value) => {
+                const boolValue = value > 0.5;
+                state.set('enableMovementAnimation', boolValue);
+            },
+            requiresScene: false
+        }],
+        ['enableRotationAnimation', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value) => {
+                const boolValue = value > 0.5;
+                state.set('enableRotationAnimation', boolValue);
+            },
+            requiresScene: false
+        }],
+        ['enableScaleAnimation', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value) => {
+                const boolValue = value > 0.5;
+                state.set('enableScaleAnimation', boolValue);
+            },
+            requiresScene: false
+        }],
+        ['centerScalingAnimation', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('centerScalingAnimation', boolValue);
+                scene?.updateCenterScaling();
+            },
+            requiresScene: true
+        }],
         ['ambientLightIntensity', { 
             min: 0, max: 2, step: 0.01,
             setter: (state, value, scene) => {
