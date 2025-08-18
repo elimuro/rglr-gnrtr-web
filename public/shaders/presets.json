@@ -1,0 +1,79 @@
+[
+  {
+    "key": "default",
+    "name": "Default Pattern",
+    "description": "Animated wave pattern with parameters",
+    "url": "/shaders/default.frag",
+    "category": "basic"
+  },
+  {
+    "key": "noise",
+    "name": "Animated Noise",
+    "description": "Simple animated noise pattern",
+    "url": "/shaders/noise.frag",
+    "category": "basic"
+  },
+  {
+    "key": "plasma",
+    "name": "Plasma Effects",
+    "description": "Colorful plasma waves with distortion",
+    "url": "/shaders/plasma.frag",
+    "category": "visual"
+  },
+  {
+    "key": "kaleidoscope",
+    "name": "Kaleidoscope",
+    "description": "Symmetrical kaleidoscope patterns",
+    "url": "/shaders/kaleidoscope.frag",
+    "category": "visual"
+  },
+  {
+    "key": "mandala",
+    "name": "Mandala Patterns",
+    "description": "Radial mandala with pulsing animation",
+    "url": "/shaders/mandala.frag",
+    "category": "visual"
+  },
+  {
+    "key": "voronoi",
+    "name": "Voronoi Cells",
+    "description": "Animated cellular Voronoi diagram",
+    "url": "/shaders/voronoi.frag",
+    "category": "generative"
+  },
+  {
+    "key": "physarum",
+    "name": "Physarum Simulation",
+    "description": "GPU-accelerated Physarum algorithm",
+    "url": "/shaders/physarum.frag",
+    "category": "simulation"
+  },
+  {
+    "key": "flocking",
+    "name": "Flocking Behavior",
+    "description": "GPU-accelerated flocking simulation",
+    "url": "/shaders/flocking.frag",
+    "category": "simulation"
+  },
+  {
+    "key": "reaction-diffusion",
+    "name": "Reaction-Diffusion",
+    "description": "Chemical reaction-diffusion system",
+    "url": "/shaders/reaction-diffusion.frag",
+    "category": "simulation"
+  },
+  {
+    "key": "blend-test",
+    "name": "Blend Mode Test",
+    "description": "Test patterns for blend mode testing",
+    "url": "/shaders/blend-test.frag",
+    "category": "basic"
+  },
+  {
+    "key": "test-boolean",
+    "name": "Test Boolean",
+    "description": "Boolean parameters for testing MIDI note mapping",
+    "url": "/shaders/test-boolean.frag",
+    "category": "testing"
+  }
+]

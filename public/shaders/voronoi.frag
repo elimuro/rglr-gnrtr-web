@@ -11,6 +11,12 @@ uniform float cellSize;      // Cell size variation [0.5..2.0]
 uniform float edgeWidth;     // Edge thickness [0..0.2]
 uniform float colorVariation; // Color variation [0..1]
 
+// Boolean effect toggles
+uniform bool enableAnimation; // Enable cell animation
+uniform bool enableEdges;    // Enable edge highlighting
+uniform bool enableColorVariation; // Enable color variation over time
+uniform bool enablePulse;    // Enable pulsing intensity
+
 varying vec2 vUv;
 
 vec2 hash22(vec2 p) {
@@ -52,7 +58,9 @@ void main() {
             
             // Animate cell centers
             vec2 offset = hash22(cellCenter) * size;
-            offset += 0.3 * sin(time * speed + cellCenter.x * 2.0 + cellCenter.y * 3.0);
+            if (enableAnimation) {
+                offset += 0.3 * sin(time * speed + cellCenter.x * 2.0 + cellCenter.y * 3.0);
+            }
             
             vec2 cellPos = neighbor + 0.5 + offset * 0.4;
             float dist = length(localPos - cellPos);
@@ -76,14 +84,22 @@ void main() {
     float cellHash = fract(sin(dot(cellId, vec2(127.1, 311.7))) * 43758.5453);
     
     // Create color variation
-    float hue = cellHash + colorVariation * time * 0.1;
+    float hue = cellHash;
+    if (enableColorVariation) {
+        hue += colorVariation * time * 0.1;
+    }
     float sat = 0.6 + 0.4 * sin(cellHash * 6.28 + time * 0.5);
     float val = 0.7 + 0.3 * cos(cellHash * 12.56 + time * 0.3);
+    
+    // Apply pulsing if enabled
+    if (enablePulse) {
+        val *= 0.5 + 0.5 * sin(time * 2.5);
+    }
     
     vec3 cellColor = hsv2rgb(vec3(hue, sat, val));
     
     // Add edge highlighting
-    if (edge > 0.0) {
+    if (enableEdges && edge > 0.0) {
         float edgeMask = smoothstep(0.0, edge, edges);
         cellColor = mix(vec3(1.0), cellColor, edgeMask);
     }

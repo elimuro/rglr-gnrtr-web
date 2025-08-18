@@ -17,79 +17,8 @@ export class ShaderCodeEditor {
         this.isInitialized = false;
         this.isVisible = false;
         
-        // Shader presets (served from public/shaders). Fallbacks keep editor usable offline.
-        this.shaderPresets = {
-            'default': {
-                name: 'Default Pattern',
-                description: 'Animated wave pattern with parameters',
-                url: '/shaders/default.frag',
-                fallback: this.getDefaultShader(),
-                category: 'basic'
-            },
-            'noise': {
-                name: 'Animated Noise',
-                description: 'Simple animated noise pattern',
-                url: '/shaders/noise.frag',
-                fallback: this.getNoiseShader(),
-                category: 'basic'
-            },
-            'plasma': {
-                name: 'Plasma Effects',
-                description: 'Colorful plasma waves with distortion',
-                url: '/shaders/plasma.frag',
-                fallback: this.getPlasmaShader(),
-                category: 'visual'
-            },
-            'kaleidoscope': {
-                name: 'Kaleidoscope',
-                description: 'Symmetrical kaleidoscope patterns',
-                url: '/shaders/kaleidoscope.frag',
-                fallback: this.getKaleidoscopeShader(),
-                category: 'visual'
-            },
-            'mandala': {
-                name: 'Mandala Patterns',
-                description: 'Radial mandala with pulsing animation',
-                url: '/shaders/mandala.frag',
-                fallback: this.getMandalaShader(),
-                category: 'visual'
-            },
-            'voronoi': {
-                name: 'Voronoi Cells',
-                description: 'Animated cellular Voronoi diagram',
-                url: '/shaders/voronoi.frag',
-                fallback: this.getVoronoiShader(),
-                category: 'generative'
-            },
-            'physarum': {
-                name: 'Physarum Simulation',
-                description: 'GPU-accelerated Physarum algorithm',
-                url: '/shaders/physarum.frag',
-                fallback: this.getPhysarumShader(),
-                category: 'simulation'
-            },
-            'flocking': {
-                name: 'Flocking Behavior',
-                description: 'GPU-accelerated flocking simulation',
-                url: '/shaders/flocking.frag',
-                fallback: this.getFlockingShader(),
-                category: 'simulation'
-            },
-            'reaction-diffusion': {
-                name: 'Reaction-Diffusion',
-                description: 'Chemical reaction-diffusion system',
-                url: '/shaders/reaction-diffusion.frag',
-                fallback: this.getReactionDiffusionShader(),
-                category: 'simulation'
-            },
-            'blend-test': {
-                name: 'Blend Mode Test',
-                description: 'Test patterns for blend mode testing',
-                url: '/shaders/blend-test.frag',
-                fallback: this.getBlendTestShader(),
-                category: 'basic'
-            }
-        };
+        // Shader presets - will be loaded dynamically from public/shaders
+        this.shaderPresets = {};
         
         // Don't auto-initialize, wait for open() call
         this.isInitialized = false;
@@ -123,6 +52,7 @@ export class ShaderCodeEditor {
                         this.updateParameterPanel();
                         this.showStatus('Auto-compiled', 'success');
                         try { this.app.controlManager?.refreshShaderParameters?.(); } catch (_) {}
+                        try { this.app.audioMappingManager?.refreshShaderParameters?.(); } catch (_) {}
                     })
                     .catch(error => {
                         console.error('Shader compilation failed:', error);
@@ -167,16 +97,6 @@ export class ShaderCodeEditor {
                             <label class="text-sm text-gray-300">Preset:</label>
                             <select id="shader-preset-selector" class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white">
                                 <option value="">Select...</option>
-                                <option value="noise">Animated Noise</option>
-                                <option value="plasma">Plasma Effects</option>
-                                <option value="kaleidoscope">Kaleidoscope</option>
-                                <option value="mandala">Mandala Patterns</option>
-                                <option value="voronoi">Voronoi Cells</option>
-                                <option value="physarum">Physarum</option>
-                                <option value="flocking">Flocking</option>
-                                <option value="reaction-diffusion">Reaction-Diffusion</option>
-                                <option value="blend-test">Blend Mode Test</option>
-                                <option value="custom">Custom</option>
                             </select>
                             <button id="shader-editor-load-preset" class="btn btn-primary btn-sm">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -299,8 +219,12 @@ export class ShaderCodeEditor {
             
             // Load initial shader code
             await this.loadInitialShaderCode();
+            
             // Populate parameter panel for current shader
             this.updateParameterPanel();
+            
+            // Populate preset dropdown dynamically
+            await this.populatePresetSelect();
             
             // Global listeners (Escape to close)
             document.addEventListener('keydown', (event) => {
@@ -545,8 +469,8 @@ export class ShaderCodeEditor {
         this.container.appendChild(errorDisplay);
         this.container.appendChild(parameterPanel);
         
-        // Populate preset select
-        this.populatePresetSelect();
+        // Populate preset select (will be done dynamically in init)
+        // this.populatePresetSelect();
         
         // Set up event listeners
         this.setupEventListeners();
@@ -696,20 +620,131 @@ export class ShaderCodeEditor {
     /**
      * Populate the preset select dropdown
      */
-    populatePresetSelect() {
-        const select = document.getElementById('shader-preset-select');
+    async populatePresetSelect() {
+        const select = document.getElementById('shader-preset-selector');
         if (!select) return;
         
         // Clear existing options if any (keep first placeholder option)
         while (select.options.length > 1) select.remove(1);
 
-        Object.entries(this.shaderPresets).forEach(([key, preset]) => {
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = preset.name;
-            option.title = preset.description;
-            select.appendChild(option);
-        });
+        try {
+            // Try to load presets.json first, fallback to dynamic discovery
+            let presets = [];
+            try {
+                const response = await fetch('/shaders/presets.json');
+                if (response.ok) {
+                    presets = await response.json();
+                } else {
+                    throw new Error('presets.json not found');
+                }
+            } catch (error) {
+                console.log('No presets.json found, discovering shaders dynamically...');
+                presets = await this.discoverShaderPresets();
+            }
+
+            presets.forEach(preset => {
+                const option = document.createElement('option');
+                option.value = preset.key;
+                option.textContent = preset.name;
+                option.title = preset.description;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Failed to load presets:', error);
+            select.innerHTML = '<option value="">Failed to load presets</option>';
+        }
+    }
+
+    /**
+     * Dynamically discover shader presets from the public/shaders directory
+     */
+    async discoverShaderPresets() {
+        const presets = [];
+        
+        // First try to get a directory listing (if server supports it)
+        let shaderFiles = [];
+        try {
+            const response = await fetch('/shaders/');
+            if (response.ok) {
+                const html = await response.text();
+                // Simple regex to extract .frag files from directory listing
+                const fragMatches = html.match(/href="([^"]*\.frag)"/g);
+                if (fragMatches) {
+                    shaderFiles = fragMatches.map(match => {
+                        const href = match.match(/href="([^"]*)"/)[1];
+                        return href.replace(/^\.\//, ''); // Remove leading ./
+                    });
+                }
+            }
+        } catch (error) {
+            console.log('Directory listing not available, using known shaders list');
+        }
+        
+        // If no files found from directory listing, use known list
+        if (shaderFiles.length === 0) {
+            shaderFiles = [
+                'default.frag', 'noise.frag', 'plasma.frag', 'kaleidoscope.frag', 
+                'mandala.frag', 'voronoi.frag', 'physarum.frag', 'flocking.frag', 
+                'reaction-diffusion.frag', 'blend-test.frag', 'test-boolean.frag'
+            ];
+        }
+        
+        // Try to fetch each shader file
+        for (const shaderFile of shaderFiles) {
+            try {
+                const response = await fetch(`/shaders/${shaderFile}`);
+                if (response.ok) {
+                    const key = shaderFile.replace('.frag', '');
+                    const name = this.formatShaderName(key);
+                    const description = this.getShaderDescription(key);
+                    
+                    presets.push({
+                        key: key,
+                        name: name,
+                        description: description,
+                        url: `/shaders/${shaderFile}`
+                    });
+                }
+            } catch (error) {
+                console.warn(`Failed to check shader ${shaderFile}:`, error);
+            }
+        }
+        
+        // Sort presets alphabetically by name
+        presets.sort((a, b) => a.name.localeCompare(b.name));
+        
+        return presets;
+    }
+
+    /**
+     * Format shader name from key
+     */
+    formatShaderName(key) {
+        return key
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+
+    /**
+     * Get shader description based on key
+     */
+    getShaderDescription(key) {
+        const descriptions = {
+            'default': 'Animated wave pattern with parameters',
+            'noise': 'Simple animated noise pattern',
+            'plasma': 'Colorful plasma waves with distortion',
+            'kaleidoscope': 'Symmetrical kaleidoscope patterns',
+            'mandala': 'Radial mandala with pulsing animation',
+            'voronoi': 'Animated cellular Voronoi diagram',
+            'physarum': 'GPU-accelerated Physarum algorithm',
+            'flocking': 'GPU-accelerated flocking simulation',
+            'reaction-diffusion': 'Chemical reaction-diffusion system',
+            'blend-test': 'Test patterns for blend mode testing',
+            'test-boolean': 'Boolean parameters for testing MIDI note mapping'
+        };
+        
+        return descriptions[key] || `${this.formatShaderName(key)} shader`;
     }
 
     /**
@@ -717,7 +752,7 @@ export class ShaderCodeEditor {
      */
     setupEventListeners() {
         // Preset selection
-        const presetSelect = document.getElementById('shader-preset-select');
+        const presetSelect = document.getElementById('shader-preset-selector');
         if (presetSelect) {
             presetSelect.addEventListener('change', (e) => {
                 if (e.target.value) {
@@ -825,10 +860,10 @@ export class ShaderCodeEditor {
                         const text = await res.text();
                         this.editor.setValue(text);
                     } else {
-                        this.editor.setValue(this.getDefaultShader());
+                        this.editor.setValue('precision mediump float;\n\nuniform float time;\nuniform vec2 resolution;\nuniform float opacity;\n\nvarying vec2 vUv;\n\nvoid main() {\n    vec2 uv = vUv;\n    float pattern = sin(uv.x * 10.0 + time) * sin(uv.y * 10.0 + time);\n    vec3 color = vec3(pattern * 0.5 + 0.5);\n    gl_FragColor = vec4(color, opacity);\n}');
                     }
                 } catch (_) {
-                    this.editor.setValue(this.getDefaultShader());
+                    this.editor.setValue('precision mediump float;\n\nuniform float time;\nuniform vec2 resolution;\nuniform float opacity;\n\nvarying vec2 vUv;\n\nvoid main() {\n    vec2 uv = vUv;\n    float pattern = sin(uv.x * 10.0 + time) * sin(uv.y * 10.0 + time);\n    vec3 color = vec3(pattern * 0.5 + 0.5);\n    gl_FragColor = vec4(color, opacity);\n}');
                 }
             }
         } catch (error) {
@@ -840,28 +875,31 @@ export class ShaderCodeEditor {
      * Load a shader preset
      */
     async loadPreset(presetKey) {
-        const preset = this.shaderPresets[presetKey];
+        // First try to get preset from our discovered presets
+        let preset = null;
+        
+        // If we haven't discovered presets yet, do it now
+        if (Object.keys(this.shaderPresets).length === 0) {
+            const presets = await this.discoverShaderPresets();
+            presets.forEach(p => {
+                this.shaderPresets[p.key] = p;
+            });
+        }
+        
+        preset = this.shaderPresets[presetKey];
+        
         if (!preset || !this.editor) return;
+        
         try {
-            if (preset.url) {
-                const res = await fetch(preset.url, { cache: 'no-cache' });
-                if (!res.ok) throw new Error(`Failed to load ${preset.url}`);
-                const code = await res.text();
-                this.editor.setValue(code);
-            } else if (preset.fallback) {
-                this.editor.setValue(preset.fallback);
-            }
+            const res = await fetch(preset.url, { cache: 'no-cache' });
+            if (!res.ok) throw new Error(`Failed to load ${preset.url}`);
+            const code = await res.text();
+            this.editor.setValue(code);
             this.showStatus(`Loaded preset: ${preset.name}`, 'success');
             setTimeout(() => this.compileShader(), 50);
         } catch (e) {
-            console.warn('Failed to fetch preset, using fallback:', e);
-            if (preset.fallback) {
-                this.editor.setValue(preset.fallback);
-                this.showStatus(`Loaded fallback: ${preset.name}`, 'info');
-                setTimeout(() => this.compileShader(), 50);
-            } else {
-                this.showStatus('Failed to load preset', 'error');
-            }
+            console.error('Failed to load preset:', e);
+            this.showStatus('Failed to load preset', 'error');
         }
     }
 
@@ -928,7 +966,7 @@ export class ShaderCodeEditor {
     resetShader() {
         if (!this.editor) return;
         
-        this.editor.setValue(this.getDefaultShader());
+        this.editor.setValue('precision mediump float;\n\nuniform float time;\nuniform vec2 resolution;\nuniform float opacity;\n\nvarying vec2 vUv;\n\nvoid main() {\n    vec2 uv = vUv;\n    float pattern = sin(uv.x * 10.0 + time) * sin(uv.y * 10.0 + time);\n    vec3 color = vec3(pattern * 0.5 + 0.5);\n    gl_FragColor = vec4(color, opacity);\n}');
         this.showStatus('Reset to default shader', 'info');
         this.hideError();
     }
@@ -1141,432 +1179,6 @@ export class ShaderCodeEditor {
         if (this.editor) {
             this.editor.setValue(code);
         }
-    }
-
-    /**
-     * Get default shader code
-     */
-    getDefaultShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-
-varying vec2 vUv;
-
-void main() {
-    vec2 uv = vUv;
-    
-    // Simple animated pattern
-    float pattern = sin(uv.x * 10.0 + time) * sin(uv.y * 10.0 + time);
-    vec3 color = vec3(pattern * 0.5 + 0.5);
-    
-    gl_FragColor = vec4(color, opacity);
-}`;
-    }
-
-    /**
-     * Get noise shader preset
-     */
-    getNoiseShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-
-varying vec2 vUv;
-
-// Simple hash function for noise
-float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-// Smooth noise
-float smoothNoise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    
-    float a = hash(i);
-    float b = hash(i + vec2(1.0, 0.0));
-    float c = hash(i + vec2(0.0, 1.0));
-    float d = hash(i + vec2(1.0, 1.0));
-    
-    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
-}
-
-void main() {
-    vec2 uv = vUv;
-    
-    // Animated noise
-    float noise = smoothNoise(uv * 10.0 + time * 0.5);
-    vec3 color = vec3(noise);
-    
-    gl_FragColor = vec4(color, opacity);
-}`;
-    }
-
-    /**
-     * Get Physarum shader preset
-     */
-    getPhysarumShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-uniform float agentCount;
-uniform float trailDecay;
-uniform float sensorDistance;
-
-varying vec2 vUv;
-
-// Physarum-inspired pattern
-void main() {
-    vec2 uv = vUv;
-    
-    // Create organic, branching patterns
-    float pattern = 0.0;
-    
-    for (int i = 0; i < 5; i++) {
-        float angle = float(i) * 2.0 * 3.14159 / 5.0;
-        vec2 offset = vec2(cos(angle), sin(angle)) * 0.1;
-        
-        float branch = sin(uv.x * 20.0 + time * 0.5 + angle) * 
-                      sin(uv.y * 20.0 + time * 0.3 + angle);
-        
-        pattern += branch * 0.2;
-    }
-    
-    // Add some organic variation
-    pattern += sin(uv.x * 50.0 + time * 0.2) * 0.1;
-    pattern += sin(uv.y * 30.0 + time * 0.4) * 0.1;
-    
-    vec3 color = vec3(pattern * 0.5 + 0.5);
-    
-    gl_FragColor = vec4(color, opacity);
-}`;
-    }
-
-    /**
-     * Get flocking shader preset
-     */
-    getFlockingShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-uniform float agentCount;
-uniform float sensorDistance;
-
-varying vec2 vUv;
-
-// Flocking-inspired pattern
-void main() {
-    vec2 uv = vUv;
-    
-    // Create flowing, flocking-like patterns
-    float pattern = 0.0;
-    
-    // Multiple wave sources
-    for (int i = 0; i < 3; i++) {
-        float angle = float(i) * 2.0 * 3.14159 / 3.0;
-        vec2 center = vec2(0.5) + vec2(cos(angle), sin(angle)) * 0.3;
-        
-        float dist = length(uv - center);
-        float wave = sin(dist * 20.0 - time * 2.0) * exp(-dist * 3.0);
-        
-        pattern += wave * 0.3;
-    }
-    
-    // Add flowing motion
-    pattern += sin(uv.x * 15.0 + time * 1.5) * 0.2;
-    pattern += sin(uv.y * 12.0 + time * 1.2) * 0.2;
-    
-    vec3 color = vec3(pattern * 0.5 + 0.5);
-    
-    gl_FragColor = vec4(color, opacity);
-}`;
-    }
-
-    /**
-     * Get reaction-diffusion shader preset
-     */
-    getReactionDiffusionShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-uniform float trailDecay;
-
-varying vec2 vUv;
-
-// Reaction-diffusion inspired pattern
-void main() {
-    vec2 uv = vUv;
-    
-    // Create chemical-like patterns
-    float pattern = 0.0;
-    
-    // Base chemical concentration
-    float chem1 = sin(uv.x * 25.0 + time * 0.8) * 0.5 + 0.5;
-    float chem2 = sin(uv.y * 20.0 + time * 0.6) * 0.5 + 0.5;
-    
-    // Reaction between chemicals
-    pattern = chem1 * chem2;
-    
-    // Add diffusion-like spreading
-    pattern += sin(uv.x * 40.0 + time * 0.4) * 0.3;
-    pattern += sin(uv.y * 35.0 + time * 0.5) * 0.3;
-    
-    // Create spots and patterns
-    float spots = sin(uv.x * 60.0 + time * 0.3) * sin(uv.y * 45.0 + time * 0.4);
-    pattern += spots * 0.2;
-    
-    vec3 color = vec3(pattern * 0.5 + 0.5);
-    
-    gl_FragColor = vec4(color, opacity);
-}`;
-    }
-
-    /**
-     * Get plasma shader preset
-     */
-    getPlasmaShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-uniform float frequency;
-uniform float amplitude;
-uniform float speed;
-uniform float distortion;
-uniform float colorSpeed;
-
-varying vec2 vUv;
-
-vec3 palette(float t) {
-    vec3 a = vec3(0.5, 0.5, 0.5);
-    vec3 b = vec3(0.5, 0.5, 0.5);
-    vec3 c = vec3(1.0, 1.0, 1.0);
-    vec3 d = vec3(0.263, 0.416, 0.557);
-    return a + b * cos(6.28318 * (c * t + d));
-}
-
-void main() {
-    vec2 uv = vUv;
-    
-    float freq = mix(5.0, 15.0, clamp(frequency, 0.0, 1.0));
-    float amp = mix(0.3, 1.0, clamp(amplitude, 0.0, 1.0));
-    float spd = mix(1.0, 3.0, clamp(speed, 0.0, 1.0));
-    
-    float plasma = 0.0;
-    plasma += sin(uv.x * freq + time * spd) * amp;
-    plasma += sin(uv.y * freq * 1.2 + time * spd * 0.8) * amp;
-    plasma += sin((uv.x + uv.y) * freq * 0.8 + time * spd * 1.2) * amp;
-    
-    plasma = plasma * 0.25 + 0.5;
-    vec3 color = palette(plasma + time * 0.1);
-    
-    gl_FragColor = vec4(color, opacity);
-}`;
-    }
-
-    /**
-     * Get kaleidoscope shader preset
-     */
-    getKaleidoscopeShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-uniform float segments;
-uniform float rotation;
-uniform float zoom;
-
-varying vec2 vUv;
-
-void main() {
-    vec2 uv = (vUv - 0.5) * 2.0;
-    
-    float segs = mix(6.0, 12.0, clamp(segments, 0.0, 1.0));
-    float rotSpeed = mix(-1.0, 1.0, clamp(rotation, 0.0, 1.0));
-    float zoomLevel = mix(0.5, 2.0, clamp(zoom, 0.0, 1.0));
-    
-    float angle = atan(uv.y, uv.x) + time * rotSpeed;
-    float radius = length(uv);
-    
-    angle = mod(angle, 2.0 * 3.14159 / segs);
-    if (mod(floor(angle / (3.14159 / segs)), 2.0) == 1.0) {
-        angle = (3.14159 / segs) - mod(angle, 3.14159 / segs);
-    }
-    
-    vec2 pos = vec2(cos(angle), sin(angle)) * radius * zoomLevel;
-    
-    float pattern = sin(pos.x * 8.0 + time * 0.5) * cos(pos.y * 8.0 + time * 0.3);
-    vec3 color = vec3(0.5 + 0.5 * pattern, 0.3 + 0.7 * abs(pattern), 0.8);
-    
-    gl_FragColor = vec4(color, opacity);
-}`;
-    }
-
-    /**
-     * Get mandala shader preset
-     */
-    getMandalaShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-uniform float complexity;
-uniform float pulseSpeed;
-uniform float innerRadius;
-
-varying vec2 vUv;
-
-void main() {
-    vec2 uv = vUv - 0.5;
-    float angle = atan(uv.y, uv.x);
-    float radius = length(uv);
-    
-    float comp = mix(3.0, 8.0, clamp(complexity, 0.0, 1.0));
-    float pulse = mix(0.5, 2.0, clamp(pulseSpeed, 0.0, 1.0));
-    float innerR = mix(0.1, 0.6, clamp(innerRadius, 0.0, 1.0));
-    
-    float mandala = 0.0;
-    for (float i = 1.0; i <= 6.0; i++) {
-        if (i > comp) break;
-        
-        float petals = sin(angle * i + time * pulse * 0.5) * 0.5 + 0.5;
-        float waves = sin(radius * 10.0 - time * pulse) * 0.5 + 0.5;
-        float layer = petals * waves * (1.0 / i);
-        
-        layer *= smoothstep(innerR, innerR + 0.1, radius);
-        layer *= 1.0 - smoothstep(0.3, 0.5, radius);
-        
-        mandala += layer;
-    }
-    
-    vec3 color = vec3(mandala * 0.8, mandala * 0.6, mandala);
-    gl_FragColor = vec4(color, opacity);
-}`;
-    }
-
-    /**
-     * Get voronoi shader preset
-     */
-    getVoronoiShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-uniform float cellCount;
-uniform float animSpeed;
-
-varying vec2 vUv;
-
-vec2 hash22(vec2 p) {
-    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
-    return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
-}
-
-void main() {
-    vec2 uv = vUv;
-    float cells = mix(6.0, 15.0, clamp(cellCount, 0.0, 1.0));
-    float speed = mix(0.5, 1.5, clamp(animSpeed, 0.0, 1.0));
-    
-    vec2 scaledUV = uv * cells;
-    vec2 gridPos = floor(scaledUV);
-    vec2 localPos = fract(scaledUV);
-    
-    float minDist = 2.0;
-    vec2 closestPoint;
-    
-    for (int x = -1; x <= 1; x++) {
-        for (int y = -1; y <= 1; y++) {
-            vec2 neighbor = vec2(float(x), float(y));
-            vec2 cellCenter = neighbor + gridPos;
-            
-            vec2 offset = hash22(cellCenter);
-            offset += 0.3 * sin(time * speed + cellCenter.x * 2.0);
-            
-            vec2 cellPos = neighbor + 0.5 + offset * 0.4;
-            float dist = length(localPos - cellPos);
-            
-            if (dist < minDist) {
-                minDist = dist;
-                closestPoint = cellCenter;
-            }
-        }
-    }
-    
-    float cellHash = fract(sin(dot(closestPoint, vec2(127.1, 311.7))) * 43758.5453);
-    vec3 color = vec3(0.3 + 0.7 * cellHash, 0.5 + 0.5 * sin(cellHash * 6.28), 0.8);
-    
-    gl_FragColor = vec4(color, opacity);
-}`;
-    }
-
-    /**
-     * Get blend test shader preset
-     */
-    getBlendTestShader() {
-        return `precision mediump float;
-
-uniform float time;
-uniform vec2 resolution;
-uniform float opacity;
-
-// Simple test parameters for blend mode testing
-uniform float colorShift;    // [0..1] - shifts through rainbow colors
-uniform float pattern;       // [0..1] - changes pattern type
-uniform float intensity;     // [0..1] - brightness multiplier
-
-varying vec2 vUv;
-
-void main() {
-    // Centered UV coordinates
-    vec2 uv = vUv - 0.5;
-    
-    // Create different test patterns based on the pattern parameter
-    float patternValue = 0.0;
-    
-    if (pattern < 0.25) {
-        // Radial gradient
-        patternValue = length(uv);
-    } else if (pattern < 0.5) {
-        // Horizontal stripes
-        patternValue = sin(uv.y * 20.0 + time) * 0.5 + 0.5;
-    } else if (pattern < 0.75) {
-        // Checkerboard
-        vec2 grid = floor(uv * 10.0);
-        patternValue = mod(grid.x + grid.y, 2.0);
-    } else {
-        // Circular waves
-        patternValue = sin(length(uv) * 15.0 - time * 3.0) * 0.5 + 0.5;
-    }
-    
-    // Create rainbow colors based on colorShift
-    float hue = colorShift + patternValue * 0.5;
-    vec3 color = vec3(
-        sin(hue * 6.28318) * 0.5 + 0.5,
-        sin((hue + 0.33) * 6.28318) * 0.5 + 0.5,
-        sin((hue + 0.66) * 6.28318) * 0.5 + 0.5
-    );
-    
-    // Apply intensity
-    color *= mix(0.3, 1.0, intensity);
-    
-    gl_FragColor = vec4(color, opacity);
-}`;
     }
 
     /**

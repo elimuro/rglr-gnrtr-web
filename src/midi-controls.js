@@ -202,16 +202,30 @@ const CONTROL_TEMPLATES = {
         </div>
     `,
     note: `
-        <div class="flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
-            <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
-            <div class="flex gap-1 items-center flex-1">
-                <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-purple-400 rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch" data-drawer-interactive>
-                <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="{minValue}" max="{maxValue}" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}" data-drawer-interactive>
-                <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none" data-drawer-interactive>
-                    {targetOptions}
+        <div class="flex flex-col gap-1 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
+            <div class="flex items-center gap-2">
+                <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
+                <div class="flex gap-1 items-center flex-1">
+                    <input type="number" id="midi-{controlId}-channel" value="1" min="1" max="16" class="w-10 px-1 py-0.5 bg-midi-green bg-opacity-10 border border-midi-green border-opacity-30 text-purple-400 rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="Ch" data-drawer-interactive>
+                    <input type="number" id="midi-{controlId}-value" value="{defaultValue}" min="{minValue}" max="{maxValue}" class="w-12 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs text-center transition-all duration-300 focus:border-opacity-50 focus:outline-none" placeholder="{inputPlaceholder}" data-drawer-interactive>
+                    <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none" data-drawer-interactive>
+                        {targetOptions}
+                    </select>
+                    <button id="midi-{controlId}-learn" class="btn btn-warning btn-xs" data-drawer-interactive>Learn</button>
+                    <button id="midi-{controlId}-remove" class="btn btn-danger btn-icon btn-xs" data-drawer-interactive>×</button>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 ml-10">
+                <label class="text-xs font-medium text-blue-300 min-w-8 flex-shrink-0">P5:</label>
+                <select id="midi-{controlId}-p5-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-blue-600 border-opacity-30 text-white rounded text-xs transition-all duration-300 focus:border-blue-400 focus:outline-none" data-drawer-interactive>
+                    {p5TargetOptions}
                 </select>
-                <button id="midi-{controlId}-learn" class="btn btn-warning btn-xs" data-drawer-interactive>Learn</button>
-                <button id="midi-{controlId}-remove" class="btn btn-danger btn-icon btn-xs" data-drawer-interactive>×</button>
+            </div>
+            <div class="flex items-center gap-2 ml-10">
+                <label class="text-xs font-medium text-orange-300 min-w-8 flex-shrink-0">Shader:</label>
+                <select id="midi-{controlId}-shader-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-orange-600 border-opacity-30 text-white rounded text-xs transition-all duration-300 focus:border-orange-400 focus:outline-none" data-drawer-interactive>
+                    {shaderTargetOptions}
+                </select>
             </div>
         </div>
     `
@@ -316,8 +330,27 @@ export class MIDIControl {
             if (keys.length === 0) {
                 return '<option value="">No Shader Parameters</option>';
             }
+            
+            // Filter parameters based on control type
+            const filteredKeys = keys.filter(name => {
+                const meta = params[name] || {};
+                if (this.type === 'note') {
+                    // For note controls, only show boolean parameters
+                    return meta.type === 'bool' || meta.type === 'boolean';
+                } else {
+                    // For CC controls, show all parameters except booleans
+                    return meta.type !== 'bool' && meta.type !== 'boolean';
+                }
+            });
+            
+            if (filteredKeys.length === 0) {
+                return this.type === 'note' ? 
+                    '<option value="">No Boolean Shader Parameters</option>' : 
+                    '<option value="">No Shader Parameters</option>';
+            }
+            
             return '<option value="">No Shader Parameter</option>' + 
-                   keys.map(name => {
+                   filteredKeys.map(name => {
                        const meta = params[name] || {};
                        const label = meta.label || name;
                        if (meta.type === 'vector2') {
@@ -482,13 +515,38 @@ export class MIDIControl {
     triggerAction(isNoteOn) {
         if (!isNoteOn) return; // Only trigger on note on
         
-        const target = this.getMapping().target;
-        // Check if target is empty before triggering action
-        if (!target || target.trim() === '') {
-            return; // No target specified
+        const mapping = this.getMapping();
+        
+        // Check if any target is specified
+        if ((!mapping.target || mapping.target.trim() === '') &&
+            (!mapping.p5Target || mapping.p5Target.trim() === '') &&
+            (!mapping.shaderTarget || mapping.shaderTarget.trim() === '')) {
+            return; // No targets specified
         }
         
-        this.app.triggerNoteAction(target);
+        // Route to primary target
+        if (mapping.target && mapping.target.trim() !== '') {
+            console.log(`🎵 MIDI Note primary target: ${mapping.target}`);
+            this.app.triggerNoteAction(mapping.target);
+        }
+        
+        // Route to P5 target (toggle boolean parameter)
+        if (mapping.p5Target && mapping.p5Target.trim() !== '') {
+            console.log(`🎵 MIDI Note P5 target: ${mapping.p5Target}`);
+            // Get current value and toggle it
+            const currentValue = this.app.getAnimationParameter(mapping.p5Target);
+            const newValue = currentValue > 0.5 ? 0.0 : 1.0; // Toggle between 0 and 1
+            this.app.updateAnimationParameter(mapping.p5Target, newValue);
+        }
+        
+        // Route to Shader target (toggle boolean parameter)
+        if (mapping.shaderTarget && mapping.shaderTarget.trim() !== '') {
+            console.log(`🎵 MIDI Note shader target: ${mapping.shaderTarget}`);
+            // Get current value and toggle it
+            const currentValue = this.app.getAnimationParameter(mapping.shaderTarget);
+            const newValue = currentValue > 0.5 ? 0.0 : 1.0; // Toggle between 0 and 1
+            this.app.updateAnimationParameter(mapping.shaderTarget, newValue);
+        }
     }
     
     startLearning(learnButton) {
@@ -818,7 +876,7 @@ export class MIDIControlManager {
         console.log('Refreshing P5 parameters in MIDI controls...');
         
         this.controls.forEach(control => {
-            if (control.type === 'cc') {
+            if (control.type === 'cc' || control.type === 'note') {
                 const p5TargetSelect = document.getElementById(`midi-${control.controlId}-p5-target`);
                 if (p5TargetSelect) {
                     const currentValue = p5TargetSelect.value;
@@ -844,7 +902,7 @@ export class MIDIControlManager {
     refreshShaderParameters() {
         console.log('Refreshing Shader parameters in MIDI controls...');
         this.controls.forEach(control => {
-            if (control.type === 'cc') {
+            if (control.type === 'cc' || control.type === 'note') {
                 const selectId = `midi-${control.controlId}-shader-target`;
                 const shaderTargetSelect = document.getElementById(selectId);
                 if (shaderTargetSelect) {

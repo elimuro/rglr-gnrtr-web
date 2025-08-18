@@ -11,6 +11,12 @@ uniform float zoom;          // Zoom level [0.1..3.0]
 uniform float colorShift;    // Color shifting [0..1]
 uniform float symmetry;      // Symmetry intensity [0..1]
 
+// Boolean effect toggles
+uniform bool enableRotation; // Enable rotation animation
+uniform bool enableSymmetry; // Enable symmetry effect
+uniform bool enableColorShift; // Enable color shifting
+uniform bool enablePulse;    // Enable pulsing intensity
+
 varying vec2 vUv;
 
 vec3 hsv2rgb(vec3 c) {
@@ -32,7 +38,9 @@ void main() {
     float radius = length(uv);
     
     // Apply rotation
-    angle += time * rotSpeed;
+    if (enableRotation) {
+        angle += time * rotSpeed;
+    }
     
     // Create kaleidoscope effect
     angle = mod(angle, 2.0 * 3.14159 / segs);
@@ -41,7 +49,9 @@ void main() {
     }
     
     // Apply symmetry
-    angle = mix(angle, abs(angle), clamp(symmetry, 0.0, 1.0));
+    if (enableSymmetry) {
+        angle = mix(angle, abs(angle), clamp(symmetry, 0.0, 1.0));
+    }
     
     // Convert back to cartesian with zoom
     vec2 pos = vec2(cos(angle), sin(angle)) * radius * zoomLevel;
@@ -52,9 +62,17 @@ void main() {
     float combined = pattern1 * pattern2;
     
     // Color mapping with hue shift
-    float hue = combined * 0.5 + 0.5 + colorShift * time * 0.1;
+    float hue = combined * 0.5 + 0.5;
+    if (enableColorShift) {
+        hue += colorShift * time * 0.1;
+    }
     float sat = 0.8;
     float val = 0.5 + 0.5 * combined;
+    
+    // Apply pulsing if enabled
+    if (enablePulse) {
+        val *= 0.5 + 0.5 * sin(time * 3.0);
+    }
     
     vec3 color = hsv2rgb(vec3(hue, sat, val));
     

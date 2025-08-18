@@ -1077,6 +1077,8 @@ export class LayerPanel {
             if (newCode && newCode !== code) {
                 layer.compileShader(newCode).then(() => {
                     this.updatePanel(); // Refresh to show changes
+                    try { this.app.controlManager?.refreshShaderParameters?.(); } catch (_) {}
+                    try { this.app.audioMappingManager?.refreshShaderParameters?.(); } catch (_) {}
                 }).catch(error => {
                     alert(`Shader error: ${error.message}`);
                 });

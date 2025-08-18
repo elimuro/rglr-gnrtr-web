@@ -453,6 +453,53 @@ export class App {
         }
     }
 
+    getAnimationParameter(target) {
+        // Handle P5 layer parameters
+        if (target.startsWith('p5:')) {
+            const paramName = target.substring(3); // Remove 'p5:' prefix
+            const p5Layer = this.layerManager.getLayer('p5');
+            if (p5Layer) {
+                return p5Layer.getParameter(paramName) || 0.0;
+            }
+            return 0.0;
+        }
+        
+        // Handle shader layer parameters
+        if (target.startsWith('shader:')) {
+            const raw = target.substring(7); // Remove 'shader:' prefix
+            // Support component addressing: uniform.x / uniform.y / uniform.both
+            let paramName = raw;
+            let component = null;
+            if (raw.endsWith('.x')) { paramName = raw.slice(0, -2); component = 'x'; }
+            else if (raw.endsWith('.y')) { paramName = raw.slice(0, -2); component = 'y'; }
+            else if (raw.endsWith('.both')) { paramName = raw.slice(0, -5); component = 'both'; }
+            
+            const shaderLayer = this.layerManager.getLayer('shader');
+            if (shaderLayer) {
+                const current = shaderLayer.getParameter(paramName);
+                if (component === 'x' || component === 'y') {
+                    return current && current[component] !== undefined ? current[component] : 0.0;
+                } else if (component === 'both') {
+                    // For .both, return the average of x and y
+                    if (current && current.x !== undefined && current.y !== undefined) {
+                        return (current.x + current.y) * 0.5;
+                    }
+                    return 0.0;
+                } else {
+                    // For boolean parameters, convert to 0.0 or 1.0
+                    if (typeof current === 'boolean') {
+                        return current ? 1.0 : 0.0;
+                    }
+                    return current || 0.0;
+                }
+            }
+            return 0.0;
+        }
+        
+        // For other parameters, try to get from state
+        return this.state.get(target) || 0.0;
+    }
+
     handleNoteMapping(target) {
         // Delegate to the new MIDIEventHandler
         this.midiEventHandler.triggerNoteAction(target, 127); // Default velocity

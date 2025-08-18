@@ -11,6 +11,12 @@ uniform float innerRadius;   // Inner radius [0.1..0.8]
 uniform float brightness;    // Overall brightness [0.2..2.0]
 uniform float colorCycle;    // Color cycling [0..1]
 
+// Boolean effect toggles
+uniform bool enablePulse;    // Enable pulse animation
+uniform bool enableColorCycle; // Enable color cycling
+uniform bool enableInnerRadius; // Enable inner radius cutoff
+uniform bool enableFadeEdges; // Enable edge fading
+
 varying vec2 vUv;
 
 vec3 hsv2rgb(vec3 c) {
@@ -45,19 +51,31 @@ void main() {
         float layerRadius = radius * (1.0 + 0.2 * i);
         
         // Petal-like shapes
-        float petals = sin(layerAngle + time * pulse * 0.5) * 0.5 + 0.5;
+        float petals = sin(layerAngle);
+        if (enablePulse) {
+            petals += time * pulse * 0.5;
+        }
+        petals = petals * 0.5 + 0.5;
         
         // Radial waves
-        float waves = sin(layerRadius * 10.0 - time * pulse) * 0.5 + 0.5;
+        float waves = sin(layerRadius * 10.0);
+        if (enablePulse) {
+            waves -= time * pulse;
+        }
+        waves = waves * 0.5 + 0.5;
         
         // Combine patterns with different weights
         float layer = petals * waves * (1.0 / i);
         
         // Apply inner radius cutoff
-        layer *= smoothstep(innerR, innerR + 0.1, radius);
+        if (enableInnerRadius) {
+            layer *= smoothstep(innerR, innerR + 0.1, radius);
+        }
         
         // Fade out at edges
-        layer *= 1.0 - smoothstep(0.4, 0.5, radius);
+        if (enableFadeEdges) {
+            layer *= 1.0 - smoothstep(0.4, 0.5, radius);
+        }
         
         mandala += layer;
     }
@@ -66,7 +84,10 @@ void main() {
     mandala = clamp(mandala * bright, 0.0, 1.0);
     
     // Color with cycling hue
-    float hue = radius * 2.0 + angle * 0.1 + colorCycle * time * 0.2;
+    float hue = radius * 2.0 + angle * 0.1;
+    if (enableColorCycle) {
+        hue += colorCycle * time * 0.2;
+    }
     float sat = 0.7 + 0.3 * sin(time * 0.3);
     float val = mandala;
     

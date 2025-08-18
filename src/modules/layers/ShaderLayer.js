@@ -809,25 +809,34 @@ export class ShaderLayer extends LayerBase {
         // Then handle shader-specific parameters
         const uniform = this.uniforms.get(name);
         if (uniform) {
-            // For shader parameters, we want to preserve the normalized 0-1 range
-            // since most shaders remap internally. Only apply min/max remapping
-            // if explicitly requested via a special flag or for specific parameters.
             let actualValue = value;
             
-            // Check if this parameter should use the full range remapping
-            // (only for parameters that don't remap internally in the shader)
-            if (uniform.useRangeRemapping && uniform.min !== undefined && uniform.max !== undefined) {
-                actualValue = uniform.min + (value * (uniform.max - uniform.min));
-                
-                // Clamp value to range if specified
-                if (actualValue < uniform.min) actualValue = uniform.min;
-                if (actualValue > uniform.max) actualValue = uniform.max;
+            // Handle boolean parameters
+            if (uniform.type === 'bool') {
+                // For boolean parameters, treat 0 as false, anything else as true
+                actualValue = value > 0.5;
+                console.log(`ShaderLayer ${this.id}: setParameter ${name} ->`, value, 'actual:', actualValue, 'type:', uniform.type);
             } else {
-                // For most shader parameters, just clamp to 0-1 range
-                actualValue = Math.max(0, Math.min(1, value));
+                // For shader parameters, we want to preserve the normalized 0-1 range
+                // since most shaders remap internally. Only apply min/max remapping
+                // if explicitly requested via a special flag or for specific parameters.
+                
+                // Check if this parameter should use the full range remapping
+                // (only for parameters that don't remap internally in the shader)
+                if (uniform.useRangeRemapping && uniform.min !== undefined && uniform.max !== undefined) {
+                    actualValue = uniform.min + (value * (uniform.max - uniform.min));
+                    
+                    // Clamp value to range if specified
+                    if (actualValue < uniform.min) actualValue = uniform.min;
+                    if (actualValue > uniform.max) actualValue = uniform.max;
+                } else {
+                    // For most shader parameters, just clamp to 0-1 range
+                    actualValue = Math.max(0, Math.min(1, value));
+                }
+                
+                console.log(`ShaderLayer ${this.id}: setParameter ${name} ->`, value, 'actual:', actualValue, 'type:', uniform.type, 'useRangeRemapping:', uniform.useRangeRemapping, 'min:', uniform.min, 'max:', uniform.max);
             }
             
-            console.log(`ShaderLayer ${this.id}: setParameter ${name} ->`, value, 'actual:', actualValue, 'type:', uniform.type, 'useRangeRemapping:', uniform.useRangeRemapping, 'min:', uniform.min, 'max:', uniform.max);
             uniform.value = actualValue;
             
             // Update material uniform without replacing vector objects
@@ -908,7 +917,6 @@ export class ShaderLayer extends LayerBase {
                 switch (type) {
                     case 'float':
                     case 'int':
-                    case 'bool':
                         this.registerUniform(name, paramConfig.defaultValue, {
                             type: 'number',
                             // For shader parameters, use 0-1 range by default
@@ -921,6 +929,14 @@ export class ShaderLayer extends LayerBase {
                             category: paramConfig.category,
                             // Flag to indicate if this parameter should use range remapping
                             useRangeRemapping: paramConfig.min !== undefined && paramConfig.max !== undefined
+                        });
+                        break;
+                    case 'bool':
+                        this.registerUniform(name, paramConfig.defaultValue !== undefined ? paramConfig.defaultValue : false, {
+                            type: 'bool',
+                            label: paramConfig.label,
+                            description: paramConfig.description,
+                            category: paramConfig.category
                         });
                         break;
                     case 'vec2':
@@ -1106,6 +1122,9 @@ export class ShaderLayer extends LayerBase {
         if (meta.type === 'vector2') {
             const v = meta.value || { x: 0, y: 0 };
             return new THREE.Vector2(v.x, v.y);
+        }
+        if (meta.type === 'bool') {
+            return meta.value || false;
         }
         return meta.value;
     }

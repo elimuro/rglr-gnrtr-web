@@ -89,29 +89,40 @@ const AUDIO_MAPPING_CONFIGS = {
 // HTML Templates for Audio Mapping Controls
 const AUDIO_MAPPING_TEMPLATES = {
     frequency: `
-        <div class="audio-mapping-control flex items-center gap-2 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
-            <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
-            
-            <div class="flex items-center gap-1 flex-1">
-                <div class="frequency-slider-container flex-1 min-w-0" data-drawer-interactive></div>
-                
-                <span class="text-xs text-gray-400 mx-1">→</span>
-                
-                <select class="target-select px-1 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none flex-1" data-drawer-interactive>
-                    {targetOptions}
-                </select>
-                
-                <span class="text-xs text-gray-400 mx-1">×</span>
-                
-                <input type="range" class="sensitivity-slider w-20 h-6 appearance-none cursor-pointer slider-thumb" 
-                       min="0" max="2" step="0.1" value="1" 
-                       title="Sensitivity: 0 = no effect, 1 = normal, 2 = double effect"
-                       data-drawer-interactive>
-                <span class="sensitivity-value text-xs min-w-8 text-center">1.0</span>
+        <div class="audio-mapping-control flex flex-col gap-1 p-2 bg-black bg-opacity-5 border border-gray-700 rounded mb-1 transition-all duration-300 hover:bg-opacity-10 hover:border-midi-green" data-control-id="{controlId}">
+            <div class="flex items-center gap-2">
+                <label class="text-xs font-medium text-gray-300 min-w-8 flex-shrink-0">{index}:</label>
+                <div class="flex items-center gap-1 flex-1">
+                    <div class="frequency-slider-container flex-1 min-w-0" data-drawer-interactive></div>
+                    
+                    <span class="text-xs text-gray-400 mx-1">→</span>
+                    
+                    <select class="target-select px-1 py-0.5 bg-black bg-opacity-30 text-white border border-gray-600 rounded text-xs transition-all duration-300 hover:bg-opacity-50 hover:border-midi-green focus:border-midi-green focus:outline-none flex-1" data-drawer-interactive>
+                        {targetOptions}
+                    </select>
+                    
+                    <span class="text-xs text-gray-400 mx-1">×</span>
+                    
+                    <input type="range" class="sensitivity-slider w-20 h-6 appearance-none cursor-pointer slider-thumb" 
+                           min="0" max="2" step="0.1" value="1" 
+                           title="Sensitivity: 0 = no effect, 1 = normal, 2 = double effect"
+                           data-drawer-interactive>
+                    <span class="sensitivity-value text-xs min-w-8 text-center">1.0</span>
+                    
+                    <button class="btn btn-danger btn-icon btn-xs" data-drawer-interactive>×</button>
+                </div>
             </div>
-            
-            <div class="flex items-center gap-1">
-                <button class="btn btn-danger btn-icon btn-xs" data-drawer-interactive>×</button>
+            <div class="flex items-center gap-2 ml-10">
+                <label class="text-xs font-medium text-blue-300 min-w-8 flex-shrink-0">P5:</label>
+                <select class="p5-target-select px-1 py-0.5 bg-black bg-opacity-30 border border-blue-600 border-opacity-30 text-white rounded text-xs transition-all duration-300 focus:border-blue-400 focus:outline-none flex-1" data-drawer-interactive>
+                    {p5TargetOptions}
+                </select>
+            </div>
+            <div class="flex items-center gap-2 ml-10">
+                <label class="text-xs font-medium text-orange-300 min-w-8 flex-shrink-0">Shader:</label>
+                <select class="shader-target-select px-1 py-0.5 bg-black bg-opacity-30 border border-orange-600 border-opacity-30 text-white rounded text-xs transition-all duration-300 focus:border-orange-400 focus:outline-none flex-1" data-drawer-interactive>
+                    {shaderTargetOptions}
+                </select>
             </div>
         </div>
     `
@@ -131,6 +142,8 @@ export class AudioMappingControl {
             minFrequency: 250,
             maxFrequency: 2000,
             target: 'cellSize', // Set cellSize as default for better user visibility
+            p5Target: '', // P5 layer target
+            shaderTarget: '', // Shader layer target
             minValue: 0,
             maxValue: 1,
             curve: 'linear',
@@ -170,7 +183,9 @@ export class AudioMappingControl {
             .replace('{controlId}', this.controlId)
             .replace('{index}', this.index)
             .replace('{frequencyBandOptions}', this.generateFrequencyBandOptions(config.frequencyBands))
-            .replace('{targetOptions}', this.generateTargetOptions(config.targets));
+            .replace('{targetOptions}', this.generateTargetOptions(config.targets))
+            .replace('{p5TargetOptions}', this.generateP5Options())
+            .replace('{shaderTargetOptions}', this.generateShaderOptions());
     }
     
     generateFrequencyBandOptions(bands) {
@@ -180,10 +195,70 @@ export class AudioMappingControl {
     }
     
     generateTargetOptions(targets) {
-        return `<option value="">Select a target</option>` + 
-            targets.map(target => 
-                `<option value="${target.value}">${target.label}</option>`
-            ).join('');
+        let options = `<option value="">Select a target</option>`;
+        
+        // Add static targets
+        options += targets.map(target => 
+            `<option value="${target.value}">${target.label}</option>`
+        ).join('');
+        
+        // Add shader parameters dynamically
+        options += this.generateShaderOptions();
+        
+        return options;
+    }
+    
+    generateP5Options() {
+        try {
+            const p5Layer = this.app.layerManager?.getLayer('p5');
+            if (!p5Layer) {
+                return '<option value="">No P5 Layer</option>';
+            }
+            
+            const params = p5Layer.getAllParameters();
+            if (!params || Object.keys(params).length === 0) {
+                return '<option value="">No P5 Parameters</option>';
+            }
+            
+            return '<option value="">No P5 Parameter</option>' + 
+                   Object.entries(params).map(([name, param]) => 
+                       `<option value="p5:${name}">${param.label || name}</option>`
+                   ).join('');
+        } catch (error) {
+            console.warn('Error generating P5 options for audio mapping:', error);
+            return '<option value="">P5 Error</option>';
+        }
+    }
+    
+    generateShaderOptions() {
+        try {
+            const shaderLayer = this.app.layerManager?.getLayer('shader');
+            if (!shaderLayer) {
+                return '<option value="">No Shader Layer</option>';
+            }
+            const params = shaderLayer.getExposedParameters();
+            const keys = Object.keys(params || {});
+            if (keys.length === 0) {
+                return '<option value="">No Shader Parameters</option>';
+            }
+            
+            return '<option value="">No Shader Parameter</option>' + 
+                   keys.map(name => {
+                       const meta = params[name] || {};
+                       const label = meta.label || name;
+                       if (meta.type === 'vector2') {
+                           return [
+                               `<option value="shader:${name}.x">${label}.x</option>`,
+                               `<option value="shader:${name}.y">${label}.y</option>`,
+                               `<option value="shader:${name}.both">${label} (both)</option>`
+                           ].join('');
+                       }
+                       return `<option value="shader:${name}">${label}</option>`;
+                   }).join('');
+        } catch (error) {
+            console.warn('Error generating Shader options for audio mapping:', error);
+            return '<option value="">Shader Error</option>';
+        }
     }
     
     createElement(html) {
@@ -239,7 +314,7 @@ export class AudioMappingControl {
     setupListeners() {
         if (!this.element) return;
         
-        // Target selection
+        // Primary target selection
         const targetSelect = this.element.querySelector('.target-select');
         if (targetSelect) {
             targetSelect.value = this.mapping.target || ''; // Handle empty target
@@ -261,6 +336,42 @@ export class AudioMappingControl {
                 } else {
                     // If empty target selected, revert to current value
                     targetSelect.value = this.mapping.target || '';
+                }
+            });
+        }
+        
+        // P5 target selection
+        const p5TargetSelect = this.element.querySelector('.p5-target-select');
+        if (p5TargetSelect) {
+            p5TargetSelect.value = this.mapping.p5Target || '';
+            p5TargetSelect.addEventListener('change', (e) => {
+                const selectedTarget = e.target.value;
+                
+                // Only update if a valid target is selected (not empty)
+                if (selectedTarget && selectedTarget.trim() !== '') {
+                    this.mapping.p5Target = selectedTarget;
+                    this.updateMapping();
+                } else {
+                    // If empty target selected, revert to current value
+                    p5TargetSelect.value = this.mapping.p5Target || '';
+                }
+            });
+        }
+        
+        // Shader target selection
+        const shaderTargetSelect = this.element.querySelector('.shader-target-select');
+        if (shaderTargetSelect) {
+            shaderTargetSelect.value = this.mapping.shaderTarget || '';
+            shaderTargetSelect.addEventListener('change', (e) => {
+                const selectedTarget = e.target.value;
+                
+                // Only update if a valid target is selected (not empty)
+                if (selectedTarget && selectedTarget.trim() !== '') {
+                    this.mapping.shaderTarget = selectedTarget;
+                    this.updateMapping();
+                } else {
+                    // If empty target selected, revert to current value
+                    shaderTargetSelect.value = this.mapping.shaderTarget || '';
                 }
             });
         }
@@ -397,12 +508,14 @@ export class AudioMappingControl {
     updateParameter(audioValue) {
         if (!this.app || !this.app.state) return;
         
-        // Check if target is valid before proceeding
-        if (!this.mapping.target || this.mapping.target.trim() === '') {
+        // Check if any target is valid before proceeding
+        if ((!this.mapping.target || this.mapping.target.trim() === '') &&
+            (!this.mapping.p5Target || this.mapping.p5Target.trim() === '') &&
+            (!this.mapping.shaderTarget || this.mapping.shaderTarget.trim() === '')) {
             return;
         }
         
-        const normalizedValue = this.normalizeValue(audioValue, this.mapping.target);
+        const normalizedValue = this.normalizeValue(audioValue);
         
         // Debug logging for center scaling parameters
         if (this.mapping.target && this.mapping.target.startsWith('centerScaling')) {
@@ -415,7 +528,23 @@ export class AudioMappingControl {
             });
         }
         
-        this.app.updateAnimationParameter(this.mapping.target, normalizedValue);
+        // Route to primary target
+        if (this.mapping.target && this.mapping.target.trim() !== '') {
+            console.log(`🎵 Audio mapping primary target: ${this.mapping.target}`);
+            this.app.updateAnimationParameter(this.mapping.target, normalizedValue);
+        }
+        
+        // Route to P5 target
+        if (this.mapping.p5Target && this.mapping.p5Target.trim() !== '') {
+            console.log(`🎵 Audio mapping P5 target: ${this.mapping.p5Target}`);
+            this.app.updateAnimationParameter(this.mapping.p5Target, normalizedValue);
+        }
+        
+        // Route to Shader target
+        if (this.mapping.shaderTarget && this.mapping.shaderTarget.trim() !== '') {
+            console.log(`🎵 Audio mapping shader target: ${this.mapping.shaderTarget}`);
+            this.app.updateAnimationParameter(this.mapping.shaderTarget, normalizedValue);
+        }
         
         // Ensure changes are visible even when animation is paused
         if (this.app.scene && !this.app.animationLoop.getRunningState()) {
@@ -423,7 +552,7 @@ export class AudioMappingControl {
         }
     }
     
-    normalizeValue(audioValue, target) {
+    normalizeValue(audioValue) {
         // Apply the mapping curve
         let normalizedValue = audioValue;
         switch (this.mapping.curve) {
@@ -493,6 +622,12 @@ export class AudioMappingControl {
             const targetSelect = this.element.querySelector('.target-select');
             if (targetSelect) targetSelect.value = this.mapping.target || ''; // Handle empty target
             
+            const p5TargetSelect = this.element.querySelector('.p5-target-select');
+            if (p5TargetSelect) p5TargetSelect.value = this.mapping.p5Target || '';
+            
+            const shaderTargetSelect = this.element.querySelector('.shader-target-select');
+            if (shaderTargetSelect) shaderTargetSelect.value = this.mapping.shaderTarget || '';
+            
             // Update frequency slider if it exists
             if (this.frequencySlider) {
                 this.frequencySlider.setRange(this.mapping.minFrequency, this.mapping.maxFrequency);
@@ -521,6 +656,14 @@ export class AudioMappingControl {
         this.index = data.index;
         this.controlId = data.controlId;
         this.mapping = data.mapping;
+        
+        // Ensure new properties exist for backward compatibility
+        if (!this.mapping.p5Target) {
+            this.mapping.p5Target = '';
+        }
+        if (!this.mapping.shaderTarget) {
+            this.mapping.shaderTarget = '';
+        }
         
         // Re-render with new data
         if (this.element) {
@@ -679,6 +822,80 @@ export class AudioMappingManager {
                     console.error('Error in audio listener callback:', error);
                 }
             });
+        });
+    }
+    
+    /**
+     * Refresh P5 parameter dropdowns when P5 parameters change
+     */
+    refreshP5Parameters() {
+        console.log('Refreshing P5 parameters in Audio mapping controls...');
+        this.controls.forEach(control => {
+            const p5TargetSelect = control.element?.querySelector('.p5-target-select');
+            if (p5TargetSelect) {
+                const currentValue = p5TargetSelect.value;
+                const newOptions = control.generateP5Options();
+                p5TargetSelect.innerHTML = newOptions;
+                // Restore if still present; otherwise clear mapping
+                if (currentValue && p5TargetSelect.querySelector(`option[value="${currentValue}"]`)) {
+                    p5TargetSelect.value = currentValue;
+                } else if (currentValue) {
+                    control.mapping.p5Target = '';
+                }
+            }
+        });
+    }
+    
+    /**
+     * Refresh Shader parameter dropdowns when shader uniforms change
+     */
+    refreshShaderParameters() {
+        console.log('Refreshing Shader parameters in Audio mapping controls...');
+        this.controls.forEach(control => {
+            // Refresh primary target dropdown
+            const targetSelect = control.element?.querySelector('.target-select');
+            if (targetSelect) {
+                const currentValue = targetSelect.value;
+                const config = AUDIO_MAPPING_CONFIGS[control.type];
+                if (config) {
+                    const newOptions = control.generateTargetOptions(config.targets);
+                    targetSelect.innerHTML = newOptions;
+                    // Restore if still present; otherwise clear mapping
+                    if (currentValue && targetSelect.querySelector(`option[value="${currentValue}"]`)) {
+                        targetSelect.value = currentValue;
+                    } else if (currentValue) {
+                        control.mapping.target = '';
+                    }
+                }
+            }
+            
+            // Refresh P5 target dropdown
+            const p5TargetSelect = control.element?.querySelector('.p5-target-select');
+            if (p5TargetSelect) {
+                const currentValue = p5TargetSelect.value;
+                const newOptions = control.generateP5Options();
+                p5TargetSelect.innerHTML = newOptions;
+                // Restore if still present; otherwise clear mapping
+                if (currentValue && p5TargetSelect.querySelector(`option[value="${currentValue}"]`)) {
+                    p5TargetSelect.value = currentValue;
+                } else if (currentValue) {
+                    control.mapping.p5Target = '';
+                }
+            }
+            
+            // Refresh shader target dropdown
+            const shaderTargetSelect = control.element?.querySelector('.shader-target-select');
+            if (shaderTargetSelect) {
+                const currentValue = shaderTargetSelect.value;
+                const newOptions = control.generateShaderOptions();
+                shaderTargetSelect.innerHTML = newOptions;
+                // Restore if still present; otherwise clear mapping
+                if (currentValue && shaderTargetSelect.querySelector(`option[value="${currentValue}"]`)) {
+                    shaderTargetSelect.value = currentValue;
+                } else if (currentValue) {
+                    control.mapping.shaderTarget = '';
+                }
+            }
         });
     }
 } 

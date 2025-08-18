@@ -495,6 +495,8 @@ export class P5CodeEditor {
             await this.currentP5Layer.compileAndRun(code);
             this.updateStatus('success', 'Sketch compiled and running');
             this.updateParameterList();
+            try { this.app.controlManager?.refreshP5Parameters?.(); } catch (_) {}
+            try { this.app.audioMappingManager?.refreshP5Parameters?.(); } catch (_) {}
             console.log('P5 sketch updated from editor');
         } catch (error) {
             this.updateStatus('error', `Error: ${error.message}`);

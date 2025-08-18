@@ -185,15 +185,26 @@ export class MIDIEventHandler {
      * @param {boolean} isNoteOn - Whether this is a note on event
      */
     handleNoteMapping(controlId, mapping, velocity, isNoteOn) {
-        // More robust check for empty target - check for empty string, null, undefined, or whitespace
-        if (!mapping.target || mapping.target.trim() === '') {
-            return; // No target specified
-        }
-
         try {
-            if (isNoteOn) {
-                // Trigger note action
+            if (!isNoteOn) return;
+
+            // Primary target may be an action (e.g., tapTempo)
+            if (mapping.target && mapping.target.trim() !== '') {
                 this.triggerNoteAction(mapping.target, velocity);
+            }
+
+            // Toggle P5 boolean targets
+            if (mapping.p5Target && mapping.p5Target.trim() !== '') {
+                const current = this.app.getAnimationParameter(mapping.p5Target);
+                const next = current > 0.5 ? 0.0 : 1.0;
+                this.app.updateAnimationParameter(mapping.p5Target, next);
+            }
+
+            // Toggle Shader boolean targets
+            if (mapping.shaderTarget && mapping.shaderTarget.trim() !== '') {
+                const current = this.app.getAnimationParameter(mapping.shaderTarget);
+                const next = current > 0.5 ? 0.0 : 1.0;
+                this.app.updateAnimationParameter(mapping.shaderTarget, next);
             }
         } catch (error) {
             console.error(`Error handling note mapping for ${controlId}:`, error);
