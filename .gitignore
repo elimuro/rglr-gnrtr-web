@@ -45,4 +45,7 @@ tmp/
 temp/
 
 # Nested git repositories
-rglr-gnrtr-web/ 
+rglr-gnrtr-web/
+
+# Documentation
+docs/ 
