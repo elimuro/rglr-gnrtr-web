@@ -84,6 +84,9 @@ export class GUIManager {
             // Setup grid lines GUI controls
             try { this.setupGridLinesControls(); console.log('Grid lines controls OK'); } catch (e) { console.error('Grid lines controls failed:', e); }
             
+            // Setup sphere layer GUI controls
+            try { this.setupSphereLayerControls(); console.log('Sphere layer controls OK'); } catch (e) { console.error('Sphere layer controls failed:', e); }
+            
             // Collapse all folders by default
             this.collapseAllFolders();
             console.log('GUI initialization complete');
@@ -1049,7 +1052,7 @@ export class GUIManager {
         if (this.app.layerManager) {
             const layerCount = this.app.layerManager.layers.size;
             const layerInfo = { info: `${layerCount} layers active` };
-            layerFolder.add(layerInfo, 'info').name('Layer Status').disable();
+            layerFolder.add(layerInfo, 'info').name('Layer Status');
         }
     }
     
@@ -1151,6 +1154,60 @@ export class GUIManager {
                 
                 // Update layer visibility
                 gridLinesLayer.visible = this.state.get('showGridLines');
+            }
+        }
+    }
+
+    /**
+     * Setup sphere layer controls
+     */
+    setupSphereLayerControls() {
+        // Ensure sphere layer parameters exist in state
+        if (!this.state.has('sphereGridWidth')) {
+            this.state.set('sphereGridWidth', 10);
+        }
+        if (!this.state.has('sphereGridHeight')) {
+            this.state.set('sphereGridHeight', 6);
+        }
+        if (!this.state.has('sphereCellSize')) {
+            this.state.set('sphereCellSize', 1.0);
+        }
+
+
+        const sphereLayerFolder = this.mainGui.addFolder('Sphere Layer');
+        
+        // Grid Layout Controls
+        const gridFolder = sphereLayerFolder.addFolder('Grid Layout');
+        
+        this.addConfiguredController(gridFolder, 'sphereGridWidth', 'Grid Width', () => {
+            this.state.set('sphereGridWidth', this.state.get('sphereGridWidth'));
+            this.updateSphereLayer();
+        });
+        
+        this.addConfiguredController(gridFolder, 'sphereGridHeight', 'Grid Height', () => {
+            this.state.set('sphereGridHeight', this.state.get('sphereGridHeight'));
+            this.updateSphereLayer();
+        });
+        
+        this.addConfiguredController(gridFolder, 'sphereCellSize', 'Cell Size', () => {
+            this.state.set('sphereCellSize', this.state.get('sphereCellSize'));
+            this.updateSphereLayer();
+        });
+    }
+
+    /**
+     * Update sphere layer with current state parameters
+     */
+    updateSphereLayer() {
+        if (this.app.layerManager) {
+            const sphereLayer = this.app.layerManager.layers.get('sphere-layer');
+            if (sphereLayer) {
+                // Update grid properties
+                sphereLayer.setGridSize(
+                    this.state.get('sphereGridWidth'),
+                    this.state.get('sphereGridHeight')
+                );
+                sphereLayer.setCellSize(this.state.get('sphereCellSize'));
             }
         }
     }

@@ -358,5 +358,32 @@ export const DEFAULT_SCENE_CONFIG = {
                                         // Purpose: Maximum number of layers supported
     autoArrange: true                   // Connected to: StateManager.js fallback state, LayerManager.js
                                         // Purpose: Automatically arrange layers in 3D space
+  },
+
+  /**
+   * Sphere Layer Configuration
+   * Default settings for dedicated sphere layer
+   */
+  sphereLayer: {
+    gridWidth: 10,                      // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default width of sphere grid
+    gridHeight: 6,                      // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default height of sphere grid
+    cellSize: 1.0,                      // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default spacing between spheres
+    animationEnabled: false,            // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default state for sphere animations
+    rotationSpeed: 0.5,                 // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default rotation speed for spheres
+    floatAmplitude: 0.1,                // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default floating animation amplitude
+    floatSpeed: 1.0,                    // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default floating animation speed
+    visible: true,                      // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default visibility state for sphere layer
+    opacity: 1.0,                       // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default opacity for sphere layer
+    zOffset: 0.0                        // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default Z-offset for sphere layer
   }
 };

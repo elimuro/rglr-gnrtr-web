@@ -62,6 +62,17 @@ export class GridLinesLayer extends LayerBase {
         }
     }
 
+    /**
+     * Render the grid lines layer
+     * @param {THREE.WebGLRenderer} renderer - Three.js renderer
+     * @param {THREE.Camera} camera - Three.js camera
+     * @param {number} deltaTime - Time since last frame
+     */
+    onRender2D(renderer, camera, deltaTime) {
+        // Grid lines are 3D objects already in the scene, so this is a no-op
+        // The lines will be rendered automatically by Three.js
+    }
+
     createGridLines() {
         this.clearGridLines();
         

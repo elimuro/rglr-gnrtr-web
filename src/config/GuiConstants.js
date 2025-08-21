@@ -393,6 +393,51 @@ export const GUI_CONTROL_CONFIGS = {
     min: 0, max: 1, step: 1, default: 1,
     // Connected to: LayerManager.js layer arrangement
     // Purpose: Automatically arrange layers in 3D space (0=disabled, 1=enabled)
+  },
+
+  // ===== SPHERE LAYER CONTROLS =====
+  // Used in GUIManager.js setupSphereLayerControls()
+  
+  sphereGridWidth: {
+    min: 1, max: 30, step: 1, default: 10,
+    // Connected to: SphereLayer.js grid creation
+    // Purpose: Width of sphere grid layout
+  },
+  
+  sphereGridHeight: {
+    min: 1, max: 30, step: 1, default: 6,
+    // Connected to: SphereLayer.js grid creation
+    // Purpose: Height of sphere grid layout
+  },
+  
+  sphereCellSize: {
+    min: 0.5, max: 3.0, step: 0.1, default: 1.0,
+    // Connected to: SphereLayer.js sphere spacing
+    // Purpose: Spacing between spheres in grid
+  },
+  
+  sphereAnimationEnabled: {
+    min: 0, max: 1, step: 1, default: 0,
+    // Connected to: SphereLayer.js animation system
+    // Purpose: Enable sphere rotation and floating animations
+  },
+  
+  sphereRotationSpeed: {
+    min: 0, max: 5, step: 0.1, default: 0.5,
+    // Connected to: SphereLayer.js rotation animation
+    // Purpose: Speed of sphere rotation animation
+  },
+  
+  sphereFloatAmplitude: {
+    min: 0, max: 1, step: 0.01, default: 0.1,
+    // Connected to: SphereLayer.js floating animation
+    // Purpose: Amplitude of sphere floating motion
+  },
+  
+  sphereFloatSpeed: {
+    min: 0.1, max: 5, step: 0.1, default: 1.0,
+    // Connected to: SphereLayer.js floating animation
+    // Purpose: Speed of sphere floating animation
   }
 };
 
@@ -410,5 +455,6 @@ export const GUI_CATEGORIES = {
   AUDIO: ['bassAmplitude', 'midAmplitude', 'trebleAmplitude', 'audioSmoothing'],
   MORPHING: ['morphingIntensity', 'morphingSpeed'],
   CAMERA: ['cameraRotationX', 'cameraRotationY', 'cameraRotationZ', 'cameraDistance', 'isometricEnabled'],
-  LAYERS: ['layerSpacing', 'maxLayers', 'autoArrangeLayers']
+  LAYERS: ['layerSpacing', 'maxLayers', 'autoArrangeLayers'],
+  SPHERE_LAYER: ['sphereGridWidth', 'sphereGridHeight', 'sphereCellSize', 'sphereAnimationEnabled', 'sphereRotationSpeed', 'sphereFloatAmplitude', 'sphereFloatSpeed']
 };

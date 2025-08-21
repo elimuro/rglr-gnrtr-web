@@ -162,8 +162,29 @@ export class LayerManager {
             await this.addLayer(gridLinesLayer);
         }
         
-        // Ensure proper layer ordering: grid-lines behind grid-shapes
-        this.setLayerOrder(['grid-lines', 'grid', ...this.layerOrder.filter(id => !id.startsWith('grid'))]);
+        // Create sphere layer
+        if (!this.layers.has('sphere-layer')) {
+            const { SphereLayer } = await import('./layers/SphereLayer.js');
+            
+            const sphereLayer = new SphereLayer('sphere-layer', {
+                visible: true,
+                opacity: 1.0,
+                blendMode: 'normal',
+                gridWidth: 10,
+                gridHeight: 6,
+                cellSize: 1.0,
+                sphereScale: 1.0,
+                animationEnabled: false,
+                rotationSpeed: 0.5,
+                floatAmplitude: 0.1,
+                floatSpeed: 1.0
+            });
+            
+            await this.addLayer(sphereLayer);
+        }
+        
+        // Ensure proper layer ordering: grid-lines behind grid-shapes, sphere layer in front
+        this.setLayerOrder(['grid-lines', 'grid', 'sphere-layer', ...this.layerOrder.filter(id => !id.startsWith('grid') && id !== 'sphere-layer')]);
     }
 
     /**
@@ -224,6 +245,49 @@ export class LayerManager {
         await this.addLayer(shaderLayer);
         
         return shaderLayer;
+    }
+
+    /**
+     * Add a sphere layer
+     * @param {string} layerId - Layer ID
+     * @param {Object} config - Layer configuration
+     */
+    async addSphereLayer(layerId = 'sphere', config = {}) {
+        // Check if LayerManager is ready
+        if (!this.context) {
+            throw new Error('LayerManager not initialized. Please wait for the application to fully load.');
+        }
+        
+        if (!this.context.renderer || !this.context.scene) {
+            throw new Error('Three.js not ready. Please wait for the scene to initialize.');
+        }
+        
+        console.log('LayerManager: Adding sphere layer with context:', {
+            hasRenderer: !!this.context.renderer,
+            hasScene: !!this.context.scene,
+            hasCamera: !!this.context.camera
+        });
+        
+        const { SphereLayer } = await import('./layers/SphereLayer.js');
+        
+        const sphereLayer = new SphereLayer(layerId, {
+            visible: true,
+            opacity: 1.0,
+            blendMode: 'normal',
+            gridWidth: 10,
+            gridHeight: 6,
+            cellSize: 1.0,
+            sphereScale: 1.0,
+            animationEnabled: false,
+            rotationSpeed: 0.5,
+            floatAmplitude: 0.1,
+            floatSpeed: 1.0,
+            ...config
+        });
+        
+        await this.addLayer(sphereLayer);
+        
+        return sphereLayer;
     }
 
     /**
