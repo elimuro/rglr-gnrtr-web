@@ -215,6 +215,33 @@ export class GridLayer extends LayerBase {
     }
 
     /**
+     * Set z-offset value
+     * @param {number} zOffset - New z-offset value
+     */
+    setZOffset(zOffset) {
+        super.setZOffset(zOffset);
+        
+        // Update grid objects z-position through GridManager
+        if (this.gridManager) {
+            // Update all grid shapes
+            const shapes = this.gridManager.getAllShapes();
+            shapes.forEach(mesh => {
+                if (mesh && mesh.position) {
+                    mesh.position.z = zOffset;
+                }
+            });
+            
+            // Update grid lines
+            const gridLines = this.gridManager.getAllGridLines();
+            gridLines.forEach(line => {
+                if (line && line.position) {
+                    line.position.z = zOffset;
+                }
+            });
+        }
+    }
+
+    /**
      * Dispose of the grid layer
      */
     onDispose() {

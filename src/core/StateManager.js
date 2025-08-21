@@ -246,7 +246,12 @@ export class StateManager {
             "cameraRotationY": DEFAULT_SCENE_CONFIG.camera.rotationY,
             "cameraRotationZ": DEFAULT_SCENE_CONFIG.camera.rotationZ,
             "cameraDistance": DEFAULT_SCENE_CONFIG.camera.distance,
-            "isometricEnabled": DEFAULT_SCENE_CONFIG.camera.isometricEnabled
+            "isometricEnabled": DEFAULT_SCENE_CONFIG.camera.isometricEnabled,
+
+            // Layer Configuration
+            "layerSpacing": DEFAULT_SCENE_CONFIG.layers.spacing,
+            "maxLayers": DEFAULT_SCENE_CONFIG.layers.maxLayers,
+            "autoArrangeLayers": DEFAULT_SCENE_CONFIG.layers.autoArrange
         };
     }
 

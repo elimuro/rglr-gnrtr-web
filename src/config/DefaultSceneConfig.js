@@ -46,6 +46,29 @@ export const DEFAULT_SCENE_CONFIG = {
   },
 
   /**
+   * Grid Lines Configuration
+   * Separate grid lines layer settings
+   */
+  gridLines: {
+    showGridLines: true,                // Connected to: StateManager.js fallback state, GridLinesLayer.js
+                                        // Purpose: Default visibility state for grid lines layer
+    gridLineColor: "#ff0000",           // Connected to: StateManager.js fallback state, GridLinesLayer.js
+                                        // Purpose: Default color for grid lines
+    gridLineWidth: 1,                   // Connected to: StateManager.js fallback state, GridLinesLayer.js
+                                        // Purpose: Default line thickness
+    gridLineOpacity: 1.0,               // Connected to: StateManager.js fallback state, GridLinesLayer.js
+                                        // Purpose: Default opacity for grid lines
+    gridLineDisplacementEnabled: false, // Connected to: StateManager.js fallback state, GridLinesLayer.js
+                                        // Purpose: Default state for displacement effects
+    gridLineDisplacementAmount: 0.1,    // Connected to: StateManager.js fallback state, GridLinesLayer.js
+                                        // Purpose: Default displacement amount
+    gridLineDisplacementSpeed: 1.0,     // Connected to: StateManager.js fallback state, GridLinesLayer.js
+                                        // Purpose: Default displacement animation speed
+    gridLineDisplacementType: "wave"    // Connected to: StateManager.js fallback state, GridLinesLayer.js
+                                        // Purpose: Default displacement type (wave, noise, spiral)
+  },
+
+  /**
    * Animation System Configuration
    * Default states for various animation systems
    */
@@ -322,5 +345,18 @@ export const DEFAULT_SCENE_CONFIG = {
                                         // Purpose: Camera distance from origin (zoom)
     isometricEnabled: false             // Connected to: StateManager.js fallback state, Scene.js
                                         // Purpose: Enable isometric camera preset
+  },
+
+  /**
+   * Layer Configuration
+   * Default settings for layer management and spacing
+   */
+  layers: {
+    spacing: 0.1,                       // Connected to: StateManager.js fallback state, LayerManager.js
+                                        // Purpose: Z-spacing between layers in 3D space
+    maxLayers: 10,                      // Connected to: StateManager.js fallback state, LayerManager.js
+                                        // Purpose: Maximum number of layers supported
+    autoArrange: true                   // Connected to: StateManager.js fallback state, LayerManager.js
+                                        // Purpose: Automatically arrange layers in 3D space
   }
 };

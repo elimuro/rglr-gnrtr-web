@@ -19,7 +19,7 @@ export class LayerManager {
         
         // Three.js layer container
         this.layerScene = new THREE.Group(); // Container for all layers
-        this.layerSpacing = 0.1; // Z-spacing between layers
+        this.layerSpacing = 0.1; // Z-spacing between layers (will be updated from state)
         
         // Rendering state
         this.renderTargets = new Map();
@@ -119,31 +119,51 @@ export class LayerManager {
      * Initialize layer-specific systems (no grid layer needed)
      */
     async initializeLayerSystems() {
-        // Create the grid layer automatically
-        await this.createGridLayer();
+        // Create the grid layers automatically
+        await this.createGridLayers();
     }
 
     /**
-     * Create the grid layer automatically
+     * Create the grid layers automatically
      */
-    async createGridLayer() {
-        if (this.layers.has('grid')) return; // Already exists
+    async createGridLayers() {
+        // Create shapes layer
+        if (!this.layers.has('grid')) {
+            const { GridLayer } = await import('./layers/GridLayer.js');
+            
+            const gridLayer = new GridLayer('grid', {
+                visible: true,
+                opacity: 1.0,
+                blendMode: 'normal',
+                gridVisible: true,
+                shapesVisible: true,
+                gridLinesVisible: false // Disable grid lines in shapes layer since we have a separate layer
+            });
+            
+            await this.addLayer(gridLayer);
+        }
         
-        const { GridLayer } = await import('./layers/GridLayer.js');
+        // Create grid lines layer
+        if (!this.layers.has('grid-lines')) {
+            const { GridLinesLayer } = await import('./layers/GridLinesLayer.js');
+            
+            const gridLinesLayer = new GridLinesLayer('grid-lines', {
+                visible: true,
+                opacity: 1.0,
+                blendMode: 'normal',
+                gridColor: '#ff0000',
+                lineThickness: 1,
+                displacementEnabled: false,
+                displacementAmount: 0.1,
+                displacementSpeed: 1.0,
+                displacementType: 'wave'
+            });
+            
+            await this.addLayer(gridLinesLayer);
+        }
         
-        const gridLayer = new GridLayer('grid', {
-            visible: true,
-            opacity: 1.0,
-            blendMode: 'normal',
-            gridVisible: true,
-            shapesVisible: true,
-            gridLinesVisible: true
-        });
-        
-        await this.addLayer(gridLayer);
-        
-        // Ensure grid layer is at the back of the layer order
-        this.setLayerOrder(['grid', ...this.layerOrder.filter(id => id !== 'grid')]);
+        // Ensure proper layer ordering: grid-lines behind grid-shapes
+        this.setLayerOrder(['grid-lines', 'grid', ...this.layerOrder.filter(id => !id.startsWith('grid'))]);
     }
 
     /**
@@ -1036,54 +1056,42 @@ export class LayerManager {
     }
 
     /**
+     * Update layer spacing from state
+     */
+    updateLayerSpacing() {
+        if (this.state && this.state.has('layerSpacing')) {
+            this.layerSpacing = this.state.get('layerSpacing');
+            console.log(`LayerManager: Updated layer spacing to ${this.layerSpacing}`);
+        }
+    }
+
+    /**
      * Update 3D positions of all layers based on their order
      * This ensures proper depth separation and layer ordering
      */
     updateLayerZPositions() {
+        // Update spacing from state first
+        this.updateLayerSpacing();
+        
         this.layerOrder.forEach((layerId, index) => {
             const layer = this.layers.get(layerId);
-            if (layer && layer.mesh) {
+            if (layer) {
                 // Calculate z-position: first layer is closest (0), subsequent layers go back
-                layer.mesh.position.z = -index * this.layerSpacing;
-                layer.mesh.renderOrder = this.layerOrder.length - index;
-                layer.mesh.layers.set(index);
-                
-                console.log(`LayerManager: Updated layer ${layerId} position.z = ${layer.mesh.position.z}, renderOrder = ${layer.mesh.renderOrder}`);
-            } else if (layer) {
-                // Fallback for layers without mesh (like grid layer)
                 const zPosition = -index * this.layerSpacing;
+                
+                // Use setZOffset for all layers - this ensures consistent positioning
                 layer.setZOffset(zPosition);
                 
-                // Update 3D objects if this is a grid layer
-                if (layerId === 'grid' && this.app.scene && this.app.scene.gridManager) {
-                    this.updateGridZPosition(zPosition);
+                // Update mesh-specific properties if mesh exists
+                if (layer.mesh) {
+                    layer.mesh.renderOrder = this.layerOrder.length - index;
+                    layer.mesh.layers.set(index);
                 }
+                
+                console.log(`LayerManager: Updated layer ${layerId} z-offset = ${zPosition}, renderOrder = ${layer.mesh ? layer.mesh.renderOrder : 'N/A'}`);
             }
         });
     }
 
-    /**
-     * Update grid objects z-positions
-     * @param {number} zPosition - New z-position for grid
-     */
-    updateGridZPosition(zPosition) {
-        const gridManager = this.app.scene.gridManager;
-        if (!gridManager) return;
-        
-        // Update all grid shapes
-        const shapes = gridManager.getAllShapes();
-        shapes.forEach(mesh => {
-            if (mesh && mesh.position) {
-                mesh.position.z = zPosition;
-            }
-        });
-        
-        // Update grid lines
-        const gridLines = gridManager.getAllGridLines();
-        gridLines.forEach(line => {
-            if (line && line.position) {
-                line.position.z = zPosition;
-            }
-        });
-    }
+
 }

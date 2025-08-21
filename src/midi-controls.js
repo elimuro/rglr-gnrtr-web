@@ -123,7 +123,12 @@ const CONTROL_CONFIGS = {
             { value: 'cameraRotationY', label: 'Camera Rotation Y (Yaw)' },
             { value: 'cameraRotationZ', label: 'Camera Rotation Z (Roll)' },
             { value: 'cameraDistance', label: 'Camera Distance (Zoom)' },
-            { value: 'isometricEnabled', label: 'Isometric View Toggle' }
+            { value: 'isometricEnabled', label: 'Isometric View Toggle' },
+
+            // Layer Controls
+            { value: 'layerSpacing', label: 'Layer Spacing' },
+            { value: 'maxLayers', label: 'Max Layers' },
+            { value: 'autoArrangeLayers', label: 'Auto-arrange Layers' }
         ]
     },
     note: {
@@ -176,7 +181,10 @@ const CONTROL_CONFIGS = {
             { value: 'morphAllToSameSimultaneously', label: 'Morph All to Same Simultaneously' },
 
             // Camera toggles
-            { value: 'isometricEnabled', label: 'Toggle Isometric View' }
+            { value: 'isometricEnabled', label: 'Toggle Isometric View' },
+            
+            // Layer toggles
+            { value: 'autoArrangeLayers', label: 'Toggle Auto-arrange Layers' }
         ]
     }
 };

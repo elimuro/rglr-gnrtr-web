@@ -6,6 +6,8 @@
  * a single source of truth for parameter configurations and handling logic.
  */
 
+import { GUI_CONTROL_CONFIGS } from '../config/index.js';
+
 export class ParameterMapper {
     // Static parameter configurations - single source of truth
     static PARAMETER_CONFIGS = new Map([
@@ -662,7 +664,9 @@ export class ParameterMapper {
 
         // Camera Controls
         ['cameraRotationX', { 
-            min: -Math.PI, max: Math.PI, step: 0.01,
+            min: GUI_CONTROL_CONFIGS.cameraRotationX.min, 
+            max: GUI_CONTROL_CONFIGS.cameraRotationX.max, 
+            step: GUI_CONTROL_CONFIGS.cameraRotationX.step,
             setter: (state, value, scene) => {
                 state.set('cameraRotationX', value);
                 scene?.updateCameraRotation();
@@ -670,7 +674,9 @@ export class ParameterMapper {
             requiresScene: true
         }],
         ['cameraRotationY', { 
-            min: -Math.PI, max: Math.PI, step: 0.01,
+            min: GUI_CONTROL_CONFIGS.cameraRotationY.min, 
+            max: GUI_CONTROL_CONFIGS.cameraRotationY.max, 
+            step: GUI_CONTROL_CONFIGS.cameraRotationY.step,
             setter: (state, value, scene) => {
                 state.set('cameraRotationY', value);
                 scene?.updateCameraRotation();
@@ -678,7 +684,9 @@ export class ParameterMapper {
             requiresScene: true
         }],
         ['cameraRotationZ', { 
-            min: -Math.PI, max: Math.PI, step: 0.01,
+            min: GUI_CONTROL_CONFIGS.cameraRotationZ.min, 
+            max: GUI_CONTROL_CONFIGS.cameraRotationZ.max, 
+            step: GUI_CONTROL_CONFIGS.cameraRotationZ.step,
             setter: (state, value, scene) => {
                 state.set('cameraRotationZ', value);
                 scene?.updateCameraRotation();
@@ -686,7 +694,9 @@ export class ParameterMapper {
             requiresScene: true
         }],
         ['cameraDistance', { 
-            min: 1, max: 50, step: 0.1,
+            min: GUI_CONTROL_CONFIGS.cameraDistance.min, 
+            max: GUI_CONTROL_CONFIGS.cameraDistance.max, 
+            step: GUI_CONTROL_CONFIGS.cameraDistance.step,
             setter: (state, value, scene) => {
                 state.set('cameraDistance', value);
                 scene?.updateCameraRotation();
@@ -694,10 +704,56 @@ export class ParameterMapper {
             requiresScene: true
         }],
         ['isometricEnabled', { 
-            min: 0, max: 1, step: 1,
+            min: GUI_CONTROL_CONFIGS.isometricEnabled.min, 
+            max: GUI_CONTROL_CONFIGS.isometricEnabled.max, 
+            step: GUI_CONTROL_CONFIGS.isometricEnabled.step,
             setter: (state, value, scene) => {
-                state.set('isometricEnabled', value);
-                scene?.setIsometricView();
+                // For MIDI notes, treat as momentary toggle (value > 0.5 = toggle)
+                if (value > 0.5) {
+                    const currentValue = state.get('isometricEnabled');
+                    const newValue = !currentValue;
+                    state.set('isometricEnabled', newValue);
+                    scene?.setIsometricView();
+                }
+            },
+            requiresScene: true
+        }],
+
+        // Layer Controls
+        ['layerSpacing', { 
+            min: GUI_CONTROL_CONFIGS.layerSpacing.min, 
+            max: GUI_CONTROL_CONFIGS.layerSpacing.max, 
+            step: GUI_CONTROL_CONFIGS.layerSpacing.step,
+            setter: (state, value, scene) => {
+                state.set('layerSpacing', value);
+                scene?.app?.layerManager?.updateLayerZPositions();
+            },
+            requiresScene: true
+        }],
+        ['maxLayers', { 
+            min: GUI_CONTROL_CONFIGS.maxLayers.min, 
+            max: GUI_CONTROL_CONFIGS.maxLayers.max, 
+            step: GUI_CONTROL_CONFIGS.maxLayers.step,
+            setter: (state, value, scene) => {
+                state.set('maxLayers', value);
+                // Could add logic here to limit actual layer count
+            },
+            requiresScene: false
+        }],
+        ['autoArrangeLayers', { 
+            min: GUI_CONTROL_CONFIGS.autoArrangeLayers.min, 
+            max: GUI_CONTROL_CONFIGS.autoArrangeLayers.max, 
+            step: GUI_CONTROL_CONFIGS.autoArrangeLayers.step,
+            setter: (state, value, scene) => {
+                // For MIDI notes, treat as momentary toggle (value > 0.5 = toggle)
+                if (value > 0.5) {
+                    const currentValue = state.get('autoArrangeLayers');
+                    const newValue = !currentValue;
+                    state.set('autoArrangeLayers', newValue);
+                    if (newValue && scene?.app?.layerManager) {
+                        scene.app.layerManager.updateLayerZPositions();
+                    }
+                }
             },
             requiresScene: true
         }]

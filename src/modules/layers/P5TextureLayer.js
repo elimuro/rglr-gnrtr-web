@@ -1,8 +1,8 @@
 /**
  * P5TextureLayer.js - P5.js Texture Layer Implementation
  * This layer renders p5.js sketches to an off-screen canvas and applies the result
- * as a texture to a 3D plane in the Three.js scene. This replaces the DOM overlay
- * approach with a unified Three.js rendering pipeline.
+ * as a texture to a 3D plane in the Three.js scene. The layer is positioned in 3D space
+ * and can be controlled through the layer spacing system.
  */
 
 import { LayerBase } from './LayerBase.js';
@@ -146,7 +146,8 @@ function draw() {
      * Create off-screen canvas for P5 rendering
      */
     createOffscreenCanvas() {
-        // Create a div container for P5 to attach to
+        // Create a hidden div container for P5 to attach to
+        // P5.js requires a DOM container, but we hide it since we render to texture
         this.p5Container = document.createElement('div');
         this.p5Container.style.display = 'none';
         this.p5Container.style.position = 'absolute';
@@ -214,7 +215,7 @@ function draw() {
             // Create mesh
             this.mesh = new THREE.Mesh(geometry, this.material);
             
-            // Position the mesh at origin initially (LayerManager will position it)
+            // Position the mesh at origin initially (LayerManager will set z-position via setZOffset)
             this.mesh.position.set(0, 0, 0);
             
             console.log('P5TextureLayer: Three.js components created');
@@ -629,6 +630,19 @@ function draw() {
         this.isRunning = false;
         
         console.log('P5TextureLayer: Disposal complete');
+    }
+
+    /**
+     * Set z-offset value
+     * @param {number} zOffset - New z-offset value
+     */
+    setZOffset(zOffset) {
+        super.setZOffset(zOffset);
+        
+        // Update mesh position
+        if (this.mesh) {
+            this.mesh.position.z = zOffset;
+        }
     }
 
     /**

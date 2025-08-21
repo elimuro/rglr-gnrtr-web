@@ -372,6 +372,27 @@ export const GUI_CONTROL_CONFIGS = {
     min: 0, max: 1, step: 1, default: 0,
     // Connected to: Scene.js camera preset
     // Purpose: Enable isometric camera preset (0=disabled, 1=enabled)
+  },
+
+  // ===== LAYER CONTROLS =====
+  // Used in GUIManager.js setupLayerControls()
+  
+  layerSpacing: {
+    min: 0.01, max: 10.0, step: 0.01, default: 0.1,
+    // Connected to: LayerManager.js layer positioning
+    // Purpose: Controls distance between layers in 3D space
+  },
+  
+  maxLayers: {
+    min: 1, max: 20, step: 1, default: 10,
+    // Connected to: LayerManager.js layer management
+    // Purpose: Maximum number of layers supported
+  },
+  
+  autoArrangeLayers: {
+    min: 0, max: 1, step: 1, default: 1,
+    // Connected to: LayerManager.js layer arrangement
+    // Purpose: Automatically arrange layers in 3D space (0=disabled, 1=enabled)
   }
 };
 
@@ -388,5 +409,6 @@ export const GUI_CATEGORIES = {
   POST_PROCESSING: ['bloomStrength', 'bloomRadius', 'bloomThreshold', 'chromaticIntensity', 'vignetteIntensity', 'vignetteRadius', 'vignetteSoftness', 'grainIntensity', 'colorHue', 'colorSaturation', 'colorBrightness', 'colorContrast'],
   AUDIO: ['bassAmplitude', 'midAmplitude', 'trebleAmplitude', 'audioSmoothing'],
   MORPHING: ['morphingIntensity', 'morphingSpeed'],
-  CAMERA: ['cameraRotationX', 'cameraRotationY', 'cameraRotationZ', 'cameraDistance', 'isometricEnabled']
+  CAMERA: ['cameraRotationX', 'cameraRotationY', 'cameraRotationZ', 'cameraDistance', 'isometricEnabled'],
+  LAYERS: ['layerSpacing', 'maxLayers', 'autoArrangeLayers']
 };

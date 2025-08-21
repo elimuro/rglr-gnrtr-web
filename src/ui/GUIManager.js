@@ -4,6 +4,7 @@
  * parameter sliders, color pickers, folder organization, and real-time UI updates. It handles
  * the creation and management of all GUI elements, ensures proper parameter binding to the state
  * system, and provides an intuitive interface for controlling all application features.
+ * Now supports tabbed interface with separate GUI instances for better organization.
  */
 
 import { GUI } from 'dat.gui';
@@ -13,8 +14,10 @@ export class GUIManager {
     constructor(state, app) {
         this.state = state;
         this.app = app;
-        this.gui = null;
+        this.mainGui = null;
+        this.gridLinesGui = null;
         this.controllers = new Map();
+        this.gridLinesControllers = new Map();
         
         this.init();
     }
@@ -49,19 +52,23 @@ export class GUIManager {
 
     init() {
         try {
-            if (this.gui) this.gui.destroy();
+            // Clean up existing GUIs
+            if (this.mainGui) this.mainGui.destroy();
+            if (this.gridLinesGui) this.gridLinesGui.destroy();
             
-            this.gui = new GUI({ container: document.getElementById('gui-container') });
-            
-            // Check if GUI container exists
-            const container = document.getElementById('gui-container');
-            if (!container) {
+            // Create main GUI container
+            const mainContainer = document.getElementById('gui-container');
+            if (!mainContainer) {
                 console.error('GUI container not found');
                 return;
             }
 
+            // Create tabbed interface
+            this.createTabbedInterface(mainContainer);
+            
             console.log('Setting up GUI controls...');
             
+            // Setup main GUI controls
             try { this.setupPerformanceControls(); console.log('Performance controls OK'); } catch (e) { console.error('Performance controls failed:', e); }
             try { this.setupShapeControls(); console.log('Shape controls OK'); } catch (e) { console.error('Shape controls failed:', e); }
             try { this.setupCompositionControls(); console.log('Composition controls OK'); } catch (e) { console.error('Composition controls failed:', e); }
@@ -72,6 +79,10 @@ export class GUIManager {
             try { this.setupPostProcessingControls(); console.log('Post-processing controls OK'); } catch (e) { console.error('Post-processing controls failed:', e); }
             try { this.setupLightingControls(); console.log('Lighting controls OK'); } catch (e) { console.error('Lighting controls failed:', e); }
             try { this.setupCameraControls(); console.log('Camera controls OK'); } catch (e) { console.error('Camera controls failed:', e); }
+            try { this.setupLayerControls(); console.log('Layer controls OK'); } catch (e) { console.error('Layer controls failed:', e); }
+            
+            // Setup grid lines GUI controls
+            try { this.setupGridLinesControls(); console.log('Grid lines controls OK'); } catch (e) { console.error('Grid lines controls failed:', e); }
             
             // Collapse all folders by default
             this.collapseAllFolders();
@@ -80,13 +91,129 @@ export class GUIManager {
             console.error('Error during GUI initialization:', error);
         }
     }
+
+    /**
+     * Create tabbed interface with main and grid lines tabs
+     */
+    createTabbedInterface(container) {
+        // Clear container
+        container.innerHTML = '';
+        
+        // Create tab container
+        const tabContainer = document.createElement('div');
+        tabContainer.className = 'gui-tabs';
+        tabContainer.style.cssText = `
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border-left: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        `;
+        
+        // Create tab buttons
+        const tabButtons = document.createElement('div');
+        tabButtons.style.cssText = `
+            display: flex;
+            border-bottom: 1px solid #333;
+            background: rgba(0, 0, 0, 0.9);
+        `;
+        
+        const mainTab = document.createElement('button');
+        mainTab.textContent = 'Main Controls';
+        mainTab.className = 'gui-tab active';
+        mainTab.style.cssText = `
+            flex: 1;
+            padding: 8px 12px;
+            background: #2a2a2a;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        `;
+        
+        const gridLinesTab = document.createElement('button');
+        gridLinesTab.textContent = 'Grid Lines';
+        gridLinesTab.className = 'gui-tab';
+        gridLinesTab.style.cssText = `
+            flex: 1;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            color: #ccc;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        `;
+        
+        // Create content containers
+        const mainContent = document.createElement('div');
+        mainContent.id = 'main-gui-container';
+        mainContent.style.cssText = `
+            flex: 1;
+            overflow-y: auto;
+            display: block;
+        `;
+        
+        const gridLinesContent = document.createElement('div');
+        gridLinesContent.id = 'grid-lines-gui-container';
+        gridLinesContent.style.cssText = `
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+        `;
+        
+        // Add event listeners
+        mainTab.addEventListener('click', () => {
+            this.switchTab('main', mainTab, gridLinesTab, mainContent, gridLinesContent);
+        });
+        
+        gridLinesTab.addEventListener('click', () => {
+            this.switchTab('grid-lines', gridLinesTab, mainTab, gridLinesContent, mainContent);
+        });
+        
+        // Assemble the interface
+        tabButtons.appendChild(mainTab);
+        tabButtons.appendChild(gridLinesTab);
+        tabContainer.appendChild(tabButtons);
+        tabContainer.appendChild(mainContent);
+        tabContainer.appendChild(gridLinesContent);
+        container.appendChild(tabContainer);
+        
+        // Create GUI instances
+        this.mainGui = new GUI({ container: mainContent });
+        this.gridLinesGui = new GUI({ container: gridLinesContent });
+    }
+
+    /**
+     * Switch between tabs
+     */
+    switchTab(activeTab, activeButton, inactiveButton, activeContent, inactiveContent) {
+        // Update button styles
+        activeButton.style.background = '#2a2a2a';
+        activeButton.style.color = '#fff';
+        inactiveButton.style.background = '#1a1a1a';
+        inactiveButton.style.color = '#ccc';
+        
+        // Update content visibility
+        activeContent.style.display = 'block';
+        inactiveContent.style.display = 'none';
+        
+        // Update button classes
+        activeButton.className = 'gui-tab active';
+        inactiveButton.className = 'gui-tab';
+    }
     
     collapseAllFolders() {
         // This method ensures all folders start collapsed
     }
 
     setupShapeControls() {
-        const shapeFolder = this.gui.addFolder('Shapes');
+        const shapeFolder = this.mainGui.addFolder('Shapes');
         
         // Grid size controls using configuration constants
         this.addConfiguredController(shapeFolder, 'gridWidth', 'Display Width', () => {
@@ -145,7 +272,7 @@ export class GUIManager {
     }
 
     setupCompositionControls() {
-        const compositionFolder = this.gui.addFolder('Composition');
+        const compositionFolder = this.mainGui.addFolder('Composition');
         
         this.addConfiguredController(compositionFolder, 'compositionWidth', 'Composition Width', () => {
             this.state.set('compositionWidth', this.state.get('compositionWidth'));
@@ -165,7 +292,7 @@ export class GUIManager {
     }
 
     setupColorControls() {
-        const colorFolder = this.gui.addFolder('Colors');
+        const colorFolder = this.mainGui.addFolder('Colors');
         
         this.addColorController(colorFolder, 'shapeColor', 'Shape Color', () => {
             this.state.set('shapeColor', this.state.get('shapeColor'));
@@ -184,7 +311,7 @@ export class GUIManager {
     }
 
     setupSphereControls() {
-        const sphereFolder = this.gui.addFolder('Refractive Spheres');
+        const sphereFolder = this.mainGui.addFolder('Refractive Spheres');
         
         // Material Properties Folder
         const materialFolder = sphereFolder.addFolder('Material Properties');
@@ -257,7 +384,7 @@ export class GUIManager {
     }
 
     setupAnimationControls() {
-        const animationFolder = this.gui.addFolder('Animation');
+        const animationFolder = this.mainGui.addFolder('Animation');
         
         // Ensure new animation toggle parameters exist in state
         if (!this.state.has('enableMovementAnimation')) {
@@ -421,7 +548,7 @@ export class GUIManager {
     }
 
     setupMorphingControls() {
-        const morphingFolder = this.gui.addFolder('Shape Morphing');
+        const morphingFolder = this.mainGui.addFolder('Shape Morphing');
         
         // Morphing division selector
         this.createDivisionDropdown(morphingFolder, 'morphingDivision', 'quarter', 'Division', '♩');
@@ -486,7 +613,7 @@ export class GUIManager {
     }
 
     setupPerformanceControls() {
-        const performanceFolder = this.gui.addFolder('Performance');
+        const performanceFolder = this.mainGui.addFolder('Performance');
         
         // Performance metrics display
         const metrics = {
@@ -543,7 +670,7 @@ export class GUIManager {
     }
 
     setupPostProcessingControls() {
-        const postProcessingFolder = this.gui.addFolder('Post Processing');
+        const postProcessingFolder = this.mainGui.addFolder('Post Processing');
         
         // Main post-processing toggle
         postProcessingFolder.add(this.state.state, 'postProcessingEnabled').name('Enable Post Processing').onChange(() => {
@@ -630,7 +757,7 @@ export class GUIManager {
 
     setupLightingControls() {
         try {
-            const lightingFolder = this.gui.addFolder('Lighting');
+            const lightingFolder = this.mainGui.addFolder('Lighting');
             
             // Light color control
             this.addColorController(lightingFolder, 'lightColour', 'Light Colour', () => {
@@ -752,11 +879,16 @@ export class GUIManager {
     }
 
     destroy() {
-        if (this.gui) {
-            this.gui.destroy();
-            this.gui = null;
+        if (this.mainGui) {
+            this.mainGui.destroy();
+            this.mainGui = null;
+        }
+        if (this.gridLinesGui) {
+            this.gridLinesGui.destroy();
+            this.gridLinesGui = null;
         }
         this.controllers.clear();
+        this.gridLinesControllers.clear();
     }
 
     /**
@@ -800,64 +932,226 @@ export class GUIManager {
     }
 
     setupCameraControls() {
-        const cameraFolder = this.gui.addFolder('Camera');
+        const cameraFolder = this.mainGui.addFolder('Camera');
         
         // Ensure camera parameters exist in state
         if (!this.state.has('cameraRotationX')) {
-            this.state.set('cameraRotationX', 0);
+            this.state.set('cameraRotationX', GUI_CONTROL_CONFIGS.cameraRotationX.default);
         }
         if (!this.state.has('cameraRotationY')) {
-            this.state.set('cameraRotationY', 0);
+            this.state.set('cameraRotationY', GUI_CONTROL_CONFIGS.cameraRotationY.default);
         }
         if (!this.state.has('cameraRotationZ')) {
-            this.state.set('cameraRotationZ', 0);
+            this.state.set('cameraRotationZ', GUI_CONTROL_CONFIGS.cameraRotationZ.default);
         }
         if (!this.state.has('cameraDistance')) {
-            this.state.set('cameraDistance', 10);
+            this.state.set('cameraDistance', GUI_CONTROL_CONFIGS.cameraDistance.default);
         }
         if (!this.state.has('isometricEnabled')) {
-            this.state.set('isometricEnabled', false);
+            this.state.set('isometricEnabled', GUI_CONTROL_CONFIGS.isometricEnabled.default);
         }
         
         // Camera rotation controls
-        this.addController(cameraFolder, 'cameraRotationX', -Math.PI, Math.PI, 0.01, 'Rotation X (Pitch)', () => {
+        this.addConfiguredController(cameraFolder, 'cameraRotationX', 'Rotation X (Pitch)', () => {
             this.state.set('cameraRotationX', this.state.get('cameraRotationX'));
             this.app.scene.updateCameraRotation();
         });
         
-        this.addController(cameraFolder, 'cameraRotationY', -Math.PI, Math.PI, 0.01, 'Rotation Y (Yaw)', () => {
+        this.addConfiguredController(cameraFolder, 'cameraRotationY', 'Rotation Y (Yaw)', () => {
             this.state.set('cameraRotationY', this.state.get('cameraRotationY'));
             this.app.scene.updateCameraRotation();
         });
         
-        this.addController(cameraFolder, 'cameraRotationZ', -Math.PI, Math.PI, 0.01, 'Rotation Z (Roll)', () => {
+        this.addConfiguredController(cameraFolder, 'cameraRotationZ', 'Rotation Z (Roll)', () => {
             this.state.set('cameraRotationZ', this.state.get('cameraRotationZ'));
             this.app.scene.updateCameraRotation();
         });
         
         // Camera distance control
-        this.addController(cameraFolder, 'cameraDistance', 1, 50, 0.1, 'Distance (Zoom)', () => {
+        this.addConfiguredController(cameraFolder, 'cameraDistance', 'Distance (Zoom)', () => {
             this.state.set('cameraDistance', this.state.get('cameraDistance'));
             this.app.scene.updateCameraRotation();
         });
         
-        // Isometric preset toggle
-        cameraFolder.add(this.state.state, 'isometricEnabled').name('Isometric View').onChange(() => {
-            this.state.set('isometricEnabled', this.state.get('isometricEnabled'));
+        // Isometric preset button
+        const toggleIsometric = () => {
+            const currentValue = this.state.get('isometricEnabled');
+            const newValue = !currentValue;
+            this.state.set('isometricEnabled', newValue);
             this.app.scene.setIsometricView();
-        });
+        };
+        cameraFolder.add({ toggleIsometric }, 'toggleIsometric').name('Toggle Isometric View');
         
         // Reset camera button
         const resetCamera = () => {
-            this.state.set('cameraRotationX', 0);
-            this.state.set('cameraRotationY', 0);
-            this.state.set('cameraRotationZ', 0);
-            this.state.set('cameraDistance', 10);
-            this.state.set('isometricEnabled', false);
+            this.state.set('cameraRotationX', GUI_CONTROL_CONFIGS.cameraRotationX.default);
+            this.state.set('cameraRotationY', GUI_CONTROL_CONFIGS.cameraRotationY.default);
+            this.state.set('cameraRotationZ', GUI_CONTROL_CONFIGS.cameraRotationZ.default);
+            this.state.set('cameraDistance', GUI_CONTROL_CONFIGS.cameraDistance.default);
+            this.state.set('isometricEnabled', GUI_CONTROL_CONFIGS.isometricEnabled.default);
             this.app.scene.updateCameraRotation();
         };
         
         cameraFolder.add({ resetCamera }, 'resetCamera').name('Reset Camera');
     }
+
+    setupLayerControls() {
+        const layerFolder = this.mainGui.addFolder('Layers');
+        
+        // Ensure layer parameters exist in state
+        if (!this.state.has('layerSpacing')) {
+            this.state.set('layerSpacing', GUI_CONTROL_CONFIGS.layerSpacing.default);
+        }
+        if (!this.state.has('maxLayers')) {
+            this.state.set('maxLayers', GUI_CONTROL_CONFIGS.maxLayers.default);
+        }
+        if (!this.state.has('autoArrangeLayers')) {
+            this.state.set('autoArrangeLayers', GUI_CONTROL_CONFIGS.autoArrangeLayers.default);
+        }
+        
+        // Layer spacing control
+        this.addConfiguredController(layerFolder, 'layerSpacing', 'Layer Spacing', () => {
+            this.state.set('layerSpacing', this.state.get('layerSpacing'));
+            // Update layer positions when spacing changes
+            if (this.app.layerManager) {
+                this.app.layerManager.updateLayerZPositions();
+            }
+        });
+        
+        // Max layers control
+        this.addConfiguredController(layerFolder, 'maxLayers', 'Max Layers', () => {
+            this.state.set('maxLayers', this.state.get('maxLayers'));
+            // Could add logic here to limit actual layer count
+        });
+        
+        // Auto-arrange button
+        const toggleAutoArrange = () => {
+            const currentValue = this.state.get('autoArrangeLayers');
+            const newValue = !currentValue;
+            this.state.set('autoArrangeLayers', newValue);
+            // Re-arrange layers if auto-arrange is enabled
+            if (newValue && this.app.layerManager) {
+                this.app.layerManager.updateLayerZPositions();
+            }
+        };
+        layerFolder.add({ toggleAutoArrange }, 'toggleAutoArrange').name('Toggle Auto-arrange Layers');
+        
+        // Manual layer arrangement button
+        const arrangeLayers = () => {
+            if (this.app.layerManager) {
+                this.app.layerManager.updateLayerZPositions();
+            }
+        };
+        
+        layerFolder.add({ arrangeLayers }, 'arrangeLayers').name('Arrange Layers Now');
+        
+        // Layer info display
+        if (this.app.layerManager) {
+            const layerCount = this.app.layerManager.layers.size;
+            const layerInfo = { info: `${layerCount} layers active` };
+            layerFolder.add(layerInfo, 'info').name('Layer Status').disable();
+        }
+    }
     
+    setupGridLinesControls() {
+        const gridLinesFolder = this.gridLinesGui.addFolder('Grid Lines');
+        
+        // Ensure grid lines parameters exist in state
+        if (!this.state.has('gridLineColor')) {
+            this.state.set('gridLineColor', '#ff0000');
+        }
+        if (!this.state.has('gridLineWidth')) {
+            this.state.set('gridLineWidth', 1);
+        }
+        if (!this.state.has('gridLineOpacity')) {
+            this.state.set('gridLineOpacity', 1.0);
+        }
+        if (!this.state.has('showGridLines')) {
+            this.state.set('showGridLines', true);
+        }
+        if (!this.state.has('gridLineDisplacementEnabled')) {
+            this.state.set('gridLineDisplacementEnabled', false);
+        }
+        if (!this.state.has('gridLineDisplacementAmount')) {
+            this.state.set('gridLineDisplacementAmount', 0.1);
+        }
+        if (!this.state.has('gridLineDisplacementSpeed')) {
+            this.state.set('gridLineDisplacementSpeed', 1.0);
+        }
+        if (!this.state.has('gridLineDisplacementType')) {
+            this.state.set('gridLineDisplacementType', 'wave');
+        }
+        
+        // Grid line color control
+        this.addColorController(gridLinesFolder, 'gridLineColor', 'Grid Line Color', () => {
+            this.state.set('gridLineColor', this.state.get('gridLineColor'));
+            this.updateGridLinesLayer();
+        });
+        
+        // Grid line width control
+        this.addController(gridLinesFolder, 'gridLineWidth', 0.1, 5.0, 0.1, 'Line Width', () => {
+            this.state.set('gridLineWidth', this.state.get('gridLineWidth'));
+            this.updateGridLinesLayer();
+        });
+        
+        // Grid line opacity control
+        this.addController(gridLinesFolder, 'gridLineOpacity', 0.0, 1.0, 0.01, 'Opacity', () => {
+            this.state.set('gridLineOpacity', this.state.get('gridLineOpacity'));
+            this.updateGridLinesLayer();
+        });
+        
+        // Grid line visibility control
+        gridLinesFolder.add(this.state.state, 'showGridLines').name('Show Grid Lines').onChange(() => {
+            this.state.set('showGridLines', this.state.get('showGridLines'));
+            this.updateGridLinesLayer();
+        });
+        
+        // Displacement controls
+        const displacementFolder = this.gridLinesGui.addFolder('Displacement Effects');
+        
+        // Displacement enable toggle
+        displacementFolder.add(this.state.state, 'gridLineDisplacementEnabled').name('Enable Displacement').onChange(() => {
+            this.state.set('gridLineDisplacementEnabled', this.state.get('gridLineDisplacementEnabled'));
+            this.updateGridLinesLayer();
+        });
+        
+        // Displacement amount
+        this.addController(displacementFolder, 'gridLineDisplacementAmount', 0.0, 1.0, 0.01, 'Displacement Amount', () => {
+            this.state.set('gridLineDisplacementAmount', this.state.get('gridLineDisplacementAmount'));
+            this.updateGridLinesLayer();
+        });
+        
+        // Displacement speed
+        this.addController(displacementFolder, 'gridLineDisplacementSpeed', 0.1, 5.0, 0.1, 'Displacement Speed', () => {
+            this.state.set('gridLineDisplacementSpeed', this.state.get('gridLineDisplacementSpeed'));
+            this.updateGridLinesLayer();
+        });
+        
+        // Displacement type
+        displacementFolder.add(this.state.state, 'gridLineDisplacementType', ['wave', 'noise', 'spiral']).name('Displacement Type').onChange(() => {
+            this.state.set('gridLineDisplacementType', this.state.get('gridLineDisplacementType'));
+            this.updateGridLinesLayer();
+        });
+    }
+    
+    /**
+     * Update grid lines layer with current state parameters
+     */
+    updateGridLinesLayer() {
+        if (this.app.layerManager) {
+            const gridLinesLayer = this.app.layerManager.layers.get('grid-lines');
+            if (gridLinesLayer) {
+                gridLinesLayer.setGridColor(this.state.get('gridLineColor'));
+                gridLinesLayer.setLineThickness(this.state.get('gridLineWidth'));
+                gridLinesLayer.setOpacity(this.state.get('gridLineOpacity'));
+                gridLinesLayer.setDisplacementEnabled(this.state.get('gridLineDisplacementEnabled'));
+                gridLinesLayer.setDisplacementAmount(this.state.get('gridLineDisplacementAmount'));
+                gridLinesLayer.setDisplacementSpeed(this.state.get('gridLineDisplacementSpeed'));
+                gridLinesLayer.setDisplacementType(this.state.get('gridLineDisplacementType'));
+                
+                // Update layer visibility
+                gridLinesLayer.visible = this.state.get('showGridLines');
+            }
+        }
+    }
 } 
