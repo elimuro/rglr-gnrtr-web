@@ -305,5 +305,22 @@ export const DEFAULT_SCENE_CONFIG = {
   audio: {
     mappings: {}                        // Connected to: StateManager.js fallback state, AudioManager.js
                                         // Purpose: Default audio mappings object
+  },
+
+  /**
+   * Camera Configuration
+   * Default camera position and rotation settings for isometric viewing
+   */
+  camera: {
+    rotationX: 0,                       // Connected to: StateManager.js fallback state, Scene.js
+                                        // Purpose: Camera rotation around X-axis (pitch) in radians
+    rotationY: 0,                       // Connected to: StateManager.js fallback state, Scene.js
+                                        // Purpose: Camera rotation around Y-axis (yaw) in radians
+    rotationZ: 0,                       // Connected to: StateManager.js fallback state, Scene.js
+                                        // Purpose: Camera rotation around Z-axis (roll) in radians
+    distance: 10,                       // Connected to: StateManager.js fallback state, Scene.js
+                                        // Purpose: Camera distance from origin (zoom)
+    isometricEnabled: false             // Connected to: StateManager.js fallback state, Scene.js
+                                        // Purpose: Enable isometric camera preset
   }
 };

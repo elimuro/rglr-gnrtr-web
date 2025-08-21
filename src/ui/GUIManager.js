@@ -71,6 +71,7 @@ export class GUIManager {
             try { this.setupMorphingControls(); console.log('Morphing controls OK'); } catch (e) { console.error('Morphing controls failed:', e); }
             try { this.setupPostProcessingControls(); console.log('Post-processing controls OK'); } catch (e) { console.error('Post-processing controls failed:', e); }
             try { this.setupLightingControls(); console.log('Lighting controls OK'); } catch (e) { console.error('Lighting controls failed:', e); }
+            try { this.setupCameraControls(); console.log('Camera controls OK'); } catch (e) { console.error('Camera controls failed:', e); }
             
             // Collapse all folders by default
             this.collapseAllFolders();
@@ -796,6 +797,84 @@ export class GUIManager {
             '8 Bars': '8bars'
         };
         return divisionMap[displayName] || 'quarter';
+    }
+
+    setupCameraControls() {
+        console.log('Setting up camera controls...');
+        const cameraFolder = this.gui.addFolder('Camera');
+        
+        // Debug: Check if GUI_CONTROL_CONFIGS has camera parameters
+        console.log('GUI_CONTROL_CONFIGS cameraRotationX:', GUI_CONTROL_CONFIGS.cameraRotationX);
+        console.log('GUI_CONTROL_CONFIGS cameraRotationY:', GUI_CONTROL_CONFIGS.cameraRotationY);
+        console.log('GUI_CONTROL_CONFIGS cameraRotationZ:', GUI_CONTROL_CONFIGS.cameraRotationZ);
+        console.log('GUI_CONTROL_CONFIGS cameraDistance:', GUI_CONTROL_CONFIGS.cameraDistance);
+        
+        // Ensure camera parameters exist in state
+        if (!this.state.has('cameraRotationX')) {
+            this.state.set('cameraRotationX', 0);
+        }
+        if (!this.state.has('cameraRotationY')) {
+            this.state.set('cameraRotationY', 0);
+        }
+        if (!this.state.has('cameraRotationZ')) {
+            this.state.set('cameraRotationZ', 0);
+        }
+        if (!this.state.has('cameraDistance')) {
+            this.state.set('cameraDistance', 10);
+        }
+        if (!this.state.has('isometricEnabled')) {
+            this.state.set('isometricEnabled', false);
+        }
+        
+        console.log('Camera parameters in state:', {
+            cameraRotationX: this.state.get('cameraRotationX'),
+            cameraRotationY: this.state.get('cameraRotationY'),
+            cameraRotationZ: this.state.get('cameraRotationZ'),
+            cameraDistance: this.state.get('cameraDistance'),
+            isometricEnabled: this.state.get('isometricEnabled')
+        });
+        
+        // Camera rotation controls
+        this.addConfiguredController(cameraFolder, 'cameraRotationX', 'Rotation X (Pitch)', () => {
+            this.state.set('cameraRotationX', this.state.get('cameraRotationX'));
+            this.app.scene.updateCameraRotation();
+        });
+        
+        this.addConfiguredController(cameraFolder, 'cameraRotationY', 'Rotation Y (Yaw)', () => {
+            this.state.set('cameraRotationY', this.state.get('cameraRotationY'));
+            this.app.scene.updateCameraRotation();
+        });
+        
+        this.addConfiguredController(cameraFolder, 'cameraRotationZ', 'Rotation Z (Roll)', () => {
+            this.state.set('cameraRotationZ', this.state.get('cameraRotationZ'));
+            this.app.scene.updateCameraRotation();
+        });
+        
+        // Camera distance control
+        this.addConfiguredController(cameraFolder, 'cameraDistance', 'Distance (Zoom)', () => {
+            this.state.set('cameraDistance', this.state.get('cameraDistance'));
+            this.app.scene.updateCameraRotation();
+        });
+        
+        // Isometric preset toggle
+        cameraFolder.add(this.state.state, 'isometricEnabled').name('Isometric View').onChange(() => {
+            this.state.set('isometricEnabled', this.state.get('isometricEnabled'));
+            this.app.scene.setIsometricView();
+        });
+        
+        // Reset camera button
+        const resetCamera = () => {
+            this.state.set('cameraRotationX', 0);
+            this.state.set('cameraRotationY', 0);
+            this.state.set('cameraRotationZ', 0);
+            this.state.set('cameraDistance', 10);
+            this.state.set('isometricEnabled', false);
+            this.app.scene.updateCameraRotation();
+        };
+        
+        cameraFolder.add({ resetCamera }, 'resetCamera').name('Reset Camera');
+        
+        console.log('Camera controls setup complete');
     }
     
 } 

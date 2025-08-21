@@ -116,7 +116,14 @@ const CONTROL_CONFIGS = {
             { value: 'pointLight1Intensity', label: 'Point Light 1 Intensity' },
             { value: 'pointLight2Intensity', label: 'Point Light 2 Intensity' },
             { value: 'rimLightIntensity', label: 'Rim Light Intensity' },
-            { value: 'accentLightIntensity', label: 'Accent Light Intensity' }
+            { value: 'accentLightIntensity', label: 'Accent Light Intensity' },
+
+            // Camera Controls
+            { value: 'cameraRotationX', label: 'Camera Rotation X (Pitch)' },
+            { value: 'cameraRotationY', label: 'Camera Rotation Y (Yaw)' },
+            { value: 'cameraRotationZ', label: 'Camera Rotation Z (Roll)' },
+            { value: 'cameraDistance', label: 'Camera Distance (Zoom)' },
+            { value: 'isometricEnabled', label: 'Isometric View Toggle' }
         ]
     },
     note: {
@@ -166,7 +173,10 @@ const CONTROL_CONFIGS = {
             { value: 'morphAllShapes', label: 'Morph All Shapes' },
             { value: 'morphAllToSame', label: 'Morph All to Same' },
             { value: 'morphAllSimultaneously', label: 'Morph All Simultaneously' },
-            { value: 'morphAllToSameSimultaneously', label: 'Morph All to Same Simultaneously' }
+            { value: 'morphAllToSameSimultaneously', label: 'Morph All to Same Simultaneously' },
+
+            // Camera toggles
+            { value: 'isometricEnabled', label: 'Toggle Isometric View' }
         ]
     }
 };

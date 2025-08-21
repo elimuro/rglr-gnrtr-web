@@ -239,7 +239,14 @@ export class StateManager {
             "audioOverall": 0,
             "audioRMS": 0,
             "audioPeak": 0,
-            "audioFrequency": 0
+            "audioFrequency": 0,
+
+            // Camera Configuration
+            "cameraRotationX": DEFAULT_SCENE_CONFIG.camera.rotationX,
+            "cameraRotationY": DEFAULT_SCENE_CONFIG.camera.rotationY,
+            "cameraRotationZ": DEFAULT_SCENE_CONFIG.camera.rotationZ,
+            "cameraDistance": DEFAULT_SCENE_CONFIG.camera.distance,
+            "isometricEnabled": DEFAULT_SCENE_CONFIG.camera.isometricEnabled
         };
     }
 

@@ -658,6 +658,48 @@ export class ParameterMapper {
                 scene?.updateLighting();
             },
             requiresScene: true
+        }],
+
+        // Camera Controls
+        ['cameraRotationX', { 
+            min: -Math.PI, max: Math.PI, step: 0.01,
+            setter: (state, value, scene) => {
+                state.set('cameraRotationX', value);
+                scene?.updateCameraRotation();
+            },
+            requiresScene: true
+        }],
+        ['cameraRotationY', { 
+            min: -Math.PI, max: Math.PI, step: 0.01,
+            setter: (state, value, scene) => {
+                state.set('cameraRotationY', value);
+                scene?.updateCameraRotation();
+            },
+            requiresScene: true
+        }],
+        ['cameraRotationZ', { 
+            min: -Math.PI, max: Math.PI, step: 0.01,
+            setter: (state, value, scene) => {
+                state.set('cameraRotationZ', value);
+                scene?.updateCameraRotation();
+            },
+            requiresScene: true
+        }],
+        ['cameraDistance', { 
+            min: 1, max: 50, step: 0.1,
+            setter: (state, value, scene) => {
+                state.set('cameraDistance', value);
+                scene?.updateCameraRotation();
+            },
+            requiresScene: true
+        }],
+        ['isometricEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                state.set('isometricEnabled', value);
+                scene?.setIsometricView();
+            },
+            requiresScene: true
         }]
     ]);
 

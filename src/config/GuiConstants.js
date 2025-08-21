@@ -336,9 +336,42 @@ export const GUI_CONTROL_CONFIGS = {
   },
   
   morphingSpeed: {
-    min: 0.1, max: 3, step: 0.01, default: 1,
-    // Connected to: ShapeMorphingSystem.js timing calculations
+    min: 0.1, max: 5, step: 0.1, default: 1.0,
+    // Connected to: ShapeMorphingSystem.js morphing transitions
     // Purpose: Controls speed of morphing transitions
+  },
+
+  // ===== CAMERA CONTROLS =====
+  // Used in GUIManager.js setupCameraControls()
+  
+  cameraRotationX: {
+    min: -Math.PI, max: Math.PI, step: 0.01, default: 0,
+    // Connected to: Scene.js camera rotation
+    // Purpose: Camera rotation around X-axis (pitch) in radians
+  },
+  
+  cameraRotationY: {
+    min: -Math.PI, max: Math.PI, step: 0.01, default: 0,
+    // Connected to: Scene.js camera rotation
+    // Purpose: Camera rotation around Y-axis (yaw) in radians
+  },
+  
+  cameraRotationZ: {
+    min: -Math.PI, max: Math.PI, step: 0.01, default: 0,
+    // Connected to: Scene.js camera rotation
+    // Purpose: Camera rotation around Z-axis (roll) in radians
+  },
+  
+  cameraDistance: {
+    min: 1, max: 50, step: 0.1, default: 10,
+    // Connected to: Scene.js camera position
+    // Purpose: Camera distance from origin (zoom)
+  },
+  
+  isometricEnabled: {
+    min: 0, max: 1, step: 1, default: 0,
+    // Connected to: Scene.js camera preset
+    // Purpose: Enable isometric camera preset (0=disabled, 1=enabled)
   }
 };
 
@@ -354,5 +387,6 @@ export const GUI_CATEGORIES = {
   LIGHTING: ['ambientLightIntensity', 'directionalLightIntensity', 'pointLight1Intensity', 'pointLight2Intensity', 'rimLightIntensity', 'accentLightIntensity', 'lightColour'],
   POST_PROCESSING: ['bloomStrength', 'bloomRadius', 'bloomThreshold', 'chromaticIntensity', 'vignetteIntensity', 'vignetteRadius', 'vignetteSoftness', 'grainIntensity', 'colorHue', 'colorSaturation', 'colorBrightness', 'colorContrast'],
   AUDIO: ['bassAmplitude', 'midAmplitude', 'trebleAmplitude', 'audioSmoothing'],
-  MORPHING: ['morphingIntensity', 'morphingSpeed']
+  MORPHING: ['morphingIntensity', 'morphingSpeed'],
+  CAMERA: ['cameraRotationX', 'cameraRotationY', 'cameraRotationZ', 'cameraDistance', 'isometricEnabled']
 };

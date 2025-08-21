@@ -103,6 +103,9 @@ export class Scene {
             0.1, 1000
         );
         this.camera.position.z = 10;
+        
+        // Initialize camera rotation from state
+        this.updateCameraRotation();
     }
 
     setupRenderer() {
@@ -1385,5 +1388,65 @@ export class Scene {
                 this.animationSystem.animateCombined(mesh, x, y, cellSize, movementAmp, rotationAmp, scaleAmp, frequency);
                 break;
         }
+    }
+
+    /**
+     * Update camera rotation and position based on state parameters
+     */
+    updateCameraRotation() {
+        if (!this.camera) return;
+        
+        const rotationX = this.state.get('cameraRotationX') || 0;
+        const rotationY = this.state.get('cameraRotationY') || 0;
+        const rotationZ = this.state.get('cameraRotationZ') || 0;
+        const distance = this.state.get('cameraDistance') || 10;
+        
+        // Reset camera rotation
+        this.camera.rotation.set(0, 0, 0);
+        
+        // Apply rotations in order: X (pitch), Y (yaw), Z (roll)
+        this.camera.rotateX(rotationX);
+        this.camera.rotateY(rotationY);
+        this.camera.rotateZ(rotationZ);
+        
+        // Set camera position based on distance
+        this.camera.position.set(0, 0, distance);
+        
+        // Apply the same rotation to the position
+        this.camera.position.applyQuaternion(this.camera.quaternion);
+        
+        // Reset rotation and look at origin
+        this.camera.rotation.set(0, 0, 0);
+        this.camera.lookAt(0, 0, 0);
+        
+        // Update camera matrix
+        this.camera.updateMatrix();
+        this.camera.updateMatrixWorld();
+    }
+
+    /**
+     * Set isometric camera view
+     */
+    setIsometricView() {
+        if (!this.camera) return;
+        
+        const isometricEnabled = this.state.get('isometricEnabled');
+        
+        if (isometricEnabled) {
+            // Set isometric angles (45 degrees on X and Y axes)
+            const isometricAngle = Math.PI / 4; // 45 degrees in radians
+            this.state.set('cameraRotationX', isometricAngle);
+            this.state.set('cameraRotationY', isometricAngle);
+            this.state.set('cameraRotationZ', 0);
+            this.state.set('cameraDistance', 15); // Slightly further for isometric view
+        } else {
+            // Reset to front view
+            this.state.set('cameraRotationX', 0);
+            this.state.set('cameraRotationY', 0);
+            this.state.set('cameraRotationZ', 0);
+            this.state.set('cameraDistance', 10);
+        }
+        
+        this.updateCameraRotation();
     }
 } 
