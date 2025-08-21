@@ -800,14 +800,7 @@ export class GUIManager {
     }
 
     setupCameraControls() {
-        console.log('Setting up camera controls...');
         const cameraFolder = this.gui.addFolder('Camera');
-        
-        // Debug: Check if GUI_CONTROL_CONFIGS has camera parameters
-        console.log('GUI_CONTROL_CONFIGS cameraRotationX:', GUI_CONTROL_CONFIGS.cameraRotationX);
-        console.log('GUI_CONTROL_CONFIGS cameraRotationY:', GUI_CONTROL_CONFIGS.cameraRotationY);
-        console.log('GUI_CONTROL_CONFIGS cameraRotationZ:', GUI_CONTROL_CONFIGS.cameraRotationZ);
-        console.log('GUI_CONTROL_CONFIGS cameraDistance:', GUI_CONTROL_CONFIGS.cameraDistance);
         
         // Ensure camera parameters exist in state
         if (!this.state.has('cameraRotationX')) {
@@ -826,32 +819,24 @@ export class GUIManager {
             this.state.set('isometricEnabled', false);
         }
         
-        console.log('Camera parameters in state:', {
-            cameraRotationX: this.state.get('cameraRotationX'),
-            cameraRotationY: this.state.get('cameraRotationY'),
-            cameraRotationZ: this.state.get('cameraRotationZ'),
-            cameraDistance: this.state.get('cameraDistance'),
-            isometricEnabled: this.state.get('isometricEnabled')
-        });
-        
         // Camera rotation controls
-        this.addConfiguredController(cameraFolder, 'cameraRotationX', 'Rotation X (Pitch)', () => {
+        this.addController(cameraFolder, 'cameraRotationX', -Math.PI, Math.PI, 0.01, 'Rotation X (Pitch)', () => {
             this.state.set('cameraRotationX', this.state.get('cameraRotationX'));
             this.app.scene.updateCameraRotation();
         });
         
-        this.addConfiguredController(cameraFolder, 'cameraRotationY', 'Rotation Y (Yaw)', () => {
+        this.addController(cameraFolder, 'cameraRotationY', -Math.PI, Math.PI, 0.01, 'Rotation Y (Yaw)', () => {
             this.state.set('cameraRotationY', this.state.get('cameraRotationY'));
             this.app.scene.updateCameraRotation();
         });
         
-        this.addConfiguredController(cameraFolder, 'cameraRotationZ', 'Rotation Z (Roll)', () => {
+        this.addController(cameraFolder, 'cameraRotationZ', -Math.PI, Math.PI, 0.01, 'Rotation Z (Roll)', () => {
             this.state.set('cameraRotationZ', this.state.get('cameraRotationZ'));
             this.app.scene.updateCameraRotation();
         });
         
         // Camera distance control
-        this.addConfiguredController(cameraFolder, 'cameraDistance', 'Distance (Zoom)', () => {
+        this.addController(cameraFolder, 'cameraDistance', 1, 50, 0.1, 'Distance (Zoom)', () => {
             this.state.set('cameraDistance', this.state.get('cameraDistance'));
             this.app.scene.updateCameraRotation();
         });
@@ -873,8 +858,6 @@ export class GUIManager {
         };
         
         cameraFolder.add({ resetCamera }, 'resetCamera').name('Reset Camera');
-        
-        console.log('Camera controls setup complete');
     }
     
 } 
