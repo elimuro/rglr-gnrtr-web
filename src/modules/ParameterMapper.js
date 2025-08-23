@@ -143,10 +143,13 @@ export class ParameterMapper {
             requiresScene: true
         }],
         ['sphereScale', { 
-            min: 0.5, max: 3, step: 0.01,
+            min: 0.1, max: 5.0, step: 0.01,
             setter: (state, value, scene) => {
                 state.set('sphereScale', value);
-                scene?.updateSphereScales();
+                if (scene?.layerManager) {
+                    const sphereLayer = scene.layerManager.layers.get('sphere-layer');
+                    sphereLayer?.setSphereScale(value);
+                }
             },
             requiresScene: true
         }],

@@ -88,6 +88,7 @@
     "sphereGridWidth": 12,
     "sphereGridHeight": 8,
     "sphereCellSize": 1.2,
+    "sphereScale": 0.8,
     "sphereAnimationEnabled": true,
     "sphereRotationSpeed": 0.8,
     "sphereFloatAmplitude": 0.15,

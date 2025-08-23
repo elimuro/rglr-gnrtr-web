@@ -1538,8 +1538,36 @@ export class GUIManager {
             this.state.set('sphereZWavePhase', this.state.get('sphereZWavePhase'));
             this.updateSphereLayerWaveParameters();
         });
+        
+        // Sphere Appearance Controls
+        const appearanceFolder = sphereLayerFolder.addFolder('Sphere Appearance');
+        
+        // Sphere scale (independent of cell size)
+        this.addConfiguredController(appearanceFolder, 'sphereScale', 'Sphere Scale', () => {
+            this.state.set('sphereScale', this.state.get('sphereScale'));
+            this.updateSphereLayerAppearance();
+        });
     }
 
+    /**
+     * Update sphere layer appearance parameters without recreating the grid
+     */
+    updateSphereLayerAppearance() {
+        if (this.app.layerManager) {
+            const sphereLayer = this.app.layerManager.layers.get('sphere-layer');
+            if (sphereLayer) {
+                // Update appearance properties without recreating the grid
+                const sphereScale = this.state.get('sphereScale');
+                
+                console.log('Updating Sphere Layer Appearance (no grid recreation):', {
+                    sphereScale
+                });
+                
+                sphereLayer.setSphereScale(sphereScale);
+            }
+        }
+    }
+    
     /**
      * Update sphere layer wave animation parameters without recreating the grid
      */

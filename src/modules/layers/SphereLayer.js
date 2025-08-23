@@ -190,8 +190,8 @@ export class SphereLayer extends LayerBase {
                 sphere.position.y = (y - halfGridH + 0.5) * this.cellSize;
                 sphere.position.z = this.zOffset || 0;
                 
-                // Apply sphere scale
-                const scale = this.cellSize * this.sphereScale;
+                // Apply sphere scale (independent of cell size)
+                const scale = this.sphereScale;
                 sphere.scale.set(scale, scale, scale);
                 
                 // Enable shadows
@@ -327,7 +327,9 @@ export class SphereLayer extends LayerBase {
     }
 
     updateSphereScaling() {
-        const scale = this.cellSize * this.sphereScale;
+        const scale = this.sphereScale;
+        
+        console.log('Updating sphere scaling:', { scale, sphereCount: this.spheres.length });
         
         this.spheres.forEach(sphere => {
             sphere.scale.set(scale, scale, scale);
@@ -347,6 +349,7 @@ export class SphereLayer extends LayerBase {
 
     setSphereScale(scale) {
         this.sphereScale = scale;
+        console.log('Sphere scale updated:', { scale, sphereCount: this.spheres.length });
         this.updateSphereScaling();
     }
 

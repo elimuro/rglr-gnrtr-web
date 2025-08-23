@@ -475,6 +475,13 @@ export const GUI_CONTROL_CONFIGS = {
     min: 0, max: 6.28, step: 0.1, default: 0.0,
     // Connected to: SphereLayer.js wave animation
     // Purpose: Phase offset of wave pattern (0-2π)
+  },
+  
+  // Sphere Appearance Controls
+  sphereScale: {
+    min: 0.1, max: 5.0, step: 0.1, default: 1.0,
+    // Connected to: SphereLayer.js sphere scaling
+    // Purpose: Scale of individual spheres (independent of grid cell size)
   }
 };
 
@@ -493,5 +500,5 @@ export const GUI_CATEGORIES = {
   MORPHING: ['morphingIntensity', 'morphingSpeed'],
   CAMERA: ['cameraRotationX', 'cameraRotationY', 'cameraRotationZ', 'cameraDistance', 'isometricEnabled'],
   LAYERS: ['layerSpacing', 'maxLayers', 'autoArrangeLayers'],
-  SPHERE_LAYER: ['sphereGridWidth', 'sphereGridHeight', 'sphereCellSize', 'sphereAnimationEnabled', 'sphereRotationSpeed', 'sphereFloatAmplitude', 'sphereFloatSpeed', 'sphereWaveAnimationEnabled', 'sphereZWaveAmplitude', 'sphereZWaveSpeed', 'sphereZWaveFrequency', 'sphereZWaveDirection', 'sphereZWavePhase']
+  SPHERE_LAYER: ['sphereGridWidth', 'sphereGridHeight', 'sphereCellSize', 'sphereScale', 'sphereAnimationEnabled', 'sphereRotationSpeed', 'sphereFloatAmplitude', 'sphereFloatSpeed', 'sphereWaveAnimationEnabled', 'sphereZWaveAmplitude', 'sphereZWaveSpeed', 'sphereZWaveFrequency', 'sphereZWaveDirection', 'sphereZWavePhase']
 };
