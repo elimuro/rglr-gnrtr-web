@@ -28,15 +28,24 @@ export class GridLayer extends LayerBase {
      * @param {Object} context - Context object with scene, renderer, etc.
      */
     async onInitialize(context) {
+        console.log(`GridLayer: Initializing layer ${this.id}`);
+        console.log(`GridLayer: Context:`, context);
+        console.log(`GridLayer: Context.app:`, context.app);
+        console.log(`GridLayer: Context.app.scene:`, context.app?.scene);
+        console.log(`GridLayer: Context.app.scene.gridManager:`, context.app?.scene?.gridManager);
+        
         // Get reference to GridManager from the app
         if (context.app && context.app.scene && context.app.scene.gridManager) {
             this.gridManager = context.app.scene.gridManager;
+            console.log(`GridLayer: Successfully got GridManager reference:`, this.gridManager);
         } else {
+            console.error(`GridLayer: GridManager not available in context`);
             throw new Error('GridManager not available in context');
         }
         
         // Store context for later use
         this.context = context;
+        console.log(`GridLayer: Initialization complete for layer ${this.id}`);
     }
 
     /**
@@ -55,7 +64,12 @@ export class GridLayer extends LayerBase {
      * @param {number} deltaTime - Time since last frame
      */
     onUpdate(deltaTime) {
-        if (!this.gridManager) return;
+        console.log(`GridLayer: onUpdate called for layer ${this.id}, deltaTime: ${deltaTime}`);
+        
+        if (!this.gridManager) {
+            console.error(`GridLayer: No GridManager reference available in onUpdate`);
+            return;
+        }
         
         // Update grid visibility based on layer visibility
         this.updateGridVisibility();
@@ -72,16 +86,27 @@ export class GridLayer extends LayerBase {
      * Update grid visibility based on layer visibility
      */
     updateGridVisibility() {
-        if (!this.gridManager) return;
+        console.log(`GridLayer: updateGridVisibility called for layer ${this.id}, visible: ${this.visible}, shapesVisible: ${this.shapesVisible}, gridLinesVisible: ${this.gridLinesVisible}`);
+        
+        if (!this.gridManager) {
+            console.error(`GridLayer: No GridManager reference available`);
+            return;
+        }
         
         // Get all shapes and grid lines
         const shapes = this.gridManager.getAllShapes();
         const gridLines = this.gridManager.getAllGridLines();
         
+        console.log(`GridLayer: Found ${shapes.length} shapes and ${gridLines.length} grid lines`);
+        
         // Update shapes visibility
-        shapes.forEach(mesh => {
+        shapes.forEach((mesh, index) => {
             if (mesh) {
+                const wasVisible = mesh.visible;
                 mesh.visible = this.visible && this.shapesVisible;
+                if (wasVisible !== mesh.visible) {
+                    console.log(`GridLayer: Updated shape ${index} visibility: ${wasVisible} -> ${mesh.visible}`);
+                }
                 if (this.opacity !== 1.0) {
                     mesh.material.opacity = this.opacity;
                     mesh.material.transparent = this.opacity < 1.0;
@@ -90,15 +115,21 @@ export class GridLayer extends LayerBase {
         });
         
         // Update grid lines visibility
-        gridLines.forEach(line => {
+        gridLines.forEach((line, index) => {
             if (line) {
+                const wasVisible = line.visible;
                 line.visible = this.visible && this.gridLinesVisible;
+                if (wasVisible !== line.visible) {
+                    console.log(`GridLayer: Updated grid line ${index} visibility: ${wasVisible} -> ${line.visible}`);
+                }
                 if (line.material) {
                     line.material.opacity = this.opacity;
                     line.material.transparent = this.opacity < 1.0;
                 }
             }
         });
+        
+        console.log(`GridLayer: Grid visibility update complete for layer ${this.id}`);
     }
 
     /**
@@ -121,11 +152,15 @@ export class GridLayer extends LayerBase {
      * @param {boolean} isVisible - New visibility state
      */
     onVisibilityChanged(isVisible) {
+        console.log(`GridLayer: onVisibilityChanged called for layer ${this.id}, isVisible: ${isVisible}`);
+        
         // Update grid visibility immediately
         this.updateGridVisibility();
         
         // Call parent method
         super.onVisibilityChanged(isVisible);
+        
+        console.log(`GridLayer: onVisibilityChanged complete for layer ${this.id}`);
     }
 
     /**

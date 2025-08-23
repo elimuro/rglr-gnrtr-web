@@ -438,6 +438,43 @@ export const GUI_CONTROL_CONFIGS = {
     min: 0.1, max: 5, step: 0.1, default: 1.0,
     // Connected to: SphereLayer.js floating animation
     // Purpose: Speed of sphere floating animation
+  },
+  
+  // Wave Animation Controls
+  sphereWaveAnimationEnabled: {
+    min: 0, max: 1, step: 1, default: 0,
+    // Connected to: SphereLayer.js wave animation system
+    // Purpose: Enable wave-based z-space animations
+  },
+  
+  sphereZWaveAmplitude: {
+    min: 0, max: 2.0, step: 0.01, default: 0.5,
+    // Connected to: SphereLayer.js wave animation
+    // Purpose: Amplitude of z-space wave motion
+  },
+  
+  sphereZWaveSpeed: {
+    min: 0.1, max: 5.0, step: 0.1, default: 2.0,
+    // Connected to: SphereLayer.js wave animation
+    // Purpose: Speed of wave propagation through grid
+  },
+  
+  sphereZWaveFrequency: {
+    min: 0.1, max: 3.0, step: 0.1, default: 1.0,
+    // Connected to: SphereLayer.js wave animation
+    // Purpose: Frequency of wave pattern (tightness of ripples)
+  },
+  
+  sphereZWaveDirection: {
+    min: 0, max: 2, step: 1, default: 0,
+    // Connected to: SphereLayer.js wave animation
+    // Purpose: Wave direction (0=horizontal, 1=vertical, 2=radial)
+  },
+  
+  sphereZWavePhase: {
+    min: 0, max: 6.28, step: 0.1, default: 0.0,
+    // Connected to: SphereLayer.js wave animation
+    // Purpose: Phase offset of wave pattern (0-2π)
   }
 };
 
@@ -456,5 +493,5 @@ export const GUI_CATEGORIES = {
   MORPHING: ['morphingIntensity', 'morphingSpeed'],
   CAMERA: ['cameraRotationX', 'cameraRotationY', 'cameraRotationZ', 'cameraDistance', 'isometricEnabled'],
   LAYERS: ['layerSpacing', 'maxLayers', 'autoArrangeLayers'],
-  SPHERE_LAYER: ['sphereGridWidth', 'sphereGridHeight', 'sphereCellSize', 'sphereAnimationEnabled', 'sphereRotationSpeed', 'sphereFloatAmplitude', 'sphereFloatSpeed']
+  SPHERE_LAYER: ['sphereGridWidth', 'sphereGridHeight', 'sphereCellSize', 'sphereAnimationEnabled', 'sphereRotationSpeed', 'sphereFloatAmplitude', 'sphereFloatSpeed', 'sphereWaveAnimationEnabled', 'sphereZWaveAmplitude', 'sphereZWaveSpeed', 'sphereZWaveFrequency', 'sphereZWaveDirection', 'sphereZWavePhase']
 };

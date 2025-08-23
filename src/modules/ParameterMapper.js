@@ -195,6 +195,74 @@ export class ParameterMapper {
             requiresScene: true
         }],
         
+        // Sphere Controls - Wave Animation
+        ['sphereWaveAnimationEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                state.set('sphereWaveAnimationEnabled', value > 0.5);
+                if (scene?.layerManager) {
+                    const sphereLayer = scene.layerManager.layers.get('sphere-layer');
+                    sphereLayer?.setWaveAnimationEnabled(value > 0.5);
+                }
+            },
+            requiresScene: true
+        }],
+        ['sphereZWaveAmplitude', { 
+            min: 0, max: 2.0, step: 0.01,
+            setter: (state, value, scene) => {
+                state.set('sphereZWaveAmplitude', value);
+                if (scene?.layerManager) {
+                    const sphereLayer = scene.layerManager.layers.get('sphere-layer');
+                    sphereLayer?.setZWaveAmplitude(value);
+                }
+            },
+            requiresScene: true
+        }],
+        ['sphereZWaveSpeed', { 
+            min: 0.1, max: 5.0, step: 0.1,
+            setter: (state, value, scene) => {
+                state.set('sphereZWaveSpeed', value);
+                if (scene?.layerManager) {
+                    const sphereLayer = scene.layerManager.layers.get('sphere-layer');
+                    sphereLayer?.setZWaveSpeed(value);
+                }
+            },
+            requiresScene: true
+        }],
+        ['sphereZWaveFrequency', { 
+            min: 0.1, max: 3.0, step: 0.1,
+            setter: (state, value, scene) => {
+                state.set('sphereZWaveFrequency', value);
+                if (scene?.layerManager) {
+                    const sphereLayer = scene.layerManager.layers.get('sphere-layer');
+                    sphereLayer?.setZWaveFrequency(value);
+                }
+            },
+            requiresScene: true
+        }],
+        ['sphereZWaveDirection', { 
+            min: 0, max: 2, step: 1,
+            setter: (state, value, scene) => {
+                state.set('sphereZWaveDirection', Math.floor(value));
+                if (scene?.layerManager) {
+                    const sphereLayer = scene.layerManager.layers.get('sphere-layer');
+                    sphereLayer?.setZWaveDirection(Math.floor(value));
+                }
+            },
+            requiresScene: true
+        }],
+        ['sphereZWavePhase', { 
+            min: 0, max: 6.28, step: 0.1,
+            setter: (state, value, scene) => {
+                state.set('sphereZWavePhase', value);
+                if (scene?.layerManager) {
+                    const sphereLayer = scene.layerManager.layers.get('sphere-layer');
+                    sphereLayer?.setZWavePhase(value);
+                }
+            },
+            requiresScene: true
+        }],
+        
         // Animation Controls - Global
         ['globalBPM', { 
             min: 60, max: 300, step: 1,
@@ -721,6 +789,26 @@ export class ParameterMapper {
                     const currentValue = state.get('isometricEnabled');
                     const newValue = !currentValue;
                     state.set('isometricEnabled', newValue);
+                    
+                    if (newValue) {
+                        // Set isometric values
+                        const isoRotX = Math.atan(Math.sin(Math.PI / 4)); // ~35.26 degrees
+                        const isoRotY = Math.PI / 4; // 45 degrees
+                        const isoRotZ = 0;
+                        const isoDistance = 15;
+                        
+                        state.set('cameraRotationX', isoRotX);
+                        state.set('cameraRotationY', isoRotY);
+                        state.set('cameraRotationZ', isoRotZ);
+                        state.set('cameraDistance', isoDistance);
+                        
+                        // Update manual values in camera animation manager
+                        scene?.app?.cameraAnimationManager?.updateManualValue('rotationX', isoRotX);
+                        scene?.app?.cameraAnimationManager?.updateManualValue('rotationY', isoRotY);
+                        scene?.app?.cameraAnimationManager?.updateManualValue('rotationZ', isoRotZ);
+                        scene?.app?.cameraAnimationManager?.updateManualValue('distance', isoDistance);
+                    }
+                    
                     scene?.setIsometricView();
                 }
             },

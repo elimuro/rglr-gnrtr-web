@@ -51,6 +51,14 @@ const CONTROL_CONFIGS = {
             { value: 'sphereDistortionStrength', label: 'Sphere Distortion Strength' },
             { value: 'sphereScale', label: 'Sphere Scale' },
             
+            // Sphere Controls - Wave Animation
+            { value: 'sphereWaveAnimationEnabled', label: 'Sphere Wave Animation Enable' },
+            { value: 'sphereZWaveAmplitude', label: 'Sphere Z-Wave Amplitude' },
+            { value: 'sphereZWaveSpeed', label: 'Sphere Z-Wave Speed' },
+            { value: 'sphereZWaveFrequency', label: 'Sphere Z-Wave Frequency' },
+            { value: 'sphereZWaveDirection', label: 'Sphere Z-Wave Direction' },
+            { value: 'sphereZWavePhase', label: 'Sphere Z-Wave Phase' },
+            
             // Animation Controls - Global
             { value: 'globalBPM', label: 'Global BPM' },
             

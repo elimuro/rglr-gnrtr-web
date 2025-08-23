@@ -6,6 +6,7 @@
 
 import { LayerBase } from './LayerBase.js';
 import * as THREE from 'three';
+import { ANIMATION_CONSTANTS } from '../../config/AnimationConstants.js';
 
 export class SphereLayer extends LayerBase {
     constructor(id, config = {}) {
@@ -33,6 +34,14 @@ export class SphereLayer extends LayerBase {
         this.rotationSpeed = config.rotationSpeed || 0.5;
         this.floatAmplitude = config.floatAmplitude || 0.1;
         this.floatSpeed = config.floatSpeed || 1.0;
+        
+        // Wave animation properties
+        this.waveAnimationEnabled = config.waveAnimationEnabled || false;
+        this.zWaveAmplitude = config.zWaveAmplitude || 5.0; // Much larger default amplitude for visibility
+        this.zWaveSpeed = config.zWaveSpeed || ANIMATION_CONSTANTS.waveSpeed.default;
+        this.zWaveFrequency = config.zWaveFrequency || 1.0;
+        this.zWaveDirection = config.zWaveDirection || 'horizontal'; // 'horizontal', 'vertical', 'radial'
+        this.zWavePhase = config.zWavePhase || 0.0;
         
         // Scene and material references
         this.scene = null;
@@ -76,14 +85,74 @@ export class SphereLayer extends LayerBase {
         this.floatAmplitude = this.state.get('sphereFloatAmplitude') || this.floatAmplitude;
         this.floatSpeed = this.state.get('sphereFloatSpeed') || this.floatSpeed;
         
+        // Initialize wave animation parameters from state
+        this.waveAnimationEnabled = this.state.get('sphereWaveAnimationEnabled') || this.waveAnimationEnabled;
+        this.zWaveAmplitude = this.state.get('sphereZWaveAmplitude') || this.zWaveAmplitude;
+        this.zWaveSpeed = this.state.get('sphereZWaveSpeed') || this.zWaveSpeed;
+        this.zWaveFrequency = this.state.get('sphereZWaveFrequency') || this.zWaveFrequency;
+        this.zWaveDirection = this.state.get('sphereZWaveDirection') || this.zWaveDirection;
+        this.zWavePhase = this.state.get('sphereZWavePhase') || this.zWavePhase;
+        
+        // Initialize z-offset from state
+        this.zOffset = this.state.get('sphereLayerZOffset') || 0;
+        
+        // Set animation flags so the layer gets updated
+        this.isAnimated = true;
+        this.needsUpdate = true;
+        
         this.createSphereGrid();
     }
 
     onUpdate(deltaTime) {
-        this.animationTime += deltaTime;
+        // Handle undefined deltaTime gracefully
+        const safeDeltaTime = deltaTime || 0.016; // Default to 60 FPS if undefined
+        
+        // Debug: log when update is called
+        if (this.animationTime % 60 === 0) {
+            console.log('SphereLayer onUpdate called:', {
+                deltaTime: safeDeltaTime.toFixed(3),
+                animationTime: this.animationTime.toFixed(3),
+                isAnimated: this.isAnimated,
+                needsUpdate: this.needsUpdate
+            });
+        }
+        
+        this.animationTime += safeDeltaTime;
         
         if (this.animationEnabled) {
             this.updateSphereAnimations();
+        }
+        
+        if (this.waveAnimationEnabled) {
+            this.updateWaveAnimations();
+            // Debug: log when wave animation is running
+            if (this.animationTime % 60 === 0) {
+                console.log('Wave animation is RUNNING. Current state:', {
+                    waveAnimationEnabled: this.waveAnimationEnabled,
+                    zWaveAmplitude: this.zWaveAmplitude,
+                    zWaveSpeed: this.zWaveSpeed,
+                    animationTime: this.animationTime
+                });
+            }
+        } else {
+            // Debug: log when wave animation is disabled
+            if (this.animationTime % 120 === 0) {
+                console.log('Wave animation is DISABLED. Current state:', {
+                    waveAnimationEnabled: this.waveAnimationEnabled,
+                    zWaveAmplitude: this.zWaveAmplitude,
+                    zWaveSpeed: this.zWaveSpeed
+                });
+            }
+        }
+        
+        // Debug: log animation state every 120 frames
+        if (this.animationTime % 120 === 0) {
+            console.log('SphereLayer Animation State:', {
+                animationEnabled: this.animationEnabled,
+                waveAnimationEnabled: this.waveAnimationEnabled,
+                animationTime: this.animationTime,
+                sphereCount: this.spheres.length
+            });
         }
     }
 
@@ -107,6 +176,8 @@ export class SphereLayer extends LayerBase {
         // Get sphere material
         const material = this.materialManager.getSphereMaterial(this.state);
         
+        console.log('Creating sphere grid with zOffset:', this.zOffset);
+        
         // Create spheres in grid pattern
         for (let x = 0; x < this.gridWidth; x++) {
             for (let y = 0; y < this.gridHeight; y++) {
@@ -129,6 +200,7 @@ export class SphereLayer extends LayerBase {
                 
                 // Store animation data
                 sphere.userData.originalY = sphere.position.y;
+                sphere.userData.originalZ = sphere.position.z; // Store original Z for debugging
                 sphere.userData.gridX = x;
                 sphere.userData.gridY = y;
                 
@@ -137,6 +209,8 @@ export class SphereLayer extends LayerBase {
                 this.spheres.push(sphere);
             }
         }
+        
+        console.log(`Created ${this.spheres.length} spheres with initial z-positions around ${this.zOffset}`);
     }
 
     updateSphereAnimations() {
@@ -151,6 +225,97 @@ export class SphereLayer extends LayerBase {
             const floatOffset = Math.sin(this.animationTime * this.floatSpeed + index * 0.5) * this.floatAmplitude;
             sphere.position.y = sphere.userData.originalY + floatOffset;
         });
+    }
+
+    /**
+     * Update wave-based z-space animations
+     * Creates rippling wave effects that move through the sphere grid
+     */
+    updateWaveAnimations() {
+        // Debug: log wave animation parameters
+        if (this.animationTime % 60 === 0) { // Log every 60 frames
+            console.log('Wave Animation:', {
+                enabled: this.waveAnimationEnabled,
+                amplitude: this.zWaveAmplitude,
+                speed: this.zWaveSpeed,
+                frequency: this.zWaveFrequency,
+                direction: this.zWaveDirection,
+                phase: this.zWavePhase,
+                zOffset: this.zOffset,
+                sphereCount: this.spheres.length
+            });
+        }
+        
+        this.spheres.forEach(sphere => {
+            if (!sphere.userData) return;
+
+            const gridX = sphere.userData.gridX;
+            const gridY = sphere.userData.gridY;
+            const halfGridW = this.gridWidth / 2;
+            const halfGridH = this.gridHeight / 2;
+
+            let waveOffset = 0;
+            
+            // Calculate wave offset based on direction
+            if (this.zWaveDirection === 0 || this.zWaveDirection === 'horizontal') {
+                // Horizontal wave: ripples move left to right across the grid
+                waveOffset = Math.sin(
+                    this.animationTime * this.zWaveSpeed + 
+                    gridX * this.zWaveFrequency + 
+                    this.zWavePhase
+                ) * this.zWaveAmplitude;
+            } else if (this.zWaveDirection === 1 || this.zWaveDirection === 'vertical') {
+                // Vertical wave: ripples move top to bottom across the grid
+                waveOffset = Math.sin(
+                    this.animationTime * this.zWaveSpeed + 
+                    gridY * this.zWaveFrequency + 
+                    this.zWavePhase
+                ) * this.zWaveAmplitude;
+            } else if (this.zWaveDirection === 2 || this.zWaveDirection === 'radial') {
+                // Radial wave: ripples emanate from the center outward
+                const distance = Math.sqrt(
+                    Math.pow(gridX - halfGridW, 2) + 
+                    Math.pow(gridY - halfGridH, 2)
+                );
+                waveOffset = Math.sin(
+                    this.animationTime * this.zWaveSpeed + 
+                    distance * this.zWaveFrequency + 
+                    this.zWavePhase
+                ) * this.zWaveAmplitude;
+            }
+
+            // Apply wave offset to z-position
+            const newZ = this.zOffset + waveOffset;
+            sphere.position.z = newZ;
+            
+            // Debug: log z-position changes for first few spheres
+            if (gridX < 3 && gridY < 3 && this.animationTime % 30 === 0) {
+                console.log(`Sphere [${gridX},${gridY}] z-movement:`, {
+                    originalZ: sphere.userData.originalZ,
+                    baseZ: this.zOffset,
+                    waveOffset: waveOffset,
+                    newZ: newZ,
+                    change: newZ - sphere.userData.originalZ
+                });
+            }
+            
+        });
+        
+        // Debug: log overall z-range every 60 frames
+        if (this.animationTime % 60 === 0) {
+            const zPositions = this.spheres.map(s => s.position.z);
+            const minZ = Math.min(...zPositions);
+            const maxZ = Math.max(...zPositions);
+            const avgZ = zPositions.reduce((a, b) => a + b, 0) / zPositions.length;
+            
+            console.log('Sphere Z-Range:', {
+                minZ: minZ.toFixed(3),
+                maxZ: maxZ.toFixed(3),
+                avgZ: avgZ.toFixed(3),
+                range: (maxZ - minZ).toFixed(3),
+                sphereCount: this.spheres.length
+            });
+        }
     }
 
     updateSphereMaterials() {
@@ -201,6 +366,58 @@ export class SphereLayer extends LayerBase {
         this.floatSpeed = speed;
     }
 
+    setWaveAnimationEnabled(enabled) {
+        this.waveAnimationEnabled = enabled;
+    }
+
+    setZWaveAmplitude(amplitude) {
+        this.zWaveAmplitude = amplitude;
+    }
+
+    setZWaveSpeed(speed) {
+        this.zWaveSpeed = speed;
+    }
+
+    setZWaveFrequency(frequency) {
+        this.zWaveFrequency = frequency;
+    }
+
+    setZWaveDirection(direction) {
+        this.zWaveDirection = direction;
+    }
+
+    setZWavePhase(phase) {
+        this.zWavePhase = phase;
+    }
+    
+    /**
+     * Update all wave animation parameters at once without recreating the grid
+     * @param {Object} params - Wave animation parameters
+     */
+    updateWaveAnimationParameters(params) {
+        if (params.waveEnabled !== undefined) this.waveAnimationEnabled = params.waveEnabled;
+        if (params.amplitude !== undefined) this.zWaveAmplitude = params.amplitude;
+        if (params.speed !== undefined) this.zWaveSpeed = params.speed;
+        if (params.frequency !== undefined) this.zWaveFrequency = params.frequency;
+        if (params.direction !== undefined) this.zWaveDirection = params.direction;
+        if (params.phase !== undefined) this.zWavePhase = params.phase;
+        
+        // Update animation flags based on whether any animation is enabled
+        this.isAnimated = this.animationEnabled || this.waveAnimationEnabled;
+        this.needsUpdate = this.isAnimated;
+        
+        console.log('Wave animation parameters updated:', {
+            waveEnabled: this.waveAnimationEnabled,
+            amplitude: this.zWaveAmplitude,
+            speed: this.zWaveSpeed,
+            frequency: this.zWaveFrequency,
+            direction: this.zWaveDirection,
+            phase: this.zWavePhase,
+            isAnimated: this.isAnimated,
+            needsUpdate: this.needsUpdate
+        });
+    }
+
     clearSpheres() {
         this.spheres.forEach(sphere => {
             this.scene.remove(sphere);
@@ -236,7 +453,12 @@ export class SphereLayer extends LayerBase {
             cellSize: this.cellSize,
             sphereScale: this.sphereScale,
             sphereCount: this.spheres.length,
-            animationEnabled: this.animationEnabled
+            animationEnabled: this.animationEnabled,
+            waveAnimationEnabled: this.waveAnimationEnabled,
+            zWaveAmplitude: this.zWaveAmplitude,
+            zWaveSpeed: this.zWaveSpeed,
+            zWaveFrequency: this.zWaveFrequency,
+            zWaveDirection: this.zWaveDirection
         };
     }
 

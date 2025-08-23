@@ -636,7 +636,7 @@ export class LayerManager {
         }
         
         // Update only layers that need updating
-        const deltaTime = this.app.animationLoop.deltaTime;
+        const deltaTime = this.app.animationLoop ? this.app.animationLoop.getClockDelta() : 0.016;
         for (let i = 0; i < layersToRender.length; i++) {
             const layer = layersToRender[i];
             if (layer.needsUpdate || layer.isAnimated) {

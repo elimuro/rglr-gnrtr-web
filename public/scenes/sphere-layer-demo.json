@@ -92,6 +92,12 @@
     "sphereRotationSpeed": 0.8,
     "sphereFloatAmplitude": 0.15,
     "sphereFloatSpeed": 1.2,
+    "sphereWaveAnimationEnabled": true,
+    "sphereZWaveAmplitude": 8.0,
+    "sphereZWaveSpeed": 2.5,
+    "sphereZWaveFrequency": 1.2,
+    "sphereZWaveDirection": 0,
+    "sphereZWavePhase": 0.0,
     "sphereLayerVisible": true,
     "sphereLayerOpacity": 1.0,
     "sphereLayerZOffset": 0.5

@@ -1005,6 +1005,28 @@ export class GUIManager {
             const currentValue = this.state.get('isometricEnabled');
             const newValue = !currentValue;
             this.state.set('isometricEnabled', newValue);
+            
+            if (newValue) {
+                // Set isometric values
+                const isoRotX = Math.atan(Math.sin(Math.PI / 4)); // ~35.26 degrees
+                const isoRotY = Math.PI / 4; // 45 degrees
+                const isoRotZ = 0;
+                const isoDistance = 15;
+                
+                this.state.set('cameraRotationX', isoRotX);
+                this.state.set('cameraRotationY', isoRotY);
+                this.state.set('cameraRotationZ', isoRotZ);
+                this.state.set('cameraDistance', isoDistance);
+                
+                // Update manual values in camera animation manager
+                if (this.app.cameraAnimationManager) {
+                    this.app.cameraAnimationManager.updateManualValue('rotationX', isoRotX);
+                    this.app.cameraAnimationManager.updateManualValue('rotationY', isoRotY);
+                    this.app.cameraAnimationManager.updateManualValue('rotationZ', isoRotZ);
+                    this.app.cameraAnimationManager.updateManualValue('distance', isoDistance);
+                }
+            }
+            
             this.app.scene.setIsometricView();
         };
         cameraFolder.add({ toggleIsometric }, 'toggleIsometric').name('Toggle Isometric View');
@@ -1429,7 +1451,26 @@ export class GUIManager {
         if (!this.state.has('sphereCellSize')) {
             this.state.set('sphereCellSize', 1.0);
         }
-
+        
+        // Ensure wave animation parameters exist in state
+        if (!this.state.has('sphereWaveAnimationEnabled')) {
+            this.state.set('sphereWaveAnimationEnabled', false);
+        }
+        if (!this.state.has('sphereZWaveAmplitude')) {
+            this.state.set('sphereZWaveAmplitude', 0.5);
+        }
+        if (!this.state.has('sphereZWaveSpeed')) {
+            this.state.set('sphereZWaveSpeed', 2.0);
+        }
+        if (!this.state.has('sphereZWaveFrequency')) {
+            this.state.set('sphereZWaveFrequency', 1.0);
+        }
+        if (!this.state.has('sphereZWaveDirection')) {
+            this.state.set('sphereZWaveDirection', 0);
+        }
+        if (!this.state.has('sphereZWavePhase')) {
+            this.state.set('sphereZWavePhase', 0.0);
+        }
 
         const sphereLayerFolder = this.mainGui.addFolder('Sphere Layer');
         
@@ -1450,8 +1491,86 @@ export class GUIManager {
             this.state.set('sphereCellSize', this.state.get('sphereCellSize'));
             this.updateSphereLayer();
         });
+        
+        // Wave Animation Controls
+        const waveFolder = sphereLayerFolder.addFolder('Wave Animation');
+        
+        // Enable/disable wave animation
+        waveFolder.add(this.state.state, 'sphereWaveAnimationEnabled').name('Enable Wave Animation').onChange((value) => {
+            this.state.set('sphereWaveAnimationEnabled', value);
+            this.updateSphereLayerWaveParameters();
+        });
+        
+        // Wave amplitude
+        this.addConfiguredController(waveFolder, 'sphereZWaveAmplitude', 'Wave Amplitude', () => {
+            this.state.set('sphereZWaveAmplitude', this.state.get('sphereZWaveAmplitude'));
+            this.updateSphereLayerWaveParameters();
+        });
+        
+        // Wave speed
+        this.addConfiguredController(waveFolder, 'sphereZWaveSpeed', 'Wave Speed', () => {
+            this.state.set('sphereZWaveSpeed', this.state.get('sphereZWaveSpeed'));
+            this.updateSphereLayerWaveParameters();
+        });
+        
+        // Wave frequency
+        this.addConfiguredController(waveFolder, 'sphereZWaveFrequency', 'Wave Frequency', () => {
+            this.state.set('sphereZWaveFrequency', this.state.get('sphereZWaveFrequency'));
+            this.updateSphereLayerWaveParameters();
+        });
+        
+        // Wave direction
+        waveFolder.add(this.state.state, 'sphereZWaveDirection', ['Horizontal', 'Vertical', 'Radial']).name('Wave Direction').onChange((value) => {
+            // Convert string labels to numeric values
+            let directionValue;
+            if (value === 'Horizontal') directionValue = 0;
+            else if (value === 'Vertical') directionValue = 1;
+            else if (value === 'Radial') directionValue = 2;
+            else directionValue = 0;
+            
+            console.log('Wave Direction Changed:', { value, directionValue });
+            this.state.set('sphereZWaveDirection', directionValue);
+            this.updateSphereLayerWaveParameters();
+        });
+        
+        // Wave phase
+        this.addConfiguredController(waveFolder, 'sphereZWavePhase', 'Wave Phase', () => {
+            this.state.set('sphereZWavePhase', this.state.get('sphereZWavePhase'));
+            this.updateSphereLayerWaveParameters();
+        });
     }
 
+    /**
+     * Update sphere layer wave animation parameters without recreating the grid
+     */
+    updateSphereLayerWaveParameters() {
+        if (this.app.layerManager) {
+            const sphereLayer = this.app.layerManager.layers.get('sphere-layer');
+            if (sphereLayer) {
+                // Only update wave animation properties, don't recreate the grid
+                const waveEnabled = this.state.get('sphereWaveAnimationEnabled');
+                const waveAmplitude = this.state.get('sphereZWaveAmplitude');
+                const waveSpeed = this.state.get('sphereZWaveSpeed');
+                const waveFrequency = this.state.get('sphereZWaveFrequency');
+                const waveDirection = this.state.get('sphereZWaveDirection');
+                const wavePhase = this.state.get('sphereZWavePhase');
+                
+                console.log('Updating Sphere Layer Wave Parameters (no grid recreation):', {
+                    waveEnabled, waveAmplitude, waveSpeed, waveFrequency, waveDirection, wavePhase
+                });
+                
+                sphereLayer.updateWaveAnimationParameters({
+                    waveEnabled: waveEnabled,
+                    amplitude: waveAmplitude,
+                    speed: waveSpeed,
+                    frequency: waveFrequency,
+                    direction: waveDirection,
+                    phase: wavePhase
+                });
+            }
+        }
+    }
+    
     /**
      * Update sphere layer with current state parameters
      */
@@ -1465,6 +1584,28 @@ export class GUIManager {
                     this.state.get('sphereGridHeight')
                 );
                 sphereLayer.setCellSize(this.state.get('sphereCellSize'));
+                
+                // Update wave animation properties (don't recreate grid)
+                const waveEnabled = this.state.get('sphereWaveAnimationEnabled');
+                const waveAmplitude = this.state.get('sphereZWaveAmplitude');
+                const waveSpeed = this.state.get('sphereZWaveSpeed');
+                const waveFrequency = this.state.get('sphereZWaveFrequency');
+                const waveDirection = this.state.get('sphereZWaveDirection');
+                const wavePhase = this.state.get('sphereZWavePhase');
+                
+                console.log('Updating Sphere Layer Wave Properties:', {
+                    waveEnabled, waveAmplitude, waveSpeed, waveFrequency, waveDirection, wavePhase
+                });
+                
+                // Only update animation parameters, don't recreate the grid
+                sphereLayer.updateWaveAnimationParameters({
+                    waveEnabled: waveEnabled,
+                    amplitude: waveAmplitude,
+                    speed: waveSpeed,
+                    frequency: waveFrequency,
+                    direction: waveDirection,
+                    phase: wavePhase
+                });
             }
         }
     }
