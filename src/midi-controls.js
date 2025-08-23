@@ -182,6 +182,7 @@ const CONTROL_CONFIGS = {
 
             // Camera toggles
             { value: 'isometricEnabled', label: 'Toggle Isometric View' },
+            { value: 'resetCamera', label: 'Reset Camera' },
             
             // Layer toggles
             { value: 'autoArrangeLayers', label: 'Toggle Auto-arrange Layers' }
@@ -201,7 +202,7 @@ const CONTROL_TEMPLATES = {
                     <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none" data-drawer-interactive>
                         {targetOptions}
                     </select>
-                    <button id="midi-{controlId}-learn" class="btn btn-warning btn-xs" data-drawer-interactive>Learn</button>
+                    <button id="midi-{controlId}-learn" class="btn btn-warning btn-xs btn-learn-default" data-drawer-interactive>Learn</button>
                     <button id="midi-{controlId}-remove" class="btn btn-danger btn-icon btn-xs" data-drawer-interactive>×</button>
                 </div>
             </div>
@@ -229,7 +230,7 @@ const CONTROL_TEMPLATES = {
                     <select id="midi-{controlId}-target" class="flex-1 px-1 py-0.5 bg-black bg-opacity-30 border border-gray-600 text-white rounded text-xs transition-all duration-300 focus:border-midi-green focus:outline-none" data-drawer-interactive>
                         {targetOptions}
                     </select>
-                    <button id="midi-{controlId}-learn" class="btn btn-warning btn-xs" data-drawer-interactive>Learn</button>
+                    <button id="midi-{controlId}-learn" class="btn btn-warning btn-xs btn-learn-default" data-drawer-interactive>Learn</button>
                     <button id="midi-{controlId}-remove" class="btn btn-danger btn-icon btn-xs" data-drawer-interactive>×</button>
                 </div>
             </div>
@@ -575,8 +576,8 @@ export class MIDIControl {
         }
         
         // Add learning state classes
-        learnButton.classList.remove('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
-        learnButton.classList.add('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
+        learnButton.classList.remove('btn-learn-default');
+        learnButton.classList.add('btn-learn-learning');
         learnButton.textContent = 'Learning';
         
         if (this.type === 'cc') {
@@ -592,13 +593,13 @@ export class MIDIControl {
                 }
                 
                 // Remove learning state and add learned state
-                learnButton.classList.remove('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
-                learnButton.classList.add('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
+                learnButton.classList.remove('btn-learn-learning');
+                learnButton.classList.add('btn-learn-learned');
                 learnButton.textContent = 'Learned';
                 
                 setTimeout(() => {
-                    learnButton.classList.remove('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
-                    learnButton.classList.add('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
+                    learnButton.classList.remove('btn-learn-learned');
+                    learnButton.classList.add('btn-learn-default');
                     learnButton.textContent = 'Learn';
                 }, 1500);
                 
@@ -628,13 +629,13 @@ export class MIDIControl {
                 }
                 
                 // Remove learning state and add learned state
-                learnButton.classList.remove('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
-                learnButton.classList.add('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
+                learnButton.classList.remove('btn-learn-learning');
+                learnButton.classList.add('btn-learn-learned');
                 learnButton.textContent = 'Learned';
                 
                 setTimeout(() => {
-                    learnButton.classList.remove('bg-green-500', 'bg-opacity-20', 'text-green-400', 'border-green-500', 'border-opacity-30');
-                    learnButton.classList.add('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
+                    learnButton.classList.remove('btn-learn-learned');
+                    learnButton.classList.add('btn-learn-default');
                     learnButton.textContent = 'Learn';
                 }, 1500);
                 
@@ -655,8 +656,8 @@ export class MIDIControl {
     
     stopLearning(learnButton) {
         // Remove learning state and return to default
-        learnButton.classList.remove('bg-yellow-500', 'bg-opacity-40', 'text-yellow-300', 'border-yellow-400', 'border-opacity-50', 'animate-pulse');
-        learnButton.classList.add('bg-yellow-500', 'bg-opacity-20', 'text-yellow-400', 'border-yellow-500', 'border-opacity-30');
+        learnButton.classList.remove('btn-learn-learning');
+        learnButton.classList.add('btn-learn-default');
         learnButton.textContent = 'Learn';
         
         // Remove any temporary MIDI listeners

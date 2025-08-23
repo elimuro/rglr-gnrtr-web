@@ -777,6 +777,19 @@ canvas {
   .btn-group .btn:only-child {
     @apply rounded-md border-r;
   }
+  
+  /* Learn Button States */
+  .btn-learn-default {
+    @apply bg-yellow-500 bg-opacity-20 text-yellow-400 border-yellow-500 border-opacity-30;
+  }
+  
+  .btn-learn-learning {
+    @apply bg-yellow-500 bg-opacity-40 text-yellow-300 border-yellow-400 border-opacity-50 animate-pulse;
+  }
+  
+  .btn-learn-learned {
+    @apply bg-green-500 bg-opacity-20 text-green-400 border-green-500 border-opacity-30;
+  }
 }
 
 /* MIDI Control Buttons */

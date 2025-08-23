@@ -1020,6 +1020,22 @@ export class App {
             case 'resetAnimation':
                 this.animationLoop.resetAnimationTime();
                 break;
+            case 'resetCamera':
+                // Reset camera to default values
+                this.state.set('cameraRotationX', 0);
+                this.state.set('cameraRotationY', 0);
+                this.state.set('cameraRotationZ', 0);
+                this.state.set('cameraDistance', 10);
+                this.state.set('isometricEnabled', false);
+                if (this.scene) this.scene.updateCameraRotation();
+                break;
+            case 'isometricEnabled':
+                // Toggle isometric view
+                const currentIsometric = this.state.get('isometricEnabled');
+                const newIsometric = !currentIsometric;
+                this.state.set('isometricEnabled', newIsometric);
+                if (this.scene) this.scene.setIsometricView();
+                break;
             case 'togglePause':
                 // Toggle pause functionality - implement as needed
                 break;

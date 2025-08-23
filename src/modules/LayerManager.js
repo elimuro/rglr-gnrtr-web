@@ -1132,16 +1132,26 @@ export class LayerManager {
     /**
      * Update 3D positions of all layers based on their order
      * This ensures proper depth separation and layer ordering
+     * Layers are centered around z=0 for balanced composition
      */
     updateLayerZPositions() {
         // Update spacing from state first
         this.updateLayerSpacing();
         
+        const layerCount = this.layerOrder.length;
+        if (layerCount === 0) return;
+        
+        // Calculate the center offset to distribute layers around z=0
+        // For even number of layers: center between middle two layers
+        // For odd number of layers: center on the middle layer
+        const centerOffset = (layerCount - 1) * this.layerSpacing / 2;
+        
         this.layerOrder.forEach((layerId, index) => {
             const layer = this.layers.get(layerId);
             if (layer) {
-                // Calculate z-position: first layer is closest (0), subsequent layers go back
-                const zPosition = -index * this.layerSpacing;
+                // Calculate z-position: centered around z=0
+                // First layer starts at +centerOffset, subsequent layers move toward -centerOffset
+                const zPosition = centerOffset - (index * this.layerSpacing);
                 
                 // Use setZOffset for all layers - this ensures consistent positioning
                 layer.setZOffset(zPosition);
@@ -1152,7 +1162,7 @@ export class LayerManager {
                     layer.mesh.layers.set(index);
                 }
                 
-                console.log(`LayerManager: Updated layer ${layerId} z-offset = ${zPosition}, renderOrder = ${layer.mesh ? layer.mesh.renderOrder : 'N/A'}`);
+                console.log(`LayerManager: Updated layer ${layerId} z-offset = ${zPosition} (centered), renderOrder = ${layer.mesh ? layer.mesh.renderOrder : 'N/A'}`);
             }
         });
     }
