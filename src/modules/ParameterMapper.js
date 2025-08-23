@@ -669,6 +669,8 @@ export class ParameterMapper {
             step: GUI_CONTROL_CONFIGS.cameraRotationX.step,
             setter: (state, value, scene) => {
                 state.set('cameraRotationX', value);
+                // Update manual value in camera animation manager
+                scene?.app?.cameraAnimationManager?.updateManualValue('rotationX', value);
                 scene?.updateCameraRotation();
             },
             requiresScene: true
@@ -679,6 +681,8 @@ export class ParameterMapper {
             step: GUI_CONTROL_CONFIGS.cameraRotationY.step,
             setter: (state, value, scene) => {
                 state.set('cameraRotationY', value);
+                // Update manual value in camera animation manager
+                scene?.app?.cameraAnimationManager?.updateManualValue('rotationY', value);
                 scene?.updateCameraRotation();
             },
             requiresScene: true
@@ -689,6 +693,8 @@ export class ParameterMapper {
             step: GUI_CONTROL_CONFIGS.cameraRotationZ.step,
             setter: (state, value, scene) => {
                 state.set('cameraRotationZ', value);
+                // Update manual value in camera animation manager
+                scene?.app?.cameraAnimationManager?.updateManualValue('rotationZ', value);
                 scene?.updateCameraRotation();
             },
             requiresScene: true
@@ -699,6 +705,8 @@ export class ParameterMapper {
             step: GUI_CONTROL_CONFIGS.cameraDistance.step,
             setter: (state, value, scene) => {
                 state.set('cameraDistance', value);
+                // Update manual value in camera animation manager
+                scene?.app?.cameraAnimationManager?.updateManualValue('distance', value);
                 scene?.updateCameraRotation();
             },
             requiresScene: true
@@ -715,6 +723,146 @@ export class ParameterMapper {
                     state.set('isometricEnabled', newValue);
                     scene?.setIsometricView();
                 }
+            },
+            requiresScene: true
+        }],
+
+        // Camera Animation Controls
+        ['cameraAnim_rotationXEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('cameraAnim_rotationXEnabled', boolValue);
+                scene?.app?.cameraAnimationManager?.setParameter('rotationXEnabled', boolValue);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_rotationXAmplitude', { 
+            min: 0, max: Math.PI, step: 0.01,
+            setter: (state, value, scene) => {
+                state.set('cameraAnim_rotationXAmplitude', value);
+                scene?.app?.cameraAnimationManager?.setParameter('rotationXAmplitude', value);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_rotationXDirection', { 
+            min: -1, max: 1, step: 2,
+            setter: (state, value, scene) => {
+                const direction = value > 0 ? 1 : -1;
+                state.set('cameraAnim_rotationXDirection', direction);
+                scene?.app?.cameraAnimationManager?.setParameter('rotationXDirection', direction);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_rotationYEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('cameraAnim_rotationYEnabled', boolValue);
+                scene?.app?.cameraAnimationManager?.setParameter('rotationYEnabled', boolValue);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_rotationYAmplitude', { 
+            min: 0, max: Math.PI, step: 0.01,
+            setter: (state, value, scene) => {
+                state.set('cameraAnim_rotationYAmplitude', value);
+                scene?.app?.cameraAnimationManager?.setParameter('rotationYAmplitude', value);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_rotationYDirection', { 
+            min: -1, max: 1, step: 2,
+            setter: (state, value, scene) => {
+                const direction = value > 0 ? 1 : -1;
+                state.set('cameraAnim_rotationYDirection', direction);
+                scene?.app?.cameraAnimationManager?.setParameter('rotationYDirection', direction);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_rotationZEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('cameraAnim_rotationZEnabled', boolValue);
+                scene?.app?.cameraAnimationManager?.setParameter('rotationZEnabled', boolValue);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_rotationZAmplitude', { 
+            min: 0, max: Math.PI / 2, step: 0.01,
+            setter: (state, value, scene) => {
+                state.set('cameraAnim_rotationZAmplitude', value);
+                scene?.app?.cameraAnimationManager?.setParameter('rotationZAmplitude', value);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_rotationZDirection', { 
+            min: -1, max: 1, step: 2,
+            setter: (state, value, scene) => {
+                const direction = value > 0 ? 1 : -1;
+                state.set('cameraAnim_rotationZDirection', direction);
+                scene?.app?.cameraAnimationManager?.setParameter('rotationZDirection', direction);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_orbitalEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('cameraAnim_orbitalEnabled', boolValue);
+                scene?.app?.cameraAnimationManager?.setParameter('orbitalEnabled', boolValue);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_orbitalDirection', { 
+            min: -1, max: 1, step: 2,
+            setter: (state, value, scene) => {
+                const direction = value > 0 ? 1 : -1;
+                state.set('cameraAnim_orbitalDirection', direction);
+                scene?.app?.cameraAnimationManager?.setParameter('orbitalDirection', direction);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_distanceEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('cameraAnim_distanceEnabled', boolValue);
+                scene?.app?.cameraAnimationManager?.setParameter('distanceEnabled', boolValue);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_distanceAmplitude', { 
+            min: 0, max: 20, step: 0.1,
+            setter: (state, value, scene) => {
+                state.set('cameraAnim_distanceAmplitude', value);
+                scene?.app?.cameraAnimationManager?.setParameter('distanceAmplitude', value);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_distanceCenter', { 
+            min: 1, max: 50, step: 0.1,
+            setter: (state, value, scene) => {
+                state.set('cameraAnim_distanceCenter', value);
+                scene?.app?.cameraAnimationManager?.setParameter('distanceCenter', value);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_complexRotationEnabled', { 
+            min: 0, max: 1, step: 1,
+            setter: (state, value, scene) => {
+                const boolValue = value > 0.5;
+                state.set('cameraAnim_complexRotationEnabled', boolValue);
+                scene?.app?.cameraAnimationManager?.setParameter('complexRotationEnabled', boolValue);
+            },
+            requiresScene: true
+        }],
+        ['cameraAnim_complexRotationIntensity', { 
+            min: 0, max: 1, step: 0.01,
+            setter: (state, value, scene) => {
+                state.set('cameraAnim_complexRotationIntensity', value);
+                scene?.app?.cameraAnimationManager?.setParameter('complexRotationIntensity', value);
             },
             requiresScene: true
         }],

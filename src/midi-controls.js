@@ -125,6 +125,24 @@ const CONTROL_CONFIGS = {
             { value: 'cameraDistance', label: 'Camera Distance (Zoom)' },
             { value: 'isometricEnabled', label: 'Isometric View Toggle' },
 
+            // Camera Animation Controls
+            { value: 'cameraAnim_rotationXEnabled', label: 'Camera Anim: Rotation X Enable' },
+            { value: 'cameraAnim_rotationXAmplitude', label: 'Camera Anim: Rotation X Amplitude' },
+            { value: 'cameraAnim_rotationXDirection', label: 'Camera Anim: Rotation X Direction' },
+            { value: 'cameraAnim_rotationYEnabled', label: 'Camera Anim: Rotation Y Enable' },
+            { value: 'cameraAnim_rotationYAmplitude', label: 'Camera Anim: Rotation Y Amplitude' },
+            { value: 'cameraAnim_rotationYDirection', label: 'Camera Anim: Rotation Y Direction' },
+            { value: 'cameraAnim_rotationZEnabled', label: 'Camera Anim: Rotation Z Enable' },
+            { value: 'cameraAnim_rotationZAmplitude', label: 'Camera Anim: Rotation Z Amplitude' },
+            { value: 'cameraAnim_rotationZDirection', label: 'Camera Anim: Rotation Z Direction' },
+            { value: 'cameraAnim_orbitalEnabled', label: 'Camera Anim: Orbital Enable' },
+            { value: 'cameraAnim_orbitalDirection', label: 'Camera Anim: Orbital Direction' },
+            { value: 'cameraAnim_distanceEnabled', label: 'Camera Anim: Distance Enable' },
+            { value: 'cameraAnim_distanceAmplitude', label: 'Camera Anim: Distance Amplitude' },
+            { value: 'cameraAnim_distanceCenter', label: 'Camera Anim: Distance Center' },
+            { value: 'cameraAnim_complexRotationEnabled', label: 'Camera Anim: Complex Rotation Enable' },
+            { value: 'cameraAnim_complexRotationIntensity', label: 'Camera Anim: Complex Rotation Intensity' },
+
             // Layer Controls
             { value: 'layerSpacing', label: 'Layer Spacing' },
             { value: 'maxLayers', label: 'Max Layers' },

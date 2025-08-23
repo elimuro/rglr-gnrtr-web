@@ -24,6 +24,7 @@ import { DrawerManager } from '../modules/DrawerManager.js';
 import { PresetManager } from '../modules/PresetManager.js';
 import { SceneManager } from '../modules/SceneManager.js';
 import { LayerManager } from '../modules/LayerManager.js';
+import { CameraAnimationManager } from '../modules/CameraAnimationManager.js';
 import { LayerPanel } from '../ui/LayerPanel.js';
 import { P5CodeEditor } from '../ui/P5CodeEditor.js';
 import { ShaderCodeEditor } from '../ui/ShaderCodeEditor.js';
@@ -39,7 +40,7 @@ export class App {
         // Initialize MIDI clock manager first
         this.midiClockManager = new MIDIClockManager(this);
         
-        // Initialize animation loop with clock manager
+        // Initialize animation loop with clock manager (camera animation manager will be set later)
         this.animationLoop = new AnimationLoop(this.scene, this.state, this.midiClockManager);
         
         this.midiManager = new MIDIManager(this);
@@ -86,6 +87,9 @@ export class App {
         
         // Initialize layer manager
         this.layerManager = new LayerManager(this);
+        
+        // Initialize camera animation manager
+        this.cameraAnimationManager = new CameraAnimationManager(this);
         
         // Initialize layer panel
         this.layerPanel = new LayerPanel(this);
@@ -141,6 +145,12 @@ export class App {
             
             // Add layerManager to state so StateManager can access it for scene export/import
             this.state.set('layerManager', this.layerManager);
+            
+            // Initialize camera animation manager
+            this.cameraAnimationManager.initialize();
+            
+            // Set camera animation manager reference on animation loop
+            this.animationLoop.setCameraAnimationManager(this.cameraAnimationManager);
             
             // Set up morphing system with shape generator
             this.scene.shapeGenerator.setMorphingSystem(this.morphingSystem);

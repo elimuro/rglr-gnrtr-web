@@ -13,6 +13,7 @@ export class AnimationLoop {
         this.scene = scene;
         this.state = state;
         this.midiClockManager = midiClockManager;
+        this.cameraAnimationManager = null;
         this.clock = new THREE.Clock();
         this.animationTime = 0;
         this.pulseTime = 0;
@@ -62,6 +63,10 @@ export class AnimationLoop {
 
     setMIDIClockManager(midiClockManager) {
         this.midiClockManager = midiClockManager;
+    }
+
+    setCameraAnimationManager(cameraAnimationManager) {
+        this.cameraAnimationManager = cameraAnimationManager;
     }
 
     start() {
@@ -167,6 +172,11 @@ export class AnimationLoop {
         // Update post-processing grain time
         if (this.scene.postProcessingManager) {
             this.scene.postProcessingManager.updateGrainTime(this.animationTime);
+        }
+        
+        // Update camera animations
+        if (this.cameraAnimationManager) {
+            this.cameraAnimationManager.update(deltaTime);
         }
         
         // Note: Water distortion is now handled through material properties

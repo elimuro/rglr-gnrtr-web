@@ -39,7 +39,7 @@ export class GUIManager {
     /**
      * Create a reusable division dropdown
      */
-    createDivisionDropdown(folder, parameterName, defaultValue, displayName, icon) {
+    createDivisionDropdown(folder, parameterName, defaultValue, displayName, icon, callback) {
         const divisionNames = this.getAvailableDivisionNames();
         const currentDivision = this.getDivisionDisplayName(this.state.get(parameterName) || defaultValue);
         return folder.add({ [parameterName]: currentDivision }, parameterName, divisionNames)
@@ -47,6 +47,10 @@ export class GUIManager {
             .onChange((value) => {
                 const division = this.getDivisionFromDisplayName(value);
                 this.state.set(parameterName, division);
+                // Call the callback if provided
+                if (callback && typeof callback === 'function') {
+                    callback(division);
+                }
             });
     }
 
@@ -956,23 +960,43 @@ export class GUIManager {
         
         // Camera rotation controls
         this.addConfiguredController(cameraFolder, 'cameraRotationX', 'Rotation X (Pitch)', () => {
-            this.state.set('cameraRotationX', this.state.get('cameraRotationX'));
+            const value = this.state.get('cameraRotationX');
+            this.state.set('cameraRotationX', value);
+            // Update manual value in camera animation manager
+            if (this.app.cameraAnimationManager) {
+                this.app.cameraAnimationManager.updateManualValue('rotationX', value);
+            }
             this.app.scene.updateCameraRotation();
         });
         
         this.addConfiguredController(cameraFolder, 'cameraRotationY', 'Rotation Y (Yaw)', () => {
-            this.state.set('cameraRotationY', this.state.get('cameraRotationY'));
+            const value = this.state.get('cameraRotationY');
+            this.state.set('cameraRotationY', value);
+            // Update manual value in camera animation manager
+            if (this.app.cameraAnimationManager) {
+                this.app.cameraAnimationManager.updateManualValue('rotationY', value);
+            }
             this.app.scene.updateCameraRotation();
         });
         
         this.addConfiguredController(cameraFolder, 'cameraRotationZ', 'Rotation Z (Roll)', () => {
-            this.state.set('cameraRotationZ', this.state.get('cameraRotationZ'));
+            const value = this.state.get('cameraRotationZ');
+            this.state.set('cameraRotationZ', value);
+            // Update manual value in camera animation manager
+            if (this.app.cameraAnimationManager) {
+                this.app.cameraAnimationManager.updateManualValue('rotationZ', value);
+            }
             this.app.scene.updateCameraRotation();
         });
         
         // Camera distance control
         this.addConfiguredController(cameraFolder, 'cameraDistance', 'Distance (Zoom)', () => {
-            this.state.set('cameraDistance', this.state.get('cameraDistance'));
+            const value = this.state.get('cameraDistance');
+            this.state.set('cameraDistance', value);
+            // Update manual value in camera animation manager
+            if (this.app.cameraAnimationManager) {
+                this.app.cameraAnimationManager.updateManualValue('distance', value);
+            }
             this.app.scene.updateCameraRotation();
         });
         
@@ -987,15 +1011,248 @@ export class GUIManager {
         
         // Reset camera button
         const resetCamera = () => {
-            this.state.set('cameraRotationX', GUI_CONTROL_CONFIGS.cameraRotationX.default);
-            this.state.set('cameraRotationY', GUI_CONTROL_CONFIGS.cameraRotationY.default);
-            this.state.set('cameraRotationZ', GUI_CONTROL_CONFIGS.cameraRotationZ.default);
-            this.state.set('cameraDistance', GUI_CONTROL_CONFIGS.cameraDistance.default);
+            const defaultRotX = GUI_CONTROL_CONFIGS.cameraRotationX.default;
+            const defaultRotY = GUI_CONTROL_CONFIGS.cameraRotationY.default;
+            const defaultRotZ = GUI_CONTROL_CONFIGS.cameraRotationZ.default;
+            const defaultDistance = GUI_CONTROL_CONFIGS.cameraDistance.default;
+            
+            this.state.set('cameraRotationX', defaultRotX);
+            this.state.set('cameraRotationY', defaultRotY);
+            this.state.set('cameraRotationZ', defaultRotZ);
+            this.state.set('cameraDistance', defaultDistance);
             this.state.set('isometricEnabled', GUI_CONTROL_CONFIGS.isometricEnabled.default);
+            
+            // Update manual values in camera animation manager
+            if (this.app.cameraAnimationManager) {
+                this.app.cameraAnimationManager.updateManualValue('rotationX', defaultRotX);
+                this.app.cameraAnimationManager.updateManualValue('rotationY', defaultRotY);
+                this.app.cameraAnimationManager.updateManualValue('rotationZ', defaultRotZ);
+                this.app.cameraAnimationManager.updateManualValue('distance', defaultDistance);
+            }
+            
             this.app.scene.updateCameraRotation();
         };
         
         cameraFolder.add({ resetCamera }, 'resetCamera').name('Reset Camera');
+        
+        // Camera Animation Controls
+        const cameraAnimFolder = cameraFolder.addFolder('Camera Animations');
+        
+        // Rotation X Animation
+        const rotXAnimFolder = cameraAnimFolder.addFolder('Rotation X Animation');
+        
+        // Ensure camera animation parameters exist in state
+        if (!this.state.has('cameraAnim_rotationXEnabled')) {
+            this.state.set('cameraAnim_rotationXEnabled', false);
+        }
+        if (!this.state.has('cameraAnim_rotationXAmplitude')) {
+            this.state.set('cameraAnim_rotationXAmplitude', Math.PI / 4);
+        }
+        if (!this.state.has('cameraAnim_rotationXDivision')) {
+            this.state.set('cameraAnim_rotationXDivision', 'quarter');
+        }
+        if (!this.state.has('cameraAnim_rotationXEasing')) {
+            this.state.set('cameraAnim_rotationXEasing', 'power2.inOut');
+        }
+        if (!this.state.has('cameraAnim_rotationXDirection')) {
+            this.state.set('cameraAnim_rotationXDirection', 1);
+        }
+        
+        // Rotation X controls
+        rotXAnimFolder.add({ enabled: this.state.get('cameraAnim_rotationXEnabled') }, 'enabled').name('Enable').onChange((value) => {
+            this.state.set('cameraAnim_rotationXEnabled', value);
+            this.app.cameraAnimationManager?.setParameter('rotationXEnabled', value);
+        });
+        
+        rotXAnimFolder.add({ amplitude: this.state.get('cameraAnim_rotationXAmplitude') }, 'amplitude', 0, Math.PI, 0.01).name('Amplitude').onChange((value) => {
+            this.state.set('cameraAnim_rotationXAmplitude', value);
+            this.app.cameraAnimationManager?.setParameter('rotationXAmplitude', value);
+        });
+        
+        // Division dropdown for Rotation X
+        this.createDivisionDropdown(rotXAnimFolder, 'cameraAnim_rotationXDivision', 'quarter', 'Division', '♩', (value) => {
+            this.app.cameraAnimationManager?.setParameter('rotationXDivision', value);
+        });
+        
+        // Easing dropdown for Rotation X
+        const rotXEasingOptions = {
+            'Power 2 InOut': 'power2.inOut',
+            'Power 2 In': 'power2.in',
+            'Power 2 Out': 'power2.out',
+            'Power 3 InOut': 'power3.inOut',
+            'Power 3 In': 'power3.in',
+            'Power 3 Out': 'power3.out',
+            'Back InOut': 'back.inOut',
+            'Back In': 'back.in',
+            'Back Out': 'back.out',
+            'Elastic InOut': 'elastic.inOut',
+            'Elastic In': 'elastic.in',
+            'Elastic Out': 'elastic.out',
+            'Bounce InOut': 'bounce.inOut',
+            'Bounce In': 'bounce.in',
+            'Bounce Out': 'bounce.out',
+            'Linear': 'linear'
+        };
+        
+        const currentRotXEasing = this.state.get('cameraAnim_rotationXEasing');
+        const currentRotXEasingDisplayName = Object.keys(rotXEasingOptions).find(key => rotXEasingOptions[key] === currentRotXEasing) || 'Power 2 InOut';
+        
+        const rotXEasingController = rotXAnimFolder.add({ easing: currentRotXEasingDisplayName }, 'easing', Object.keys(rotXEasingOptions)).name('Easing');
+        rotXEasingController.onChange(() => {
+            const easingValue = rotXEasingOptions[rotXEasingController.getValue()];
+            this.state.set('cameraAnim_rotationXEasing', easingValue);
+            this.app.cameraAnimationManager?.setParameter('rotationXEasing', easingValue);
+        });
+        
+        rotXAnimFolder.add({ direction: this.state.get('cameraAnim_rotationXDirection') }, 'direction', { 'Forward': 1, 'Reverse': -1 }).name('Direction').onChange((value) => {
+            this.state.set('cameraAnim_rotationXDirection', value);
+            this.app.cameraAnimationManager?.setParameter('rotationXDirection', value);
+        });
+        
+        // Rotation Y Animation
+        const rotYAnimFolder = cameraAnimFolder.addFolder('Rotation Y Animation');
+        
+        if (!this.state.has('cameraAnim_rotationYEnabled')) {
+            this.state.set('cameraAnim_rotationYEnabled', false);
+        }
+        if (!this.state.has('cameraAnim_rotationYAmplitude')) {
+            this.state.set('cameraAnim_rotationYAmplitude', Math.PI / 4);
+        }
+        if (!this.state.has('cameraAnim_rotationYDivision')) {
+            this.state.set('cameraAnim_rotationYDivision', 'quarter');
+        }
+        if (!this.state.has('cameraAnim_rotationYEasing')) {
+            this.state.set('cameraAnim_rotationYEasing', 'power2.inOut');
+        }
+        if (!this.state.has('cameraAnim_rotationYDirection')) {
+            this.state.set('cameraAnim_rotationYDirection', 1);
+        }
+        
+        rotYAnimFolder.add({ enabled: this.state.get('cameraAnim_rotationYEnabled') }, 'enabled').name('Enable').onChange((value) => {
+            this.state.set('cameraAnim_rotationYEnabled', value);
+            this.app.cameraAnimationManager?.setParameter('rotationYEnabled', value);
+        });
+        
+        rotYAnimFolder.add({ amplitude: this.state.get('cameraAnim_rotationYAmplitude') }, 'amplitude', 0, Math.PI, 0.01).name('Amplitude').onChange((value) => {
+            this.state.set('cameraAnim_rotationYAmplitude', value);
+            this.app.cameraAnimationManager?.setParameter('rotationYAmplitude', value);
+        });
+        
+        this.createDivisionDropdown(rotYAnimFolder, 'cameraAnim_rotationYDivision', 'quarter', 'Division', '♩', (value) => {
+            this.app.cameraAnimationManager?.setParameter('rotationYDivision', value);
+        });
+        
+        const currentRotYEasing = this.state.get('cameraAnim_rotationYEasing');
+        const currentRotYEasingDisplayName = Object.keys(rotXEasingOptions).find(key => rotXEasingOptions[key] === currentRotYEasing) || 'Power 2 InOut';
+        
+        const rotYEasingController = rotYAnimFolder.add({ easing: currentRotYEasingDisplayName }, 'easing', Object.keys(rotXEasingOptions)).name('Easing');
+        rotYEasingController.onChange(() => {
+            const easingValue = rotXEasingOptions[rotYEasingController.getValue()];
+            this.state.set('cameraAnim_rotationYEasing', easingValue);
+            this.app.cameraAnimationManager?.setParameter('rotationYEasing', easingValue);
+        });
+        
+        rotYAnimFolder.add({ direction: this.state.get('cameraAnim_rotationYDirection') }, 'direction', { 'Forward': 1, 'Reverse': -1 }).name('Direction').onChange((value) => {
+            this.state.set('cameraAnim_rotationYDirection', value);
+            this.app.cameraAnimationManager?.setParameter('rotationYDirection', value);
+        });
+        
+        // Orbital Animation
+        const orbitalAnimFolder = cameraAnimFolder.addFolder('Orbital Animation');
+        
+        if (!this.state.has('cameraAnim_orbitalEnabled')) {
+            this.state.set('cameraAnim_orbitalEnabled', false);
+        }
+        if (!this.state.has('cameraAnim_orbitalDivision')) {
+            this.state.set('cameraAnim_orbitalDivision', '2bars');
+        }
+        if (!this.state.has('cameraAnim_orbitalAxis')) {
+            this.state.set('cameraAnim_orbitalAxis', 'y');
+        }
+        if (!this.state.has('cameraAnim_orbitalDirection')) {
+            this.state.set('cameraAnim_orbitalDirection', 1);
+        }
+        
+        orbitalAnimFolder.add({ enabled: this.state.get('cameraAnim_orbitalEnabled') }, 'enabled').name('Enable').onChange((value) => {
+            this.state.set('cameraAnim_orbitalEnabled', value);
+            this.app.cameraAnimationManager?.setParameter('orbitalEnabled', value);
+        });
+        
+        this.createDivisionDropdown(orbitalAnimFolder, 'cameraAnim_orbitalDivision', '2bars', 'Division', '♩', (value) => {
+            this.app.cameraAnimationManager?.setParameter('orbitalDivision', value);
+        });
+        
+        orbitalAnimFolder.add({ axis: this.state.get('cameraAnim_orbitalAxis') }, 'axis', { 'X-Axis': 'x', 'Y-Axis': 'y', 'Z-Axis': 'z' }).name('Orbital Axis').onChange((value) => {
+            this.state.set('cameraAnim_orbitalAxis', value);
+            this.app.cameraAnimationManager?.setParameter('orbitalAxis', value);
+        });
+        
+        orbitalAnimFolder.add({ direction: this.state.get('cameraAnim_orbitalDirection') }, 'direction', { 'Clockwise': 1, 'Counter-clockwise': -1 }).name('Direction').onChange((value) => {
+            this.state.set('cameraAnim_orbitalDirection', value);
+            this.app.cameraAnimationManager?.setParameter('orbitalDirection', value);
+        });
+        
+        // Distance Animation
+        const distanceAnimFolder = cameraAnimFolder.addFolder('Distance Animation');
+        
+        if (!this.state.has('cameraAnim_distanceEnabled')) {
+            this.state.set('cameraAnim_distanceEnabled', false);
+        }
+        if (!this.state.has('cameraAnim_distanceAmplitude')) {
+            this.state.set('cameraAnim_distanceAmplitude', 5);
+        }
+        if (!this.state.has('cameraAnim_distanceCenter')) {
+            this.state.set('cameraAnim_distanceCenter', 10);
+        }
+        if (!this.state.has('cameraAnim_distanceDivision')) {
+            this.state.set('cameraAnim_distanceDivision', 'half');
+        }
+        
+        distanceAnimFolder.add({ enabled: this.state.get('cameraAnim_distanceEnabled') }, 'enabled').name('Enable').onChange((value) => {
+            this.state.set('cameraAnim_distanceEnabled', value);
+            this.app.cameraAnimationManager?.setParameter('distanceEnabled', value);
+        });
+        
+        distanceAnimFolder.add({ amplitude: this.state.get('cameraAnim_distanceAmplitude') }, 'amplitude', 0, 20, 0.1).name('Amplitude').onChange((value) => {
+            this.state.set('cameraAnim_distanceAmplitude', value);
+            this.app.cameraAnimationManager?.setParameter('distanceAmplitude', value);
+        });
+        
+        distanceAnimFolder.add({ center: this.state.get('cameraAnim_distanceCenter') }, 'center', 1, 50, 0.1).name('Center Distance').onChange((value) => {
+            this.state.set('cameraAnim_distanceCenter', value);
+            this.app.cameraAnimationManager?.setParameter('distanceCenter', value);
+        });
+        
+        this.createDivisionDropdown(distanceAnimFolder, 'cameraAnim_distanceDivision', 'half', 'Division', '♩', (value) => {
+            this.app.cameraAnimationManager?.setParameter('distanceDivision', value);
+        });
+        
+        // Complex Rotation Animation
+        const complexAnimFolder = cameraAnimFolder.addFolder('Complex Rotation');
+        
+        if (!this.state.has('cameraAnim_complexRotationEnabled')) {
+            this.state.set('cameraAnim_complexRotationEnabled', false);
+        }
+        if (!this.state.has('cameraAnim_complexRotationIntensity')) {
+            this.state.set('cameraAnim_complexRotationIntensity', 0.5);
+        }
+        if (!this.state.has('cameraAnim_complexRotationDivision')) {
+            this.state.set('cameraAnim_complexRotationDivision', '4bars');
+        }
+        
+        complexAnimFolder.add({ enabled: this.state.get('cameraAnim_complexRotationEnabled') }, 'enabled').name('Enable').onChange((value) => {
+            this.state.set('cameraAnim_complexRotationEnabled', value);
+            this.app.cameraAnimationManager?.setParameter('complexRotationEnabled', value);
+        });
+        
+        complexAnimFolder.add({ intensity: this.state.get('cameraAnim_complexRotationIntensity') }, 'intensity', 0, 1, 0.01).name('Intensity').onChange((value) => {
+            this.state.set('cameraAnim_complexRotationIntensity', value);
+            this.app.cameraAnimationManager?.setParameter('complexRotationIntensity', value);
+        });
+        
+        this.createDivisionDropdown(complexAnimFolder, 'cameraAnim_complexRotationDivision', '4bars', 'Division', '♩', (value) => {
+            this.app.cameraAnimationManager?.setParameter('complexRotationDivision', value);
+        });
     }
 
     setupLayerControls() {

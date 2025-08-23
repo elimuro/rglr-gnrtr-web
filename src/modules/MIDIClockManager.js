@@ -265,6 +265,11 @@ export class MIDIClockManager {
                 this.app.state.set('globalBPM', Math.round(bpm));
             }
             
+            // Notify camera animation manager of BPM change
+            if (this.app && this.app.cameraAnimationManager) {
+                this.app.cameraAnimationManager.onBPMChange(bpm);
+            }
+            
             this.transportBar.updateAllDisplays();
         } else {
             console.warn(`Attempted to set invalid BPM: ${bpm}. BPM must be between ${MIDI_CONSTANTS.clock.minTempo}-${MIDI_CONSTANTS.clock.maxTempo} and finite.`);
