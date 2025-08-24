@@ -100,59 +100,62 @@ export class SphereLayer extends LayerBase {
         this.isAnimated = true;
         this.needsUpdate = true;
         
+        // Create a mesh to represent the entire sphere layer
+        // This allows us to apply layer-level effects like blend modes and opacity
+        this.createLayerMesh();
+        
         this.createSphereGrid();
+    }
+
+    /**
+     * Create a mesh to represent the entire sphere layer
+     * This allows us to apply layer-level effects like blend modes and opacity
+     */
+    createLayerMesh() {
+        // Create a transparent plane that covers the entire sphere grid area
+        // This mesh represents the layer and allows us to apply effects
+        const gridWidth = this.gridWidth * this.cellSize;
+        const gridHeight = this.gridHeight * this.cellSize;
+        
+        const geometry = new THREE.PlaneGeometry(gridWidth, gridHeight);
+        
+        // Create a completely invisible material for the layer mesh
+        // This allows blend modes to work without adding visual background
+        const material = new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0.0, // Completely invisible
+            depthTest: false, // Don't interfere with depth testing
+            depthWrite: false, // Don't write to depth buffer
+            side: THREE.DoubleSide,
+            visible: false, // Additional safety to ensure invisibility
+            color: 0x000000 // Black color (won't show due to opacity: 0)
+        });
+        
+        // Create the layer mesh
+        const layerMesh = new THREE.Mesh(geometry, material);
+        
+        // Position it at the sphere grid center
+        layerMesh.position.set(0, 0, this.zOffset);
+        
+        // Set it as the layer's mesh
+        this.setLayerMesh(layerMesh);
+        
+        console.log(`SphereLayer: Created layer mesh for ${this.id} with transparent background`);
     }
 
     onUpdate(deltaTime) {
         // Handle undefined deltaTime gracefully
         const safeDeltaTime = deltaTime || 0.016; // Default to 60 FPS if undefined
         
-        // Debug: log when update is called
-        if (this.animationTime % 60 === 0) {
-            console.log('SphereLayer onUpdate called:', {
-                deltaTime: safeDeltaTime.toFixed(3),
-                animationTime: this.animationTime.toFixed(3),
-                isAnimated: this.isAnimated,
-                needsUpdate: this.needsUpdate
-            });
-        }
-        
         this.animationTime += safeDeltaTime;
         
+        // Update animations if enabled
         if (this.animationEnabled) {
             this.updateSphereAnimations();
         }
         
         if (this.waveAnimationEnabled) {
             this.updateWaveAnimations();
-            // Debug: log when wave animation is running
-            if (this.animationTime % 60 === 0) {
-                console.log('Wave animation is RUNNING. Current state:', {
-                    waveAnimationEnabled: this.waveAnimationEnabled,
-                    zWaveAmplitude: this.zWaveAmplitude,
-                    zWaveSpeed: this.zWaveSpeed,
-                    animationTime: this.animationTime
-                });
-            }
-        } else {
-            // Debug: log when wave animation is disabled
-            if (this.animationTime % 120 === 0) {
-                console.log('Wave animation is DISABLED. Current state:', {
-                    waveAnimationEnabled: this.waveAnimationEnabled,
-                    zWaveAmplitude: this.zWaveAmplitude,
-                    zWaveSpeed: this.zWaveSpeed
-                });
-            }
-        }
-        
-        // Debug: log animation state every 120 frames
-        if (this.animationTime % 120 === 0) {
-            console.log('SphereLayer Animation State:', {
-                animationEnabled: this.animationEnabled,
-                waveAnimationEnabled: this.waveAnimationEnabled,
-                animationTime: this.animationTime,
-                sphereCount: this.spheres.length
-            });
         }
     }
 
@@ -165,6 +168,10 @@ export class SphereLayer extends LayerBase {
     onRender2D(renderer, camera, deltaTime) {
         // Spheres are 3D objects already in the scene, so this is a no-op
         // The spheres will be rendered automatically by Three.js
+        // However, we now have a mesh for layer-level effects
+        if (this.mesh && this.needsBlendModeUpdate) {
+            this.applyBlendModeToMaterial();
+        }
     }
 
     createSphereGrid() {
@@ -463,6 +470,15 @@ export class SphereLayer extends LayerBase {
             zWaveFrequency: this.zWaveFrequency,
             zWaveDirection: this.zWaveDirection
         };
+    }
+
+    /**
+     * Get all child objects that should inherit the layer's blend mode
+     * @returns {Array} Array of spheres with materials
+     */
+    getChildObjects() {
+        // Return all spheres that have materials
+        return this.spheres.filter(sphere => sphere && sphere.material);
     }
 
     destroy() {

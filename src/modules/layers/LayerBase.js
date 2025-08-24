@@ -8,10 +8,7 @@
 import * as THREE from 'three';
 import { 
     BLEND_MODES, 
-    getBlendModeOptions, 
-    applyBlendModeToMaterial,
-    requiresCustomShader,
-    generateBlendShaderCode
+    applyBlendModeToMaterial
 } from '../../config/BlendModeConstants.js';
 
 export class LayerBase {
@@ -21,7 +18,6 @@ export class LayerBase {
         this.opacity = config.opacity !== undefined ? config.opacity : 1.0;
         this.blendMode = config.blendMode || BLEND_MODES.NORMAL;
         this.zOffset = config.zOffset !== undefined ? config.zOffset : 0; // Z-space distance from camera
-        this.renderTarget = null;
         
         // Three.js mesh for 3D positioning (will be set by subclasses)
         this.mesh = null;
@@ -37,8 +33,7 @@ export class LayerBase {
         // Parameter cache for performance
         this.parameterCache = new Map();
         
-        // Event listeners
-        this.eventListeners = [];
+
         
         // Blend mode state
         this.needsBlendModeUpdate = true;
@@ -68,6 +63,39 @@ export class LayerBase {
      */
     async onInitialize(context) {
         throw new Error('onInitialize must be implemented by subclass');
+    }
+
+    /**
+     * Abstract method to ensure layer has a mesh property
+     * This method must be called by subclasses after creating their mesh
+     * @param {THREE.Mesh} mesh - The mesh object for this layer
+     */
+    setLayerMesh(mesh) {
+        if (!mesh) {
+            throw new Error(`Layer ${this.id} must provide a valid mesh object`);
+        }
+        
+        this.mesh = mesh;
+        
+        // Ensure the layer mesh is completely invisible
+        // This mesh is only used for layer-level effects, not visual rendering
+        this.mesh.visible = false;
+        
+        // Apply current layer properties to the mesh
+        this.mesh.position.z = this.zOffset;
+        
+        // Apply material properties if available
+        if (this.mesh.material) {
+            this.mesh.material.opacity = this.opacity;
+            this.mesh.material.transparent = this.opacity < 1.0;
+            
+            // Apply blend mode if available
+            if (this.blendMode) {
+                this.applyBlendModeToMaterial();
+            }
+        }
+        
+        console.log(`LayerBase ${this.id}: Invisible layer mesh set successfully`);
     }
 
     /**
@@ -134,13 +162,7 @@ export class LayerBase {
         try {
             this.onDispose();
             
-            // Clean up event listeners
-            this.eventListeners.forEach(({ element, event, handler }) => {
-                if (element && element.removeEventListener) {
-                    element.removeEventListener(event, handler);
-                }
-            });
-            this.eventListeners = [];
+
             
             // Clear parameter cache
             this.parameterCache.clear();
@@ -169,10 +191,24 @@ export class LayerBase {
         
         try {
             this.onSetParameter(name, value);
-            this.parameterCache.set(name, value);
+            
+            // Only cache parameters that aren't handled by direct property access
+            // Common parameters (visible, opacity, blendMode, zOffset) are stored in actual properties
+            if (!this.isCommonParameter(name)) {
+                this.parameterCache.set(name, value);
+            }
         } catch (error) {
             console.error(`Error setting parameter ${name} on layer ${this.id}:`, error);
         }
+    }
+
+    /**
+     * Check if a parameter is handled by direct property access (not cached)
+     * @param {string} name - Parameter name
+     * @returns {boolean} True if parameter is handled directly
+     */
+    isCommonParameter(name) {
+        return ['visible', 'opacity', 'blendMode', 'zOffset'].includes(name);
     }
 
     /**
@@ -446,6 +482,9 @@ export class LayerBase {
         // Apply to material immediately if available
         this.applyBlendModeToMaterial();
         
+        // Also apply to all child objects immediately
+        this.applyBlendModeToChildren();
+        
         // Notify subclasses of blend mode change
         this.onBlendModeChanged(blendMode);
     }
@@ -464,23 +503,46 @@ export class LayerBase {
             applyBlendModeToMaterial(material, this.blendMode);
             this.needsBlendModeUpdate = false;
         }
+        
+        // Also apply blend mode to all child objects automatically
+        this.applyBlendModeToChildren();
     }
 
     /**
-     * Check if current blend mode requires custom shader implementation
-     * @returns {boolean} True if custom shader is needed
+     * Apply blend mode to all child objects in the layer
+     * This ensures all objects within a layer inherit the parent's blend mode
      */
-    requiresCustomShaderBlending() {
-        return requiresCustomShader(this.blendMode);
+    applyBlendModeToChildren() {
+        if (!this.blendMode || this.blendMode === 'normal') return;
+        
+        // Get all child objects from the layer
+        const childObjects = this.getChildObjects();
+        
+        if (childObjects.length > 0) {
+            console.log(`LayerBase ${this.id}: Applying ${this.blendMode} blend mode to ${childObjects.length} child objects`);
+            
+            childObjects.forEach(obj => {
+                if (obj.material) {
+                    const material = Array.isArray(obj.material) ? obj.material[0] : obj.material;
+                    if (material) {
+                        applyBlendModeToMaterial(material, this.blendMode);
+                    }
+                }
+            });
+        }
     }
 
     /**
-     * Get GLSL blend function code for current blend mode
-     * @returns {string} GLSL code for blend function
+     * Get all child objects that should inherit the layer's blend mode
+     * Override this method in subclasses to return the actual objects
+     * @returns {Array} Array of objects with materials
      */
-    getBlendShaderCode() {
-        return generateBlendShaderCode(this.blendMode);
+    getChildObjects() {
+        // Default implementation - override in subclasses
+        return [];
     }
+
+
 
     /**
      * Called when blend mode changes - override in subclasses
@@ -491,38 +553,5 @@ export class LayerBase {
         console.log(`LayerBase ${this.id}: Blend mode changed to ${newBlendMode}`);
     }
 
-    /**
-     * Add event listener with automatic cleanup
-     * @param {Element} element - DOM element
-     * @param {string} event - Event name
-     * @param {Function} handler - Event handler
-     */
-    addEventListener(element, event, handler) {
-        if (element && element.addEventListener) {
-            element.addEventListener(event, handler);
-            this.eventListeners.push({ element, event, handler });
-        }
-    }
 
-    /**
-     * Remove event listener
-     * @param {Element} element - DOM element
-     * @param {string} event - Event name
-     * @param {Function} handler - Event handler
-     */
-    removeEventListener(element, event, handler) {
-        if (element && element.removeEventListener) {
-            element.removeEventListener(event, handler);
-        }
-        
-        const index = this.eventListeners.findIndex(
-            listener => listener.element === element && 
-                       listener.event === event && 
-                       listener.handler === handler
-        );
-        
-        if (index !== -1) {
-            this.eventListeners.splice(index, 1);
-        }
-    }
 }

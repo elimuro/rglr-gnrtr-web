@@ -5,6 +5,7 @@
  */
 
 import { LayerBase } from './LayerBase.js';
+import * as THREE from 'three';
 
 export class GridLayer extends LayerBase {
     constructor(id, config = {}) {
@@ -45,7 +46,44 @@ export class GridLayer extends LayerBase {
         
         // Store context for later use
         this.context = context;
+        
+        // Create a mesh to represent the entire grid layer
+        // This mesh will be invisible but allows us to apply layer-level effects
+        this.createLayerMesh();
+        
         console.log(`GridLayer: Initialization complete for layer ${this.id}`);
+    }
+
+    /**
+     * Create a mesh to represent the entire grid layer
+     * This allows us to apply layer-level effects like blend modes and opacity
+     */
+    createLayerMesh() {
+        // Create an invisible plane that covers the entire grid area
+        // This mesh represents the layer and allows us to apply effects
+        const geometry = new THREE.PlaneGeometry(100, 100); // Large enough to cover grid
+        
+        // Create a completely invisible material for the layer mesh
+        const material = new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0.0, // Completely invisible
+            depthTest: false, // Don't interfere with depth testing
+            depthWrite: false, // Don't write to depth buffer
+            side: THREE.DoubleSide,
+            visible: false, // Additional safety to ensure invisibility
+            color: 0x000000 // Black color (won't show due to opacity: 0)
+        });
+        
+        // Create the layer mesh
+        const layerMesh = new THREE.Mesh(geometry, material);
+        
+        // Position it at the grid center
+        layerMesh.position.set(0, 0, this.zOffset);
+        
+        // Set it as the layer's mesh
+        this.setLayerMesh(layerMesh);
+        
+        console.log(`GridLayer: Created invisible layer mesh for ${this.id}`);
     }
 
     /**
@@ -57,6 +95,10 @@ export class GridLayer extends LayerBase {
     onRender2D(renderer, camera, deltaTime) {
         // Grid rendering is handled by Scene.js, so this is a no-op
         // The grid is always rendered first as the foundation layer
+        // However, we now have a mesh for layer-level effects
+        if (this.mesh && this.needsBlendModeUpdate) {
+            this.applyBlendModeToMaterial();
+        }
     }
 
     /**
@@ -64,10 +106,7 @@ export class GridLayer extends LayerBase {
      * @param {number} deltaTime - Time since last frame
      */
     onUpdate(deltaTime) {
-        console.log(`GridLayer: onUpdate called for layer ${this.id}, deltaTime: ${deltaTime}`);
-        
         if (!this.gridManager) {
-            console.error(`GridLayer: No GridManager reference available in onUpdate`);
             return;
         }
         
@@ -86,18 +125,13 @@ export class GridLayer extends LayerBase {
      * Update grid visibility based on layer visibility
      */
     updateGridVisibility() {
-        console.log(`GridLayer: updateGridVisibility called for layer ${this.id}, visible: ${this.visible}, shapesVisible: ${this.shapesVisible}, gridLinesVisible: ${this.gridLinesVisible}`);
-        
         if (!this.gridManager) {
-            console.error(`GridLayer: No GridManager reference available`);
             return;
         }
         
         // Get all shapes and grid lines
         const shapes = this.gridManager.getAllShapes();
         const gridLines = this.gridManager.getAllGridLines();
-        
-        console.log(`GridLayer: Found ${shapes.length} shapes and ${gridLines.length} grid lines`);
         
         // Update shapes visibility
         shapes.forEach((mesh, index) => {
@@ -110,6 +144,11 @@ export class GridLayer extends LayerBase {
                 if (this.opacity !== 1.0) {
                     mesh.material.opacity = this.opacity;
                     mesh.material.transparent = this.opacity < 1.0;
+                }
+                
+                // Apply layer blend mode to individual shapes
+                if (this.blendMode && this.blendMode !== 'normal') {
+                    this.applyBlendModeToObject(mesh);
                 }
             }
         });
@@ -125,6 +164,11 @@ export class GridLayer extends LayerBase {
                 if (line.material) {
                     line.material.opacity = this.opacity;
                     line.material.transparent = this.opacity < 1.0;
+                    
+                    // Apply layer blend mode to individual lines
+                    if (this.blendMode && this.blendMode !== 'normal') {
+                        this.applyBlendModeToObject(line);
+                    }
                 }
             }
         });
@@ -152,15 +196,11 @@ export class GridLayer extends LayerBase {
      * @param {boolean} isVisible - New visibility state
      */
     onVisibilityChanged(isVisible) {
-        console.log(`GridLayer: onVisibilityChanged called for layer ${this.id}, isVisible: ${isVisible}`);
-        
         // Update grid visibility immediately
         this.updateGridVisibility();
         
         // Call parent method
         super.onVisibilityChanged(isVisible);
-        
-        console.log(`GridLayer: onVisibilityChanged complete for layer ${this.id}`);
     }
 
     /**
@@ -258,6 +298,11 @@ export class GridLayer extends LayerBase {
         
         console.log(`GridLayer: Setting z-offset to ${zOffset}`);
         
+        // Update the layer mesh position
+        if (this.mesh) {
+            this.mesh.position.z = zOffset;
+        }
+        
         // Update grid objects z-position through GridManager
         if (this.gridManager) {
             // Update all grid shapes
@@ -280,6 +325,20 @@ export class GridLayer extends LayerBase {
         } else {
             console.warn('GridLayer: No GridManager available for z-offset update');
         }
+    }
+
+    /**
+     * Get all child objects that should inherit the layer's blend mode
+     * @returns {Array} Array of grid shapes and lines with materials
+     */
+    getChildObjects() {
+        if (!this.gridManager) return [];
+        
+        const shapes = this.gridManager.getAllShapes();
+        const gridLines = this.gridManager.getAllGridLines();
+        
+        // Return all objects that have materials
+        return [...shapes, ...gridLines].filter(obj => obj && obj.material);
     }
 
     /**
