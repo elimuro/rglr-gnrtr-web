@@ -1296,7 +1296,7 @@ export class GUIManager {
             this.state.set('layerSpacing', this.state.get('layerSpacing'));
             // Update layer positions when spacing changes
             if (this.app.layerManager) {
-                this.app.layerManager.updateLayerZPositions();
+                this.app.layerManager.updateLayerPositions();
             }
         });
         
@@ -1313,7 +1313,7 @@ export class GUIManager {
             this.state.set('autoArrangeLayers', newValue);
             // Re-arrange layers if auto-arrange is enabled
             if (newValue && this.app.layerManager) {
-                this.app.layerManager.updateLayerZPositions();
+                this.app.layerManager.updateLayerPositions();
             }
         };
         layerFolder.add({ toggleAutoArrange }, 'toggleAutoArrange').name('Toggle Auto-arrange Layers');
@@ -1321,7 +1321,7 @@ export class GUIManager {
         // Manual layer arrangement button
         const arrangeLayers = () => {
             if (this.app.layerManager) {
-                this.app.layerManager.updateLayerZPositions();
+                this.app.layerManager.updateLayerPositions();
             }
         };
         

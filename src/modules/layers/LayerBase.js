@@ -181,14 +181,21 @@ export class LayerBase {
      * @param {*} value - Parameter value
      */
     onSetParameter(name, value) {
-        // Handle common parameters
+        // Handle common parameters with direct Three.js property access
         switch (name) {
             case 'visible':
                 this.visible = Boolean(value);
+                if (this.mesh) {
+                    this.mesh.visible = this.visible;
+                }
                 this.onVisibilityChanged(this.visible);
                 break;
             case 'opacity':
                 this.opacity = Math.max(0.0, Math.min(1.0, Number(value)));
+                if (this.mesh && this.mesh.material) {
+                    this.mesh.material.opacity = this.opacity;
+                    this.mesh.material.transparent = this.opacity < 1.0;
+                }
                 this.onOpacityChanged(this.opacity);
                 break;
             case 'blendMode':
@@ -196,6 +203,9 @@ export class LayerBase {
                 break;
             case 'zOffset':
                 this.zOffset = Number(value);
+                if (this.mesh) {
+                    this.mesh.position.z = this.zOffset;
+                }
                 break;
         }
     }
@@ -222,16 +232,16 @@ export class LayerBase {
      * @returns {*} Parameter value
      */
     onGetParameter(name) {
-        // Handle common parameters
+        // Handle common parameters with direct Three.js property access
         switch (name) {
             case 'visible':
-                return this.visible;
+                return this.mesh ? this.mesh.visible : this.visible;
             case 'opacity':
-                return this.opacity;
+                return this.mesh && this.mesh.material ? this.mesh.material.opacity : this.opacity;
             case 'blendMode':
                 return this.blendMode;
             case 'zOffset':
-                return this.zOffset;
+                return this.mesh ? this.mesh.position.z : this.zOffset;
             default:
                 return this.parameterCache.get(name);
         }

@@ -256,10 +256,13 @@ export class GridLayer extends LayerBase {
     setZOffset(zOffset) {
         super.setZOffset(zOffset);
         
+        console.log(`GridLayer: Setting z-offset to ${zOffset}`);
+        
         // Update grid objects z-position through GridManager
         if (this.gridManager) {
             // Update all grid shapes
             const shapes = this.gridManager.getAllShapes();
+            console.log(`GridLayer: Updating ${shapes.length} shapes to z = ${zOffset}`);
             shapes.forEach(mesh => {
                 if (mesh && mesh.position) {
                     mesh.position.z = zOffset;
@@ -268,11 +271,14 @@ export class GridLayer extends LayerBase {
             
             // Update grid lines
             const gridLines = this.gridManager.getAllGridLines();
+            console.log(`GridLayer: Updating ${gridLines.length} grid lines to z = ${zOffset}`);
             gridLines.forEach(line => {
                 if (line && line.position) {
                     line.position.z = zOffset;
                 }
             });
+        } else {
+            console.warn('GridLayer: No GridManager available for z-offset update');
         }
     }
 

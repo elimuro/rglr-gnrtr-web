@@ -85,8 +85,8 @@ export class LayerManager {
             layer.initialize(this.context)
         ));
         
-        // Set initial z-positions
-        this.updateLayerZPositions();
+        // Set initial layer positions
+        this.updateLayerPositions();
         
         // Set up state listeners
         this.setupStateListeners();
@@ -96,23 +96,8 @@ export class LayerManager {
      * Initialize the compositor for layer blending
      */
     initializeCompositor() {
-        // Enhanced compositor with proper blend mode support
-        this.compositor = {
-            blendLayers: (layers, renderer, camera) => {
-                // Render each layer with its specific blend mode
-                // (Main scene with grid is rendered separately by Scene.render())
-                layers.forEach(layer => {
-                    if (layer.visible && layer.opacity > 0) {
-                        // Ensure blend mode is applied to material before rendering
-                        if (layer.needsBlendModeUpdate) {
-                            layer.applyBlendModeToMaterial();
-                        }
-                        
-                        layer.render2D(renderer, camera, this.app.animationLoop.deltaTime);
-                    }
-                });
-            }
-        };
+        // Remove custom compositor - use Three.js native features
+        this.compositor = null;
     }
 
     /**
@@ -340,8 +325,8 @@ export class LayerManager {
             console.log(`LayerManager: Added layer ${layer.id} mesh to layer scene`);
         }
         
-        // Update z-positions after adding layer
-        this.updateLayerZPositions();
+        // Update layer positions after adding layer
+        this.updateLayerPositions();
         
         // Set up parameter routing
         this.setupLayerParameterRouting(layer);
@@ -373,8 +358,8 @@ export class LayerManager {
             this.layerOrder.splice(orderIndex, 1);
         }
         
-        // Update z-positions after removing layer
-        this.updateLayerZPositions();
+        // Update layer positions after removing layer
+        this.updateLayerPositions();
         
         // Clean up render target
         if (this.renderTargets.has(layerId)) {
@@ -422,8 +407,8 @@ export class LayerManager {
         this.needsOrderUpdate = true;
         this.needsVisibilityUpdate = true;
         
-        // Update z-positions based on new order
-        this.updateLayerZPositions();
+        // Update layer positions based on new order
+        this.updateLayerPositions();
         
         // Only update state if we're not in the middle of setConfig to prevent infinite recursion
         if (!this.isSettingConfig) {
@@ -617,7 +602,7 @@ export class LayerManager {
     }
 
     /**
-     * Render all layers in order with performance optimizations
+     * Render all layers using simplified approach - maintain compatibility while simplifying
      * @param {THREE.WebGLRenderer} renderer - Three.js renderer
      * @param {THREE.Camera} camera - Three.js camera
      */
@@ -644,8 +629,17 @@ export class LayerManager {
             }
         }
         
-        // Render layers using optimized compositor
-        this.compositor.blendLayers(layersToRender, renderer, camera);
+        // Simplified approach: Call layer-specific render methods for all layers
+        // This maintains compatibility while removing the complex compositor
+        layersToRender.forEach(layer => {
+            if (layer.visible && layer.opacity > 0 && layer.render2D) {
+                try {
+                    layer.render2D(renderer, camera, deltaTime);
+                } catch (error) {
+                    console.warn(`Error in layer ${layer.id} render2D:`, error);
+                }
+            }
+        });
         
         // Track performance with moving average
         const renderTime = performance.now() - startTime;
@@ -1126,43 +1120,53 @@ export class LayerManager {
         if (this.state && this.state.has('layerSpacing')) {
             this.layerSpacing = this.state.get('layerSpacing');
             console.log(`LayerManager: Updated layer spacing to ${this.layerSpacing}`);
+        } else {
+            console.warn(`LayerManager: No layerSpacing in state, using default: ${this.layerSpacing}`);
         }
     }
 
     /**
-     * Update 3D positions of all layers based on their order
-     * This ensures proper depth separation and layer ordering
-     * Layers are centered around z=0 for balanced composition
+     * Update layer positions using Three.js native features
+     * Uses renderOrder for proper layering and simple z-spacing for visual separation
      */
-    updateLayerZPositions() {
+    updateLayerPositions() {
         // Update spacing from state first
         this.updateLayerSpacing();
         
         const layerCount = this.layerOrder.length;
         if (layerCount === 0) return;
         
-        // Calculate the center offset to distribute layers around z=0
-        // For even number of layers: center between middle two layers
-        // For odd number of layers: center on the middle layer
-        const centerOffset = (layerCount - 1) * this.layerSpacing / 2;
+        console.log(`LayerManager: Updating positions for ${layerCount} layers with spacing ${this.layerSpacing}`);
+        console.log(`LayerManager: Layer order:`, this.layerOrder);
         
         this.layerOrder.forEach((layerId, index) => {
             const layer = this.layers.get(layerId);
             if (layer) {
-                // Calculate z-position: centered around z=0
-                // First layer starts at +centerOffset, subsequent layers move toward -centerOffset
+                // Calculate z-position centered around z=0
+                // For even number of layers: center between middle two layers
+                // For odd number of layers: center on the middle layer
+                const centerOffset = (layerCount - 1) * this.layerSpacing / 2;
                 const zPosition = centerOffset - (index * this.layerSpacing);
                 
-                // Use setZOffset for all layers - this ensures consistent positioning
+                console.log(`LayerManager: Processing layer ${layerId} (index ${index}) -> z = ${zPosition} (centered)`);
+                
+                // Use the layer's setZOffset method for proper positioning
+                // This works for all layer types (GridLayer, ShaderLayer, etc.)
                 layer.setZOffset(zPosition);
                 
-                // Update mesh-specific properties if mesh exists
+                // If the layer has a mesh, also set renderOrder and layers
                 if (layer.mesh) {
-                    layer.mesh.renderOrder = this.layerOrder.length - index;
+                    // Use Three.js native renderOrder for proper layering
+                    // Higher renderOrder renders on top (in front)
+                    layer.mesh.renderOrder = index;
+                    
+                    // Use Three.js layers system for efficient layer management
                     layer.mesh.layers.set(index);
                 }
                 
-                console.log(`LayerManager: Updated layer ${layerId} z-offset = ${zPosition} (centered), renderOrder = ${layer.mesh ? layer.mesh.renderOrder : 'N/A'}`);
+                console.log(`LayerManager: Updated layer ${layerId} z-offset = ${zPosition}, renderOrder = ${index}`);
+            } else {
+                console.warn(`LayerManager: Layer ${layerId} not found in registry`);
             }
         });
     }

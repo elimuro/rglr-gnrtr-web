@@ -965,7 +965,7 @@ export class ParameterMapper {
             step: GUI_CONTROL_CONFIGS.layerSpacing.step,
             setter: (state, value, scene) => {
                 state.set('layerSpacing', value);
-                scene?.app?.layerManager?.updateLayerZPositions();
+                scene?.app?.layerManager?.updateLayerPositions();
             },
             requiresScene: true
         }],
@@ -990,7 +990,7 @@ export class ParameterMapper {
                     const newValue = !currentValue;
                     state.set('autoArrangeLayers', newValue);
                     if (newValue && scene?.app?.layerManager) {
-                        scene.app.layerManager.updateLayerZPositions();
+                        scene.app.layerManager.updateLayerPositions();
                     }
                 }
             },
