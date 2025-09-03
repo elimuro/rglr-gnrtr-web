@@ -1322,6 +1322,17 @@ export class ShaderLayer extends LayerBase {
     }
 
     /**
+     * Check if this shader layer requires custom shader blending
+     * @returns {boolean} True if custom shader blending is needed
+     */
+    requiresCustomShaderBlending() {
+        // For now, return false as this is a future enhancement
+        // In the future, this could check for specific blend modes that
+        // require shader-level blending instead of Three.js material blending
+        return false;
+    }
+
+    /**
      * Inject blend function into shader code (future enhancement)
      * @param {string} blendMode - Blend mode to inject
      */

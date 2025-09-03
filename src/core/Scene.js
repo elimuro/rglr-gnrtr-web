@@ -315,7 +315,6 @@ export class Scene {
         
         // Update local references for backward compatibility
         this.shapes = this.gridManager.getAllShapes();
-        this.gridLines = this.gridManager.getAllGridLines();
         this.composition = this.gridManager.getComposition();
     }
 
@@ -438,11 +437,9 @@ export class Scene {
     }
 
     updateGridLines() {
-        // Delegate to grid manager
-        this.gridManager.updateGridLines();
-        
-        // Update local reference for backward compatibility
-        this.gridLines = this.gridManager.getAllGridLines();
+        // Grid lines are now handled by the dedicated grid lines layer
+        // This method is kept for backward compatibility but does nothing
+        console.warn('Scene.updateGridLines() is deprecated - grid lines are now handled by the grid lines layer');
     }
 
     // Legacy method - kept for backward compatibility
@@ -498,7 +495,6 @@ export class Scene {
         
         // Update local references for backward compatibility
         this.shapes = this.gridManager.getAllShapes();
-        this.gridLines = this.gridManager.getAllGridLines();
     }
 
     // Legacy method - kept for backward compatibility

@@ -129,9 +129,8 @@ export class GridLayer extends LayerBase {
             return;
         }
         
-        // Get all shapes and grid lines
+        // Get all shapes
         const shapes = this.gridManager.getAllShapes();
-        const gridLines = this.gridManager.getAllGridLines();
         
         // Update shapes visibility
         shapes.forEach((mesh, index) => {
@@ -184,10 +183,9 @@ export class GridLayer extends LayerBase {
         
         // Update render time based on grid complexity
         const shapes = this.gridManager.getAllShapes();
-        const gridLines = this.gridManager.getAllGridLines();
         
-        // Estimate render time based on object count
-        const estimatedRenderTime = (shapes.length * 0.1) + (gridLines.length * 0.05);
+        // Estimate render time based on object count (grid lines are handled by separate layer)
+        const estimatedRenderTime = shapes.length * 0.1;
         this.lastRenderTime = estimatedRenderTime;
     }
 
@@ -247,12 +245,11 @@ export class GridLayer extends LayerBase {
         if (!this.gridManager) return {};
         
         const shapes = this.gridManager.getAllShapes();
-        const gridLines = this.gridManager.getAllGridLines();
         
         return {
             shapeCount: shapes.length,
-            gridLineCount: gridLines.length,
-            totalObjects: shapes.length + gridLines.length,
+            gridLineCount: 0, // Grid lines are handled by separate layer
+            totalObjects: shapes.length,
             estimatedRenderTime: this.lastRenderTime
         };
     }
@@ -314,14 +311,7 @@ export class GridLayer extends LayerBase {
                 }
             });
             
-            // Update grid lines
-            const gridLines = this.gridManager.getAllGridLines();
-            console.log(`GridLayer: Updating ${gridLines.length} grid lines to z = ${zOffset}`);
-            gridLines.forEach(line => {
-                if (line && line.position) {
-                    line.position.z = zOffset;
-                }
-            });
+            // Grid lines are handled by separate layer, no need to update them here
         } else {
             console.warn('GridLayer: No GridManager available for z-offset update');
         }
@@ -335,10 +325,9 @@ export class GridLayer extends LayerBase {
         if (!this.gridManager) return [];
         
         const shapes = this.gridManager.getAllShapes();
-        const gridLines = this.gridManager.getAllGridLines();
         
-        // Return all objects that have materials
-        return [...shapes, ...gridLines].filter(obj => obj && obj.material);
+        // Return all objects that have materials (grid lines are handled by separate layer)
+        return shapes.filter(obj => obj && obj.material);
     }
 
     /**

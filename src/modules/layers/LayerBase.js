@@ -8,7 +8,8 @@
 import * as THREE from 'three';
 import { 
     BLEND_MODES, 
-    applyBlendModeToMaterial
+    applyBlendModeToMaterial,
+    getBlendModeOptions
 } from '../../config/BlendModeConstants.js';
 
 export class LayerBase {

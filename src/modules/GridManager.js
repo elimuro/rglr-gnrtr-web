@@ -17,7 +17,6 @@ export class GridManager {
         
         // Grid state
         this.shapes = [];
-        this.gridLines = [];
         this.composition = [];
         
         // Scene reference will be set by Scene.js
@@ -39,17 +38,11 @@ export class GridManager {
         // Return old shapes to pool
         this.clearExistingShapes();
         
-        // Remove old grid lines
-        this.clearExistingGridLines();
-
         // Create the composition first
         this.generateComposition();
 
         // Now create the display grid
         this.createDisplayGrid();
-
-        // Draw grid lines if enabled
-        this.updateGridLines();
         
         // Update cell size to ensure positions/scales are correct
         this.updateCellSize();
@@ -67,19 +60,7 @@ export class GridManager {
         this.shapes = [];
     }
 
-    /**
-     * Clear existing grid lines from the scene
-     */
-    clearExistingGridLines() {
-        if (this.gridLines) {
-            for (const line of this.gridLines) {
-                if (this.scene) {
-                    this.scene.remove(line);
-                }
-            }
-        }
-        this.gridLines = [];
-    }
+
 
     /**
      * Generate the composition pattern that determines shape placement
@@ -219,79 +200,11 @@ export class GridManager {
         }
     }
 
-    /**
-     * Update grid lines visualization
-     */
-    updateGridLines() {
-        // Remove old grid lines
-        this.clearExistingGridLines();
-        
-        if (!this.state.get('showGrid')) return;
-        
-        const gridWidth = this.state.get('gridWidth');
-        const gridHeight = this.state.get('gridHeight');
-        const cellSize = this.state.get('cellSize');
-        const halfGridW = gridWidth / 2;
-        const halfGridH = gridHeight / 2;
-        const gridColor = this.state.get('gridColor') || '#ff0000';
-        const lineMaterial = new THREE.LineBasicMaterial({ color: gridColor });
-        
-        // Create vertical lines
-        this.createVerticalGridLines(gridWidth, halfGridW, halfGridH, cellSize, lineMaterial);
-        
-        // Create horizontal lines
-        this.createHorizontalGridLines(gridHeight, halfGridW, halfGridH, cellSize, lineMaterial);
-    }
 
-    /**
-     * Create vertical grid lines
-     * @param {number} gridWidth - Grid width
-     * @param {number} halfGridW - Half grid width
-     * @param {number} halfGridH - Half grid height
-     * @param {number} cellSize - Cell size
-     * @param {THREE.LineBasicMaterial} lineMaterial - Material for lines
-     */
-    createVerticalGridLines(gridWidth, halfGridW, halfGridH, cellSize, lineMaterial) {
-        for (let i = 0; i <= gridWidth; i++) {
-            const x = (i - halfGridW) * cellSize;
-            const points = [
-                new THREE.Vector3(x, -halfGridH * cellSize, 1),
-                new THREE.Vector3(x, halfGridH * cellSize, 1)
-            ];
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const line = new THREE.Line(geometry, lineMaterial);
-            
-            if (this.scene) {
-                this.scene.add(line);
-            }
-            this.gridLines.push(line);
-        }
-    }
 
-    /**
-     * Create horizontal grid lines
-     * @param {number} gridHeight - Grid height
-     * @param {number} halfGridW - Half grid width
-     * @param {number} halfGridH - Half grid height
-     * @param {number} cellSize - Cell size
-     * @param {THREE.LineBasicMaterial} lineMaterial - Material for lines
-     */
-    createHorizontalGridLines(gridHeight, halfGridW, halfGridH, cellSize, lineMaterial) {
-        for (let j = 0; j <= gridHeight; j++) {
-            const y = (j - halfGridH) * cellSize;
-            const points = [
-                new THREE.Vector3(-halfGridW * cellSize, y, 1),
-                new THREE.Vector3(halfGridW * cellSize, y, 1)
-            ];
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const line = new THREE.Line(geometry, lineMaterial);
-            
-            if (this.scene) {
-                this.scene.add(line);
-            }
-            this.gridLines.push(line);
-        }
-    }
+
+
+
 
     /**
      * Update cell size and reposition/rescale all shapes
@@ -319,9 +232,6 @@ export class GridManager {
                 i++;
             }
         }
-        
-        // Update grid lines
-        this.updateGridLines();
     }
 
     /**
@@ -429,13 +339,7 @@ export class GridManager {
         return [...this.shapes];
     }
 
-    /**
-     * Get all grid lines
-     * @returns {THREE.Line[]} Array of all grid line objects
-     */
-    getAllGridLines() {
-        return [...this.gridLines];
-    }
+
 
     /**
      * Get the current composition pattern
@@ -478,7 +382,6 @@ export class GridManager {
      */
     destroy() {
         this.clearExistingShapes();
-        this.clearExistingGridLines();
         this.composition = [];
         this.scene = null;
     }
