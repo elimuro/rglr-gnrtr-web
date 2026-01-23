@@ -7,7 +7,7 @@
     "animationType": 0,
     "animationSpeed": 0.25,
     "enableShapeCycling": false,
-    "enableSizeAnimation": true,
+    "enableSizeAnimation": false,
     "movementAmplitude": 0.5,
     "movementFrequency": 0.7,
     "rotationAmplitude": 0.5,
@@ -27,7 +27,7 @@
     "cellSize": 0.76,
     "compositionWidth": 30,
     "compositionHeight": 30,
-    "showGrid": true,
+    "showGrid": false,
     "gridColor": "#ff0000",
     "randomness": 1,
     "shapeColor": "#5cff00",
@@ -37,7 +37,7 @@
       "Triangles": true,
       "Rectangles": true,
       "Ellipses": true,
-      "Refractive Spheres": true
+      "Refractive Spheres": false
     },
     "sphereRefraction": 1.67,
     "sphereTransparency": 1,

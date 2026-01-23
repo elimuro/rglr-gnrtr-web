@@ -50,8 +50,8 @@ export const DEFAULT_SCENE_CONFIG = {
    * Separate grid lines layer settings
    */
   gridLines: {
-    showGridLines: true,                // Connected to: StateManager.js fallback state, GridLinesLayer.js
-                                        // Purpose: Default visibility state for grid lines layer
+    showGridLines: false,               // Connected to: StateManager.js fallback state, GridLinesLayer.js
+                                        // Purpose: Hidden by default for simplicity
     gridLineColor: "#ff0000",           // Connected to: StateManager.js fallback state, GridLinesLayer.js
                                         // Purpose: Default color for grid lines
     gridLineWidth: 1,                   // Connected to: StateManager.js fallback state, GridLinesLayer.js
@@ -81,8 +81,8 @@ export const DEFAULT_SCENE_CONFIG = {
                                         // Purpose: Default state for rotation animation
     enableScaleAnimation: false,        // Connected to: StateManager.js fallback state
                                         // Purpose: Default state for scale animation
-    enableSizeAnimation: true,          // Connected to: StateManager.js fallback state
-                                        // Purpose: Default state for size animation
+    enableSizeAnimation: false,         // Connected to: StateManager.js fallback state
+                                        // Purpose: Disabled by default for simplicity - users start with static shapes
     
     // Animation Amplitudes
     movementAmplitude: 0.08,            // Connected to: StateManager.js fallback state, ShapeAnimationManager.js
@@ -161,8 +161,8 @@ export const DEFAULT_SCENE_CONFIG = {
                                         // Purpose: Default state for rectangle shapes
     "Ellipses": true,                   // Connected to: StateManager.js fallback state, ShapeGenerator.js
                                         // Purpose: Default state for ellipse shapes
-    "Refractive Spheres": true          // Connected to: StateManager.js fallback state, MaterialManager.js
-                                        // Purpose: Default state for refractive spheres
+    "Refractive Spheres": false         // Connected to: StateManager.js fallback state, MaterialManager.js
+                                        // Purpose: Disabled by default for simplicity (3D graphics)
   },
 
   /**
@@ -379,8 +379,8 @@ export const DEFAULT_SCENE_CONFIG = {
                                         // Purpose: Default floating animation amplitude
     floatSpeed: 1.0,                    // Connected to: StateManager.js fallback state, SphereLayer.js
                                         // Purpose: Default floating animation speed
-    visible: true,                      // Connected to: StateManager.js fallback state, SphereLayer.js
-                                        // Purpose: Default visibility state for sphere layer
+    visible: false,                     // Connected to: StateManager.js fallback state, SphereLayer.js
+                                        // Purpose: Default visibility state for sphere layer (disabled for simplicity)
     opacity: 1.0,                       // Connected to: StateManager.js fallback state, SphereLayer.js
                                         // Purpose: Default opacity for sphere layer
     zOffset: 0.0                        // Connected to: StateManager.js fallback state, SphereLayer.js

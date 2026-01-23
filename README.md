@@ -2,6 +2,41 @@
 
 A real-time generative art application with MIDI integration, audio reactivity, and advanced animation controls.
 
+## 🎯 Simplified Default Setup
+
+The app now starts with a clean, minimal interface to make it easier for new users:
+
+**What you'll see on startup:**
+- ✅ Basic grid with 2D shapes (triangles, rectangles, ellipses)
+- ✅ Static composition (no animations running)
+- ✅ Clean visual (no grid lines, no 3D elements)
+
+**Advanced features (hidden by default, but easily enabled):**
+- 🔲 Grid Lines Layer - Enable in the "Layers" drawer
+- 🔲 3D Sphere Layer - Enable in the "Layers" drawer  
+- 🔲 Refractive Spheres - Enable in Shape Controls
+- 🔲 Animations - Enable in Animation Controls
+- 🔲 Post-Processing Effects - Enable in Post-Processing panel
+
+All features remain available through the GUI and drawer panels - they're just hidden by default to reduce initial complexity!
+
+### 🚀 Quick Start: Enabling Features
+
+**To enable animations:**
+1. Open the right-side GUI panel
+2. Find the "Animation" folder
+3. Toggle on "Enable Size Animation" or any other animation type
+
+**To enable 3D layers:**
+1. Click the "Layers" button in the top bar
+2. Find "Sphere Layer" or "Grid Lines"  
+3. Toggle the visibility checkbox
+
+**To enable refractive spheres:**
+1. Open the right-side GUI panel
+2. Find the "Shape Types" folder
+3. Enable "Refractive Spheres"
+
 ## Features
 
 ### MIDI Integration

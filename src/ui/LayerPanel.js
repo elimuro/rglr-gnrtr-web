@@ -299,7 +299,14 @@ export class LayerPanel {
                 layer = currentLayer;
             }
             
-            layer.visible = e.target.checked;
+            // Set visibility using the parameter system to ensure proper updates
+            layer.setParameter('visible', e.target.checked);
+            
+            // CRITICAL: Tell layer manager to update its visibility cache
+            if (this.app.layerManager) {
+                this.app.layerManager.needsVisibilityUpdate = true;
+                this.app.layerManager.markLayerDirty(layer.id);
+            }
             
             // Force layer to update its internal state
             if (layer.onVisibilityChanged) {
@@ -309,10 +316,7 @@ export class LayerPanel {
             // Update the layer info display
             this.updateLayerInfo(layer);
             
-            // Force a re-render by updating the layer manager
-            if (this.app.layerManager) {
-                this.app.layerManager.markLayerDirty(layer.id);
-            }
+            console.log(`LayerPanel: Set layer ${layer.id} visibility to ${e.target.checked}`);
         };
 
         // Status indicator

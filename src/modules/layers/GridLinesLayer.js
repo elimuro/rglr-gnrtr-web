@@ -133,6 +133,7 @@ export class GridLinesLayer extends LayerBase {
             ];
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const line = new THREE.Line(geometry, lineMaterial);
+            line.visible = this.visible; // Respect initial visibility
             this.scene.add(line);
             this.gridLines.push(line);
         }
@@ -146,9 +147,12 @@ export class GridLinesLayer extends LayerBase {
             ];
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const line = new THREE.Line(geometry, lineMaterial);
+            line.visible = this.visible; // Respect initial visibility
             this.scene.add(line);
             this.gridLines.push(line);
         }
+        
+        console.log(`GridLinesLayer: Created ${this.gridLines.length} lines with visibility=${this.visible}`);
     }
 
     updateDisplacement() {
@@ -246,6 +250,20 @@ export class GridLinesLayer extends LayerBase {
 
     setDisplacementType(type) {
         this.displacementType = type;
+    }
+
+    /**
+     * Handle visibility changes to show/hide grid lines
+     * @param {boolean} visible - New visibility state
+     */
+    onVisibilityChanged(visible) {
+        console.log(`GridLinesLayer: onVisibilityChanged called with ${visible}`);
+        // Update visibility of all grid line objects
+        this.gridLines.forEach(line => {
+            if (line) {
+                line.visible = visible;
+            }
+        });
     }
 
     clearGridLines() {

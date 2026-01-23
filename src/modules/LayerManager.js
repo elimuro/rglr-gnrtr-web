@@ -128,12 +128,12 @@ export class LayerManager {
             await this.addLayer(gridLayer);
         }
         
-        // Create grid lines layer
+        // Create grid lines layer (hidden by default for simplicity)
         if (!this.layers.has('grid-lines')) {
             const { GridLinesLayer } = await import('./layers/GridLinesLayer.js');
             
             const gridLinesLayer = new GridLinesLayer('grid-lines', {
-                visible: true,
+                visible: false, // Hidden by default - users can enable via Layer panel
                 opacity: 1.0,
                 blendMode: 'normal',
                 gridColor: '#ff0000',
@@ -147,12 +147,12 @@ export class LayerManager {
             await this.addLayer(gridLinesLayer);
         }
         
-        // Create sphere layer
+        // Create sphere layer (hidden by default for simplicity)
         if (!this.layers.has('sphere-layer')) {
             const { SphereLayer } = await import('./layers/SphereLayer.js');
             
             const sphereLayer = new SphereLayer('sphere-layer', {
-                visible: true,
+                visible: false, // Disabled by default - users can enable via Layer panel
                 opacity: 1.0,
                 blendMode: 'normal',
                 gridWidth: 10,

@@ -222,9 +222,9 @@ export class LayerBase {
         switch (name) {
             case 'visible':
                 this.visible = Boolean(value);
-                if (this.mesh) {
-                    this.mesh.visible = this.visible;
-                }
+                // Note: mesh.visible is always kept false as rendering happens via render2D()
+                // The this.visible property controls whether render2D() executes
+                console.log(`Layer ${this.id}: visibility set to ${this.visible}`);
                 this.onVisibilityChanged(this.visible);
                 break;
             case 'opacity':

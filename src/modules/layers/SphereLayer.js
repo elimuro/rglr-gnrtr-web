@@ -205,6 +205,9 @@ export class SphereLayer extends LayerBase {
                 sphere.castShadow = true;
                 sphere.receiveShadow = true;
                 
+                // Respect initial visibility
+                sphere.visible = this.visible;
+                
                 // Store animation data
                 sphere.userData.originalY = sphere.position.y;
                 sphere.userData.originalZ = sphere.position.z; // Store original Z for debugging
@@ -217,7 +220,7 @@ export class SphereLayer extends LayerBase {
             }
         }
         
-        console.log(`Created ${this.spheres.length} spheres with initial z-positions around ${this.zOffset}`);
+        console.log(`SphereLayer: Created ${this.spheres.length} spheres with visibility=${this.visible}`);
     }
 
     updateSphereAnimations() {
@@ -435,6 +438,20 @@ export class SphereLayer extends LayerBase {
             sphere.material.dispose();
         });
         this.spheres = [];
+    }
+
+    /**
+     * Handle visibility changes to show/hide spheres
+     * @param {boolean} visible - New visibility state
+     */
+    onVisibilityChanged(visible) {
+        console.log(`SphereLayer: onVisibilityChanged called with ${visible}`);
+        // Update visibility of all sphere objects
+        this.spheres.forEach(sphere => {
+            if (sphere) {
+                sphere.visible = visible;
+            }
+        });
     }
 
     /**
